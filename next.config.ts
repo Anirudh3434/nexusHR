@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ['unlit-scalded-throat.ngrok-free.dev', '*.ngrok-free.dev'],
 };
 
 export default nextConfig;
