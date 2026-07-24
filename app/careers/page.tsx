@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -31,7 +31,7 @@ interface JobPosition {
   postedAt: string;
 }
 
-export default function CareersPage() {
+function CareersContent() {
   const searchParams = useSearchParams();
   const companyId = searchParams.get("companyId") || "webatlas";
   
@@ -549,5 +549,17 @@ export default function CareersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CareersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CareersContent />
+    </Suspense>
   );
 }
