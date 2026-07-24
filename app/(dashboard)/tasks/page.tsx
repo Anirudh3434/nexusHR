@@ -127,6 +127,8 @@ export default function TasksManagementPage() {
   const [backlogTasks, setBacklogTasks] = useState<TaskItem[]>([]);
   const [backlogSearchQuery, setBacklogSearchQuery] = useState('');
   const [activityTab, setActivityTab] = useState<'all' | 'comments' | 'history'>('comments');
+  const [projects, setProjects] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
   const [showMentionList, setShowMentionList] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
@@ -207,9 +209,6 @@ export default function TasksManagementPage() {
     linkedItems: '',
     initialComment: '',
   });
-
-  const [projects, setProjects] = useState<any[]>([]);
-  const [employees, setEmployees] = useState<any[]>([]);
 
   useEffect(() => {
     if (user?.companyId) {
@@ -789,7 +788,7 @@ export default function TasksManagementPage() {
                       </div>
                       {task.assignedTo && (
                         <button
-                          onClick={() => handleInsertMentionFromBadge(task.assignedTo.name)}
+                          onClick={() => handleInsertMentionFromBadge(task.assignedTo?.name || '')}
                           className="flex items-center gap-2 hover:bg-blue-50 rounded-lg px-2 py-1 transition-colors cursor-pointer"
                           title="Click to mention in comment"
                         >
@@ -2035,7 +2034,7 @@ export default function TasksManagementPage() {
                     <label className="text-xs text-gray-500 uppercase tracking-wider">Assignee</label>
                     {selectedTask.assignedTo ? (
                       <button
-                        onClick={() => handleInsertMentionFromBadge(selectedTask.assignedTo.name)}
+                        onClick={() => handleInsertMentionFromBadge(selectedTask.assignedTo?.name || '')}
                         className="flex items-center gap-2 mt-1 hover:bg-blue-50 rounded-lg px-2 py-1 transition-colors cursor-pointer"
                         title="Click to mention in comment"
                       >
@@ -2268,7 +2267,7 @@ export default function TasksManagementPage() {
                                 </div>
                                 {task.assignedTo && (
                                   <button
-                                    onClick={() => handleInsertMentionFromBadge(task.assignedTo.name)}
+                                    onClick={() => handleInsertMentionFromBadge(task.assignedTo?.name || '')}
                                     className="flex items-center gap-2 hover:bg-blue-50 rounded-lg px-2 py-1 transition-colors cursor-pointer"
                                     title="Click to mention in comment"
                                   >
