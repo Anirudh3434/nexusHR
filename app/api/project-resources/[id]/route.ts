@@ -35,11 +35,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 // DELETE - Delete resource
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
     
-    const { id } = params;
+    const { id } = await params;
     
     const resource = await ProjectResource.findByIdAndDelete(id);
     if (!resource) {
