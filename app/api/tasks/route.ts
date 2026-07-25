@@ -52,7 +52,7 @@ export async function GET(req: Request) {
     const projectId = searchParams.get('projectId');
     const status = searchParams.get('status');
     const priority = searchParams.get('priority');
-    const assignedTo = searchParams.get('assignedTo');
+    const assignedTo = searchParams.get('assignedTo') || searchParams.get('assignee');
     const parentId = searchParams.get('parentId');
     
     const searchQuery = searchParams.get('searchQuery');
@@ -87,7 +87,8 @@ export async function GET(req: Request) {
     if (searchQuery) {
       const searchOr = [
         { title: { $regex: searchQuery, $options: 'i' } },
-        { description: { $regex: searchQuery, $options: 'i' } }
+        { description: { $regex: searchQuery, $options: 'i' } },
+        { taskNumber: { $regex: searchQuery, $options: 'i' } }
       ];
       if (query.$or) {
         query.$and = [
@@ -129,14 +130,29 @@ export async function GET(req: Request) {
     if (assignedTo) {
       const assignees = assignedTo.split(',').filter(Boolean);
       if (assignees.length > 0) {
-        query.assignedTo = { $in: assignees.map(id => new mongoose.Types.ObjectId(id)) };
+        const validObjectIds = assignees
+          .filter(id => mongoose.Types.ObjectId.isValid(id))
+          .map(id => new mongoose.Types.ObjectId(id));
+        if (validObjectIds.length > 0) {
+          query.assignedTo = { $in: validObjectIds };
+        }
       }
     }
 
     if (label) {
-      const labelIds = label.split(',').filter(Boolean);
-      if (labelIds.length > 0) {
-        query.labels = { $in: labelIds.map(id => new mongoose.Types.ObjectId(id)) };
+      const labelItems = label.split(',').filter(Boolean);
+      if (labelItems.length > 0) {
+        const objectIdMatches = labelItems
+          .filter(id => mongoose.Types.ObjectId.isValid(id))
+          .map(id => new mongoose.Types.ObjectId(id));
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [
+            { 'labels._id': { $in: objectIdMatches } },
+            { 'labels.name': { $in: labelItems } },
+            { labels: { $in: labelItems } }
+          ]
+        });
       }
     }
 

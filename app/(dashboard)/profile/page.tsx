@@ -110,12 +110,12 @@ export default function ProfilePage() {
 
     setIsUploading(true);
     try {
-      const result = await uploadImage(file, 'hrm/avatars');
+      const result = await uploadImage(file, 'hrm');
       setFormData({...formData, avatar: result.secure_url});
-      addToast({ type: 'success', title: 'Success', description: 'Profile picture uploaded' });
-    } catch (error) {
+      addToast({ type: 'success', title: 'Success', description: 'Profile picture uploaded. Click "Save Changes" to persist.' });
+    } catch (error: any) {
       console.error('Upload error:', error);
-      addToast({ type: 'error', title: 'Error', description: 'Failed to upload image' });
+      addToast({ type: 'error', title: 'Error', description: error.message || 'Failed to upload image' });
     } finally {
       setIsUploading(false);
     }

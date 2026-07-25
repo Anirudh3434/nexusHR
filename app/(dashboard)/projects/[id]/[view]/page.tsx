@@ -2662,6 +2662,13 @@ export default function ProjectBoardPage() {
           <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-thin">
           {columns.map((column) => {
           const theme = statusThemes[column.status] || statusThemes.backlog;
+          const activeColor = column.color || (
+            column.status === 'to_do' ? '#3B82F6' :
+            column.status === 'in_progress' ? '#F59E0B' :
+            column.status === 'in_review' || column.status === 'qa' ? '#8B5CF6' :
+            column.status === 'completed' || column.status === 'stage' ? '#10B981' :
+            '#64748B'
+          );
           const columnTasks = filteredTasks.filter(t => {
             const matchesStatus = t.status === column.status;
             const taskSprintId = (t.sprintId as any)?._id || t.sprintId;
@@ -2680,18 +2687,23 @@ export default function ProjectBoardPage() {
               onDragOver={(e) => handleDragOver(e, column.status)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, column.status)}
+              style={{
+                backgroundColor: dragOverColumn === column.status ? undefined : (isOverWip ? undefined : `${activeColor}0D`),
+                borderTop: `3px solid ${activeColor}`,
+                boxShadow: `0 4px 16px -2px ${activeColor}15`
+              }}
               className={`flex-shrink-0 w-80 rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
                 dragOverColumn === column.status 
                   ? 'border-indigo-500 bg-indigo-50/30 shadow-[inset_0_2px_8px_rgba(99,102,241,0.05)]' 
                   : isOverWip
                     ? 'border-rose-200 bg-rose-50/20'
-                    : 'border-slate-200/60 bg-slate-50/40'
+                    : 'border-slate-200/60'
               }`}
             >
               {/* Column Header */}
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className={`w-2.5 h-2.5 rounded-full ${theme.dot} shrink-0`} />
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: activeColor }} />
                   <h3 className="font-bold text-sm text-slate-800 truncate">{column.name}</h3>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -2859,33 +2871,7 @@ export default function ProjectBoardPage() {
                           )}
 
                           {/* Footer */}
-                          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                            <div className="flex items-center gap-2">
-                              {task.assignedTo && Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
-                                <div className="flex -space-x-1.5 shrink-0">
-                                  {task.assignedTo.slice(0, 3).map((assignee: any, idx: number) => {
-                                    return (
-                                      <button
-                                        key={idx}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleInsertMentionFromBadge(assignee.name);
-                                        }}
-                                        className={`w-6 h-6 rounded-full ${getAvatarColor(idx)} text-white flex items-center justify-center text-[9px] font-bold border border-white shadow-sm hover:scale-110 transition-transform cursor-pointer shrink-0`}
-                                        title={`Click to mention @${assignee.name}`}
-                                      >
-                                        {getInitials(assignee.name)}
-                                      </button>
-                                    );
-                                  })}
-                                  {task.assignedTo.length > 3 && (
-                                    <div className="w-6 h-6 rounded-full bg-slate-100 border border-white shadow-sm text-slate-600 flex items-center justify-center text-[9px] font-bold shrink-0 z-10">
-                                      +{task.assignedTo.length - 3}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                          <div className="flex items-center justify-between pt-1">
                             <div className="flex items-center gap-2 text-[9px] font-medium text-slate-400">
                               {task.dueDate && (
                                 <div className="flex items-center gap-1">
@@ -2894,6 +2880,30 @@ export default function ProjectBoardPage() {
                                 </div>
                               )}
                             </div>
+                            {task.assignedTo && Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
+                              <div className="flex -space-x-1.5 shrink-0 ml-auto">
+                                {task.assignedTo.slice(0, 3).map((assignee: any, idx: number) => {
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleInsertMentionFromBadge(assignee.name);
+                                      }}
+                                      className={`w-6 h-6 rounded-full ${getAvatarColor(idx)} text-white flex items-center justify-center text-[9px] font-bold border border-white shadow-sm hover:scale-110 transition-transform cursor-pointer shrink-0`}
+                                      title={`Click to mention @${assignee.name}`}
+                                    >
+                                      {getInitials(assignee.name)}
+                                    </button>
+                                  );
+                                })}
+                                {task.assignedTo.length > 3 && (
+                                  <div className="w-6 h-6 rounded-full bg-slate-100 border border-white shadow-sm text-slate-600 flex items-center justify-center text-[9px] font-bold shrink-0 z-10">
+                                    +{task.assignedTo.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                       </Card>

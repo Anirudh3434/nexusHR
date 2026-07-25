@@ -1,23 +1,15 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { 
-  Users, 
-  Clock, 
-  Calendar, 
-  CreditCard, 
-  Shield, 
-  MapPin, 
-  TrendingUp, 
-  CheckCircle,
-  ArrowRight,
-  Building2,
-  Menu,
-  X
+  Building2, Users, Clock, Calendar, CreditCard, ShieldCheck, 
+  MapPin, TrendingUp, CheckCircle, ArrowRight, GitBranch, 
+  Kanban, CheckSquare, UserPlus, Menu, X, ChevronRight, FileText,
+  Sparkles, Mic, Zap, Layers, Lock, Shield, CheckCircle2
 } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,72 +23,130 @@ export default function LandingPage() {
     }
   };
 
-  const features = [
+  const coreFeatures = [
     {
-      icon: <Users className="h-6 w-6" />,
-      title: "Employee Management",
-      description: "Complete employee lifecycle management from onboarding to offboarding."
+      icon: <Kanban className="h-6 w-6 text-indigo-600" />,
+      bg: "bg-indigo-50 border-indigo-100",
+      title: "PMS & Sprint Kanban Board",
+      badge: "Project Management",
+      description: "Sprint board with ambient column tints, top accent borders, backlog filters, and integrated assignee clusters."
     },
     {
-      icon: <Clock className="h-6 w-6" />,
-      title: "Time & Attendance",
-      description: "Track attendance with geo-fencing. Clock in/out from office location only."
+      icon: <GitBranch className="h-6 w-6 text-purple-600" />,
+      bg: "bg-purple-50 border-purple-100",
+      title: "GitHub PMS Automation",
+      badge: "Developer Sync",
+      description: "Automated webhook sync. Pushing branch names with ticket IDs (e.g., TSK26070010) auto-shifts status to In Progress."
     },
     {
-      icon: <MapPin className="h-6 w-6" />,
-      title: "Geo-Fencing",
-      description: "Set office boundaries and ensure employees mark attendance from authorized locations."
+      icon: <CheckSquare className="h-6 w-6 text-emerald-600" />,
+      bg: "bg-emerald-50 border-emerald-100",
+      title: "Today's Task & EOD Reports",
+      badge: "Employee Productivity",
+      description: "Daily ticket picking, 15m–8h estimation, 30-min shift unlock timers, and read-only manager review dashboards."
     },
     {
-      icon: <Calendar className="h-6 w-6" />,
-      title: "Leave Management",
-      description: "Streamlined leave requests and approvals with real-time balance tracking."
+      icon: <MapPin className="h-6 w-6 text-rose-600" />,
+      bg: "bg-rose-50 border-rose-100",
+      title: "Geo-Fenced GPS Attendance",
+      badge: "Location Intelligence",
+      description: "Real-time GPS radius verification, live office boundary maps, WFH/Office mode toggles, and shift log tracking."
     },
     {
-      icon: <CreditCard className="h-6 w-6" />,
-      title: "Payroll Processing",
-      description: "Automated payroll calculations, payslip generation, and compliance reporting."
+      icon: <Mic className="h-6 w-6 text-amber-600" />,
+      bg: "bg-amber-50 border-amber-100",
+      title: "AI Voice Executive Briefings",
+      badge: "Smart AI Voice",
+      description: "Interactive voice summaries (Amitabh Bachchan KBC Baritone & Indian female voices) with ambient Web Audio synth background."
     },
     {
-      icon: <TrendingUp className="h-6 w-6" />,
-      title: "Performance Reviews",
-      description: "360-degree feedback system with goal tracking and appraisal management."
+      icon: <UserPlus className="h-6 w-6 text-sky-600" />,
+      bg: "bg-sky-50 border-sky-100",
+      title: "Recruitment & Candidate Inbox",
+      badge: "Talent Acquisition",
+      description: "End-to-end recruitment pipelines, job postings, candidate evaluation inboxes, and applicant tracking."
+    },
+    {
+      icon: <CreditCard className="h-6 w-6 text-blue-600" />,
+      bg: "bg-blue-50 border-blue-100",
+      title: "Automated Payroll & Expenses",
+      badge: "Financial Operations",
+      description: "Automated salary calculation, payslip generation, tax deductions, and employee expense claim reimbursements."
+    },
+    {
+      icon: <Calendar className="h-6 w-6 text-teal-600" />,
+      bg: "bg-teal-50 border-teal-100",
+      title: "Leaves & Overtime Tracking",
+      badge: "Time Off",
+      description: "Real-time leave balance tracking, multi-level approval workflows, and automated shift overtime tracking."
+    },
+    {
+      icon: <Users className="h-6 w-6 text-indigo-600" />,
+      bg: "bg-indigo-50 border-indigo-100",
+      title: "Employee Directory & Resignations",
+      badge: "HR Operations",
+      description: "Complete lifecycle management, department structures, designation hierarchies, and offboarding workflows."
     }
   ];
 
   const steps = [
-    { number: "1", title: "Register Company", description: "Create your company profile with GST and office location" },
-    { number: "2", title: "Set Geo-Fence", description: "Define office boundaries for attendance tracking" },
-    { number: "3", title: "Add Employees", description: "Invite your team members to the platform" },
-    { number: "4", title: "Start Tracking", description: "Begin managing attendance, leaves, and payroll" }
+    { number: "01", title: "Register Company", description: "Create your organization profile with GST, company code, and office GPS coordinates." },
+    { number: "02", title: "Connect GitHub Repos", description: "Link PMS projects to GitHub repositories for real-time branch status parsing." },
+    { number: "03", title: "Onboard Team", description: "Assign role-based access for managers, HR admins, and team members." },
+    { number: "04", title: "Automate & Track", description: "Monitor daily EOD task plans, geo-verified attendance, and monthly payroll." }
   ];
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-600 selection:text-white">
+      {/* Light Background Gradients */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-50/60 rounded-full blur-[140px]" />
+        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-50/60 rounded-full blur-[140px]" />
+      </div>
+
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border transition-all">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-white" />
+          <div className="flex justify-between items-center h-20">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="h-10 w-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform text-white">
+                <Building2 className="h-5 w-5" />
               </div>
-              <span className="text-xl font-bold text-foreground">HRM Pro</span>
-            </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-1.5">
+                  Nexus<span className="text-indigo-600">HR</span>
+                  <span className="text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded-full">PRO</span>
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium">Enterprise HR & PMS Suite</span>
+              </div>
+            </Link>
             
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How it Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+              <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
+              <a href="#github-integration" className="hover:text-indigo-600 transition-colors">GitHub Sync</a>
+              <a href="#how-it-works" className="hover:text-indigo-600 transition-colors">Workflow</a>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="hidden md:flex items-center gap-3">
+              <Link href="/login">
+                <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl px-5 text-xs font-bold">
+                  Sign In
+                </Button>
+              </Link>
               <Link href="/register">
-                <Button>Get Started</Button>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 text-xs font-bold shadow-lg shadow-indigo-600/20">
+                  Register Company
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Button>
               </Link>
             </div>
 
             {/* Mobile Menu Button */}
             <button 
-              className="md:hidden p-2"
+              className="md:hidden p-2 text-slate-600 hover:text-slate-900"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -104,15 +154,18 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100">
-            <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block text-gray-600 hover:text-gray-900">Features</a>
-              <a href="#how-it-works" className="block text-gray-600 hover:text-gray-900">How it Works</a>
-              <a href="#pricing" className="block text-gray-600 hover:text-gray-900">Pricing</a>
-              <Link href="/register" className="block">
-                <Button className="w-full">Get Started</Button>
+          <div className="md:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">Features</a>
+            <a href="#github-integration" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">GitHub Sync</a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">Workflow</a>
+            <div className="pt-4 border-t border-slate-200 space-y-2">
+              <Link href="/login" className="block w-full">
+                <Button variant="outline" className="w-full border-slate-300 text-slate-700">Sign In</Button>
+              </Link>
+              <Link href="/register" className="block w-full">
+                <Button className="w-full bg-indigo-600 text-white">Register Company</Button>
               </Link>
             </div>
           </div>
@@ -120,253 +173,207 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 lg:pt-40 lg:pb-32 px-4 sm:px-6 lg:px-8">
+      <section className="relative z-10 pt-36 pb-20 lg:pt-44 lg:pb-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                <Shield className="h-4 w-4" />
-                Geo-Fencing Enabled
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Hero Content */}
+            <div className="lg:col-span-7 space-y-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200/80 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="h-4 w-4 text-indigo-600" />
+                Enterprise HR & Project Management Platform
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-[1.1]">
-                Modern HR Management with{" "}
-                <span className="text-primary bg-clip-text">Location Intelligence</span>
+
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                Unified Platform for <span className="text-indigo-600">HR & Projects</span>
               </h1>
-              <p className="text-xl text-muted-foreground max-w-xl leading-relaxed">
-                Streamline your HR operations with geo-fenced attendance, automated payroll, 
-                and comprehensive employee management. Built for professional modern teams.
+
+              <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
+                Connect your organization with Geo-Fenced GPS attendance, GitHub-integrated PMS sprint boards, 
+                employee Today Task & EOD reports, automated payroll, and AI voice executive briefings.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/register">
-                  <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/20 hover:shadow-xl transition-all">
-                    Register Your Company
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-2 hover:bg-muted transition-all">
-                    Sign In
-                  </Button>
-                </Link>
-              </div>
-              <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-muted-foreground/80">
-                <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 rounded-full bg-green-500/10 flex items-center justify-center">
-                     <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                  </div>
-                  GST Compliant
+
+              {/* Direct Company Code Access */}
+              <form onSubmit={handleCompanyLogin} className="flex flex-col sm:flex-row gap-3 max-w-lg bg-white border border-slate-200 p-2.5 rounded-2xl shadow-xl shadow-slate-200/60">
+                <div className="relative flex-1">
+                  <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={companyCode}
+                    onChange={(e) => setCompanyCode(e.target.value)}
+                    placeholder="Company Code (e.g. ACME)"
+                    className="w-full pl-10 pr-4 py-3 bg-transparent text-slate-900 placeholder-slate-400 text-xs font-bold uppercase tracking-wider focus:outline-none"
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 rounded-full bg-green-500/10 flex items-center justify-center">
-                     <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                  </div>
-                  Free 14-day trial
-                </div>
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl px-6 py-3 shadow-md shadow-indigo-600/20">
+                  Enter Portal
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </form>
+
+              <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-600 pt-2">
+                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Geo-Fence Attendance</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> GitHub Webhook Sync</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Today Task EOD Reports</span>
               </div>
             </div>
-            <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[3rem] blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                <div className="relative bg-card rounded-[2.5rem] shadow-2xl p-8 border border-border overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4">
-                    <div className="h-24 w-24 bg-indigo-500/5 rounded-full blur-2xl animate-pulse"></div>
-                  </div>
-                <div className="flex items-center justify-between mb-6">
+
+            {/* Hero Mock Preview Card */}
+            <div className="lg:col-span-5 relative group">
+              <div className="absolute inset-0 bg-indigo-500/10 rounded-3xl blur-2xl opacity-50 group-hover:opacity-70 transition-opacity" />
+              <div className="relative bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl shadow-slate-200/80 space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                      NX
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Acme Corp</p>
-                      <p className="text-sm text-gray-500">HR Dashboard</p>
+                      <h4 className="font-bold text-slate-900 text-sm">NexusHR Enterprise</h4>
+                      <p className="text-[10px] text-slate-400">Live Operations Portal</p>
                     </div>
                   </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                    Active
+                  <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-[10px] font-bold uppercase">
+                    Active System
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-sm text-gray-500 mb-1">Present Today</p>
-                    <p className="text-2xl font-bold text-gray-900">142</p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl space-y-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Present Today</span>
+                    <p className="text-2xl font-black text-slate-900">148 / 152</p>
+                    <span className="text-[9px] text-emerald-600 font-semibold">97.3% Geo-Verified</span>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-sm text-gray-500 mb-1">On Leave</p>
-                    <p className="text-2xl font-bold text-gray-900">8</p>
+                  <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl space-y-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">EOD Reports</span>
+                    <p className="text-2xl font-black text-indigo-600">42 Submitted</p>
+                    <span className="text-[9px] text-indigo-500 font-semibold">Shift End Active</span>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-3 bg-gray-200 rounded w-24 mb-1"></div>
-                        <div className="h-2 bg-gray-200 rounded w-16"></div>
-                      </div>
-                      <div className="h-6 w-16 bg-green-100 rounded-full"></div>
-                    </div>
-                  ))}
+
+                <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-700 flex items-center gap-1.5">
+                      <GitBranch className="h-3.5 w-3.5 text-purple-600" />
+                      GitHub Webhook Sync
+                    </span>
+                    <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-mono">TSK26070010</span>
+                  </div>
+                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-1">
+                    <span className="text-[10px] font-mono text-indigo-600 font-bold">feature/TSK26070010-auth</span>
+                    <p className="text-xs font-bold text-slate-800">Implement OAuth Backend Flows</p>
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-32 bg-muted/30">
+      {/* Feature Grid */}
+      <section id="features" className="relative z-10 py-24 bg-slate-50/70 border-t border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-20 text-balance">
-            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight">
-              Everything you need to manage your workforce
+          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">Complete Feature Suite</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              Engineered for Modern Enterprise Teams
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              From attendance tracking with geo-fencing to payroll processing, 
-              we have got all your HR needs covered in one elegant platform.
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              Explore all features implemented inside NexusHR — built to integrate project management, 
+              developer GitHub automation, attendance tracking, payroll, and HR operations into one portal.
             </p>
           </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
+            {coreFeatures.map((feat, idx) => (
               <div 
-                key={index}
-                className="group relative bg-card rounded-3xl p-8 border border-border hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300"
+                key={idx} 
+                className="bg-white border border-slate-200 hover:border-indigo-400 p-6 rounded-3xl space-y-4 hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
               >
-                <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
-                  {feature.icon}
+                <div className="flex items-center justify-between">
+                  <div className={`p-3 rounded-2xl border ${feat.bg} group-hover:scale-105 transition-transform`}>
+                    {feat.icon}
+                  </div>
+                  <span className="text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-1 rounded-full uppercase">
+                    {feat.badge}
+                  </span>
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">{feat.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{feat.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* GitHub Integration */}
+      <section id="github-integration" className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-indigo-50/60 border border-indigo-100 rounded-3xl p-8 sm:p-12 shadow-sm grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 border border-purple-200 text-purple-800 rounded-full text-xs font-bold uppercase">
+                <GitBranch className="h-3.5 w-3.5 text-purple-600" />
+                Developer Webhook Sync
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                Automatic GitHub Branch to PMS Ticket Update
+              </h2>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Connect PMS projects to GitHub repositories. Pushing a branch containing a ticket number 
+                (e.g., <code className="text-purple-700 bg-purple-100/80 px-1.5 py-0.5 rounded font-mono">feature/TSK26070010-auth</code>) 
+                automatically shifts ticket status on your sprint board to <strong className="text-amber-700">In Progress</strong>.
+              </p>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 font-mono text-xs text-slate-700 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-slate-400 text-[11px]">
+                <span>github-webhook.json</span>
+                <span className="text-emerald-600 font-bold">200 OK</span>
+              </div>
+              <div className="space-y-1.5 text-[11px]">
+                <p><span className="text-purple-600 font-bold">"ref"</span>: <span className="text-emerald-700 font-semibold">"refs/heads/feature/TSK26070010-auth"</span>,</p>
+                <p className="text-amber-700 font-bold pt-2 border-t border-slate-100">
+                  ⚡ Auto-shifted TSK26070010 status → "IN_PROGRESS"
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className="py-20">
+      <section id="how-it-works" className="relative z-10 py-24 bg-slate-50/70 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Get started in minutes
-            </h2>
-            <p className="text-lg text-gray-600">
-              Simple 4-step process to set up your company and start managing your team.
-            </p>
+          <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">Simple Onboarding</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Get Started in 4 Steps</h2>
           </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <div key={index} className="relative">
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center h-16 w-16 bg-blue-600 text-white text-2xl font-bold rounded-full mb-4">
-                    {step.number}
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
-                  <p className="text-gray-600 text-sm">{step.description}</p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-blue-100">
-                    <ArrowRight className="absolute right-0 -top-2 h-4 w-4 text-blue-300" />
-                  </div>
-                )}
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {steps.map((st, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
+                <span className="text-4xl font-black text-indigo-200">{st.number}</span>
+                <h3 className="text-lg font-bold text-slate-900">{st.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{st.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Company Login Section */}
-      <section className="py-16 bg-gray-50 border-y border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              Employee Login
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Enter your company code to access your company&apos;s login page
-            </p>
-            <form onSubmit={handleCompanyLogin} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="text"
-                value={companyCode}
-                onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
-                placeholder="Enter company code (e.g., WEBATLAS)"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                required
-              />
-              <Button type="submit" className="px-6">
-                Go to Login
-              </Button>
-            </form>
-            <p className="text-sm text-gray-500 mt-4">
-              Or access directly: <code className="bg-gray-200 px-2 py-1 rounded">yourdomain.com/YOURCODE</code>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Ready to modernize your HR operations?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of companies already using HRM Pro to manage their workforce efficiently.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                Register Your Company Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600">
-                Existing User? Sign In
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-white">HRM Pro</span>
-              </div>
-              <p className="text-sm">Modern HR management solution for Indian businesses.</p>
+      <footer className="relative z-10 border-t border-slate-200 py-12 bg-white text-slate-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">
+              NX
             </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
-              </ul>
-            </div>
+            <span className="text-sm font-bold text-slate-900">NexusHR Enterprise System</span>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            © 2024 HRM Pro. All rights reserved.
+          <p className="text-xs text-slate-500">© 2026 NexusHR. All rights reserved.</p>
+          <div className="flex gap-4 text-xs font-semibold text-slate-600">
+            <Link href="/login" className="hover:text-slate-900">Sign In</Link>
+            <Link href="/register" className="hover:text-slate-900">Register</Link>
           </div>
         </div>
       </footer>

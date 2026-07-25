@@ -33,9 +33,17 @@ const LiveLocationMap = dynamic(() => import("../../../components/dashboard/Live
    return `${h}:${String(minutes).padStart(2, '0')} ${ampm}`;
  };
 
+import WelcomeBriefingModal from "../../../components/WelcomeBriefingModal";
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
+
+  const [showWelcomeBriefing, setShowWelcomeBriefing] = useState<boolean>(false);
+
+  const handleCloseWelcomeBriefing = () => {
+    setShowWelcomeBriefing(false);
+  };
 
   const [activeShift, setActiveShift] = useState<{ start: Date; mode: string } | null>(null);
   const [workMode, setWorkMode] = useState<'office' | 'wfh'>('office');
@@ -1258,6 +1266,16 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showWelcomeBriefing && user && (
+        <WelcomeBriefingModal
+          userName={user.name || "User"}
+          assignedTaskCount={dashboardData?.assignedTasksCount || 3}
+          unreadNoticeCount={notices?.length || 2}
+          shiftStatusStr={activeShift ? "Shift Active" : "Shift Not Started"}
+          onClose={handleCloseWelcomeBriefing}
+        />
       )}
     </div>
   );

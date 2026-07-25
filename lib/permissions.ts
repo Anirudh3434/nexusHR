@@ -256,6 +256,7 @@ export function isRouteAccessible(role: Role, route: string): boolean {
     // Employee self-service routes
     "/profile": "employees",
     "/my-attendance": "attendance",
+    "/today-tasks": "attendance",
     "/my-leaves": "leave",
     "/my-tickets": "tickets",
     "/my-resignation": "resignations",
