@@ -10,11 +10,15 @@ export interface UploadResult {
   height: number;
 }
 
-export const uploadImage = async (file: File, folder: string = 'hrm'): Promise<UploadResult> => {
+export const uploadImage = async (file: File, folder?: string): Promise<UploadResult> => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', UPLOAD_PRESET);
-  formData.append('folder', folder);
+  
+  // Only add folder if provided - some presets may not support folder parameter
+  if (folder) {
+    formData.append('folder', folder);
+  }
   
   // Debug: log formData entries
   const entries: string[] = [];
@@ -32,7 +36,7 @@ export const uploadImage = async (file: File, folder: string = 'hrm'): Promise<U
   if (!response.ok) {
     const error = await response.json();
     console.error('Cloudinary error:', error);
-    throw new Error(error.error?.message || 'Upload failed');
+    throw new Error(error.error?.message || error.message || 'Upload failed');
   }
 
   return response.json();

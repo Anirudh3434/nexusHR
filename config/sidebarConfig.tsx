@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Building, Users, ShieldAlert, FileBarChart2, Settings,
   UserSquare2, CalendarClock, CircleDollarSign, ActivitySquare, ShieldCheck, 
-  UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare
+  UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare, CheckSquare
 } from "lucide-react";
 import React from "react";
 
@@ -59,6 +59,7 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
       icon: <CalendarClock size={20} />,
       items: [
         { name: "Attendance", href: "/attendance", icon: <CalendarClock size={20} /> },
+        { name: "Today Task & EOD", href: "/today-tasks", icon: <CheckSquare size={20} /> },
         { name: "Overtime Mgmt", href: "/overtime", icon: <Clock size={20} /> },
         { name: "Leave Mgmt", href: "/leaves", icon: <FileClock size={20} /> },
         { name: "Leave Types", href: "/leave-types", icon: <Palmtree size={20} /> },
@@ -180,6 +181,7 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { name: "My Profile", href: "/profile", icon: <UserSquare2 size={20} /> },
     { name: "My Attendance", href: "/my-attendance", icon: <CalendarClock size={20} /> },
+    { name: "Today Task & EOD", href: "/today-tasks", icon: <CheckSquare size={20} /> },
     { name: "My Leaves", href: "/my-leaves", icon: <FileClock size={20} /> },
     { name: "My Tickets", href: "/my-tickets", icon: <Ticket size={20} /> },
     { name: "My Surveys", href: "/my-surveys", icon: <FileText size={20} /> },
