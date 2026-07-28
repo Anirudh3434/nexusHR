@@ -30,7 +30,10 @@ export type Module =
   | "project_notes"
   | "project_credentials"
   | "project_resources"
-  | "project_onboarding";
+  | "project_onboarding"
+  | "hr_knowledge_base"
+  | "retention_analytics"
+  | "reports_analytics";
 
 // Permission matrix: role -> module -> permissions
 const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
@@ -62,6 +65,9 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     project_credentials: ["view", "create", "edit", "delete", "manage"],
     project_resources: ["view", "create", "edit", "delete", "manage"],
     project_onboarding: ["view", "create", "edit", "delete", "manage"],
+    hr_knowledge_base: ["view", "create", "edit", "delete", "manage"],
+    retention_analytics: ["view", "manage"],
+    reports_analytics: ["view", "create", "edit", "delete", "manage"],
   },
   admin: {
     dashboard: ["view", "manage"],
@@ -91,6 +97,9 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     project_credentials: ["view", "create", "edit", "delete", "manage"],
     project_resources: ["view", "create", "edit", "delete", "manage"],
     project_onboarding: ["view", "create", "edit", "delete", "manage"],
+    hr_knowledge_base: ["view", "create", "edit", "delete", "manage"],
+    retention_analytics: ["view", "manage"],
+    reports_analytics: ["view", "create", "edit", "delete", "manage"],
   },
   hr: {
     dashboard: ["view"],
@@ -120,6 +129,9 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     project_credentials: ["view", "create", "edit", "delete", "manage"],
     project_resources: ["view", "create", "edit", "delete", "manage"],
     project_onboarding: ["view", "create", "edit", "delete", "manage"],
+    hr_knowledge_base: ["view", "create", "edit", "delete", "manage"],
+    retention_analytics: ["view", "manage"],
+    reports_analytics: ["view", "create", "edit", "delete", "manage"],
   },
   manager: {
     dashboard: ["view"],
@@ -149,6 +161,9 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     project_credentials: ["view", "create", "edit", "delete", "manage"],
     project_resources: ["view", "create", "edit", "delete", "manage"],
     project_onboarding: ["view", "create", "edit", "delete", "manage"],
+    hr_knowledge_base: [],
+    retention_analytics: [],
+    reports_analytics: [],
   },
   employee: {
     dashboard: ["view"],
@@ -178,6 +193,9 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     project_credentials: [],
     project_resources: ["view"],
     project_onboarding: ["view"],
+    hr_knowledge_base: [],
+    retention_analytics: [],
+    reports_analytics: [],
   },
 };
 
@@ -275,6 +293,10 @@ export function isRouteAccessible(role: Role, route: string): boolean {
     "/my-tasks": "tasks",
     // Project Docs routes
     "/projects/[id]/docs": "project_documents",
+    // AI & Analytics routes
+    "/hr-knowledge-base": "hr_knowledge_base",
+    "/retention-analytics": "retention_analytics",
+    "/reports-analytics": "reports_analytics",
   };
 
   // Find matching module

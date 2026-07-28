@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Building, Users, ShieldAlert, FileBarChart2, Settings,
   UserSquare2, CalendarClock, CircleDollarSign, ActivitySquare, ShieldCheck, 
-  UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare, CheckSquare
+  UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare, CheckSquare, Brain, TrendingUp, BarChart
 } from "lucide-react";
 import React from "react";
 
@@ -98,6 +98,15 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
         { name: "Settings", href: "/settings", icon: <Settings size={20} /> },
       ]
     },
+    {
+      name: "AI & Analytics",
+      icon: <Brain size={20} />,
+      items: [
+        { name: "HR Knowledge Base", href: "/hr-knowledge-base", icon: <FileText size={20} /> },
+        { name: "Retention Analytics", href: "/retention-analytics", icon: <TrendingUp size={20} /> },
+        { name: "Reports Analytics", href: "/reports-analytics", icon: <BarChart size={20} /> },
+      ]
+    },
   ],
   manager: [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
@@ -174,6 +183,15 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
       items: [
         { name: "Performance AI", href: "/reports/performance", icon: <Sparkles size={20} /> },
         { name: "Payroll (View)", href: "/payroll", icon: <Search size={20} /> },
+      ]
+    },
+    {
+      name: "AI & Analytics",
+      icon: <Brain size={20} />,
+      items: [
+        { name: "HR Knowledge Base", href: "/hr-knowledge-base", icon: <FileText size={20} /> },
+        { name: "Retention Analytics", href: "/retention-analytics", icon: <TrendingUp size={20} /> },
+        { name: "Reports Analytics", href: "/reports-analytics", icon: <BarChart size={20} /> },
       ]
     },
   ],
