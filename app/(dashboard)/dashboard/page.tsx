@@ -34,6 +34,7 @@ const LiveLocationMap = dynamic(() => import("../../../components/dashboard/Live
  };
 
 import WelcomeBriefingModal from "../../../components/WelcomeBriefingModal";
+import HRChatbot from "../../../components/ai/HRChatbot";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -1277,6 +1278,8 @@ export default function DashboardPage() {
           onClose={handleCloseWelcomeBriefing}
         />
       )}
+
+      <HRChatbot />
     </div>
   );
 }

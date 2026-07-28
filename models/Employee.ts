@@ -64,6 +64,31 @@ const EmployeeSchema = new Schema({
     enum: ['Active', 'Resigned', 'Terminated', 'On Leave'],
     default: 'Active',
   },
+  // Retention prediction fields
+  retentionRiskScore: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: null,
+  },
+  retentionRiskFactors: [{
+    factor: {
+      type: String,
+      enum: ['attendance', 'performance', 'engagement', 'tenure', 'compensation', 'workload', 'manager_relationship'],
+    },
+    impact: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
+    trend: {
+      type: String,
+      enum: ['improving', 'stable', 'declining'],
+    },
+  }],
+  lastRiskAssessment: {
+    type: Date,
+  },
 }, {
   timestamps: true,
 });
