@@ -239,7 +239,7 @@ export default function LandingPage() {
       bg: "bg-amber-50 border-amber-100",
       title: "AI Voice Executive Briefings",
       badge: "Smart AI Voice",
-      description: "Interactive voice summaries (Amitabh Bachchan KBC Baritone & Indian female voices) with ambient Web Audio synth background."
+      description: "Interactive voice summaries with natural deep-baritone and Indian female voices, plus an ambient Web Audio synth background."
     },
     {
       icon: <UserPlus className="h-6 w-6 text-sky-600" />,
