@@ -95,6 +95,11 @@ const UserSchema = new Schema({
     type: Boolean,
     default: true,
   },
+  // Temporary/temp-created portal accounts must set their own password at first login
+  mustChangePassword: {
+    type: Boolean,
+    default: false,
+  },
   // Geo-fencing exemptions
   isGeoFencingExempt: {
     type: Boolean,

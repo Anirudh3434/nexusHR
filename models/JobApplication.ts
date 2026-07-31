@@ -164,6 +164,44 @@ const JobApplicationSchema = new Schema({
     enum: ['email', 'website', 'referral', 'job_board'],
     default: 'email',
   },
+  // Interview rounds tracked during the hiring pipeline
+  interviewRounds: [{
+    _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
+    name: { type: String, default: '' },
+    type: {
+      type: String,
+      enum: ['telephonic', 'technical', 'managerial', 'hr', 'assignment', 'other'],
+      default: 'technical',
+    },
+    scheduledDate: { type: Date },
+    status: {
+      type: String,
+      enum: ['scheduled', 'completed', 'cancelled'],
+      default: 'scheduled',
+    },
+    result: {
+      type: String,
+      enum: ['pending', 'cleared', 'failed', 'on_hold'],
+      default: 'pending',
+    },
+    feedback: { type: String, default: '' },
+    // When the round result was decided (i.e. when it was "selected"/cleared)
+    decidedAt: { type: Date },
+    decidedBy: {
+      _id: String,
+      name: String,
+    },
+  }],
+  // Link to the onboarding record + temporary portal account created on hire
+  onboardingId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Onboarding',
+    default: null,
+  },
+  portalAccessSentAt: {
+    type: Date,
+    default: null,
+  },
 }, {
   timestamps: true,
 });

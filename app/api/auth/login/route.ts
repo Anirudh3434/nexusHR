@@ -49,6 +49,7 @@ export async function POST(req: Request) {
       workShiftId: user.workShiftId?.toString(),
       salary: user.salary,
       employeeId: user.employeeId,
+      mustChangePassword: !!user.mustChangePassword,
     };
 
     return NextResponse.json({

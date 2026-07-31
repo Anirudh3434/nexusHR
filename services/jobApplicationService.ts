@@ -49,6 +49,19 @@ export interface JobApplication {
   isStarred: boolean;
   autoReplySent: boolean;
   source: 'email' | 'website' | 'referral' | 'job_board';
+  interviewRounds?: Array<{
+    _id: string;
+    name?: string;
+    type?: string;
+    scheduledDate?: string;
+    status?: string;
+    result?: string;
+    feedback?: string;
+    decidedAt?: string;
+    decidedBy?: { _id?: string; name?: string };
+  }>;
+  onboardingId?: string;
+  portalAccessSentAt?: string;
   createdAt: string;
   updatedAt: string;
 }

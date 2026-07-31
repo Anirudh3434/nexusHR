@@ -16,14 +16,16 @@ interface User {
   workShiftId?: string;
   salary?: number;
   employeeId?: string;
+  mustChangePassword?: boolean;
 }
 
 interface AuthContextProps {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
   logout: () => void;
   hasRole: (roles: Role[]) => boolean;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -49,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> => {
     setLoading(true);
     try {
       const response = await fetch('/api/auth/login', {
@@ -74,12 +76,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         document.cookie = `token=${data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
       }
       
-      return { success: true };
+      return { success: true, user: data.user };
     } catch (error) {
       return { success: false, error: 'Network error. Please try again.' };
     } finally {
       setLoading(false);
     }
+  };
+
+  // Persist an updated user object (e.g. after changing password clears the flag)
+  const updateUser = (updated: User) => {
+    setUser(updated);
+    localStorage.setItem("user", JSON.stringify(updated));
+    document.cookie = `user=${encodeURIComponent(JSON.stringify(updated))}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
   };
 
   const logout = () => {
@@ -98,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, hasRole, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

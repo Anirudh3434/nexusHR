@@ -53,6 +53,13 @@ export default function RecruitmentInboxPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [hasEmailConfig, setHasEmailConfig] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+  const [credentialsResult, setCredentialsResult] = useState<{
+    email: string;
+    password: string | null;
+    emailSent: boolean;
+    emailError?: string;
+    action: string;
+  } | null>(null);
 
   const canManage = hasRole(["admin", "hr"]);
 
@@ -231,12 +238,31 @@ export default function RecruitmentInboxPage() {
     if (!selectedApp) return;
     
     try {
-      await updateApplicationStatus(selectedApp._id, status);
+      const result = await updateApplicationStatus(selectedApp._id, status) as any;
       setApplications(prev => prev.map(a => 
-        a._id === selectedApp._id ? { ...a, status } : a
+        a._id === selectedApp._id ? { ...a, status, portalAccessSentAt: result.portalAccessSentAt || a.portalAccessSentAt } : a
       ));
-      setSelectedApp({ ...selectedApp, status });
+      setSelectedApp({ ...selectedApp, status, portalAccessSentAt: result.portalAccessSentAt || selectedApp.portalAccessSentAt });
       addToast({ type: "success", title: "Status Updated" });
+
+      if (result.portal?.password) {
+        setCredentialsResult({
+          email: result.fromEmail || '',
+          password: result.portal.password,
+          emailSent: result.portal.email?.ok === true,
+          emailError: result.portal.email?.error,
+          action: 'portal',
+        });
+      }
+      if (result.hired) {
+        setCredentialsResult({
+          email: result.fromEmail || '',
+          password: result.hired.password,
+          emailSent: result.hired.email?.ok === true,
+          emailError: result.hired.email?.error,
+          action: 'hire',
+        });
+      }
     } catch (error) {
       addToast({ type: "error", title: "Error", description: "Failed to update status" });
     }
@@ -515,6 +541,67 @@ export default function RecruitmentInboxPage() {
           </Card>
         )}
       </div>
+
+      {/* Credentials Result Modal */}
+      {credentialsResult && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>
+                  {credentialsResult.action === 'portal' ? 'Portal Access Granted' : 'Candidate Hired'}
+                </span>
+                <Button variant="ghost" size="sm" onClick={() => setCredentialsResult(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Share these credentials with <strong>{credentialsResult.email}</strong>. They log in at the company login page with their email + this password.
+              </p>
+              {credentialsResult.password ? (
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-blue-700 uppercase">Temporary Password</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(credentialsResult.password || '');
+                          addToast({ type: "success", title: "Copied", description: "Password copied to clipboard" });
+                        } catch {
+                          addToast({ type: "error", title: "Error", description: "Could not copy password" });
+                        }
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  <p className="mt-1 select-all font-mono text-lg font-semibold text-gray-900">{credentialsResult.password}</p>
+                  <p className="mt-1 text-xs text-gray-500">Save this now — it is only shown once.</p>
+                </div>
+              ) : (
+                <p className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+                  The candidate already had an account, so no new password was generated.
+                </p>
+              )}
+              <div className={`rounded-md p-3 text-sm ${credentialsResult.emailSent ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {credentialsResult.emailSent ? (
+                  <>Email sent successfully to {credentialsResult.email}.</>
+                ) : (
+                  <>Email could not be sent: {credentialsResult.emailError || 'Unknown error'}. Use the temporary password above to share access manually.</>
+                )}
+              </div>
+              <Button className="w-full" onClick={() => setCredentialsResult(null)}>
+                Done
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

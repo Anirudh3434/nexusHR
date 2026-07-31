@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, useMotionValue, useSpring, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { 
   Building2, Users, Clock, Calendar, CreditCard, ShieldCheck, 
@@ -11,10 +12,191 @@ import {
   Sparkles, Mic, Zap, Layers, Lock, Shield, CheckCircle2
 } from "lucide-react";
 
+function TiltCard({ children, className = "", style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0.5);
+  const y = useMotionValue(0.5);
+  const rotateX = useSpring(useTransform(y, [0, 1], [8, -8]), { stiffness: 200, damping: 20 });
+  const rotateY = useSpring(useTransform(x, [0, 1], [-8, 8]), { stiffness: 200, damping: 20 });
+
+  const handleMouse = useCallback((e: React.MouseEvent) => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
+    x.set((e.clientX - rect.left) / rect.width);
+    y.set((e.clientY - rect.top) / rect.height);
+  }, [x, y]);
+
+  const handleLeave = useCallback(() => {
+    x.set(0.5);
+    y.set(0.5);
+  }, [x, y]);
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={handleLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d", ...style }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function FloatingShape({ className, delay = 0 }: { className: string; delay?: number }) {
+  return (
+    <motion.div
+      className={`absolute rounded-full mix-blend-multiply pointer-events-none ${className}`}
+      animate={{
+        y: [0, -30, 0],
+        x: [0, 15, 0],
+        scale: [1, 1.08, 1],
+      }}
+      transition={{
+        duration: 8 + delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay,
+      }}
+    />
+  );
+}
+
+function FloatingParticles() {
+  const [particles, setParticles] = useState<{ id: number; x: number; y: number; size: number; delay: number; duration: number; opacity: number }[]>([]);
+
+  useEffect(() => {
+    const p = Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 2 + Math.random() * 4,
+      delay: Math.random() * 5,
+      duration: 10 + Math.random() * 20,
+      opacity: 0.1 + Math.random() * 0.2,
+    }));
+    setParticles(p);
+  }, []);
+
+  if (particles.length === 0) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-indigo-400"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            opacity: p.opacity,
+          }}
+          animate={{
+            y: [0, -60, 0],
+            x: [0, 30, 0],
+            opacity: [p.opacity, p.opacity * 2, p.opacity],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: p.delay,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] } }
+};
+
+const FeatureCard = ({ icon, bg, title, badge, description, index }: {
+  icon: React.ReactNode;
+  bg: string;
+  title: string;
+  badge: string;
+  description: string;
+  index: number;
+}) => (
+  <motion.div
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true, margin: "-100px" }}
+    variants={itemVariants}
+    whileHover={{ y: -6, scale: 1.02 }}
+    style={{ transformStyle: "preserve-3d", perspective: 800 }}
+    className="bg-white/70 border border-slate-200/80 hover:border-indigo-400/50 p-6 rounded-3xl space-y-4 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 group backdrop-blur-sm"
+  >
+    <div className="flex items-center justify-between">
+      <motion.div
+        className={`p-3 rounded-2xl border ${bg} group-hover:scale-110 transition-transform duration-300`}
+        whileHover={{ scale: 1.1, rotate: 3 }}
+        transition={{ duration: 0.3 }}
+      >
+        {icon}
+      </motion.div>
+      <span className="text-[10px] font-bold bg-slate-100/80 border border-slate-200/80 text-slate-600 px-2.5 py-1 rounded-full uppercase backdrop-blur-sm">
+        {badge}
+      </span>
+    </div>
+    <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">{title}</h3>
+    <p className="text-xs text-slate-600 leading-relaxed">{description}</p>
+  </motion.div>
+);
+
+const StepCard = ({ number, title, description, index }: {
+  number: string;
+  title: string;
+  description: string;
+  index: number;
+}) => (
+  <motion.div
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true, margin: "-100px" }}
+    variants={itemVariants}
+    whileHover={{ y: -6, scale: 1.02 }}
+    style={{ transformStyle: "preserve-3d", perspective: 800 }}
+    className="bg-white/70 border border-slate-200/80 p-6 rounded-3xl space-y-4 shadow-sm backdrop-blur-sm relative overflow-hidden group"
+  >
+    <motion.span
+      className="text-4xl font-black text-indigo-200/80 block"
+      whileHover={{ scale: 1.15, x: 5 }}
+      transition={{ duration: 0.3 }}
+    >
+      {number}
+    </motion.span>
+    <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+    <p className="text-xs text-slate-600 leading-relaxed">{description}</p>
+    <motion.div
+      className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500"
+      initial={{ scaleX: 0 }}
+      animate={{ scaleX: 0 }}
+      whileHover={{ scaleX: 1 }}
+    />
+  </motion.div>
+);
+
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [companyCode, setCompanyCode] = useState("");
   const router = useRouter();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroParallaxY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const heroParallaxY2 = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const handleCompanyLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,22 +279,32 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-600 selection:text-white">
-      {/* Light Background Gradients */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-50/60 rounded-full blur-[140px]" />
-        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-50/60 rounded-full blur-[140px]" />
-      </div>
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-600 selection:text-white overflow-x-hidden">
+      <FloatingParticles />
+
+      {/* 3D Floating Shapes */}
+      <FloatingShape className="w-72 h-72 bg-gradient-to-br from-indigo-200/30 to-purple-200/30 top-[10%] left-[-5%] blur-3xl" delay={0} />
+      <FloatingShape className="w-96 h-96 bg-gradient-to-br from-purple-200/20 to-pink-200/20 top-[40%] right-[-8%] blur-3xl" delay={2} />
+      <FloatingShape className="w-64 h-64 bg-gradient-to-br from-blue-200/25 to-cyan-200/25 bottom-[15%] left-[20%] blur-3xl" delay={4} />
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 transition-all">
+      <motion.nav
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 transition-all"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="h-10 w-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform text-white">
+              <motion.div
+                whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+                transition={{ duration: 0.4 }}
+                className="h-10 w-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform text-white"
+              >
                 <Building2 className="h-5 w-5" />
-              </div>
+              </motion.div>
               <div className="flex flex-col">
                 <span className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-1.5">
                   Nexus<span className="text-indigo-600">HR</span>
@@ -155,8 +347,14 @@ export default function LandingPage() {
         </div>
 
         {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4 overflow-hidden"
+          >
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">Features</a>
             <a href="#github-integration" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">GitHub Sync</a>
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">Workflow</a>
@@ -168,33 +366,58 @@ export default function LandingPage() {
                 <Button className="w-full bg-indigo-600 text-white">Register Company</Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
         )}
-      </nav>
+        </AnimatePresence>
+      </motion.nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-36 pb-20 lg:pt-44 lg:pb-32 px-4 sm:px-6 lg:px-8">
+      <section ref={heroRef} className="relative z-10 pt-36 pb-20 lg:pt-44 lg:pb-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             
             {/* Hero Content */}
-            <div className="lg:col-span-7 space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200/80 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider">
+            <motion.div
+              style={{ y: heroParallaxY2, opacity: heroOpacity }}
+              className="lg:col-span-7 space-y-8"
+            >
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200/80 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider"
+              >
                 <Sparkles className="h-4 w-4 text-indigo-600" />
                 Enterprise HR & Project Management Platform
-              </div>
+              </motion.div>
 
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+                className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]"
+              >
                 Unified Platform for <span className="text-indigo-600">HR & Projects</span>
-              </h1>
+              </motion.h1>
 
-              <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+                className="text-lg text-slate-600 max-w-2xl leading-relaxed"
+              >
                 Connect your organization with Geo-Fenced GPS attendance, GitHub-integrated PMS sprint boards, 
                 employee Today Task & EOD reports, automated payroll, and AI voice executive briefings.
-              </p>
+              </motion.p>
 
               {/* Direct Company Code Access */}
-              <form onSubmit={handleCompanyLogin} className="flex flex-col sm:flex-row gap-3 max-w-lg bg-white border border-slate-200 p-2.5 rounded-2xl shadow-xl shadow-slate-200/60">
+              <motion.form
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+                onSubmit={handleCompanyLogin}
+                className="flex flex-col sm:flex-row gap-3 max-w-lg bg-white border border-slate-200 p-2.5 rounded-2xl shadow-xl shadow-slate-200/60"
+              >
                 <div className="relative flex-1">
                   <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -209,24 +432,44 @@ export default function LandingPage() {
                   Enter Portal
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
-              </form>
+              </motion.form>
 
-              <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-600 pt-2">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-600 pt-2"
+              >
                 <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Geo-Fence Attendance</span>
                 <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> GitHub Webhook Sync</span>
                 <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Today Task EOD Reports</span>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            {/* Hero Mock Preview Card */}
-            <div className="lg:col-span-5 relative group">
-              <div className="absolute inset-0 bg-indigo-500/10 rounded-3xl blur-2xl opacity-50 group-hover:opacity-70 transition-opacity" />
-              <div className="relative bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl shadow-slate-200/80 space-y-5">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            {/* Hero Mock Preview Card - 3D Tilt */}
+            <motion.div
+              style={{ y: heroParallaxY }}
+              className="lg:col-span-5 relative group"
+              initial={{ opacity: 0, x: 50, rotateY: 10 }}
+              animate={{ opacity: 1, x: 0, rotateY: 0 }}
+              transition={{ duration: 0.8, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/20 via-purple-400/10 to-pink-400/20 rounded-3xl blur-3xl opacity-50 group-hover:opacity-80 transition-opacity duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl blur-2xl group-hover:scale-105 transition-transform duration-700" />
+              
+              <TiltCard className="relative bg-white/90 border border-slate-200/80 rounded-3xl p-6 shadow-2xl shadow-slate-200/80 space-y-5 backdrop-blur-sm group-hover:shadow-indigo-500/20 transition-shadow duration-500" style={{ transformStyle: "preserve-3d" }}>
+                <motion.div
+                  style={{ transform: "translateZ(40px)" }}
+                  className="flex items-center justify-between border-b border-slate-100 pb-4"
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                    <motion.div
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                      className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-indigo-500/30"
+                    >
                       NX
-                    </div>
+                    </motion.div>
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm">NexusHR Enterprise</h4>
                       <p className="text-[10px] text-slate-400">Live Operations Portal</p>
@@ -235,22 +478,49 @@ export default function LandingPage() {
                   <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-[10px] font-bold uppercase">
                     Active System
                   </span>
-                </div>
+                </motion.div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl space-y-1">
+                <motion.div
+                  style={{ transform: "translateZ(60px)" }}
+                  className="grid grid-cols-2 gap-3"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    className="bg-white border border-slate-200/80 p-3.5 rounded-2xl space-y-1 shadow-sm"
+                  >
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Present Today</span>
-                    <p className="text-2xl font-black text-slate-900">148 / 152</p>
+                    <motion.p
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
+                      className="text-2xl font-black text-slate-900"
+                    >
+                      148 / 152
+                    </motion.p>
                     <span className="text-[9px] text-emerald-600 font-semibold">97.3% Geo-Verified</span>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl space-y-1">
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    className="bg-white border border-slate-200/80 p-3.5 rounded-2xl space-y-1 shadow-sm"
+                  >
                     <span className="text-[10px] text-slate-400 font-bold uppercase">EOD Reports</span>
-                    <p className="text-2xl font-black text-indigo-600">42 Submitted</p>
+                    <motion.p
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.9, type: "spring", stiffness: 200 }}
+                      className="text-2xl font-black text-indigo-600"
+                    >
+                      42 Submitted
+                    </motion.p>
                     <span className="text-[9px] text-indigo-500 font-semibold">Shift End Active</span>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
-                <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2.5">
+                <motion.div
+                  style={{ transform: "translateZ(80px)" }}
+                  whileHover={{ y: -2 }}
+                  className="bg-white border border-slate-200 p-4 rounded-2xl space-y-2.5 shadow-sm"
+                >
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span className="text-slate-700 flex items-center gap-1.5">
                       <GitBranch className="h-3.5 w-3.5 text-purple-600" />
@@ -258,13 +528,13 @@ export default function LandingPage() {
                     </span>
                     <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-mono">TSK26070010</span>
                   </div>
-                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-1">
+                  <div className="p-3 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border border-indigo-100/50 rounded-xl space-y-1">
                     <span className="text-[10px] font-mono text-indigo-600 font-bold">feature/TSK26070010-auth</span>
                     <p className="text-xs font-bold text-slate-800">Implement OAuth Backend Flows</p>
                   </div>
-                </div>
-              </div>
-            </div>
+                </motion.div>
+              </TiltCard>
+            </motion.div>
 
           </div>
         </div>
@@ -273,34 +543,34 @@ export default function LandingPage() {
       {/* Feature Grid */}
       <section id="features" className="relative z-10 py-24 bg-slate-50/70 border-t border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">Complete Feature Suite</span>
-            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={containerVariants}
+            className="text-center max-w-3xl mx-auto space-y-4 mb-16"
+          >
+            <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-indigo-600">Complete Feature Suite</motion.span>
+            <motion.h2 variants={itemVariants} className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
               Engineered for Modern Enterprise Teams
-            </h2>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            </motion.h2>
+            <motion.p variants={itemVariants} className="text-slate-600 text-sm sm:text-base leading-relaxed">
               Explore all features implemented inside NexusHR — built to integrate project management, 
               developer GitHub automation, attendance tracking, payroll, and HR operations into one portal.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {coreFeatures.map((feat, idx) => (
-              <div 
+              <FeatureCard 
                 key={idx} 
-                className="bg-white border border-slate-200 hover:border-indigo-400 p-6 rounded-3xl space-y-4 hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <div className={`p-3 rounded-2xl border ${feat.bg} group-hover:scale-105 transition-transform`}>
-                    {feat.icon}
-                  </div>
-                  <span className="text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-1 rounded-full uppercase">
-                    {feat.badge}
-                  </span>
-                </div>
-                <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">{feat.title}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">{feat.description}</p>
-              </div>
+                icon={feat.icon} 
+                bg={feat.bg} 
+                title={feat.title} 
+                badge={feat.badge} 
+                description={feat.description} 
+                index={idx}
+              />
             ))}
           </div>
         </div>
@@ -309,8 +579,14 @@ export default function LandingPage() {
       {/* GitHub Integration */}
       <section id="github-integration" className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-indigo-50/60 border border-indigo-100 rounded-3xl p-8 sm:p-12 shadow-sm grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={containerVariants}
+            className="bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/80 border border-indigo-100/80 rounded-3xl p-8 sm:p-12 shadow-sm grid lg:grid-cols-2 gap-12 items-center"
+          >
+            <motion.div variants={itemVariants} className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 border border-purple-200 text-purple-800 rounded-full text-xs font-bold uppercase">
                 <GitBranch className="h-3.5 w-3.5 text-purple-600" />
                 Developer Webhook Sync
@@ -323,51 +599,82 @@ export default function LandingPage() {
                 (e.g., <code className="text-purple-700 bg-purple-100/80 px-1.5 py-0.5 rounded font-mono">feature/TSK26070010-auth</code>) 
                 automatically shifts ticket status on your sprint board to <strong className="text-amber-700">In Progress</strong>.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 font-mono text-xs text-slate-700 space-y-3 shadow-sm">
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -4 }}
+              className="bg-white/90 border border-slate-200/80 rounded-2xl p-5 font-mono text-xs text-slate-700 space-y-3 shadow-sm backdrop-blur-sm"
+            >
               <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-slate-400 text-[11px]">
                 <span>github-webhook.json</span>
-                <span className="text-emerald-600 font-bold">200 OK</span>
+                <motion.span
+                  animate={{ opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-emerald-600 font-bold"
+                >
+                  200 OK
+                </motion.span>
               </div>
               <div className="space-y-1.5 text-[11px]">
                 <p><span className="text-purple-600 font-bold">"ref"</span>: <span className="text-emerald-700 font-semibold">"refs/heads/feature/TSK26070010-auth"</span>,</p>
-                <p className="text-amber-700 font-bold pt-2 border-t border-slate-100">
+                <motion.p
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-amber-700 font-bold pt-2 border-t border-slate-100"
+                >
                   ⚡ Auto-shifted TSK26070010 status → "IN_PROGRESS"
-                </p>
+                </motion.p>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* How it Works */}
       <section id="how-it-works" className="relative z-10 py-24 bg-slate-50/70 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-indigo-600">Simple Onboarding</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Get Started in 4 Steps</h2>
-          </div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={containerVariants}
+            className="text-center max-w-2xl mx-auto space-y-4 mb-16"
+          >
+            <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-indigo-600">Simple Onboarding</motion.span>
+            <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Get Started in 4 Steps</motion.h2>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((st, idx) => (
-              <div key={idx} className="bg-white border border-slate-200 p-6 rounded-3xl space-y-4 shadow-sm">
-                <span className="text-4xl font-black text-indigo-200">{st.number}</span>
-                <h3 className="text-lg font-bold text-slate-900">{st.title}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">{st.description}</p>
-              </div>
+            {steps.map((step, idx) => (
+              <StepCard 
+                key={idx} 
+                number={step.number} 
+                title={step.title} 
+                description={step.description} 
+                index={idx}
+              />
             ))}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-slate-200 py-12 bg-white text-slate-600">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="relative z-10 border-t border-slate-200 py-12 bg-white text-slate-600"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">
+            <motion.div
+              whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+              transition={{ duration: 0.4 }}
+              className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xs"
+            >
               NX
-            </div>
+            </motion.div>
             <span className="text-sm font-bold text-slate-900">NexusHR Enterprise System</span>
           </div>
           <p className="text-xs text-slate-500">© 2026 NexusHR. All rights reserved.</p>
@@ -376,7 +683,7 @@ export default function LandingPage() {
             <Link href="/register" className="hover:text-slate-900">Register</Link>
           </div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
