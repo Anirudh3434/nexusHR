@@ -17,6 +17,7 @@ export function middleware(request: NextRequest) {
         requestHeaders.set('x-user-id', user.id || '')
         requestHeaders.set('x-user-role', user.role || 'employee')
         requestHeaders.set('x-user-name', user.name || '')
+        requestHeaders.set('x-user-email', user.email || '')
         requestHeaders.set('x-company-id', user.companyId || '')
         
         return NextResponse.next({
@@ -38,7 +39,12 @@ export function middleware(request: NextRequest) {
     try {
       const user = JSON.parse(userCookie)
       const role = user.role || 'employee'
-      
+
+      // Temporary portal accounts must set their own password before using the app
+      if (user.mustChangePassword && pathname !== '/change-password' && !pathname.startsWith('/api')) {
+        return NextResponse.redirect(new URL('/change-password', request.url))
+      }
+
       // Check route access permissions
       if (!isRouteAccessible(role, pathname)) {
         // Redirect to dashboard if not authorized

@@ -33,7 +33,8 @@ export type Module =
   | "project_onboarding"
   | "hr_knowledge_base"
   | "retention_analytics"
-  | "reports_analytics";
+  | "reports_analytics"
+  | "onboarding";
 
 // Permission matrix: role -> module -> permissions
 const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
@@ -68,6 +69,7 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     hr_knowledge_base: ["view", "create", "edit", "delete", "manage"],
     retention_analytics: ["view", "manage"],
     reports_analytics: ["view", "create", "edit", "delete", "manage"],
+    onboarding: ["view", "create", "edit", "delete", "manage"],
   },
   admin: {
     dashboard: ["view", "manage"],
@@ -100,6 +102,7 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     hr_knowledge_base: ["view", "create", "edit", "delete", "manage"],
     retention_analytics: ["view", "manage"],
     reports_analytics: ["view", "create", "edit", "delete", "manage"],
+    onboarding: ["view", "create", "edit", "delete", "manage"],
   },
   hr: {
     dashboard: ["view"],
@@ -132,6 +135,7 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     hr_knowledge_base: ["view", "create", "edit", "delete", "manage"],
     retention_analytics: ["view", "manage"],
     reports_analytics: ["view", "create", "edit", "delete", "manage"],
+    onboarding: ["view", "create", "edit", "delete", "manage"],
   },
   manager: {
     dashboard: ["view"],
@@ -164,6 +168,7 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     hr_knowledge_base: [],
     retention_analytics: [],
     reports_analytics: [],
+    onboarding: ["view"],
   },
   employee: {
     dashboard: ["view"],
@@ -196,6 +201,7 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     hr_knowledge_base: [],
     retention_analytics: [],
     reports_analytics: [],
+    onboarding: ["view"],
   },
 };
 
@@ -297,6 +303,11 @@ export function isRouteAccessible(role: Role, route: string): boolean {
     "/hr-knowledge-base": "hr_knowledge_base",
     "/retention-analytics": "retention_analytics",
     "/reports-analytics": "reports_analytics",
+    // Employee onboarding routes
+    "/onboarding": "onboarding",
+    "/my-onboarding": "onboarding",
+    "/my-application": "onboarding",
+    "/change-password": "onboarding",
   };
 
   // Find matching module

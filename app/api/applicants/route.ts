@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import JobApplication from '@/models/JobApplication';
+import { grantPortalAccess, hireCandidate } from '@/lib/hireService';
 
 // GET applicants (all applications with Job ID - both website and email)
 export async function GET(req: Request) {
@@ -47,7 +49,7 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    const { id, status, rejectionReason } = await req.json();
+    const { id, status, rejectionReason, joiningDate, ctc, position, department, employmentType } = await req.json();
 
     if (!id || !status) {
       return NextResponse.json({ message: 'ID and status required' }, { status: 400 });
@@ -66,6 +68,70 @@ export async function PATCH(req: Request) {
 
     if (!application) {
       return NextResponse.json({ message: 'Application not found' }, { status: 404 });
+    }
+
+    const headersList = await headers();
+    const companyId = headersList.get('x-company-id');
+    const origin = req.headers.get('origin') || `http://${req.headers.get('host') || 'localhost:3000'}`;
+    const actor = {
+      _id: headersList.get('x-user-id') || '',
+      name: headersList.get('x-user-name') || 'HR',
+      email: headersList.get('x-user-email') || '',
+    };
+
+    // Auto-grant portal access: when an applicant is considered/shortlisted, create
+    // their temporary account + email credentials so they can track the pipeline.
+    if (['considered', 'shortlisted'].includes(status) && companyId) {
+      try {
+        const portal = await grantPortalAccess({ companyId, actor, applicationId: id, origin });
+        return NextResponse.json({
+          ...application.toObject(),
+          portal: {
+            password: portal.password,
+            email: portal.email,
+            accountCreated: portal.accountCreated,
+            alreadyHasAccess: portal.alreadyHasAccess,
+          },
+        });
+      } catch (error: any) {
+        return NextResponse.json({
+          ...application.toObject(),
+          message: 'Applicant considered, but portal access setup failed',
+          error: error.message,
+        }, { status: 200 });
+      }
+    }
+
+    // Auto-hire: when an applicant is marked hired, create the portal account +
+    // onboarding and email their credentials immediately.
+    if (status === 'hired' && companyId) {
+      try {
+        const hireResult = await hireCandidate({
+          companyId,
+          actor,
+          applicationId: id,
+          joiningDate,
+          ctc,
+          position,
+          department,
+          employmentType,
+          origin,
+        });
+        return NextResponse.json({
+          ...hireResult.application.toObject(),
+          hired: {
+            password: hireResult.password,
+            email: hireResult.email,
+            onboardingId: hireResult.onboarding._id,
+            accountCreated: hireResult.accountCreated,
+          },
+        });
+      } catch (error: any) {
+        return NextResponse.json({
+          message: 'Application marked as hired, but the portal access setup failed',
+          error: error.message,
+        }, { status: 200 });
+      }
     }
 
     return NextResponse.json(application);

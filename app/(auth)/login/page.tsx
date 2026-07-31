@@ -25,7 +25,7 @@ export default function LoginPage() {
     
     if (result.success) {
       addToast({ type: "success", title: "Login Successful", description: "Welcome back!" });
-      router.push("/dashboard");
+      router.push(result.user?.mustChangePassword ? "/change-password" : "/dashboard");
     } else {
       addToast({ type: "error", title: "Login Failed", description: result.error || "Invalid credentials" });
     }
