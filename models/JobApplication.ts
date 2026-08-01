@@ -174,6 +174,11 @@ const JobApplicationSchema = new Schema({
       default: 'technical',
     },
     scheduledDate: { type: Date },
+    scheduledTime: { type: String, default: '' },
+    duration: { type: String, default: '' },
+    interviewer: { type: String, default: '' },
+    location: { type: String, default: '' },
+    meetingLink: { type: String, default: '' },
     status: {
       type: String,
       enum: ['scheduled', 'completed', 'cancelled'],

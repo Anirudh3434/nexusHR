@@ -150,19 +150,35 @@ export function generateOfferLetterHTML(
 }
 
 // Derive overall onboarding status + progress from the current record state.
+// Progress counts completed checklist tasks + verified required documents so a
+// hire with documents still pending can never show 100%.
 export function deriveOnboardingStatus(onboarding: any): { status: string; progress: number } {
   const offerStatus = onboarding.offerLetter?.status || 'draft';
   const checklist = onboarding.checklist || [];
-  const total = checklist.length;
-  const completed = checklist.filter((t: any) => t.status === 'completed').length;
+  const documents = onboarding.documents || [];
+
+  const taskTotal = checklist.length;
+  const taskCompleted = checklist.filter((t: any) => t.status === 'completed').length;
+
+  const requiredDocs = documents.filter((d: any) => d.isRequired !== false);
+  const docTotal = requiredDocs.length;
+  const docVerified = requiredDocs.filter((d: any) => d.status === 'verified').length;
+
+  const total = taskTotal + docTotal;
+  const completed = taskCompleted + docVerified;
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const allTasksDone = taskTotal > 0 ? taskCompleted === taskTotal : true;
+  const allDocsDone = docTotal > 0 ? docVerified === docTotal : true;
 
   let status = 'draft';
   if (offerStatus === 'declined') status = 'offer_declined';
   else if (offerStatus === 'draft') status = 'draft';
   else if (offerStatus === 'sent') status = 'offer_sent';
   else if (offerStatus === 'accepted') {
-    status = total > 0 && completed > 0 && progress < 100 ? 'in_progress' : total > 0 && progress >= 100 ? 'completed' : 'offer_accepted';
+    if (allTasksDone && allDocsDone) status = 'completed';
+    else if (taskCompleted > 0 || docVerified > 0) status = 'in_progress';
+    else status = 'offer_accepted';
   }
 
   return { status, progress };

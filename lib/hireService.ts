@@ -15,6 +15,7 @@ import {
   buildPortalAccessEmail,
   buildHiredEmail,
   buildPasswordResetEmail,
+  buildRejectionEmail,
   sendEmail,
   SendEmailResult,
 } from './emailSender';
@@ -30,8 +31,49 @@ export function generateTemporaryPassword(): string {
 }
 
 // Build the candidate portal login URL e.g. https://host/candidate-login
-function buildLoginUrl(origin: string, _companyCode: string): string {
+export function buildLoginUrl(origin: string, _companyCode: string): string {
   return `${origin.replace(/\/$/, '')}/candidate-login`;
+}
+
+/**
+ * Sends a rejection email to the candidate (best-effort). Uses the same
+ * company email configuration as all other candidate notifications.
+ */
+export async function notifyRejection(input: {
+  companyId: string;
+  applicationId: string;
+  origin: string;
+  reason?: string;
+}): Promise<SendEmailResult | null> {
+  await connectDB();
+
+  const application = await getApplication(input.applicationId, input.companyId);
+  const email = (application.fromEmail || '').toLowerCase();
+  if (!email) return null;
+
+  try {
+    const company = await Company.findById(input.companyId);
+    const loginUrl = buildLoginUrl(input.origin, company?.code || '');
+    const fullName = application.candidateName || application.fromName || 'Candidate';
+    const mail = buildRejectionEmail({
+      name: fullName.split(' ')[0],
+      companyName: company?.name || 'our Company',
+      position: application.appliedPosition || '',
+      reason: input.reason || '',
+      loginUrl,
+    });
+    return await sendEmail({
+      companyId: input.companyId,
+      to: email,
+      toName: fullName,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+    });
+  } catch (error) {
+    console.error('Rejection email failed:', error);
+    return null;
+  }
 }
 
 async function getApplication(applicationId: string, companyId: string) {

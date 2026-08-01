@@ -19,8 +19,8 @@ function advanceTo(current: string, target: string): string {
   return ti > ci ? target : current;
 }
 
-function buildLoginUrl(origin: string, companyCode: string): string {
-  return `${origin.replace(/\/$/, '')}/${encodeURIComponent(companyCode)}`;
+function buildLoginUrl(origin: string, _companyCode: string): string {
+  return `${origin.replace(/\/$/, '')}/candidate-login`;
 }
 
 function formatDate(value?: string | Date | null): string {
@@ -30,7 +30,7 @@ function formatDate(value?: string | Date | null): string {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// Best-effort notification to the candidate (requires prior portal access)
+// Best-effort notification to the candidate (does not require prior portal access)
 async function notifyCandidate(opts: {
   application: any;
   companyId: string;
@@ -40,7 +40,6 @@ async function notifyCandidate(opts: {
   result?: 'cleared' | 'failed';
 }) {
   const { application } = opts;
-  if (!application.portalAccessSentAt) return;
   if (!application.fromEmail) return;
   try {
     const company = await Company.findById(opts.companyId);
@@ -57,6 +56,11 @@ async function notifyCandidate(opts: {
         roundName,
         roundType: opts.round.type || '',
         scheduledDate: opts.round.scheduledDate ? formatDate(opts.round.scheduledDate) : '',
+        scheduledTime: opts.round.scheduledTime || '',
+        duration: opts.round.duration || '',
+        interviewer: opts.round.interviewer || '',
+        location: opts.round.location || '',
+        meetingLink: opts.round.meetingLink || '',
         loginUrl,
       });
       await sendEmail({
@@ -113,6 +117,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       name: body.name || `Round ${(application.interviewRounds?.length || 0) + 1}`,
       type: body.type || 'technical',
       scheduledDate: body.scheduledDate || null,
+      scheduledTime: body.scheduledTime || '',
+      duration: body.duration || '',
+      interviewer: body.interviewer || '',
+      location: body.location || '',
+      meetingLink: body.meetingLink || '',
       status: 'scheduled',
       result: 'pending',
       feedback: '',
@@ -171,6 +180,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.type !== undefined) round.type = body.type;
     if (body.status !== undefined) round.status = body.status;
     if (body.scheduledDate !== undefined) round.scheduledDate = body.scheduledDate || null;
+    if (body.scheduledTime !== undefined) round.scheduledTime = body.scheduledTime;
+    if (body.duration !== undefined) round.duration = body.duration;
+    if (body.interviewer !== undefined) round.interviewer = body.interviewer;
+    if (body.location !== undefined) round.location = body.location;
+    if (body.meetingLink !== undefined) round.meetingLink = body.meetingLink;
     if (body.feedback !== undefined) round.feedback = body.feedback;
 
     let resultChanged: 'cleared' | 'failed' | null = null;

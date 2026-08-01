@@ -2,10 +2,18 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Onboarding from '@/models/Onboarding';
 import Company from '@/models/Company';
+import EmailConfig from '@/models/EmailConfig';
 import { headers } from 'next/headers';
 import { generateOfferLetterHTML, deriveOnboardingStatus } from '@/lib/onboardingTemplates';
+import { sendEmail, buildOfferEmail, buildOfferResponseNotification } from '@/lib/emailSender';
 
 const STAFF_ROLES = ['super_admin', 'admin', 'hr'];
+
+function getOrigin(req: Request): string {
+  const host = req.headers.get('host') || 'localhost:3000';
+  const origin = req.headers.get('origin') || `http://${host}`;
+  return origin === 'null' ? `http://${host}` : origin;
+}
 
 // GET - Fetch offer letter (markdown-safe text only)
 export async function GET(
@@ -115,6 +123,27 @@ export async function PATCH(
       record.offerLetter.status = 'sent';
       record.offerLetter.sentAt = new Date();
       record.activity.push({ userId, userName, action: 'offer_sent', details: 'Offer letter sent to candidate' });
+
+      // Email the offer letter to the candidate (best-effort)
+      try {
+        const company = await Company.findById(record.companyId);
+        const mail = buildOfferEmail({
+          name: (record.candidate.fullName || 'Candidate').split(' ')[0],
+          companyName: company?.name || 'the Company',
+          position: record.candidate.position || '',
+          offerHtml: record.offerLetter.content,
+        });
+        await sendEmail({
+          companyId: record.companyId,
+          to: record.candidate.email,
+          toName: record.candidate.fullName,
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+        });
+      } catch (error: any) {
+        console.error('Offer email failed:', error);
+      }
     } else if (action === 'accept' || action === 'decline') {
       if (userRole === 'employee') {
         const isOwner = record.employeeId && record.employeeId.toString() === userId;
@@ -126,6 +155,35 @@ export async function PATCH(
       record.offerLetter.respondedAt = new Date();
       record.offerLetter.responseNotes = responseNotes || '';
       record.activity.push({ userId, userName, action: action === 'accept' ? 'offer_accepted' : 'offer_declined', details: `Offer ${action === 'accept' ? 'accepted' : 'declined'}${responseNotes ? `: ${responseNotes}` : ''}` });
+
+      // Notify HR on the candidate's response (best-effort)
+      try {
+        const company = await Company.findById(record.companyId);
+        const emailConfig = await EmailConfig.findOne({ companyId: record.companyId }).lean();
+        const hrEmail = emailConfig?.careerEmail || company?.email;
+        if (hrEmail) {
+          const origin = getOrigin(req);
+          const loginUrl = `${origin.replace(/\/$/, '')}/onboarding/${record._id}`;
+          const mail = buildOfferResponseNotification({
+            candidateName: record.candidate.fullName,
+            companyName: company?.name || 'the Company',
+            position: record.candidate.position || '',
+            accepted: action === 'accept',
+            responseNotes: responseNotes || '',
+            loginUrl,
+          });
+          await sendEmail({
+            companyId: record.companyId,
+            to: hrEmail,
+            toName: 'HR Team',
+            subject: mail.subject,
+            html: mail.html,
+            text: mail.text,
+          });
+        }
+      } catch (error: any) {
+        console.error('Offer response notification email failed:', error);
+      }
     } else {
       return NextResponse.json({ message: 'Invalid action. Use send, accept or decline.' }, { status: 400 });
     }
