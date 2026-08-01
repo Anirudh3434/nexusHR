@@ -17,6 +17,7 @@ interface User {
   salary?: number;
   employeeId?: string;
   mustChangePassword?: boolean;
+  isCandidate?: boolean;
 }
 
 interface AuthContextProps {

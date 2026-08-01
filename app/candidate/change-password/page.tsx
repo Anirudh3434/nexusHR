@@ -2,6 +2,6 @@
 
 import ChangePassword from "@/components/candidate/ChangePassword";
 
-export default function ChangePasswordPage() {
+export default function CandidateChangePasswordPage() {
   return <ChangePassword />;
 }

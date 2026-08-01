@@ -54,6 +54,7 @@ export async function POST(req: Request) {
         companyId: user.companyId?.toString(),
         employeeId: user.employeeId,
         mustChangePassword: false,
+        isCandidate: !!user.isCandidate,
       },
     });
   } catch (error: any) {

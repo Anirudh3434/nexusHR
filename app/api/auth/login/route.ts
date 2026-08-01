@@ -50,6 +50,7 @@ export async function POST(req: Request) {
       salary: user.salary,
       employeeId: user.employeeId,
       mustChangePassword: !!user.mustChangePassword,
+      isCandidate: !!user.isCandidate,
     };
 
     return NextResponse.json({

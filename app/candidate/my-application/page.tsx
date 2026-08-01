@@ -2,6 +2,6 @@
 
 import MyApplication from "@/components/candidate/MyApplication";
 
-export default function MyApplicationPage() {
+export default function CandidateMyApplicationPage() {
   return <MyApplication />;
 }

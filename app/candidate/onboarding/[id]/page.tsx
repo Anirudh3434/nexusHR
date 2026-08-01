@@ -2,6 +2,6 @@
 
 import OnboardingDetail from "@/components/candidate/OnboardingDetail";
 
-export default function OnboardingDetailPage() {
+export default function CandidateOnboardingDetailPage() {
   return <OnboardingDetail />;
 }

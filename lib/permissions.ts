@@ -308,6 +308,9 @@ export function isRouteAccessible(role: Role, route: string): boolean {
     "/my-onboarding": "onboarding",
     "/my-application": "onboarding",
     "/change-password": "onboarding",
+    // Candidate portal routes (handled separately in middleware, listed for completeness)
+    "/candidate": "onboarding",
+    "/candidate-login": "onboarding",
   };
 
   // Find matching module

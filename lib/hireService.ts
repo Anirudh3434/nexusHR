@@ -29,9 +29,9 @@ export function generateTemporaryPassword(): string {
   return `${crypto.randomBytes(3).toString('hex')}@${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
-// Build the candidate portal login URL e.g. https://host/<companyCode>
-function buildLoginUrl(origin: string, companyCode: string): string {
-  return `${origin.replace(/\/$/, '')}/${encodeURIComponent(companyCode)}`;
+// Build the candidate portal login URL e.g. https://host/candidate-login
+function buildLoginUrl(origin: string, _companyCode: string): string {
+  return `${origin.replace(/\/$/, '')}/candidate-login`;
 }
 
 async function getApplication(applicationId: string, companyId: string) {
@@ -98,8 +98,19 @@ export async function grantPortalAccess(input: {
       designation: application.appliedPosition || job?.title || undefined,
       isActive: true,
       mustChangePassword: true,
+      isCandidate: true,
     });
     accountCreated = true;
+  } else if (!user.isCandidate) {
+    // An account already exists for this email but is not yet a candidate-portal
+    // account (e.g. an employee, or a leftover account from a previous flow).
+    // Issue fresh temporary credentials so the candidate can actually log in.
+    password = generateTemporaryPassword();
+    const hashed = await bcrypt.hash(password, 10);
+    user.password = hashed;
+    user.mustChangePassword = true;
+    user.isCandidate = true;
+    await user.save();
   }
 
   application.portalAccessSentAt = new Date();
@@ -194,6 +205,7 @@ export async function hireCandidate(input: HireInput): Promise<HireResult> {
       joiningDate: joiningDate || undefined,
       isActive: true,
       mustChangePassword: true,
+      isCandidate: true,
     });
     accountCreated = true;
   }

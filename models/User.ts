@@ -100,6 +100,11 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  // Job applicant portal accounts land in the separate /candidate portal, not the employee dashboard
+  isCandidate: {
+    type: Boolean,
+    default: false,
+  },
   // Geo-fencing exemptions
   isGeoFencingExempt: {
     type: Boolean,

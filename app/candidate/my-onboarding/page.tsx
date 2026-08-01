@@ -2,6 +2,6 @@
 
 import MyOnboarding from "@/components/candidate/MyOnboarding";
 
-export default function MyOnboardingPage() {
+export default function CandidateMyOnboardingPage() {
   return <MyOnboarding />;
 }
