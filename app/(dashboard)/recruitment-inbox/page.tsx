@@ -496,13 +496,55 @@ export default function RecruitmentInboxPage() {
                     </p>
                   </div>
                 </div>
-                {selectedApp.jobId && (
-                  <div className="mt-3">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {selectedApp.jobId && (
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono">
                       Job ID: {selectedApp.jobId}
                     </Badge>
-                  </div>
-                )}
+                  )}
+                  <Badge className={`text-xs ${getStatusColor(selectedApp.status)}`}>
+                    {getStatusLabel(selectedApp.status)}
+                  </Badge>
+                  {selectedApp.onboardingId && selectedApp.status === 'hired' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`/onboarding/${selectedApp.onboardingId}`, '_blank')}
+                    >
+                      <Briefcase className="h-3.5 w-3.5 mr-1.5" />
+                      View Onboarding
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Pipeline Actions */}
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 p-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-green-700 border-green-200 hover:bg-green-50"
+                  onClick={(e) => handleConsider(e, selectedApp)}
+                >
+                  <ThumbsUp className="h-3.5 w-3.5 mr-1.5" /> Consider
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-red-700 border-red-200 hover:bg-red-50"
+                  onClick={(e) => handleReject(e, selectedApp)}
+                >
+                  <ThumbsDown className="h-3.5 w-3.5 mr-1.5" /> Reject
+                </Button>
+                <select
+                  className="rounded-md border bg-white px-2 py-1.5 text-sm"
+                  value={selectedApp.status}
+                  onChange={(e) => handleStatusChange(e.target.value as any)}
+                >
+                  {statusOptions.filter((s) => s.value !== 'reviewing').map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Attachments */}

@@ -180,6 +180,31 @@ export default function MyApplication() {
                                   <>
                                     <span>·</span>
                                     <CalendarDays size={12} /> {formatDate(round.scheduledDate)}
+                                    {round.scheduledTime && <span>at {round.scheduledTime}</span>}
+                                  </>
+                                )}
+                                {round.duration && (
+                                  <>
+                                    <span>·</span>
+                                    <span>{round.duration}</span>
+                                  </>
+                                )}
+                                {round.interviewer && (
+                                  <>
+                                    <span>·</span>
+                                    <span>{round.interviewer}</span>
+                                  </>
+                                )}
+                                {round.location && (
+                                  <>
+                                    <span>·</span>
+                                    <span>{round.location}</span>
+                                  </>
+                                )}
+                                {round.meetingLink && (
+                                  <>
+                                    <span>·</span>
+                                    <a href={round.meetingLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Join link</a>
                                   </>
                                 )}
                                 {round.decidedAt && (

@@ -22,6 +22,67 @@ const statusMeta: Record<string, { label: string; classes: string }> = {
   spam: { label: "Spam", classes: "bg-gray-100 text-gray-500 border-gray-200" },
 };
 
+function OnboardingTimeline({ record }: { record: any }) {
+  const offerStatus = record?.offerLetter?.status || "draft";
+  const totalTasks = (record?.checklist || []).length;
+  const doneTasks = (record?.checklist || []).filter((t: any) => t.status === "completed").length;
+  const totalDocs = (record?.documents || []).filter((d: any) => d.isRequired !== false).length;
+  const verifiedDocs = (record?.documents || []).filter((d: any) => d.isRequired !== false && d.status === "verified").length;
+
+  const steps = [
+    { label: "Offer Letter", done: offerStatus === "accepted", pending: offerStatus === "sent", detail: offerStatus === "accepted" ? "Accepted" : offerStatus === "sent" ? "Sent — awaiting your response" : offerStatus },
+    { label: "Documents", done: totalDocs > 0 && verifiedDocs === totalDocs, pending: totalDocs === 0, detail: `${verifiedDocs}/${totalDocs} verified` },
+    { label: "Onboarding Tasks", done: totalTasks > 0 && doneTasks === totalTasks, pending: totalTasks === 0, detail: `${doneTasks}/${totalTasks} completed` },
+  ];
+
+  return (
+    <Card>
+      <CardContent className="space-y-4 p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-green-600">
+              <ClipboardList size={22} />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">Onboarding Progress</p>
+              <p className="text-sm text-gray-500">Your journey to day one — {record?.progress ?? 0}% complete</p>
+            </div>
+          </div>
+          <Link href="/candidate/my-onboarding">
+            <Button variant="outline" className="gap-2">View Onboarding <ArrowRight size={16} /></Button>
+          </Link>
+        </div>
+
+        <div className="space-y-3">
+          {steps.map((step, idx) => {
+            const stateClass = step.done
+              ? "border-green-500 bg-green-50"
+              : step.pending
+                ? "border-gray-200 bg-gray-50"
+                : "border-blue-300 bg-blue-50";
+            const iconClass = step.done
+              ? "bg-green-600 text-white"
+              : step.pending
+                ? "bg-gray-300 text-gray-500"
+                : "bg-blue-500 text-white";
+            return (
+              <div key={idx} className={`flex items-center gap-3 rounded-xl border p-3 ${stateClass}`}>
+                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${iconClass}`}>
+                  {step.done ? "✓" : idx + 1}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">{step.label}</p>
+                  <p className="text-xs text-gray-500">{step.detail}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function CandidateDashboard() {
   const { user } = useAuth();
   const { addToast } = useToast();
@@ -196,6 +257,9 @@ export default function CandidateDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Onboarding timeline when hired */}
+      {onboardingRecord && <OnboardingTimeline record={onboardingRecord} />}
     </div>
   );
 }

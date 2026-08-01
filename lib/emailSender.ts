@@ -239,6 +239,11 @@ export function buildRoundScheduledEmail(opts: {
   roundName: string;
   roundType: string;
   scheduledDate?: string;
+  scheduledTime?: string;
+  duration?: string;
+  interviewer?: string;
+  location?: string;
+  meetingLink?: string;
   loginUrl: string;
 }): { subject: string; html: string; text: string } {
   const subject = `Interview scheduled — ${opts.roundName} for ${opts.position}`;
@@ -251,7 +256,12 @@ export function buildRoundScheduledEmail(opts: {
       </p>
       <table style="width:100%;margin:16px 0;border-collapse:collapse;">
         <tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Round</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.roundName}${opts.roundType ? ` (${opts.roundType})` : ''}</td></tr>
-        ${opts.scheduledDate ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Scheduled Date</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.scheduledDate}</td></tr>` : ''}
+        ${opts.scheduledDate ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Date</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.scheduledDate}</td></tr>` : ''}
+        ${opts.scheduledTime ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Time</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.scheduledTime}</td></tr>` : ''}
+        ${opts.duration ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Duration</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.duration}</td></tr>` : ''}
+        ${opts.interviewer ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Interviewer</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.interviewer}</td></tr>` : ''}
+        ${opts.location ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Location / Mode</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.location}</td></tr>` : ''}
+        ${opts.meetingLink ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Meeting Link</td><td style="padding:6px 0;font-weight:600;font-size:14px;"><a href="${opts.meetingLink}" style="color:#2563eb;">${opts.meetingLink}</a></td></tr>` : ''}
       </table>
       <p style="color:#334155;font-size:15px;line-height:1.6;">
         Track your application status and round results anytime on the
@@ -260,7 +270,7 @@ export function buildRoundScheduledEmail(opts: {
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
   `;
-  const text = `A new interview round (${opts.roundName}) has been scheduled for your ${opts.position} application. Track your status on the candidate portal: ${opts.loginUrl}`;
+  const text = `A new interview round (${opts.roundName}) has been scheduled for your ${opts.position} application.${opts.scheduledDate ? ` Date: ${opts.scheduledDate}` : ''}${opts.scheduledTime ? `, Time: ${opts.scheduledTime}` : ''}. Track your status on the candidate portal: ${opts.loginUrl}`;
   return { subject, html, text };
 }
 
@@ -295,6 +305,87 @@ export function buildRoundResultEmail(opts: {
   const text = cleared
     ? `Congratulations! You cleared the ${opts.roundName} round for ${opts.position} at ${opts.companyName}. Track your status: ${opts.loginUrl}`
     : `Update on your ${opts.roundName} result for ${opts.position} at ${opts.companyName}. Track your status: ${opts.loginUrl}`;
+  return { subject, html, text };
+}
+
+export function buildOfferEmail(opts: {
+  name: string;
+  companyName: string;
+  position: string;
+  offerHtml: string;
+}): { subject: string; html: string; text: string } {
+  const subject = `Offer Letter — ${opts.position} at ${opts.companyName}`;
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:700px;margin:auto;">
+      <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">
+        We are pleased to share your offer letter for the position of <strong>${opts.position}</strong> at ${opts.companyName}.
+        Please review the details below and accept or decline the offer through the candidate portal.
+      </p>
+      <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:20px 0;">
+        ${opts.offerHtml}
+      </div>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
+    </div>
+  `;
+  const text = `Dear ${opts.name}, please review your offer letter for the position of ${opts.position} at ${opts.companyName}. Accept or decline it through the candidate portal.`;
+  return { subject, html, text };
+}
+
+export function buildOfferResponseNotification(opts: {
+  candidateName: string;
+  companyName: string;
+  position: string;
+  accepted: boolean;
+  responseNotes?: string;
+  loginUrl: string;
+}): { subject: string; html: string; text: string } {
+  const subject = opts.accepted
+    ? `${opts.candidateName} accepted the offer for ${opts.position}`
+    : `${opts.candidateName} declined the offer for ${opts.position}`;
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
+      <h2 style="color:#1e293b;margin-top:0;">Offer ${opts.accepted ? 'Accepted' : 'Declined'} ${opts.accepted ? '🎉' : ''}</h2>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">
+        <strong>${opts.candidateName}</strong> has ${opts.accepted ? 'accepted' : 'declined'} the offer for the position of
+        <strong>${opts.position}</strong> at ${opts.companyName}.
+      </p>
+      ${opts.responseNotes ? `<p style="color:#334155;font-size:15px;line-height:1.6;"><em>"${opts.responseNotes}"</em></p>` : ''}
+      <p style="color:#64748b;font-size:13px;line-height:1.6;">
+        View the onboarding record here:
+        <a href="${opts.loginUrl}" style="color:#2563eb;">${opts.loginUrl}</a>
+      </p>
+      <p style="color:#334155;font-size:15px;">Best regards,<br/>NexusHR</p>
+    </div>
+  `;
+  const text = `${opts.candidateName} has ${opts.accepted ? 'accepted' : 'declined'} the offer for ${opts.position} at ${opts.companyName}.`;
+  return { subject, html, text };
+}
+
+export function buildRejectionEmail(opts: {
+  name: string;
+  companyName: string;
+  position: string;
+  reason?: string;
+  loginUrl: string;
+}): { subject: string; html: string; text: string } {
+  const subject = `Update on your application — ${opts.position} at ${opts.companyName}`;
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
+      <h2 style="color:#1e293b;margin-top:0;">Application Update</h2>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">
+        Thank you for applying for the <strong>${opts.position}</strong> position at ${opts.companyName}.
+        After careful review, we have decided not to move forward with your application at this time.
+      </p>
+      ${opts.reason ? `<p style="color:#334155;font-size:15px;line-height:1.6;"><strong>Reason:</strong> ${opts.reason}</p>` : ''}
+      <p style="color:#334155;font-size:15px;line-height:1.6;">
+        We appreciate the time and effort you invested and encourage you to apply for future opportunities.
+      </p>
+      <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
+    </div>
+  `;
+  const text = `Dear ${opts.name}, thank you for applying for ${opts.position} at ${opts.companyName}. After careful review, we have decided not to move forward with your application at this time.${opts.reason ? ` Reason: ${opts.reason}` : ''}`;
   return { subject, html, text };
 }
 

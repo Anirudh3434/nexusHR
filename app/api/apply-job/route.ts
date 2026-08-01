@@ -1,8 +1,41 @@
 import { NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
 import connectDB from '@/lib/mongodb';
 import JobApplication from '@/models/JobApplication';
 import JobPosition from '@/models/JobPosition';
 import Company from '@/models/Company';
+
+// Upload a file to Cloudinary and return its URL + metadata (mirrors /api/upload).
+async function uploadFile(file: File, folder: string): Promise<{ url: string; filename: string; mimeType: string; size: number } | null> {
+  try {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'dhgqr0et2';
+    const apiKey = process.env.CLOUDINARY_API_KEY || '146475928654719';
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    if (!apiSecret) return null;
+
+    cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const result: any = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream({ folder, resource_type: 'auto' }, (error, res) => {
+        if (error) reject(error);
+        else resolve(res);
+      }).end(buffer);
+    });
+
+    return {
+      url: result.secure_url || result.url,
+      filename: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      size: file.size,
+    };
+  } catch (error) {
+    console.error('Resume upload failed:', error);
+    return null;
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -58,19 +91,18 @@ export async function POST(req: Request) {
       }
     }
 
-    // Process resume file
+    // Upload resume file to Cloudinary (best-effort; store metadata on success)
     let attachments = [];
-    if (resume) {
-      const bytes = await resume.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      
-      // Store file info (in production, upload to S3/cloud storage)
-      attachments.push({
-        filename: resume.name,
-        mimeType: resume.type,
-        size: resume.size,
-        fileUrl: `uploads/${Date.now()}_${resume.name}`, // Placeholder
-      });
+    if (resume && resume.size > 0) {
+      const uploaded = await uploadFile(resume, `hrm/resumes/${company._id}`);
+      if (uploaded) {
+        attachments.push({
+          filename: uploaded.filename,
+          mimeType: uploaded.mimeType,
+          size: uploaded.size,
+          fileUrl: uploaded.url,
+        });
+      }
     }
 
     // Create job application

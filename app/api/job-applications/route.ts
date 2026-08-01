@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import JobApplication from '@/models/JobApplication';
-import { grantPortalAccess, hireCandidate } from '@/lib/hireService';
+import { grantPortalAccess, hireCandidate, notifyRejection } from '@/lib/hireService';
 import '@/models/User'; // Import to register User model for populate
 
 // GET job applications
@@ -202,6 +202,20 @@ export async function PATCH(req: Request) {
           message: 'Application marked as hired, but the portal access setup failed',
           error: error.message,
         });
+      }
+    }
+
+    // Auto-notify: when an applicant is rejected, email them the decision.
+    if (updateData.status === 'rejected' && companyId) {
+      try {
+        await notifyRejection({
+          companyId,
+          applicationId: id,
+          origin,
+          reason: updateData.rejectionReason || '',
+        });
+      } catch (error: any) {
+        console.error('Rejection email failed:', error);
       }
     }
 

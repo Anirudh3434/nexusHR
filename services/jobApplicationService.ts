@@ -54,6 +54,11 @@ export interface JobApplication {
     name?: string;
     type?: string;
     scheduledDate?: string;
+    scheduledTime?: string;
+    duration?: string;
+    interviewer?: string;
+    location?: string;
+    meetingLink?: string;
     status?: string;
     result?: string;
     feedback?: string;

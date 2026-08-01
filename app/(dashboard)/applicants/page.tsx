@@ -19,6 +19,11 @@ interface InterviewRound {
   name?: string;
   type?: string;
   scheduledDate?: string;
+  scheduledTime?: string;
+  duration?: string;
+  interviewer?: string;
+  location?: string;
+  meetingLink?: string;
   status?: string;
   result?: string;
   feedback?: string;
@@ -99,7 +104,7 @@ export default function ApplicantsPage() {
   const [hireLoading, setHireLoading] = useState(false);
   const [credentialsResult, setCredentialsResult] = useState<CredentialsResult | null>(null);
   const [roundsLoading, setRoundsLoading] = useState(false);
-  const [newRound, setNewRound] = useState({ name: '', type: 'technical', scheduledDate: '' });
+  const [newRound, setNewRound] = useState({ name: '', type: 'technical', scheduledDate: '', scheduledTime: '', duration: '', interviewer: '', location: '', meetingLink: '' });
 
   const openHireModal = (applicant: Applicant) => {
     setHireForm({
@@ -304,6 +309,11 @@ export default function ApplicantsPage() {
           name: newRound.name.trim(),
           type: newRound.type,
           scheduledDate: newRound.scheduledDate || null,
+          scheduledTime: newRound.scheduledTime || '',
+          duration: newRound.duration || '',
+          interviewer: newRound.interviewer || '',
+          location: newRound.location || '',
+          meetingLink: newRound.meetingLink || '',
         }),
       });
       if (!response.ok) throw new Error('Failed to add round');
@@ -314,7 +324,7 @@ export default function ApplicantsPage() {
         a._id === applicant._id ? { ...a, status: nextStatus || a.status, interviewRounds: [...(a.interviewRounds || []), round] } : a
       ));
       setSelectedApplicant(prev => prev ? { ...prev, status: nextStatus || prev.status, interviewRounds: [...(prev.interviewRounds || []), round] } : prev);
-      setNewRound({ name: '', type: 'technical', scheduledDate: '' });
+      setNewRound({ name: '', type: 'technical', scheduledDate: '', scheduledTime: '', duration: '', interviewer: '', location: '', meetingLink: '' });
       addToast({ type: "success", title: "Success", description: "Interview round added" });
     } catch (error) {
       addToast({ type: "error", title: "Error", description: "Failed to add round" });
@@ -900,6 +910,25 @@ export default function ApplicantsPage() {
                 )}
               </div>
 
+              {/* Onboarding link for hired candidates */}
+              {selectedApplicant.status === 'hired' && selectedApplicant.onboardingId && (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-50 p-3">
+                  <div className="flex items-center gap-2 text-sm text-green-800">
+                    <PartyPopper className="h-4 w-4" />
+                    <span>This candidate is hired and has an onboarding record.</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-green-200 text-green-700 hover:bg-green-100"
+                    onClick={() => window.open(`/onboarding/${selectedApplicant.onboardingId}`, '_blank')}
+                  >
+                    <ListChecks className="h-3.5 w-3.5 mr-1.5" />
+                    View Onboarding
+                  </Button>
+                </div>
+              )}
+
               {/* Interview rounds */}
               <div>
                 <h4 className="mb-2 flex items-center gap-1.5 font-medium text-gray-900">
@@ -924,7 +953,16 @@ export default function ApplicantsPage() {
                                 {round.scheduledDate && (
                                   <span className="flex items-center gap-1">
                                     <CalendarDays size={12} /> {new Date(round.scheduledDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    {round.scheduledTime && <span>at {round.scheduledTime}</span>}
                                   </span>
+                                )}
+                                {round.duration && <span>{round.duration}</span>}
+                                {round.interviewer && <span>· {round.interviewer}</span>}
+                                {round.location && <span>· {round.location}</span>}
+                                {round.meetingLink && (
+                                  <a href={round.meetingLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
+                                    <ExternalLink size={12} /> Join
+                                  </a>
                                 )}
                                 {round.decidedAt && (
                                   <span>Decided {new Date(round.decidedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
@@ -988,6 +1026,33 @@ export default function ApplicantsPage() {
                       type="date"
                       value={newRound.scheduledDate}
                       onChange={(e) => setNewRound({ ...newRound, scheduledDate: e.target.value })}
+                    />
+                    <Input
+                      type="time"
+                      value={newRound.scheduledTime}
+                      onChange={(e) => setNewRound({ ...newRound, scheduledTime: e.target.value })}
+                      placeholder="Time"
+                    />
+                    <Input
+                      value={newRound.duration}
+                      onChange={(e) => setNewRound({ ...newRound, duration: e.target.value })}
+                      placeholder="Duration (e.g., 45 mins)"
+                    />
+                    <Input
+                      value={newRound.interviewer}
+                      onChange={(e) => setNewRound({ ...newRound, interviewer: e.target.value })}
+                      placeholder="Interviewer"
+                    />
+                    <Input
+                      value={newRound.location}
+                      onChange={(e) => setNewRound({ ...newRound, location: e.target.value })}
+                      placeholder="Location / Mode"
+                    />
+                    <Input
+                      className="col-span-2"
+                      value={newRound.meetingLink}
+                      onChange={(e) => setNewRound({ ...newRound, meetingLink: e.target.value })}
+                      placeholder="Meeting link (optional)"
                     />
                   </div>
                   <Button
