@@ -20,6 +20,9 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({
+      name: company.name,
+      code: company.code,
+      email: company.email,
       enableGeoFencing: company.enableGeoFencing,
       geoFenceRadius: company.geoFenceRadius,
       officeLocation: company.officeLocation,

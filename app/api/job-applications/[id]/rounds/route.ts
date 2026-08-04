@@ -7,6 +7,7 @@ import {
   sendEmail,
   buildRoundScheduledEmail,
   buildRoundResultEmail,
+  getEmailTemplateOverrides,
 } from '@/lib/emailSender';
 
 // Forward-only pipeline order (used to auto-advance status as rounds progress)
@@ -49,6 +50,7 @@ async function notifyCandidate(opts: {
     const roundName = opts.round.name || opts.round.type || 'Interview round';
 
     if (opts.kind === 'scheduled') {
+      const overrides = await getEmailTemplateOverrides(opts.companyId, 'round_scheduled');
       const mail = buildRoundScheduledEmail({
         name,
         companyName: company?.name || 'our Company',
@@ -62,7 +64,7 @@ async function notifyCandidate(opts: {
         location: opts.round.location || '',
         meetingLink: opts.round.meetingLink || '',
         loginUrl,
-      });
+      }, overrides);
       await sendEmail({
         companyId: opts.companyId,
         to: application.fromEmail,
@@ -72,6 +74,7 @@ async function notifyCandidate(opts: {
         text: mail.text,
       });
     } else if (opts.kind === 'result' && opts.result) {
+      const overrides = await getEmailTemplateOverrides(opts.companyId, 'round_result');
       const mail = buildRoundResultEmail({
         name,
         companyName: company?.name || 'our Company',
@@ -79,7 +82,7 @@ async function notifyCandidate(opts: {
         roundName,
         result: opts.result,
         loginUrl,
-      });
+      }, overrides);
       await sendEmail({
         companyId: opts.companyId,
         to: application.fromEmail,

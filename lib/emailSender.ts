@@ -1,4 +1,54 @@
 import EmailConfig from '../models/EmailConfig';
+import CompanyContentConfig, { EmailTemplateOverride, EmailTemplateKey } from '../models/CompanyContentConfig';
+
+export interface EmailOverrides {
+  subject?: string;
+  intro?: string;
+  body?: string;
+  closing?: string;
+  html?: string;
+}
+
+// Wrap a fully-custom HTML template with a generic document shell.
+export function applyCustomHtml(customHtml: string | undefined, wrapped: string): string {
+  if (!customHtml || !customHtml.trim()) return wrapped;
+  return customHtml;
+}
+
+export function fillTemplateText(text: string, vars: Record<string, string>): string {
+  if (!text) return '';
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => {
+    if (vars[key] !== undefined && vars[key] !== null && vars[key] !== '') return vars[key];
+    return match;
+  });
+}
+
+export async function getEmailTemplateOverrides(
+  companyId: string,
+  templateKey: EmailTemplateKey
+): Promise<EmailTemplateOverride> {
+  try {
+    const config = await CompanyContentConfig.findOne({ companyId }).lean();
+    const t = (config?.emailTemplates as any)?.[templateKey];
+    return t || { subject: '', intro: '', body: '', closing: '' };
+  } catch {
+    return { subject: '', intro: '', body: '', closing: '' };
+  }
+}
+
+export function emailParts(
+  overrides: Partial<EmailOverrides>,
+  vars: Record<string, string>,
+  defaults: { subject: string; intro: string; body?: string; closing?: string }
+): { subject: string; intro: string; body: string; closing: string; html?: string } {
+  return {
+    subject: overrides.subject ? fillTemplateText(overrides.subject, vars) : fillTemplateText(defaults.subject, vars),
+    intro: overrides.intro ? fillTemplateText(overrides.intro, vars) : fillTemplateText(defaults.intro, vars),
+    body: overrides.body ? fillTemplateText(overrides.body, vars) : fillTemplateText(defaults.body || '', vars),
+    closing: overrides.closing ? fillTemplateText(overrides.closing, vars) : fillTemplateText(defaults.closing || '', vars),
+    html: overrides.html ? fillTemplateText(overrides.html, vars) : undefined,
+  };
+}
 
 interface EmailConfigDoc {
   provider: 'gmail' | 'outlook' | 'other';
@@ -175,19 +225,27 @@ export function buildPortalAccessEmail(opts: {
   position: string;
   loginUrl: string;
   password: string;
-}): { subject: string; html: string; text: string } {
-  const subject = `Welcome to ${opts.companyName} — Your candidate portal access`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const vars = {
+    name: opts.name,
+    companyName: opts.companyName,
+    position: opts.position,
+    loginUrl: opts.loginUrl,
+    password: opts.password,
+  };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: `Welcome to ${opts.companyName} — Your candidate portal access`,
+    intro: `Congratulations on being selected for the position of <strong>${opts.position}</strong>! Your application has been approved and your onboarding has been initiated.`,
+    body: `We have created a temporary account for you on the <strong>Candidate Portal</strong> where you can track your application status, interview rounds, offer letter and complete your onboarding tasks.`,
+    closing: `Use your email address and the temporary password above to log in. We recommend changing your password after your first login.`,
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">Welcome to ${opts.companyName} 🎉</h2>
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        Congratulations on being selected for the position of <strong>${opts.position}</strong>!
-        Your application has been approved and your onboarding has been initiated.
-      </p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        We have created a temporary account for you on the <strong>Candidate Portal</strong> where you can track your application status, interview rounds, offer letter and complete your onboarding tasks.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>
       <table style="width:100%;margin:20px 0;border-collapse:collapse;">
         <tr>
           <td style="padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#334155;">
@@ -196,12 +254,10 @@ export function buildPortalAccessEmail(opts: {
           </td>
         </tr>
       </table>
-      <p style="color:#64748b;font-size:13px;line-height:1.6;">
-        Use your email address and the temporary password above to log in. We recommend changing your password after your first login.
-      </p>
+      <p style="color:#64748b;font-size:13px;line-height:1.6;">${parts.closing}</p>
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = `Welcome to ${opts.companyName}! Congratulations on being selected for ${opts.position}. Log in to the candidate portal (${opts.loginUrl}) with your email and temporary password: ${opts.password}. Change it after first login.`;
   return { subject, html, text };
 }
@@ -211,23 +267,24 @@ export function buildHiredEmail(opts: {
   companyName: string;
   position: string;
   loginUrl: string;
-}): { subject: string; html: string; text: string } {
-  const subject = `Congratulations — ${opts.position} at ${opts.companyName}!`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const vars = { name: opts.name, companyName: opts.companyName, position: opts.position, loginUrl: opts.loginUrl };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: `Congratulations — ${opts.position} at ${opts.companyName}!`,
+    intro: `Congratulations! We are delighted to confirm that you have been selected for the position of <strong>${opts.position}</strong> at ${opts.companyName}.`,
+    body: `Your offer letter and onboarding tasks are now available on the candidate portal. <a href="${opts.loginUrl}" style="color:#2563eb;">Log in here</a> with the same credentials you used to track your application.`,
+    closing: '',
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">You're hired! 🎉</h2>
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        Congratulations! We are delighted to confirm that you have been selected for the position of
-        <strong>${opts.position}</strong> at ${opts.companyName}.
-      </p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        Your offer letter and onboarding tasks are now available on the candidate portal.
-        <a href="${opts.loginUrl}" style="color:#2563eb;">Log in here</a> with the same credentials you used to track your application.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = `Congratulations! You have been selected for ${opts.position} at ${opts.companyName}. Your offer letter and onboarding tasks are available on the candidate portal: ${opts.loginUrl}`;
   return { subject, html, text };
 }
@@ -245,15 +302,29 @@ export function buildRoundScheduledEmail(opts: {
   location?: string;
   meetingLink?: string;
   loginUrl: string;
-}): { subject: string; html: string; text: string } {
-  const subject = `Interview scheduled — ${opts.roundName} for ${opts.position}`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const vars = {
+    name: opts.name,
+    companyName: opts.companyName,
+    position: opts.position,
+    roundName: opts.roundName,
+    roundType: opts.roundType,
+    scheduledDate: opts.scheduledDate || '',
+    scheduledTime: opts.scheduledTime || '',
+    loginUrl: opts.loginUrl,
+  };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: `Interview scheduled — ${opts.roundName} for ${opts.position}`,
+    intro: `A new interview round has been scheduled for your application to <strong>${opts.position}</strong> at ${opts.companyName}.`,
+    body: `Track your application status and round results anytime on the <a href="${opts.loginUrl}" style="color:#2563eb;"> candidate portal</a>.`,
+    closing: '',
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">Interview Round Scheduled</h2>
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        A new interview round has been scheduled for your application to <strong>${opts.position}</strong> at ${opts.companyName}.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
       <table style="width:100%;margin:16px 0;border-collapse:collapse;">
         <tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Round</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.roundName}${opts.roundType ? ` (${opts.roundType})` : ''}</td></tr>
         ${opts.scheduledDate ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Date</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.scheduledDate}</td></tr>` : ''}
@@ -263,13 +334,10 @@ export function buildRoundScheduledEmail(opts: {
         ${opts.location ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Location / Mode</td><td style="padding:6px 0;font-weight:600;font-size:14px;">${opts.location}</td></tr>` : ''}
         ${opts.meetingLink ? `<tr><td style="padding:6px 0;color:#4b5563;font-size:14px;">Meeting Link</td><td style="padding:6px 0;font-weight:600;font-size:14px;"><a href="${opts.meetingLink}" style="color:#2563eb;">${opts.meetingLink}</a></td></tr>` : ''}
       </table>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        Track your application status and round results anytime on the
-        <a href="${opts.loginUrl}" style="color:#2563eb;"> candidate portal</a>.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = `A new interview round (${opts.roundName}) has been scheduled for your ${opts.position} application.${opts.scheduledDate ? ` Date: ${opts.scheduledDate}` : ''}${opts.scheduledTime ? `, Time: ${opts.scheduledTime}` : ''}. Track your status on the candidate portal: ${opts.loginUrl}`;
   return { subject, html, text };
 }
@@ -281,27 +349,35 @@ export function buildRoundResultEmail(opts: {
   roundName: string;
   result: 'cleared' | 'failed';
   loginUrl: string;
-}): { subject: string; html: string; text: string } {
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
   const cleared = opts.result === 'cleared';
-  const subject = cleared
-    ? `Great news — you cleared ${opts.roundName}!`
-    : `Update on your ${opts.roundName} result`;
-  const html = `
+  const vars = {
+    name: opts.name,
+    companyName: opts.companyName,
+    position: opts.position,
+    roundName: opts.roundName,
+    loginUrl: opts.loginUrl,
+  };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: cleared
+      ? `Great news — you cleared ${opts.roundName}!`
+      : `Update on your ${opts.roundName} result`,
+    intro: cleared
+      ? `Congratulations! You have cleared the <strong>${opts.roundName}</strong> round for the <strong>${opts.position}</strong> position at ${opts.companyName}.`
+      : `Thank you for participating in the <strong>${opts.roundName}</strong> round for the <strong>${opts.position}</strong> position at ${opts.companyName}. Unfortunately, you have not been selected to move forward at this stage.`,
+    body: `${cleared ? 'We will be in touch shortly with the next steps. You can also ' : 'You can '}<a href="${opts.loginUrl}" style="color:#2563eb;">track your application status</a> on the candidate portal.`,
+    closing: '',
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">${cleared ? 'Round Cleared! 🎉' : 'Round Result Update'}</h2>
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        ${cleared
-          ? `Congratulations! You have cleared the <strong>${opts.roundName}</strong> round for the <strong>${opts.position}</strong> position at ${opts.companyName}.`
-          : `Thank you for participating in the <strong>${opts.roundName}</strong> round for the <strong>${opts.position}</strong> position at ${opts.companyName}. Unfortunately, you have not been selected to move forward at this stage.`}
-      </p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        ${cleared ? 'We will be in touch shortly with the next steps. You can also ' : 'You can '}
-        <a href="${opts.loginUrl}" style="color:#2563eb;">track your application status</a> on the candidate portal.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = cleared
     ? `Congratulations! You cleared the ${opts.roundName} round for ${opts.position} at ${opts.companyName}. Track your status: ${opts.loginUrl}`
     : `Update on your ${opts.roundName} result for ${opts.position} at ${opts.companyName}. Track your status: ${opts.loginUrl}`;
@@ -313,21 +389,27 @@ export function buildOfferEmail(opts: {
   companyName: string;
   position: string;
   offerHtml: string;
-}): { subject: string; html: string; text: string } {
-  const subject = `Offer Letter — ${opts.position} at ${opts.companyName}`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const vars = { name: opts.name, companyName: opts.companyName, position: opts.position };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: `Offer Letter — ${opts.position} at ${opts.companyName}`,
+    intro: `We are pleased to share your offer letter for the position of <strong>${opts.position}</strong> at ${opts.companyName}. Please review the details below and accept or decline the offer through the candidate portal.`,
+    body: '',
+    closing: '',
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:700px;margin:auto;">
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        We are pleased to share your offer letter for the position of <strong>${opts.position}</strong> at ${opts.companyName}.
-        Please review the details below and accept or decline the offer through the candidate portal.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
+      ${parts.body ? `<p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>` : ''}
       <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:20px 0;">
         ${opts.offerHtml}
       </div>
+      ${parts.closing ? `<p style="color:#334155;font-size:15px;line-height:1.6;">${parts.closing}</p>` : ''}
       <p style="color:#334155;font-size:15px;line-height:1.6;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = `Dear ${opts.name}, please review your offer letter for the position of ${opts.position} at ${opts.companyName}. Accept or decline it through the candidate portal.`;
   return { subject, html, text };
 }
@@ -339,25 +421,32 @@ export function buildOfferResponseNotification(opts: {
   accepted: boolean;
   responseNotes?: string;
   loginUrl: string;
-}): { subject: string; html: string; text: string } {
-  const subject = opts.accepted
-    ? `${opts.candidateName} accepted the offer for ${opts.position}`
-    : `${opts.candidateName} declined the offer for ${opts.position}`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const accepted = opts.accepted;
+  const vars = {
+    candidateName: opts.candidateName,
+    companyName: opts.companyName,
+    position: opts.position,
+    loginUrl: opts.loginUrl,
+  };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: opts.accepted
+      ? `${opts.candidateName} accepted the offer for ${opts.position}`
+      : `${opts.candidateName} declined the offer for ${opts.position}`,
+    intro: `<strong>${opts.candidateName}</strong> has ${opts.accepted ? 'accepted' : 'declined'} the offer for the position of <strong>${opts.position}</strong> at ${opts.companyName}.`,
+    body: opts.responseNotes ? `<em>"${opts.responseNotes}"</em>` : '',
+    closing: `View the onboarding record here: <a href="${opts.loginUrl}" style="color:#2563eb;">${opts.loginUrl}</a>`,
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">Offer ${opts.accepted ? 'Accepted' : 'Declined'} ${opts.accepted ? '🎉' : ''}</h2>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        <strong>${opts.candidateName}</strong> has ${opts.accepted ? 'accepted' : 'declined'} the offer for the position of
-        <strong>${opts.position}</strong> at ${opts.companyName}.
-      </p>
-      ${opts.responseNotes ? `<p style="color:#334155;font-size:15px;line-height:1.6;"><em>"${opts.responseNotes}"</em></p>` : ''}
-      <p style="color:#64748b;font-size:13px;line-height:1.6;">
-        View the onboarding record here:
-        <a href="${opts.loginUrl}" style="color:#2563eb;">${opts.loginUrl}</a>
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
+      ${parts.body ? `<p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>` : ''}
+      <p style="color:#64748b;font-size:13px;line-height:1.6;">${parts.closing}</p>
       <p style="color:#334155;font-size:15px;">Best regards,<br/>NexusHR</p>
     </div>
-  `;
+  `);
   const text = `${opts.candidateName} has ${opts.accepted ? 'accepted' : 'declined'} the offer for ${opts.position} at ${opts.companyName}.`;
   return { subject, html, text };
 }
@@ -368,23 +457,30 @@ export function buildRejectionEmail(opts: {
   position: string;
   reason?: string;
   loginUrl: string;
-}): { subject: string; html: string; text: string } {
-  const subject = `Update on your application — ${opts.position} at ${opts.companyName}`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const vars = {
+    name: opts.name,
+    companyName: opts.companyName,
+    position: opts.position,
+    loginUrl: opts.loginUrl,
+  };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: `Update on your application — ${opts.position} at ${opts.companyName}`,
+    intro: `Thank you for applying for the <strong>${opts.position}</strong> position at ${opts.companyName}. After careful review, we have decided not to move forward with your application at this time.`,
+    body: `We appreciate the time and effort you invested and encourage you to apply for future opportunities.`,
+    closing: '',
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">Application Update</h2>
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        Thank you for applying for the <strong>${opts.position}</strong> position at ${opts.companyName}.
-        After careful review, we have decided not to move forward with your application at this time.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
       ${opts.reason ? `<p style="color:#334155;font-size:15px;line-height:1.6;"><strong>Reason:</strong> ${opts.reason}</p>` : ''}
-      <p style="color:#334155;font-size:15px;line-height:1.6;">
-        We appreciate the time and effort you invested and encourage you to apply for future opportunities.
-      </p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = `Dear ${opts.name}, thank you for applying for ${opts.position} at ${opts.companyName}. After careful review, we have decided not to move forward with your application at this time.${opts.reason ? ` Reason: ${opts.reason}` : ''}`;
   return { subject, html, text };
 }
@@ -394,13 +490,26 @@ export function buildPasswordResetEmail(opts: {
   companyName: string;
   loginUrl: string;
   password: string;
-}): { subject: string; html: string; text: string } {
-  const subject = `Your ${opts.companyName} portal password has been reset`;
-  const html = `
+}, overrides?: Partial<EmailOverrides>): { subject: string; html: string; text: string } {
+  const vars = {
+    name: opts.name,
+    companyName: opts.companyName,
+    loginUrl: opts.loginUrl,
+    password: opts.password,
+  };
+  const parts = emailParts(overrides || {}, vars, {
+    subject: `Your ${opts.companyName} portal password has been reset`,
+    intro: `Your temporary password has been reset. Use the new password below to log in to the candidate portal.`,
+    body: '',
+    closing: '',
+  });
+  const subject = parts.subject;
+  const html = applyCustomHtml(parts.html, `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;">
       <h2 style="color:#1e293b;margin-top:0;">Password reset</h2>
       <p style="color:#334155;font-size:15px;line-height:1.6;">Dear ${opts.name},</p>
-      <p style="color:#334155;font-size:15px;line-height:1.6;">Your temporary password has been reset. Use the new password below to log in to the candidate portal.</p>
+      <p style="color:#334155;font-size:15px;line-height:1.6;">${parts.intro}</p>
+      ${parts.body ? `<p style="color:#334155;font-size:15px;line-height:1.6;">${parts.body}</p>` : ''}
       <table style="width:100%;margin:20px 0;border-collapse:collapse;">
         <tr>
           <td style="padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#334155;">
@@ -409,9 +518,10 @@ export function buildPasswordResetEmail(opts: {
           </td>
         </tr>
       </table>
+      ${parts.closing ? `<p style="color:#334155;font-size:15px;line-height:1.6;">${parts.closing}</p>` : ''}
       <p style="color:#334155;font-size:15px;">Best regards,<br/>HR Team<br/>${opts.companyName}</p>
     </div>
-  `;
+  `);
   const text = `Your temporary password has been reset. Log in to ${opts.loginUrl} with your email and new password: ${opts.password}.`;
   return { subject, html, text };
 }

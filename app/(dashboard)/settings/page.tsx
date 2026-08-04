@@ -9,7 +9,9 @@ import {
   ShieldCheck, 
   Mail, 
   Loader2,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  FileText,
+  Globe
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -17,8 +19,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { BrandingSection } from "../../../components/settings/BrandingSection";
 import { AttendanceSection } from "../../../components/settings/AttendanceSection";
 import { EmailSection } from "../../../components/settings/EmailSection";
+import { EmailTemplatesSection } from "../../../components/settings/EmailTemplatesSection";
+import { CareersSection } from "../../../components/settings/CareersSection";
 
-type TabType = 'branding' | 'attendance' | 'email';
+type TabType = 'branding' | 'attendance' | 'email' | 'email-templates' | 'careers';
 
 function SettingsContent() {
   const { user, hasRole } = useAuth();
@@ -48,6 +52,7 @@ function SettingsContent() {
       address: '',
     }
   });
+  const [companyName, setCompanyName] = useState('NexusHR');
   const [isCompanyLoading, setIsCompanyLoading] = useState(true);
   const [isCompanySaving, setIsCompanySaving] = useState(false);
 
@@ -67,6 +72,7 @@ function SettingsContent() {
       if (response.ok) {
         const data = await response.json();
         setCompanySettings(data);
+        if (data.name) setCompanyName(data.name);
       }
     } catch (error) {
       console.error("Failed to fetch company settings:", error);
@@ -149,6 +155,8 @@ function SettingsContent() {
     { id: 'branding', label: 'Branding', icon: Palette },
     { id: 'attendance', label: 'Attendance', icon: ShieldCheck },
     { id: 'email', label: 'Email', icon: Mail },
+    { id: 'email-templates', label: 'Email Templates', icon: FileText },
+    { id: 'careers', label: 'Careers Page', icon: Globe },
   ];
 
   return (
@@ -207,6 +215,20 @@ function SettingsContent() {
           {tab === 'email' && (
             <EmailSection 
               companyId={user.companyId || ''}
+            />
+          )}
+
+          {tab === 'email-templates' && (
+            <EmailTemplatesSection 
+              companyId={user.companyId || ''}
+              companyName={companyName}
+            />
+          )}
+
+          {tab === 'careers' && (
+            <CareersSection 
+              companyId={user.companyId || ''}
+              companyName={companyName}
             />
           )}
         </div>
