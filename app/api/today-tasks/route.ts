@@ -269,6 +269,49 @@ export async function PATCH(req: NextRequest) {
       }, { status: 200 });
     }
 
+    // Remove a task from an employee's plan (owner during edit, or manager)
+    if (action === 'remove_task' && reportId) {
+      const { taskId } = body;
+      if (!taskId) {
+        return NextResponse.json({ message: 'Task id is required' }, { status: 400 });
+      }
+
+      const report = await TodayTaskReport.findOne({
+        _id: new mongoose.Types.ObjectId(reportId),
+        companyId: user.companyId
+      });
+
+      if (!report) {
+        return NextResponse.json({ message: 'Report not found' }, { status: 404 });
+      }
+
+      const isOwner = report.userId.toString() === userId;
+      const isManager = userRole === 'admin' || userRole === 'hr' || userRole === 'manager';
+      if (!isOwner && !isManager) {
+        return NextResponse.json({ message: 'Unauthorized - cannot remove tasks from this report' }, { status: 403 });
+      }
+
+      // Submitted reports can only be edited within the open edit window
+      if (report.status === 'submitted') {
+        if (!report.editWindowExpiresAt || new Date() > report.editWindowExpiresAt) {
+          return NextResponse.json({ message: 'Edit window has expired. Cannot remove tasks.' }, { status: 400 });
+        }
+      }
+
+      const before = report.items.length;
+      report.items = report.items.filter((item: any) => item.taskId.toString() !== taskId);
+      if (report.items.length === before) {
+        return NextResponse.json({ message: 'Task not found in report' }, { status: 404 });
+      }
+
+      await report.save();
+
+      return NextResponse.json({
+        message: 'Task removed from plan successfully',
+        report
+      }, { status: 200 });
+    }
+
     // Request edit window
     if (action === 'request_edit' && reportId) {
       const report = await TodayTaskReport.findOne({

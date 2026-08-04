@@ -6,12 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { 
+import {
   Briefcase, MapPin, Clock, DollarSign, Users, 
   ChevronDown, ChevronUp, Send, CheckCircle, Loader2,
   Building2, FileText, Mail, User, Phone, ExternalLink,
   Sparkles, ArrowRight
 } from "lucide-react";
+import { getContentConfig, ContentConfig } from "@/services/contentConfigService";
+import { DEFAULT_CAREERS, fillTemplateText } from "@/lib/emailTemplatesMeta";
+import { CareersOverride } from "@/models/CompanyContentConfig";
 
 interface JobPosition {
   _id: string;
@@ -42,6 +45,8 @@ function CareersContent() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
+  const [careers, setCareers] = useState<Partial<CareersOverride>>({});
+  const [companyIdForConfig, setCompanyIdForConfig] = useState<string>("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -59,10 +64,36 @@ function CareersContent() {
   // Career email - can be configured per company
   const careerEmail = companyInfo?.careerEmail || "careers@company.com";
 
+  const mergedCareers: CareersOverride = { ...DEFAULT_CAREERS, ...careers };
+
+  const palette = {
+    primary: mergedCareers.primaryColor || DEFAULT_CAREERS.primaryColor || "#0f172a",
+    secondary: mergedCareers.secondaryColor || DEFAULT_CAREERS.secondaryColor || "#64748b",
+    accent: mergedCareers.accentColor || DEFAULT_CAREERS.accentColor || "#2563eb",
+    background: mergedCareers.backgroundColor || DEFAULT_CAREERS.backgroundColor || "#f8fafc",
+    text: mergedCareers.textColor || DEFAULT_CAREERS.textColor || "#64748b",
+    header: mergedCareers.headerColor || DEFAULT_CAREERS.headerColor || "#ffffff",
+    button: mergedCareers.buttonColor || DEFAULT_CAREERS.buttonColor || "#0f172a",
+  };
+
   useEffect(() => {
     fetchPositions();
     fetchCompanyInfo();
   }, [companyId]);
+
+  useEffect(() => {
+    if (!companyIdForConfig) return;
+    fetchCareersConfig();
+  }, [companyIdForConfig]);
+
+  const fetchCareersConfig = async () => {
+    try {
+      const data = await getContentConfig(companyIdForConfig);
+      setCareers(data.careers || {});
+    } catch (error) {
+      console.error("Failed to fetch careers config:", error);
+    }
+  };
 
   const fetchPositions = async () => {
     try {
@@ -82,11 +113,15 @@ function CareersContent() {
       if (response.ok) {
         const data = await response.json();
         setCompanyInfo(data);
+        if (data.company?.id) setCompanyIdForConfig(data.company.id);
       }
     } catch (error) {
       console.error("Failed to fetch company info:", error);
     }
   };
+
+  const applyOnlineDesc = fillTemplateText(mergedCareers.applyOnlineDesc || '', { careerEmail });
+  const applyEmailDesc = fillTemplateText(mergedCareers.applyEmailDesc || '', { careerEmail });
 
   const handleApply = async (e: React.FormEvent, positionId: string) => {
     e.preventDefault();
@@ -151,22 +186,27 @@ function CareersContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: palette.background, color: palette.text }}
+    >
       {/* Header - Professional & Subtle */}
-      <div className="bg-white border-b border-slate-200">
+      <div className="border-b" style={{ backgroundColor: palette.header, borderColor: palette.secondary + "33" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center gap-2 mb-6">
-            <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-full">
+            <div
+              className="flex items-center gap-2 text-white px-4 py-2 rounded-full"
+              style={{ backgroundColor: palette.primary }}
+            >
               <Sparkles className="h-4 w-4" />
-              <span className="text-sm font-medium tracking-wide">WE MADE CAREERS</span>
+              <span className="text-sm font-medium tracking-wide">{mergedCareers.brandText || "WE MADE CAREERS"}</span>
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-light text-slate-900 mb-4">
-            Join Our Team
+          <h1 className="text-4xl md:text-5xl font-light mb-4" style={{ color: palette.primary }}>
+            {mergedCareers.heroTitle || "Join Our Team"}
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
-            We believe in nurturing talent and creating opportunities for growth. 
-            Explore our open positions and take the next step in your career journey.
+          <p className="text-lg max-w-2xl leading-relaxed" style={{ color: palette.text }}>
+            {mergedCareers.heroSubtitle || "We believe in nurturing talent and creating opportunities for growth. Explore our open positions and take the next step in your career journey."}
           </p>
         </div>
       </div>
@@ -174,11 +214,11 @@ function CareersContent() {
       {/* Job Listings */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Open Positions ({positions.length})
+          <h2 className="text-2xl font-bold" style={{ color: palette.primary }}>
+            {mergedCareers.openPositionsTitle || "Open Positions"} ({positions.length})
           </h2>
-          <p className="text-gray-600 mt-1">
-            Browse our current job openings and apply today
+          <p className="mt-1" style={{ color: palette.text }}>
+            {mergedCareers.openPositionsSubtitle || "Browse our current job openings and apply today"}
           </p>
         </div>
 
@@ -201,7 +241,7 @@ function CareersContent() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">
+                        <h3 className="text-xl font-semibold" style={{ color: palette.primary }}>
                           {position.title}
                         </h3>
                         <Badge variant="secondary" className="bg-green-100 text-green-700">
@@ -214,7 +254,7 @@ function CareersContent() {
                         )}
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                      <div className="flex flex-wrap items-center gap-4 text-sm mb-3" style={{ color: palette.text }}>
                         <span className="flex items-center gap-1">
                       <Building2 className="h-4 w-4" />
                           {position.department}
@@ -239,7 +279,7 @@ function CareersContent() {
                         </span>
                       </div>
                       
-                      <p className="text-gray-700 line-clamp-2">
+                      <p className="line-clamp-2 text-gray-700">
                         {position.description}
                       </p>
                     </div>
@@ -259,14 +299,14 @@ function CareersContent() {
                   <div className="border-t px-6 py-6 bg-gray-50">
                     <div className="grid md:grid-cols-2 gap-8">
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
                           <FileText className="h-4 w-4" />
                           Requirements
                         </h4>
                         <ul className="space-y-2">
                           {position.requirements.map((req, i) => (
                             <li key={i} className="flex items-start gap-2 text-gray-700">
-                              <span className="text-blue-500 mt-1">•</span>
+                              <span style={{ color: palette.accent }}>•</span>
                               {req}
                             </li>
                           ))}
@@ -274,14 +314,14 @@ function CareersContent() {
                       </div>
                       
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
                           <Briefcase className="h-4 w-4" />
                           Responsibilities
                         </h4>
                         <ul className="space-y-2">
                           {position.responsibilities.map((resp, i) => (
                             <li key={i} className="flex items-start gap-2 text-gray-700">
-                              <span className="text-blue-500 mt-1">•</span>
+                              <span style={{ color: palette.accent }}>•</span>
                               {resp}
                             </li>
                           ))}
@@ -449,7 +489,8 @@ function CareersContent() {
                                   <div className="flex flex-col sm:flex-row gap-3">
                                     <Button 
                                       type="submit" 
-                                      className="flex-1 bg-slate-900 hover:bg-slate-800"
+                                      style={{ backgroundColor: palette.button }}
+                                      className="flex-1 hover:opacity-90"
                                       disabled={submitting}
                                     >
                                       {submitting ? (
@@ -477,7 +518,8 @@ function CareersContent() {
                           <Button 
                             size="lg" 
                             onClick={() => setApplyingId(position._id)}
-                            className="flex-1 bg-slate-900 hover:bg-slate-800"
+                            style={{ backgroundColor: palette.button }}
+                            className="flex-1 hover:opacity-90"
                           >
                             <Send className="h-4 w-4 mr-2" />
                             Apply Online
@@ -506,27 +548,27 @@ function CareersContent() {
       </div>
 
       {/* How to Apply Section */}
-      <div className="bg-white border-t border-slate-200 py-12">
+      <div className="border-t py-12" style={{ backgroundColor: palette.header, borderColor: palette.secondary + "33" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl font-light text-slate-900 mb-6">How to Apply</h2>
+            <h2 className="text-2xl font-light mb-6" style={{ color: palette.primary }}>{mergedCareers.howToApplyTitle || "How to Apply"}</h2>
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-slate-50 p-6 rounded-lg">
-                <div className="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="p-6 rounded-lg" style={{ backgroundColor: palette.background }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: palette.secondary }}>
                   <Send className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="font-medium text-slate-900 mb-2">Apply Online</h3>
-                <p className="text-sm text-slate-600">
-                  Click "Apply Online" on any job posting and fill out the application form with your details and resume.
+                <h3 className="font-medium mb-2" style={{ color: palette.primary }}>{mergedCareers.applyOnlineTitle || "Apply Online"}</h3>
+                <p className="text-sm" style={{ color: palette.text }}>
+                  {applyOnlineDesc}
                 </p>
               </div>
-              <div className="bg-slate-50 p-6 rounded-lg">
-                <div className="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="p-6 rounded-lg" style={{ backgroundColor: palette.background }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: palette.secondary }}>
                   <Mail className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="font-medium text-slate-900 mb-2">Apply via Email</h3>
-                <p className="text-sm text-slate-600">
-                  Send your resume and cover letter to <strong>{careerEmail}</strong> with the Job ID in the subject line.
+                <h3 className="font-medium mb-2" style={{ color: palette.primary }}>{mergedCareers.applyEmailTitle || "Apply via Email"}</h3>
+                <p className="text-sm" style={{ color: palette.text }}>
+                  {applyEmailDesc}
                 </p>
               </div>
             </div>
@@ -535,14 +577,14 @@ function CareersContent() {
       </div>
 
       {/* Footer */}
-      <div className="bg-slate-900 text-white py-8">
+      <div className="text-white py-8" style={{ backgroundColor: palette.primary }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" />
-              <span className="font-medium tracking-wide">WE MADE CAREERS</span>
+              <span className="font-medium tracking-wide">{mergedCareers.footerBrandText || "WE MADE CAREERS"}</span>
             </div>
-            <p className="text-slate-400 text-sm">
+            <p className="text-sm" style={{ color: "#ffffff" + "b3" }}>
               © {new Date().getFullYear()} All rights reserved.
             </p>
           </div>

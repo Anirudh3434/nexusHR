@@ -5,7 +5,7 @@ import Company from '@/models/Company';
 import EmailConfig from '@/models/EmailConfig';
 import { headers } from 'next/headers';
 import { generateOfferLetterHTML, deriveOnboardingStatus } from '@/lib/onboardingTemplates';
-import { sendEmail, buildOfferEmail, buildOfferResponseNotification } from '@/lib/emailSender';
+import { sendEmail, buildOfferEmail, buildOfferResponseNotification, getEmailTemplateOverrides } from '@/lib/emailSender';
 
 const STAFF_ROLES = ['super_admin', 'admin', 'hr'];
 
@@ -127,12 +127,13 @@ export async function PATCH(
       // Email the offer letter to the candidate (best-effort)
       try {
         const company = await Company.findById(record.companyId);
+        const overrides = await getEmailTemplateOverrides(record.companyId, 'offer_letter');
         const mail = buildOfferEmail({
           name: (record.candidate.fullName || 'Candidate').split(' ')[0],
           companyName: company?.name || 'the Company',
           position: record.candidate.position || '',
           offerHtml: record.offerLetter.content,
-        });
+        }, overrides);
         await sendEmail({
           companyId: record.companyId,
           to: record.candidate.email,
@@ -164,6 +165,7 @@ export async function PATCH(
         if (hrEmail) {
           const origin = getOrigin(req);
           const loginUrl = `${origin.replace(/\/$/, '')}/onboarding/${record._id}`;
+          const overrides = await getEmailTemplateOverrides(record.companyId, 'offer_response');
           const mail = buildOfferResponseNotification({
             candidateName: record.candidate.fullName,
             companyName: company?.name || 'the Company',
@@ -171,7 +173,7 @@ export async function PATCH(
             accepted: action === 'accept',
             responseNotes: responseNotes || '',
             loginUrl,
-          });
+          }, overrides);
           await sendEmail({
             companyId: record.companyId,
             to: hrEmail,

@@ -16,6 +16,7 @@ import {
   buildHiredEmail,
   buildPasswordResetEmail,
   buildRejectionEmail,
+  getEmailTemplateOverrides,
   sendEmail,
   SendEmailResult,
 } from './emailSender';
@@ -55,13 +56,14 @@ export async function notifyRejection(input: {
     const company = await Company.findById(input.companyId);
     const loginUrl = buildLoginUrl(input.origin, company?.code || '');
     const fullName = application.candidateName || application.fromName || 'Candidate';
+    const overrides = await getEmailTemplateOverrides(input.companyId, 'rejection');
     const mail = buildRejectionEmail({
       name: fullName.split(' ')[0],
       companyName: company?.name || 'our Company',
       position: application.appliedPosition || '',
       reason: input.reason || '',
       loginUrl,
-    });
+    }, overrides);
     return await sendEmail({
       companyId: input.companyId,
       to: email,
@@ -162,13 +164,14 @@ export async function grantPortalAccess(input: {
   if (password) {
     const company = await Company.findById(input.companyId);
     const loginUrl = buildLoginUrl(input.origin, company?.code || '');
+    const overrides = await getEmailTemplateOverrides(input.companyId, 'portal_access');
     const mail = buildPortalAccessEmail({
       name: fullName.split(' ')[0],
       companyName: company?.name || 'our Company',
       position: application.appliedPosition || job?.title || '',
       loginUrl,
       password,
-    });
+    }, overrides);
     const emailResult = await sendEmail({
       companyId: input.companyId,
       to: email,
@@ -311,13 +314,14 @@ export async function hireCandidate(input: HireInput): Promise<HireResult> {
   const loginUrl = buildLoginUrl(input.origin, company?.code || '');
   let emailResult: SendEmailResult | null = null;
   if (password) {
+    const overrides = await getEmailTemplateOverrides(input.companyId, 'portal_access');
     const mail = buildPortalAccessEmail({
       name: fullName.split(' ')[0],
       companyName: company?.name || 'our Company',
       position,
       loginUrl,
       password,
-    });
+    }, overrides);
     emailResult = await sendEmail({
       companyId: input.companyId,
       to: email,
@@ -327,12 +331,13 @@ export async function hireCandidate(input: HireInput): Promise<HireResult> {
       text: mail.text,
     });
   } else {
+    const overrides = await getEmailTemplateOverrides(input.companyId, 'hired');
     const mail = buildHiredEmail({
       name: fullName.split(' ')[0],
       companyName: company?.name || 'our Company',
       position,
       loginUrl,
-    });
+    }, overrides);
     emailResult = await sendEmail({
       companyId: input.companyId,
       to: email,
@@ -379,12 +384,13 @@ export async function resetPortalPassword(input: {
 
   const company = await Company.findById(input.companyId);
   const loginUrl = buildLoginUrl(input.origin, company?.code || '');
+  const overrides = await getEmailTemplateOverrides(input.companyId, 'password_reset');
   const mail = buildPasswordResetEmail({
     name: (application.candidateName || application.fromName || 'Candidate').split(' ')[0],
     companyName: company?.name || 'our Company',
     loginUrl,
     password,
-  });
+  }, overrides);
   const emailResult = await sendEmail({
     companyId: input.companyId,
     to: email,

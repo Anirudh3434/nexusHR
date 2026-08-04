@@ -193,9 +193,37 @@ export default function TodayTasksPage() {
     setPickedItems(prev => [...prev, newItem]);
   };
 
-  // Remove item from picked list
-  const handleRemoveItem = (taskId: string) => {
+  // Remove item from picked list (persisted to the report)
+  const handleRemoveItem = async (taskId: string) => {
+    // Optimistically remove locally for instant feedback
     setPickedItems(prev => prev.filter(i => i.taskId !== taskId));
+
+    const currentReportId = reportId || companyReports.find(r => r.userId === user?.id)?._id;
+    if (!currentReportId) return;
+
+    try {
+      const res = await fetch('/api/today-tasks', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId: currentReportId,
+          taskId,
+          action: 'remove_task'
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setPickedItems(data.report.items);
+      } else {
+        alert(data.message || 'Failed to remove task');
+        fetchData();
+      }
+    } catch (err) {
+      console.error('Error removing task:', err);
+      alert('Network error removing task');
+      fetchData();
+    }
   };
 
   // Update item field
@@ -451,7 +479,7 @@ export default function TodayTasksPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 mx-auto pb-12 font-sans">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">
