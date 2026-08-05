@@ -14,7 +14,7 @@ import { Briefcase, Plus, Pencil, Trash2, Loader2, X } from "lucide-react";
 export default function DesignationsPage() {
   const { user, hasRole } = useAuth();
   const { addToast } = useToast();
-  
+
   const [designations, setDesignations] = useState<Designation[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +49,7 @@ export default function DesignationsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.companyId) return;
-    
+
     setIsSubmitting(true);
     try {
       if (editingDesig) {
@@ -71,7 +71,7 @@ export default function DesignationsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this designation?")) return;
-    
+
     try {
       await deleteDesignation(id);
       addToast({ type: "success", title: "Success", description: "Designation deleted" });
@@ -83,10 +83,10 @@ export default function DesignationsPage() {
 
   const openEditModal = (desig: Designation) => {
     setEditingDesig(desig);
-    setFormData({ 
-      name: desig.name, 
-      department: desig.department || '', 
-      description: desig.description || '' 
+    setFormData({
+      name: desig.name,
+      department: desig.department || '',
+      description: desig.description || ''
     });
     setShowModal(true);
   };
@@ -193,7 +193,7 @@ export default function DesignationsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Designation Name *</label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Software Engineer, Manager"
                   required
                 />
@@ -202,7 +202,7 @@ export default function DesignationsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                 <select
                   value={formData.department}
-                  onChange={(e) => setFormData({...formData, department: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="">Select Department (Optional)</option>
@@ -215,7 +215,7 @@ export default function DesignationsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <Input
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Brief description..."
                 />
               </div>
