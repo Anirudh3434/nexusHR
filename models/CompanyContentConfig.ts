@@ -48,6 +48,8 @@ export interface CareersOverride {
   textColor: string;
   headerColor: string;
   buttonColor: string;
+  customHtml: string;
+  customCss: string;
 }
 
 const TemplateOverrideSchema = new Schema({
@@ -97,6 +99,8 @@ const CompanyContentConfigSchema = new Schema({
     textColor: { type: String, default: '' },
     headerColor: { type: String, default: '' },
     buttonColor: { type: String, default: '' },
+    customHtml: { type: String, default: '' },
+    customCss: { type: String, default: '' },
   },
   updatedBy: {
     type: Schema.Types.ObjectId,
