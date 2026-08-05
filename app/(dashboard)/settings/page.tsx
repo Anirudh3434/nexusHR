@@ -11,7 +11,9 @@ import {
   Loader2,
   Settings as SettingsIcon,
   FileText,
-  Globe
+  Globe,
+  ChevronRight,
+  Home
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -160,15 +162,37 @@ function SettingsContent() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
-      {/* Sidebar */}
-      <aside className="w-full lg:w-44 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-4 px-2">
-          <SettingsIcon className="h-4 w-4 text-gray-700" />
-          <h1 className="text-base font-semibold text-gray-900">Settings</h1>
-        </div>
+    <div className="space-y-6">
+      {/* Breadcrumb navigation */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-lg border border-gray-200 px-4 py-3">
+        <nav className="flex items-center gap-1.5 text-sm text-gray-500 flex-wrap">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-1.5 hover:text-gray-900 transition-colors"
+          >
+            <Home className="h-4 w-4" />
+            <span className="hidden sm:inline">Home</span>
+          </button>
+          <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
+          <button
+            onClick={() => router.push('/settings')}
+            className="flex items-center gap-1.5 hover:text-gray-900 transition-colors font-medium text-gray-900"
+          >
+            <SettingsIcon className="h-4 w-4" />
+            Settings
+          </button>
+          {tab !== 'branding' && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
+              <span className="text-gray-700">
+                {menuItems.find(m => m.id === tab)?.label}
+              </span>
+            </>
+          )}
+        </nav>
 
-        <nav className="space-y-0.5">
+        {/* Tab switcher */}
+        <div className="flex flex-wrap items-center gap-1 bg-gray-100 rounded-xl p-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = tab === item.id;
@@ -176,23 +200,22 @@ function SettingsContent() {
               <button
                 key={item.id}
                 onClick={() => setTab(item.id as TabType)}
-                className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors ${
                   isActive 
-                  ? 'bg-gray-100 text-gray-900 font-medium' 
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-white text-gray-900 shadow-sm' 
+                  : 'text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5" />
                 {item.label}
               </button>
             );
           })}
-        </nav>
-      </aside>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 min-h-[500px]">
+      <main className="bg-white rounded-lg border border-gray-200 p-4 min-h-[500px]">
           {tab === 'branding' && (
             <BrandingSection 
               settings={settings} 
@@ -231,7 +254,6 @@ function SettingsContent() {
               companyName={companyName}
             />
           )}
-        </div>
       </main>
     </div>
   );

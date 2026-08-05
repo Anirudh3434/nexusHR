@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Loader2, Save, Eye, EyeOff, Globe, AlertCircle,
+  Loader2, Save, Eye, EyeOff, Globe, AlertCircle, Code2, LayoutTemplate,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +17,7 @@ import {
   DEFAULT_CAREERS,
   CAREER_COLOR_FIELDS,
   renderCareersPreview,
+  renderCareersCustomHtmlPreview,
 } from "@/lib/emailTemplatesMeta";
 import { CareersOverride } from "@/models/CompanyContentConfig";
 
@@ -123,6 +124,7 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [mode, setMode] = useState<"simple" | "html">("simple");
 
   useEffect(() => {
     if (!companyId) return;
@@ -146,11 +148,15 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
     ...careers,
   };
 
+  const useCustomHtml = (mergedCareers.customHtml || "").trim().length > 0;
+
   const updateField = (key: keyof CareersOverride, value: string) => {
     setCareers((prev) => ({ ...prev, [key]: value }));
   };
 
-  const preview = renderCareersPreview(mergedCareers, { ...PREVIEW_VARS, companyName });
+  const preview = useCustomHtml
+    ? renderCareersCustomHtmlPreview(mergedCareers.customHtml || "", mergedCareers.customCss || "", { ...PREVIEW_VARS, companyName })
+    : renderCareersPreview(mergedCareers, { ...PREVIEW_VARS, companyName });
 
   const handleSave = async () => {
     try {
@@ -208,12 +214,83 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
         {/* Editor */}
         <Card className="border-gray-100 shadow-sm">
           <CardHeader className="bg-gray-50/50 pb-4">
-            <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
-              <Globe className="h-4 w-4" />
-              Page Content
-            </CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
+                <Globe className="h-4 w-4" />
+                Page Content
+              </CardTitle>
+              <div className="flex items-center gap-1 bg-gray-200/70 rounded-lg p-0.5">
+                <button
+                  onClick={() => setMode("simple")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    mode === "simple" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  <LayoutTemplate className="h-3.5 w-3.5" />
+                  Simple Editor
+                </button>
+                <button
+                  onClick={() => setMode("html")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    mode === "html" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  <Code2 className="h-3.5 w-3.5" />
+                  HTML Code
+                </button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
+            {mode === "html" ? (
+              <>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                    Custom Page HTML
+                  </label>
+                  <textarea
+                    value={mergedCareers.customHtml || ""}
+                    onChange={(e) => updateField("customHtml", e.target.value)}
+                    rows={16}
+                    spellCheck={false}
+                    placeholder={`<section class="hero">...your full page HTML...</section>\n\n<div id="jobs">{jobListings}</div>\n\n<div id="apply">{applyForm}</div>\n\n<footer>...footer...</footer>`}
+                    className="w-full px-3 py-2 font-mono text-xs bg-slate-950 text-slate-100 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="mt-1 ml-1 text-[11px] text-gray-400">
+                    8 tokens available: {"{name}"} {"{companyName}"} {"{careerEmail}"} {"{jobListings}"} {"{applyForm}"}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                    Custom CSS <span className="normal-case font-normal text-gray-400">(optional)</span>
+                  </label>
+                  <textarea
+                    value={mergedCareers.customCss || ""}
+                    onChange={(e) => updateField("customCss", e.target.value)}
+                    rows={8}
+                    spellCheck={false}
+                    placeholder={`.hero { background: #f1f5f9; padding: 48px 0; text-align: center; }\n#jobs { max-width: 800px; margin: 0 auto; padding: 24px; }`}
+                    className="w-full px-3 py-2 font-mono text-xs bg-slate-900 text-slate-200 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3">
+                  <AlertCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                  <div className="text-[11px] text-blue-700 leading-relaxed">
+                    <p className="font-semibold mb-1">Where will the lists &amp; form appear?</p>
+                    <p>
+                      Place <code className="bg-blue-100 px-1 rounded">{'{jobListings}'}</code> where the live job listings should render and{" "}
+                      <code className="bg-blue-100 px-1 rounded">{'{applyForm}'}</code> where the application form should render.
+                    </p>
+                    <p className="mt-1">
+                      If you don't use the placeholders, the listings and form are automatically appended at the bottom of your page. Custom HTML overrides the color palette &amp; simple-editor content.
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
             {FIELD_LABELS.map((field) => (
               <div key={field.key}>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
@@ -279,6 +356,8 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
                 empty to keep the default text.
               </p>
             </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

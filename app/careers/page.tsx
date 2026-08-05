@@ -123,6 +123,192 @@ function CareersContent() {
   const applyOnlineDesc = fillTemplateText(mergedCareers.applyOnlineDesc || '', { careerEmail });
   const applyEmailDesc = fillTemplateText(mergedCareers.applyEmailDesc || '', { careerEmail });
 
+  // Renders the full application form for a given position (used by both the
+  // job cards and the {applyForm} slot in a custom HTML page).
+  const renderApplyForm = (position: JobPosition) => (
+    <Card className="bg-white">
+      <CardHeader>
+        <CardTitle className="text-slate-900">Apply for {position.title}</CardTitle>
+        {position.jobId && (
+          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm text-slate-700 mt-3">
+            <p className="font-medium mb-1">📌 Application Tracking</p>
+            <p className="text-slate-600">Job ID: <strong className="font-mono bg-white px-2 py-0.5 rounded border">{position.jobId}</strong></p>
+            <p className="text-xs text-slate-500 mt-1">
+              Include this ID in your application to help us track your application accurately.
+            </p>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        {submitted ? (
+          <div className="text-center py-8">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Application Submitted!
+            </h3>
+            <p className="text-gray-600">
+              Thank you for applying. Our HR team will review your application.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={(e) => handleApply(e, position._id)} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <User className="h-4 w-4 inline mr-1" />
+                  Full Name *
+                </label>
+                <Input
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Mail className="h-4 w-4 inline mr-1" />
+                  Email *
+                </label>
+                <Input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Phone className="h-4 w-4 inline mr-1" />
+                  Phone *
+                </label>
+                <Input
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+91 98765 43210"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Clock className="h-4 w-4 inline mr-1" />
+                  Experience *
+                </label>
+                <Input
+                  required
+                  value={formData.experience}
+                  onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                  placeholder="3 years"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Briefcase className="h-4 w-4 inline mr-1" />
+                  Current Designation
+                </label>
+                <Input
+                  value={formData.currentDesignation}
+                  onChange={(e) => setFormData({ ...formData, currentDesignation: e.target.value })}
+                  placeholder="Software Engineer"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <DollarSign className="h-4 w-4 inline mr-1" />
+                  Expected Salary
+                </label>
+                <Input
+                  value={formData.expectedSalary}
+                  onChange={(e) => setFormData({ ...formData, expectedSalary: e.target.value })}
+                  placeholder="8-10 LPA"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notice Period
+                </label>
+                <Input
+                  value={formData.noticePeriod}
+                  onChange={(e) => setFormData({ ...formData, noticePeriod: e.target.value })}
+                  placeholder="30 days"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Skills (comma separated)
+                </label>
+                <Input
+                  value={formData.skills}
+                  onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                  placeholder="React, Node.js, Python"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cover Letter
+              </label>
+              <textarea
+                className="w-full px-3 py-2 border rounded-md min-h-[100px]"
+                value={formData.coverLetter}
+                onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
+                placeholder="Tell us why you're a great fit for this role..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Resume (PDF/DOC) *
+              </label>
+              <Input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                required
+                onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
+              />
+            </div>
+
+            {/* Apply Options */}
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm text-slate-600 mb-3 text-center">Choose how you want to apply:</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  type="submit"
+                  style={{ backgroundColor: palette.button }}
+                  className="flex-1 hover:opacity-90"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  {submitting ? "Submitting..." : "Apply Online"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setApplyingId(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   const handleApply = async (e: React.FormEvent, positionId: string) => {
     e.preventDefault();
     setSubmitting(true);
@@ -185,6 +371,232 @@ function CareersContent() {
     );
   }
 
+  // Full job listings section (header + cards) - reused by default layout and
+  // the {jobListings} slot in a custom HTML page.
+  const renderJobListings = () => (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold" style={{ color: palette.primary }}>
+          {mergedCareers.openPositionsTitle || "Open Positions"} ({positions.length})
+        </h2>
+        <p className="mt-1" style={{ color: palette.text }}>
+          {mergedCareers.openPositionsSubtitle || "Browse our current job openings and apply today"}
+        </p>
+      </div>
+
+      {positions.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">No open positions</h3>
+            <p className="text-gray-500">Check back later for new opportunities</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {positions.map((position) => (
+            <Card key={position._id} className="overflow-hidden">
+              <div
+                className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setExpandedId(expandedId === position._id ? null : position._id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-semibold" style={{ color: palette.primary }}>
+                        {position.title}
+                      </h3>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        {position.employmentType}
+                      </Badge>
+                      {position.jobId && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono">
+                          ID: {position.jobId}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-sm mb-3" style={{ color: palette.text }}>
+                      <span className="flex items-center gap-1">
+                        <Building2 className="h-4 w-4" />
+                        {position.department}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {position.location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {position.experienceRequired}
+                      </span>
+                      {position.salaryRange && (
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="h-4 w-4" />
+                          {position.salaryRange}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {position.openings} opening{position.openings > 1 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    <p className="line-clamp-2 text-gray-700">
+                      {position.description}
+                    </p>
+                  </div>
+
+                  <div className="ml-4">
+                    {expandedId === position._id ? (
+                      <ChevronUp className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Expanded Details */}
+              {expandedId === position._id && (
+                <div className="border-t px-6 py-6 bg-gray-50">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
+                        <FileText className="h-4 w-4" />
+                        Requirements
+                      </h4>
+                      <ul className="space-y-2">
+                        {position.requirements.map((req, i) => (
+                          <li key={i} className="flex items-start gap-2 text-gray-700">
+                            <span style={{ color: palette.accent }}>•</span>
+                            {req}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
+                        <Briefcase className="h-4 w-4" />
+                        Responsibilities
+                      </h4>
+                      <ul className="space-y-2">
+                        {position.responsibilities.map((resp, i) => (
+                          <li key={i} className="flex items-start gap-2 text-gray-700">
+                            <span style={{ color: palette.accent }}>•</span>
+                            {resp}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Apply Button */}
+                  <div className="mt-6">
+                    {applyingId === position._id ? (
+                      renderApplyForm(position)
+                    ) : (
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          size="lg"
+                          onClick={() => setApplyingId(position._id)}
+                          style={{ backgroundColor: palette.button }}
+                          className="flex-1 hover:opacity-90"
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          Apply Online
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                        {position.jobId && (
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={() => window.location.href = `mailto:${careerEmail}?subject=Application for ${position.title} - ${position.jobId}`}
+                            className="flex-1"
+                          >
+                            <Mail className="h-4 w-4 mr-2" />
+                            Apply via Email
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Renders the fully custom HTML careers page. Splits on the {jobListings} and
+  // {applyForm} placeholders, injecting the live React components in their place.
+  const renderCustomPage = () => {
+    const raw = mergedCareers.customHtml || "";
+    const css = (mergedCareers.customCss || "").trim();
+
+    // If no placeholders are used, append the native sections at the end so the
+    // page never loses the listings or the form.
+    const hasJobSlot = /\{jobListings\}/.test(raw);
+    const hasFormSlot = /\{applyForm\}/.test(raw);
+
+    const filled = fillTemplateText(raw, { companyName: companyInfo?.company?.name || "our Company", careerEmail });
+
+    const parts: React.ReactNode[] = [];
+    const regex = /(\{jobListings\}|\{applyForm\})/g;
+    const tokens = filled.split(regex).filter((p) => p !== "");
+    let key = 0;
+    for (const token of tokens) {
+      if (token === "{jobListings}") {
+        parts.push(<div key={key++}>{renderJobListings()}</div>);
+      } else if (token === "{applyForm}") {
+        parts.push(
+          <div key={key++} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {positions.length > 0 ? renderApplyForm(positions[0]) : (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900">No open positions</h3>
+                  <p className="text-gray-500">Check back later for new opportunities</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        );
+      } else if (token.trim()) {
+        parts.push(
+          <div key={key++} dangerouslySetInnerHTML={{ __html: token }} />
+        );
+      }
+    }
+
+    if (!hasJobSlot) parts.push(<div key={key++}>{renderJobListings()}</div>);
+    if (!hasFormSlot && positions.length > 0) {
+      parts.push(
+        <div key={key++} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {renderApplyForm(positions[0])}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: palette.background, color: palette.text }}
+      >
+        {css && <style dangerouslySetInnerHTML={{ __html: css }} />}
+        {parts}
+      </div>
+    );
+  };
+
+  const useCustomPage = (mergedCareers.customHtml || "").trim().length > 0;
+
+  if (useCustomPage) {
+    return renderCustomPage();
+  }
+
   return (
     <div
       className="min-h-screen"
@@ -212,340 +624,7 @@ function CareersContent() {
       </div>
 
       {/* Job Listings */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold" style={{ color: palette.primary }}>
-            {mergedCareers.openPositionsTitle || "Open Positions"} ({positions.length})
-          </h2>
-          <p className="mt-1" style={{ color: palette.text }}>
-            {mergedCareers.openPositionsSubtitle || "Browse our current job openings and apply today"}
-          </p>
-        </div>
-
-        {positions.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No open positions</h3>
-              <p className="text-gray-500">Check back later for new opportunities</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {positions.map((position) => (
-              <Card key={position._id} className="overflow-hidden">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => setExpandedId(expandedId === position._id ? null : position._id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold" style={{ color: palette.primary }}>
-                          {position.title}
-                        </h3>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                          {position.employmentType}
-                        </Badge>
-                        {position.jobId && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono">
-                            ID: {position.jobId}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-4 text-sm mb-3" style={{ color: palette.text }}>
-                        <span className="flex items-center gap-1">
-                      <Building2 className="h-4 w-4" />
-                          {position.department}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {position.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {position.experienceRequired}
-                        </span>
-                        {position.salaryRange && (
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4" />
-                            {position.salaryRange}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {position.openings} opening{position.openings > 1 ? 's' : ''}
-                        </span>
-                      </div>
-                      
-                      <p className="line-clamp-2 text-gray-700">
-                        {position.description}
-                      </p>
-                    </div>
-                    
-                    <div className="ml-4">
-                      {expandedId === position._id ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Expanded Details */}
-                {expandedId === position._id && (
-                  <div className="border-t px-6 py-6 bg-gray-50">
-                    <div className="grid md:grid-cols-2 gap-8">
-                      <div>
-                        <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
-                          <FileText className="h-4 w-4" />
-                          Requirements
-                        </h4>
-                        <ul className="space-y-2">
-                          {position.requirements.map((req, i) => (
-                            <li key={i} className="flex items-start gap-2 text-gray-700">
-                              <span style={{ color: palette.accent }}>•</span>
-                              {req}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
-                          <Briefcase className="h-4 w-4" />
-                          Responsibilities
-                        </h4>
-                        <ul className="space-y-2">
-                          {position.responsibilities.map((resp, i) => (
-                            <li key={i} className="flex items-start gap-2 text-gray-700">
-                              <span style={{ color: palette.accent }}>•</span>
-                              {resp}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Apply Button */}
-                    <div className="mt-6">
-                      {applyingId === position._id ? (
-                        <Card className="bg-white">
-                          <CardHeader>
-                            <CardTitle className="text-slate-900">Apply for {position.title}</CardTitle>
-                            {position.jobId && (
-                              <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm text-slate-700 mt-3">
-                                <p className="font-medium mb-1">📌 Application Tracking</p>
-                                <p className="text-slate-600">Job ID: <strong className="font-mono bg-white px-2 py-0.5 rounded border">{position.jobId}</strong></p>
-                                <p className="text-xs text-slate-500 mt-1">
-                                  Include this ID in your application to help us track your application accurately.
-                                </p>
-                              </div>
-                            )}
-                          </CardHeader>
-                          <CardContent>
-                            {submitted ? (
-                              <div className="text-center py-8">
-                                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                  Application Submitted!
-                                </h3>
-                                <p className="text-gray-600">
-                                  Thank you for applying. Our HR team will review your application.
-                                </p>
-                              </div>
-                            ) : (
-                              <form onSubmit={(e) => handleApply(e, position._id)} className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      <User className="h-4 w-4 inline mr-1" />
-                                      Full Name *
-                                    </label>
-                                    <Input
-                                      required
-                                      value={formData.name}
-                                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                      placeholder="John Doe"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      <Mail className="h-4 w-4 inline mr-1" />
-                                      Email *
-                                    </label>
-                                    <Input
-                                      type="email"
-                                      required
-                                      value={formData.email}
-                                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                      placeholder="john@example.com"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      <Phone className="h-4 w-4 inline mr-1" />
-                                      Phone *
-                                    </label>
-                                    <Input
-                                      required
-                                      value={formData.phone}
-                                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                      placeholder="+91 98765 43210"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      <Clock className="h-4 w-4 inline mr-1" />
-                                      Experience *
-                                    </label>
-                                    <Input
-                                      required
-                                      value={formData.experience}
-                                      onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                                      placeholder="3 years"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      <Briefcase className="h-4 w-4 inline mr-1" />
-                                      Current Designation
-                                    </label>
-                                    <Input
-                                      value={formData.currentDesignation}
-                                      onChange={(e) => setFormData({ ...formData, currentDesignation: e.target.value })}
-                                      placeholder="Software Engineer"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      <DollarSign className="h-4 w-4 inline mr-1" />
-                                      Expected Salary
-                                    </label>
-                                    <Input
-                                      value={formData.expectedSalary}
-                                      onChange={(e) => setFormData({ ...formData, expectedSalary: e.target.value })}
-                                      placeholder="8-10 LPA"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      Notice Period
-                                    </label>
-                                    <Input
-                                      value={formData.noticePeriod}
-                                      onChange={(e) => setFormData({ ...formData, noticePeriod: e.target.value })}
-                                      placeholder="30 days"
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      Skills (comma separated)
-                                    </label>
-                                    <Input
-                                      value={formData.skills}
-                                      onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                                      placeholder="React, Node.js, Python"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Cover Letter
-                                  </label>
-                                  <textarea
-                                    className="w-full px-3 py-2 border rounded-md min-h-[100px]"
-                                    value={formData.coverLetter}
-                                    onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
-                                    placeholder="Tell us why you're a great fit for this role..."
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Resume (PDF/DOC) *
-                                  </label>
-                                  <Input
-                                    type="file"
-                                    accept=".pdf,.doc,.docx"
-                                    required
-                                    onChange={(e) => setFormData({ ...formData, resume: e.target.files?.[0] || null })}
-                                  />
-                                </div>
-
-                                {/* Apply Options */}
-                                <div className="border-t pt-4 mt-4">
-                                  <p className="text-sm text-slate-600 mb-3 text-center">Choose how you want to apply:</p>
-                                  <div className="flex flex-col sm:flex-row gap-3">
-                                    <Button 
-                                      type="submit" 
-                                      style={{ backgroundColor: palette.button }}
-                                      className="flex-1 hover:opacity-90"
-                                      disabled={submitting}
-                                    >
-                                      {submitting ? (
-                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                      ) : (
-                                        <Send className="h-4 w-4 mr-2" />
-                                      )}
-                                      {submitting ? "Submitting..." : "Apply Online"}
-                                    </Button>
-                                    <Button 
-                                      type="button" 
-                                      variant="outline"
-                                      onClick={() => setApplyingId(null)}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </div>
-                              </form>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <Button 
-                            size="lg" 
-                            onClick={() => setApplyingId(position._id)}
-                            style={{ backgroundColor: palette.button }}
-                            className="flex-1 hover:opacity-90"
-                          >
-                            <Send className="h-4 w-4 mr-2" />
-                            Apply Online
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Button>
-                          {position.jobId && (
-                            <Button 
-                              size="lg" 
-                              variant="outline"
-                              onClick={() => window.location.href = `mailto:${careerEmail}?subject=Application for ${position.title} - ${position.jobId}`}
-                              className="flex-1"
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Apply via Email
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+      {renderJobListings()}
 
       {/* How to Apply Section */}
       <div className="border-t py-12" style={{ backgroundColor: palette.header, borderColor: palette.secondary + "33" }}>

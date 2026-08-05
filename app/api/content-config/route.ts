@@ -67,6 +67,7 @@ export async function PUT(req: NextRequest) {
       'brandText', 'heroTitle', 'heroSubtitle', 'openPositionsTitle', 'openPositionsSubtitle',
       'howToApplyTitle', 'applyOnlineTitle', 'applyOnlineDesc', 'applyEmailTitle', 'applyEmailDesc', 'footerBrandText',
       'primaryColor', 'secondaryColor', 'accentColor', 'backgroundColor', 'textColor', 'headerColor', 'buttonColor',
+      'customHtml', 'customCss',
     ];
     if (careers && typeof careers === 'object') {
       for (const field of careerFields) {

@@ -105,6 +105,8 @@ export const DEFAULT_CAREERS: CareersOverride = {
   textColor: '#64748b',
   headerColor: '#ffffff',
   buttonColor: '#0f172a',
+  customHtml: '',
+  customCss: '',
 };
 
 export const EMAIL_TEMPLATE_LIST: EmailTemplateMeta[] = [
@@ -178,8 +180,7 @@ export function renderEmailPreview(
 export function renderCareersPreview(
   careers: CareersOverride,
   vars: Record<string, string>
-): string {
-  const c = { ...DEFAULT_CAREERS, ...careers };
+): string {  const c = { ...DEFAULT_CAREERS, ...careers };
   return `
     <div style="font-family:Arial,Helvetica,sans-serif;background:${c.backgroundColor};border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
       <div style="background:${c.headerColor};border-bottom:1px solid #e2e8f0;padding:28px 32px;">
@@ -237,4 +238,50 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// Sample markup used to visualize where the live job listings / apply form
+// will be injected when rendering a custom HTML careers page.
+const SAMPLE_JOBS_SLOT = `
+  <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;background:#fff;margin-bottom:8px;">
+    <p style="margin:0;color:#0f172a;font-size:15px;font-weight:600;">Software Engineer</p>
+    <p style="margin:4px 0 0;color:#64748b;font-size:12px;">Engineering · Remote · 3+ years · 2 openings</p>
+  </div>
+  <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;background:#fff;margin-bottom:8px;">
+    <p style="margin:0;color:#0f172a;font-size:15px;font-weight:600;">HR Executive</p>
+    <p style="margin:4px 0 0;color:#64748b;font-size:12px;">Human Resources · Bengaluru · 1+ year · 1 opening</p>
+  </div>
+`;
+
+const SAMPLE_FORM_SLOT = `
+  <div style="border:1px solid #e2e8f0;border-radius:12px;padding:24px;background:#fff;">
+    <p style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Apply for this position</p>
+    <p style="margin:0 0 20px;color:#94a3b8;font-size:12px;">The live application form (name, email, phone, experience, resume upload, etc.) renders here.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="height:36px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"></div>
+      <div style="height:36px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"></div>
+      <div style="height:36px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"></div>
+      <div style="height:36px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"></div>
+    </div>
+    <div style="height:80px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;margin-bottom:16px;"></div>
+    <div style="height:40px;width:180px;border-radius:8px;background:#0f172a;"></div>
+  </div>
+`;
+
+// Build a live-preview of a fully custom HTML careers page. Custom <style> (CSS)
+// is inlined in a <style> tag and the {jobListings}/{applyForm} placeholders are
+// substituted with sample markup so the admin can see where components land.
+export function renderCareersCustomHtmlPreview(
+  customHtml: string,
+  customCss: string,
+  vars: Record<string, string>
+): string {
+  if (!customHtml || !customHtml.trim()) return '';
+
+  let html = fillTemplateText(customHtml, vars);
+  html = html.replace(/\{jobListings\}/g, SAMPLE_JOBS_SLOT);
+  html = html.replace(/\{applyForm\}/g, SAMPLE_FORM_SLOT);
+
+  const css = customCss && customCss.trim() ? `<style>${customCss}</style>` : '';
+  return `${css}<div style="outline:1px dashed #94a3b8;outline-offset:-1px;">${html}</div>`;
 }
