@@ -71,6 +71,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [registeredCompanyCode, setRegisteredCompanyCode] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [data, setData] = useState<CompanyData>({
@@ -218,10 +219,12 @@ export default function RegisterPage() {
       
       // Registration successful
       setCurrentStep(steps.length); // Show success screen
-      
-      // Redirect to login after 3 seconds
+      const companyCode = result.company?.code || data.code.toUpperCase();
+      setRegisteredCompanyCode(companyCode);
+
+      // Redirect to the company portal login after 3 seconds
       setTimeout(() => {
-        router.push('/login');
+        router.push(`/${companyCode}`);
       }, 3000);
       
     } catch (err: any) {
@@ -242,10 +245,10 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Complete!</h2>
             <p className="text-gray-600 mb-6">
-              Your company has been registered successfully. You will be redirected to the login page shortly.
+              Your company has been registered successfully. You will be redirected to your company portal login shortly.
             </p>
-            <Button onClick={() => router.push('/login')} className="w-full">
-              Go to Login
+            <Button onClick={() => router.push(`/${registeredCompanyCode || data.code.toUpperCase()}`)} className="w-full">
+              Go to Company Portal Login
             </Button>
           </CardContent>
         </Card>
