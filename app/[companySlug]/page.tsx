@@ -81,6 +81,12 @@ export default function CompanyLoginPage() {
     const result = await login(email, password);
 
     if (result.success) {
+      // Ensure the account belongs to this company before granting access
+      if (!result.user?.isCandidate && result.user?.companyId !== company?.id) {
+        addToast({ type: "error", title: "Wrong Company", description: "This account does not belong to this company's portal." });
+        setIsLoggingIn(false);
+        return;
+      }
       addToast({ type: "success", title: "Login Successful", description: `Welcome to ${company?.name || 'your company'}!` });
       if (result.user?.isCandidate) {
         router.push(result.user?.mustChangePassword ? '/candidate/change-password' : '/candidate/dashboard');
