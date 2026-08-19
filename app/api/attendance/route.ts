@@ -4,6 +4,7 @@ import Attendance from '@/models/Attendance';
 import User from '@/models/User';
 import WorkShift from '@/models/WorkShift';
 import Company from '@/models/Company';
+import { emitToRoom } from '@/lib/socketEmit';
 
 // GET attendance records
 export async function GET(req: Request) {
@@ -214,14 +215,11 @@ export async function POST(req: Request) {
     await connectDB();
     const { employeeId, date, checkIn, checkOut, companyId, note, location, workMode } = await req.json();
 
-    // Get socket.io instance from global
-    const io = (global as any).io;
-
+    // Parse date string to Date object
     if (!employeeId || !date) {
       return NextResponse.json({ message: 'Missing employeeId or date' }, { status: 400 });
     }
 
-    // Parse date string to Date object
     const attendanceDate = new Date(date);
     
     // Format time strings
@@ -399,17 +397,14 @@ export async function POST(req: Request) {
       await attendance.save();
 
       // Emit socket event for real-time sync
-      if (io) {
-        io.to(employeeId).emit('attendance-updated', {
-          employeeId,
-          date: attendanceDate.toISOString().split('T')[0],
-          checkIn: attendance.checkIn,
-          checkOut: attendance.checkOut,
-          status: attendance.status,
-          workMode: attendance.workMode,
-        });
-        console.log('[Attendance] Socket event emitted: attendance-updated for user', employeeId);
-      }
+      emitToRoom(employeeId, 'attendance-updated', {
+        employeeId,
+        date: attendanceDate.toISOString().split('T')[0],
+        checkIn: attendance.checkIn,
+        checkOut: attendance.checkOut,
+        status: attendance.status,
+        workMode: attendance.workMode,
+      });
       
       return NextResponse.json({ 
         message: 'Attendance updated', 
@@ -458,17 +453,14 @@ export async function POST(req: Request) {
       });
 
       // Emit socket event for real-time sync
-      if (io) {
-        io.to(employeeId).emit('attendance-updated', {
-          employeeId,
-          date: attendanceDate.toISOString().split('T')[0],
-          checkIn: newAttendance.checkIn,
-          checkOut: newAttendance.checkOut,
-          status: newAttendance.status,
-          workMode: newAttendance.workMode,
-        });
-        console.log('[Attendance] Socket event emitted: attendance-updated for user', employeeId);
-      }
+      emitToRoom(employeeId, 'attendance-updated', {
+        employeeId,
+        date: attendanceDate.toISOString().split('T')[0],
+        checkIn: newAttendance.checkIn,
+        checkOut: newAttendance.checkOut,
+        status: newAttendance.status,
+        workMode: newAttendance.workMode,
+      });
       
       return NextResponse.json({ 
         message: 'Attendance logged', 
