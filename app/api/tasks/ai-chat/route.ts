@@ -149,9 +149,9 @@ export async function POST(req: NextRequest) {
 
     // 3. Build system prompt
     const systemPrompt = `You are NexusAI, an elite, agentic project management AI assistant integrated directly into the workspace.
-Your purpose is to answer questions with precision and execute workspace operations requested by the user.
+You communicate conversationally, intelligently, and clearly. You are empowered to ask clarifying questions whenever user requests are ambiguous or require specific details to yield accurate results.
 
-Available Operations:
+Available Agent Operations:
 1. "move_task": Change task status.
    Format: { "type": "move_task", "taskId": "TSK... or ObjectId", "status": "backlog" | "to_do" | "in_progress" | "in_review" | "completed" }
 2. "assign_task": Assign a task to a user.
@@ -165,24 +165,25 @@ Available Operations:
 
 Workspace Context:
 - Project ID: "${projectId || 'Workspace'}"
+- Project Name: "${project?.name || 'Entire Workspace'}"
 - Current User ID ("me" / "my"): "${userId || 'current-user'}"
 - Current User Name: "${userName}"
 - Current Date/Time: "${currentDate}"
 - Workspace Members: ${JSON.stringify(membersContext)}
 - Project Tasks: ${JSON.stringify(tasksContext)}
 
-Instructions:
-- When a user asks a question, answer clearly in markdown with clean tables, bullet points, and highlighted status badges.
-- When an operation is requested (e.g. "move TSK26070010 to in progress", "assign TSK26070012 to Tarun", "comment on TSK26070011 saying done"), identify the matching task numbers/IDs and specify the actions in the "actions" array.
-- For status inputs: map "in progress" -> "in_progress", "todo" -> "to_do", "review" -> "in_review", "done" -> "completed", "backlog" -> "backlog".
-- If no action is needed, leave the "actions" array empty: [].
+Behavior & Conversation Guidelines:
+- If the user asks a question, provide a clear, concise, and beautifully structured answer using markdown bullet points, bold highlights, and task numbers.
+- If the user's intent is ambiguous (e.g. "move the bug", "assign this task", "create a sprint"), feel free to ask a direct clarifying question and provide relevant options/candidates in the "suggestions" array!
+- When you ask a question or recommend next steps, provide 2 to 4 quick response suggestions in the "suggestions" array.
+- When an operation is clear and requested (e.g. "move TSK26070010 to in progress", "assign TSK26070012 to Tarun"), execute it by adding it to the "actions" array AND confirm the action clearly in your response.
+- If no action is being executed, leave the "actions" array empty [].
 
-You MUST respond strictly with a valid JSON object matching this structure:
+Output Structure (MUST be valid JSON):
 {
-  "response": "Your clean markdown answer to the user.",
-  "actions": [
-    { "type": "move_task", "taskId": "...", "status": "in_progress" }
-  ]
+  "response": "Your friendly, clean markdown response to the user.",
+  "suggestions": ["Follow-up question or option 1", "Option 2"],
+  "actions": []
 }
 Output raw JSON only.`;
 
@@ -266,6 +267,7 @@ Output raw JSON only.`;
 
     // 6. Safe JSON parsing with fallback
     let aiText = reply;
+    let suggestions: string[] = [];
     let actions: any[] = [];
     try {
       let jsonText = reply;
@@ -281,10 +283,12 @@ Output raw JSON only.`;
       }
       const parsed = JSON.parse(jsonText.trim());
       aiText = parsed.response || parsed.message || reply;
+      suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : [];
       actions = Array.isArray(parsed.actions) ? parsed.actions : [];
     } catch (e) {
       aiText = reply.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
       actions = [];
+      suggestions = [];
     }
 
     // 7. Execute agentic actions in database
@@ -442,6 +446,7 @@ Output raw JSON only.`;
     return NextResponse.json({
       response: aiText,
       message: aiText,
+      suggestions,
       tasks: updatedTasks,
       actionsExecuted: actionsExecutedCount,
       actionExecuted: actionsExecutedCount > 0,
