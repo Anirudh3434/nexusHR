@@ -182,7 +182,7 @@ Behavior & Conversation Guidelines:
 Output Structure (MUST be valid JSON):
 {
   "response": "Your friendly, clean markdown response to the user.",
-  "suggestions": ["Follow-up question or option 1", "Option 2"],
+  "suggestions": ["Follow-up option 1", "Option 2"],
   "actions": []
 }
 Output raw JSON only.`;
@@ -431,15 +431,35 @@ Output raw JSON only.`;
 
     // 8. Return refreshed task list & AI response
     let updatedTasks: any[] = [];
+    const queryFilter: any = {};
     if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
-      updatedTasks = await Task.find({ projectId })
+      queryFilter.projectId = projectId;
+    } else if (effectiveCompanyId && mongoose.Types.ObjectId.isValid(effectiveCompanyId)) {
+      queryFilter.companyId = effectiveCompanyId;
+    }
+
+    if (Object.keys(queryFilter).length > 0) {
+      if (taskNumberMatches && taskNumberMatches.length > 0) {
+        queryFilter.taskNumber = { $in: taskNumberMatches.map((t: string) => t.toUpperCase()) };
+      } else if (prompt.match(/assigned to me|my tasks|my task|for me/i) && userId && mongoose.Types.ObjectId.isValid(userId)) {
+        queryFilter.assignedTo = new mongoose.Types.ObjectId(userId);
+      } else if (prompt.match(/bug|bugs/i)) {
+        queryFilter.taskType = 'bug';
+      } else if (prompt.match(/in progress|in_progress/i)) {
+        queryFilter.status = 'in_progress';
+      } else if (prompt.match(/overdue/i)) {
+        queryFilter.dueDate = { $lt: new Date() };
+        queryFilter.status = { $ne: 'completed' };
+      } else if (prompt.match(/high priority|critical/i)) {
+        queryFilter.priority = { $in: ['high', 'critical'] };
+      }
+
+      updatedTasks = await Task.find(queryFilter)
+        .sort({ updatedAt: -1 })
+        .limit(6)
         .populate('projectId', 'name projectNumber')
         .populate('assignedTo', 'name email department')
         .populate('assignedBy', 'name email')
-        .populate('dependsOn', 'taskNumber title status')
-        .populate('blocks', 'taskNumber title status')
-        .populate('parentId', 'taskNumber title status')
-        .populate('createdBy', 'name email')
         .lean();
     }
 
