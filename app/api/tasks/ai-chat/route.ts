@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
     let projectId = body.projectId;
     const history = body.history || body.conversationHistory || body.messages || [];
     const modelChoice = body.model;
+    const isVoiceRequest = body.isVoice || false;
 
     if (!prompt) {
       return NextResponse.json({ message: 'Prompt or message is required' }, { status: 400 });
@@ -147,9 +148,14 @@ export async function POST(req: NextRequest) {
 
     const currentDate = new Date().toISOString();
 
-    // 3. Build system prompt
-    const systemPrompt = `You are NexusAI, an elite, agentic project management AI assistant integrated directly into the workspace.
-You communicate conversationally, intelligently, and clearly. You are empowered to ask clarifying questions whenever user requests are ambiguous or require specific details to yield accurate results.
+    // 3. Build system prompt with Dual-Response Engine (Rich UI text + Natural Spoken Voice text)
+    const systemPrompt = `You are NexusAI, an elite, agentic project management voice and workspace AI assistant.
+You communicate clearly for both visual screen reading AND natural audio listening.
+
+Dual-Response Rule:
+There is a fundamental difference between READING information and LISTENING to spoken speech:
+- For "response": Provide rich markdown formatting with bullet points, bold highlights, and task IDs for the visual UI.
+- For "voiceResponse": Provide a warm, natural, human-friendly spoken response (1-2 clear sentences) crafted strictly for the ear. Never read out raw markdown, brackets, or long strings of task IDs. Summarize titles naturally (e.g. "You have 3 tasks assigned. The top priority is fixing the login issue. Would you like me to start on that?").
 
 Available Agent Operations:
 1. "move_task": Change task status.
@@ -172,16 +178,14 @@ Workspace Context:
 - Workspace Members: ${JSON.stringify(membersContext)}
 - Project Tasks: ${JSON.stringify(tasksContext)}
 
-Behavior & Conversation Guidelines:
-- If the user asks a question, provide a clear, concise, and beautifully structured answer using markdown bullet points, bold highlights, and task numbers.
-- If the user's intent is ambiguous (e.g. "move the bug", "assign this task", "create a sprint"), feel free to ask a direct clarifying question and provide relevant options/candidates in the "suggestions" array!
-- When you ask a question or recommend next steps, provide 2 to 4 quick response suggestions in the "suggestions" array.
-- When an operation is clear and requested (e.g. "move TSK26070010 to in progress", "assign TSK26070012 to Tarun"), execute it by adding it to the "actions" array AND confirm the action clearly in your response.
-- If no action is being executed, leave the "actions" array empty [].
+Instructions:
+- If the user request is ambiguous, ask a clarifying question in both text and voice, and provide quick options in the "suggestions" array.
+- When an operation is executed, confirm the action cleanly in both "response" and "voiceResponse".
 
-Output Structure (MUST be valid JSON):
+You MUST respond strictly with a valid JSON object matching this structure:
 {
-  "response": "Your friendly, clean markdown response to the user.",
+  "response": "Your structured visual markdown answer for the screen.",
+  "voiceResponse": "Your concise, warm, natural spoken sentence for audio playback.",
   "suggestions": ["Follow-up option 1", "Option 2"],
   "actions": []
 }
@@ -267,6 +271,7 @@ Output raw JSON only.`;
 
     // 6. Safe JSON parsing with fallback
     let aiText = reply;
+    let voiceText = '';
     let suggestions: string[] = [];
     let actions: any[] = [];
     try {
@@ -283,10 +288,12 @@ Output raw JSON only.`;
       }
       const parsed = JSON.parse(jsonText.trim());
       aiText = parsed.response || parsed.message || reply;
+      voiceText = parsed.voiceResponse || '';
       suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : [];
       actions = Array.isArray(parsed.actions) ? parsed.actions : [];
     } catch (e) {
       aiText = reply.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+      voiceText = '';
       actions = [];
       suggestions = [];
     }
@@ -466,6 +473,7 @@ Output raw JSON only.`;
     return NextResponse.json({
       response: aiText,
       message: aiText,
+      voiceResponse: voiceText || undefined,
       suggestions,
       tasks: updatedTasks,
       actionsExecuted: actionsExecutedCount,
