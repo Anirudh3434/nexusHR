@@ -4,6 +4,7 @@ import KRAuthToken from '@/models/QRAuthToken';
 import User from '@/models/User';
 import LinkedDevice from '@/models/LinkedDevice';
 import jwt from 'jsonwebtoken';
+import { emitToRoom } from '@/lib/socketEmit';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-123';
 
@@ -48,10 +49,7 @@ export async function POST(req: Request) {
     await handleDevicePairing(user._id.toString(), deviceInfo);
 
     // Notify the web dashboard in real-time that the device is linked
-    if ((global as any).io) {
-      console.log(`[API] Notifying real-time sync for user ${user._id}`);
-      (global as any).io.to(user._id.toString()).emit("device-linked-success", deviceInfo);
-    }
+    emitToRoom(user._id.toString(), 'device-linked-success', deviceInfo);
 
     const userResponse = {
       id: user._id,

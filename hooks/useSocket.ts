@@ -10,7 +10,9 @@ export const useSocket = (userId?: string) => {
   useEffect(() => {
     if (!userId) return;
 
-    const newSocket = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+
+    const newSocket = io(socketUrl, {
       transports: ["polling", "websocket"],
       reconnectionAttempts: 10,
     });
