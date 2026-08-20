@@ -1,0 +1,38 @@
+# NexusHR — Modern HR Management System
+
+NexusHR is an open-source, full-stack HR management system and project management platform built with Next.js 16, MongoDB, and React Native (Expo). It provides geo-fenced attendance, leave management, payroll processing, GitHub-integrated sprint boards, AI-powered project management, and real-time team collaboration.
+
+## About NexusHR
+
+NexusHR is designed for modern enterprise teams that need a single portal for human resources operations and project delivery. The platform includes attendance tracking with GPS verification, automated payroll, expense tracking, employee directory management, ticketing, surveys, and an AI assistant for project management.
+
+## Key Features
+
+- [Geo-Fenced GPS Attendance](https://nexus-hr-udh9.vercel.app) — Real-time GPS verification with office boundary maps and automatic punch-in
+- [Leave Management](https://nexus-hr-udh9.vercel.app) — Multi-level approval workflows and leave balance tracking
+- [Automated Payroll](https://nexus-hr-udh9.vercel.app) — Salary calculation, payslip generation, and tax deductions
+- [GitHub-Integrated PMS](https://nexus-hr-udh9.vercel.app) — Sprint boards with automatic branch-to-ticket status updates
+- [AI Voice Briefings](https://nexus-hr-udh9.vercel.app) — Natural language executive summaries powered by NVIDIA Llama 3.1
+- [Expense Tracking](https://nexus-hr-udh9.vercel.app) — Employee expense claims with approval workflows
+- [Mobile App](https://github.com/Anirudh3434) — React Native Expo app for iOS and Android
+
+## Technical Stack
+
+- [GitHub Repository](https://github.com/Anirudh3434/nexusHR) — Source code for the web application
+- [WebSocket Server](https://github.com/Anirudh3434/nexus-hr-websocket) — Standalone Socket.IO server for real-time updates
+- [Mobile App Repository](https://github.com/Anirudh3434) — React Native Expo mobile application
+
+## How to Use
+
+1. [Register your company](https://nexus-hr-udh9.vercel.app/register) with company code and office GPS coordinates
+2. [Sign in](https://nexus-hr-udh9.vercel.app/login) with your employee credentials
+3. Use the [QR login](https://nexus-hr-udh9.vercel.app/qr-login) for quick mobile device pairing
+
+## Contact
+
+- [GitHub](https://github.com/Anirudh3434) — Anirudh Bhardwaj
+- [Project Website](https://nexus-hr-udh9.vercel.app)
+
+## License
+
+MIT License — open source for learning and commercial use.
