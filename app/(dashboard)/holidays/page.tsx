@@ -202,7 +202,7 @@ export default function HolidaysPage() {
       case 'Company': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Optional': return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'Weekend': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+      default: return 'bg-gray-50 dark:bg-slate-950 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -236,13 +236,13 @@ export default function HolidaysPage() {
             <Calendar className="h-8 w-8 text-blue-600" />
             Holiday Calendar
           </h1>
-          <p className="text-gray-500">View company holidays and plan your year</p>
+          <p className="text-gray-500 dark:text-gray-400">View company holidays and plan your year</p>
         </div>
         <div className="flex items-center gap-3">
           <select
             value={currentYear}
             onChange={(e) => setCurrentYear(Number(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             {[2024, 2025, 2026, 2027].map(year => (
               <option key={year} value={year}>{year}</option>
@@ -275,19 +275,19 @@ export default function HolidaysPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{totalHolidays}</div>
-            <p className="text-sm text-gray-500">Total Holidays</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total Holidays</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-red-600">{nationalHolidays}</div>
-            <p className="text-sm text-gray-500">National Holidays</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">National Holidays</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-blue-600">{companyHolidays}</div>
-            <p className="text-sm text-gray-500">Company Holidays</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Company Holidays</p>
           </CardContent>
         </Card>
       </div>
@@ -309,14 +309,14 @@ export default function HolidaysPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
           ) : totalHolidays === 0 ? (
             <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No holidays found for {currentYear}</p>
+              <Calendar className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">No holidays found for {currentYear}</p>
               {canManage && (
-                <p className="text-sm text-gray-400 mt-1">Click "Add Holiday" to create one</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Click "Add Holiday" to create one</p>
               )}
             </div>
           ) : (
@@ -327,7 +327,7 @@ export default function HolidaysPage() {
                 
                 return (
                   <div key={month}>
-                    <h3 className="font-semibold text-lg text-gray-900 mb-3 sticky top-0 bg-white py-2 border-b">
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-3 sticky top-0 bg-white dark:bg-slate-900 py-2 border-b">
                       {month} {currentYear}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -352,7 +352,7 @@ export default function HolidaysPage() {
                                   {holiday.description && (
                                     <p className="text-xs opacity-80 mt-0.5">{holiday.description}</p>
                                   )}
-                                  <span className="text-xs px-1.5 py-0.5 rounded bg-white/50 mt-1 inline-block">
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-white dark:bg-slate-900/50 mt-1 inline-block">
                                     {holiday.type}
                                   </span>
                                 </div>
@@ -388,17 +388,17 @@ export default function HolidaysPage() {
       {/* Add Holiday Modal */}
       {showModal && canManage && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Add Holiday</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="h-5 w-5" />
               </button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Holiday Name *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -409,7 +409,7 @@ export default function HolidaysPage() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date *</label>
                   <Input
                     type="date"
                     value={formData.date}
@@ -418,11 +418,11 @@ export default function HolidaysPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({...formData, type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="National">National</option>
                     <option value="Company">Company</option>
@@ -433,12 +433,12 @@ export default function HolidaysPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   placeholder="Optional description..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[60px]"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[60px]"
                 />
               </div>
               
@@ -448,9 +448,9 @@ export default function HolidaysPage() {
                   id="recurring"
                   checked={formData.isRecurring}
                   onChange={(e) => setFormData({...formData, isRecurring: e.target.checked})}
-                  className="rounded border-gray-300"
+                  className="rounded border-gray-300 dark:border-gray-600"
                 />
-                <label htmlFor="recurring" className="text-sm text-gray-700">Recurring yearly</label>
+                <label htmlFor="recurring" className="text-sm text-gray-700 dark:text-gray-300">Recurring yearly</label>
               </div>
               
               <div className="flex gap-3 pt-4">

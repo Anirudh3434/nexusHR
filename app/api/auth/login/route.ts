@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import Company from '@/models/Company';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
     );
 
     // Filter out password from response
+    const company = user.companyId ? await Company.findById(user.companyId).select('name logo').lean() : null;
     const userResponse = {
       id: user._id,
       name: user.name,
@@ -46,6 +48,8 @@ export async function POST(req: Request) {
       status: user.status,
       avatar: user.avatar,
       companyId: user.companyId?.toString(),
+      companyLogo: (company as any)?.logo || '',
+      companyName: (company as any)?.name || '',
       workShiftId: user.workShiftId?.toString(),
       salary: user.salary,
       employeeId: user.employeeId,

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { 
   KanbanSquare, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
-  AlertCircle, Play, Pause, Square, GripVertical, X, CornerDownRight, Link2
+  AlertCircle, Play, Pause, Square, GripVertical, X, CornerDownRight, Link2, Loader2
 } from "lucide-react";
 
 interface TaskItem {
@@ -73,7 +73,7 @@ const taskTypeLabels: Record<string, string> = {
 };
 
 const taskTypeColors: Record<string, string> = {
-  task: 'bg-gray-100 text-gray-700',
+  task: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   story: 'bg-blue-100 text-blue-700',
   bug: 'bg-red-100 text-red-700',
   epic: 'bg-purple-100 text-purple-700',
@@ -82,7 +82,7 @@ const taskTypeColors: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  backlog: 'bg-gray-100 text-gray-700',
+  backlog: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   to_do: 'bg-blue-100 text-blue-700',
   in_progress: 'bg-yellow-100 text-yellow-700',
   in_review: 'bg-purple-100 text-purple-700',
@@ -91,19 +91,19 @@ const statusColors: Record<string, string> = {
 };
 
 const priorityColors: Record<string, string> = {
-  low: 'bg-gray-100 text-gray-700',
+  low: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   medium: 'bg-blue-100 text-blue-700',
   high: 'bg-orange-100 text-orange-700',
   critical: 'bg-red-100 text-red-700',
 };
 
 const statusThemes: Record<string, { dot: string; headerText: string; lightBg: string; border: string }> = {
-  backlog: { dot: 'bg-slate-400', headerText: 'text-slate-800', lightBg: 'bg-slate-50/50', border: 'border-slate-200/50' },
-  to_do: { dot: 'bg-blue-500', headerText: 'text-slate-800', lightBg: 'bg-blue-50/40', border: 'border-blue-200/40' },
-  in_progress: { dot: 'bg-amber-500', headerText: 'text-slate-800', lightBg: 'bg-amber-50/40', border: 'border-amber-200/40' },
-  in_review: { dot: 'bg-purple-500', headerText: 'text-slate-800', lightBg: 'bg-purple-50/40', border: 'border-purple-200/40' },
-  completed: { dot: 'bg-emerald-500', headerText: 'text-slate-800', lightBg: 'bg-emerald-50/40', border: 'border-emerald-200/40' },
-  cancelled: { dot: 'bg-rose-500', headerText: 'text-slate-800', lightBg: 'bg-rose-50/40', border: 'border-rose-200/40' },
+  backlog: { dot: 'bg-slate-400', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-slate-50 dark:bg-slate-800/50', border: 'border-slate-200 dark:border-slate-700/50' },
+  to_do: { dot: 'bg-blue-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-blue-50/40', border: 'border-blue-200/40' },
+  in_progress: { dot: 'bg-amber-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-amber-50/40', border: 'border-amber-200/40' },
+  in_review: { dot: 'bg-purple-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-purple-50/40', border: 'border-purple-200/40' },
+  completed: { dot: 'bg-emerald-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-emerald-50/40', border: 'border-emerald-200/40' },
+  cancelled: { dot: 'bg-rose-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-rose-50/40', border: 'border-rose-200/40' },
 };
 
 export default function TasksManagementPage() {
@@ -665,7 +665,7 @@ export default function TasksManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -674,8 +674,8 @@ export default function TasksManagementPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Tasks</h1>
-          <p className="text-gray-600">Manage project tasks</p>
+          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage project tasks</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center border rounded-lg">
@@ -716,7 +716,7 @@ export default function TasksManagementPage() {
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search tasks..."
@@ -754,7 +754,7 @@ export default function TasksManagementPage() {
         <div className="space-y-4">
           {filteredTasks.length === 0 ? (
             <Card>
-              <CardContent className="pt-6 text-center text-gray-500">
+              <CardContent className="pt-6 text-center text-gray-500 dark:text-gray-400">
                 No tasks found
               </CardContent>
             </Card>
@@ -778,10 +778,10 @@ export default function TasksManagementPage() {
                         {priorityLabels[task.priority]}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{task.taskNumber}</p>
-                    <p className="text-gray-700 mb-3">{task.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{task.taskNumber}</p>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">{task.description}</p>
                     
-                    <div className="flex items-center gap-6 text-sm text-gray-600">
+                    <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
                       <div className="flex items-center gap-2">
                         <KanbanSquare className="w-4 h-4" />
                         <span>{task.projectId?.name || 'Unknown Project'}</span>
@@ -811,7 +811,7 @@ export default function TasksManagementPage() {
                     {/* Progress Bar */}
                     <div className="mt-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-600 dark:text-gray-400">Progress</span>
                         <span className="font-medium">{task.progressPercentage}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -876,19 +876,19 @@ export default function TasksManagementPage() {
                     ? 'border-indigo-500 bg-indigo-50/30 shadow-[inset_0_2px_8px_rgba(99,102,241,0.05)]' 
                     : isOverWip
                       ? 'border-rose-200 bg-rose-50/20'
-                      : 'border-slate-200/60 bg-slate-50/40'
+                      : 'border-slate-200 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40'
                 }`}
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className={`w-2.5 h-2.5 rounded-full ${theme.dot} shrink-0`} />
-                    <h3 className="font-bold text-sm text-slate-800 truncate">{label}</h3>
+                    <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">{label}</h3>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleOpenCreateModal(status)}
-                      className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-indigo-650 transition-all"
+                      className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 dark:text-slate-500 hover:text-indigo-650 transition-all"
                       title={`Create task in ${label}`}
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -899,13 +899,13 @@ export default function TasksManagementPage() {
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           taskCount >= wipLimit 
                             ? 'bg-rose-50 border-rose-200 text-rose-700 animate-pulse' 
-                            : 'bg-white border-slate-200 text-slate-500'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-500'
                         }`}
                       >
                         WIP: {taskCount}/{wipLimit}
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border-slate-200 text-slate-500">
+                      <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-500">
                         {taskCount}
                       </Badge>
                     )}
@@ -917,12 +917,12 @@ export default function TasksManagementPage() {
                   {taskCount === 0 ? (
                     <button
                       onClick={() => handleOpenCreateModal(status)}
-                      className="w-full border border-dashed border-slate-250/80 rounded-xl p-8 text-center bg-white/40 flex flex-col items-center justify-center space-y-2 hover:bg-white hover:border-slate-350 transition-all duration-200 group"
+                      className="w-full border border-dashed border-slate-250/80 rounded-xl p-8 text-center bg-white dark:bg-slate-900/40 flex flex-col items-center justify-center space-y-2 hover:bg-white dark:bg-slate-900 hover:border-slate-350 transition-all duration-200 group"
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all`}>
                         <Plus className="w-4 h-4 text-slate-550" />
                       </div>
-                      <p className="text-[10px] font-bold text-slate-400 group-hover:text-indigo-650 transition-colors">Create task</p>
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 group-hover:text-indigo-650 transition-colors">Create task</p>
                     </button>
                   ) : (
                     <>
@@ -931,12 +931,12 @@ export default function TasksManagementPage() {
                           key={task._id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className="cursor-grab active:cursor-grabbing hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] border border-slate-200/80 hover:border-slate-350 rounded-xl bg-white transition-all duration-200 select-none group"
+                          className="cursor-grab active:cursor-grabbing hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] border border-slate-200 dark:border-slate-700/80 hover:border-slate-350 rounded-xl bg-white dark:bg-slate-900 transition-all duration-200 select-none group"
                         >
                           <CardContent className="p-3.5 space-y-3">
                             <div className="flex justify-between items-start gap-2">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 shrink-0">
+                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-100 shrink-0">
                                   {task.taskNumber}
                                 </span>
                                 <span className="text-[10px] font-semibold text-indigo-650 truncate">
@@ -959,11 +959,11 @@ export default function TasksManagementPage() {
                                   {priorityLabels[task.priority]}
                                 </Badge>
                               </div>
-                              <h4 className="font-bold text-slate-800 text-xs line-clamp-2 leading-relaxed group-hover:text-indigo-650 transition-colors">
+                              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs line-clamp-2 leading-relaxed group-hover:text-indigo-650 transition-colors">
                                 {task.title}
                               </h4>
                               {task.description && (
-                                <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                                <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-1 line-clamp-2 leading-relaxed">
                                   {task.description}
                                 </p>
                               )}
@@ -972,7 +972,7 @@ export default function TasksManagementPage() {
                             {/* Mini Progress Bar */}
                             {(task.progressPercentage || 0) > 0 && (
                               <div className="space-y-1 pt-0.5">
-                                <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                                <div className="flex justify-between text-[9px] font-bold text-slate-400 dark:text-slate-500">
                                   <span>Progress</span>
                                   <span>{task.progressPercentage || 0}%</span>
                                 </div>
@@ -988,8 +988,8 @@ export default function TasksManagementPage() {
                                   {priorityLabels[task.priority]}
                                 </Badge>
                                 {task.dueDate && (
-                                  <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
-                                    <Calendar className="w-3 h-3 text-slate-400" />
+                                  <div className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                    <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                                     <span>{new Date(task.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                                   </div>
                                 )}
@@ -1003,7 +1003,7 @@ export default function TasksManagementPage() {
                                   }}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 rounded"
                                 >
-                                  <Edit className="w-3 h-3 text-slate-400" />
+                                  <Edit className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                                 </button>
                                 {task.assignedTo ? (
                                   <div className="flex items-center gap-1.5">
@@ -1033,7 +1033,7 @@ export default function TasksManagementPage() {
                                     })()}
                                   </div>
                                 ) : (
-                                  <div className="w-6 h-6 rounded-full bg-slate-50 border border-dashed border-slate-250 flex items-center justify-center text-slate-400 shrink-0" title="Unassigned">
+                                  <div className="w-6 h-6 rounded-full bg-slate-50 dark:bg-slate-800 border border-dashed border-slate-250 flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0" title="Unassigned">
                                     <User className="w-3 h-3" />
                                   </div>
                                 )}
@@ -1044,7 +1044,7 @@ export default function TasksManagementPage() {
                       ))}
                       <button
                         onClick={() => handleOpenCreateModal(status)}
-                        className="w-full border border-dashed border-slate-200/80 hover:border-indigo-400 hover:bg-indigo-50/10 rounded-xl py-2 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-indigo-650 transition-all bg-white/40 mt-1"
+                        className="w-full border border-dashed border-slate-200 dark:border-slate-700/80 hover:border-indigo-400 hover:bg-indigo-50/10 rounded-xl py-2 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-indigo-650 transition-all bg-white dark:bg-slate-900/40 mt-1"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add task</span>
@@ -1061,16 +1061,16 @@ export default function TasksManagementPage() {
       {/* Create Task Modal - Comprehensive Jira Style */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200">
             {/* Header */}
-            <div className="p-4 border-b flex justify-between items-center bg-slate-50/50">
+            <div className="p-4 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <div>
-                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Create Issue</h2>
-                <p className="text-[10px] text-slate-400 font-medium">Create a new task or issue</p>
+                <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Create Issue</h2>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Create a new task or issue</p>
               </div>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1082,12 +1082,12 @@ export default function TasksManagementPage() {
               <div className="flex-1 p-6 overflow-y-auto space-y-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Summary *</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Summary *</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-base font-bold text-slate-800 transition-all"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-base font-bold text-slate-800 dark:text-slate-200 transition-all"
                     placeholder="Task title"
                     required
                   />
@@ -1095,40 +1095,40 @@ export default function TasksManagementPage() {
                 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Description</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 transition-all resize-none min-h-[120px]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 dark:text-slate-200 transition-all resize-none min-h-[120px]"
                     placeholder="Add a description..."
                   />
                 </div>
 
                 {/* Linked Items input */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tags (Labels)</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Tags (Labels)</label>
                   <input
                     type="text"
                     value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 transition-all"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 dark:text-slate-200 transition-all"
                     placeholder="Labels separated by comma (e.g., frontend, bug)"
                   />
                 </div>
               </div>
 
               {/* Right Sidebar */}
-              <div className="w-80 border-l p-6 bg-slate-50/50 overflow-y-auto space-y-5">
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Details</h3>
+              <div className="w-80 border-l p-6 bg-slate-50 dark:bg-slate-800/50 overflow-y-auto space-y-5">
+                <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Details</h3>
                 
                 <div className="space-y-4 text-xs">
                   {/* Project */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Project *</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Project *</label>
                     <select
                       value={formData.projectId}
                       onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                       required
                     >
                       <option value="">Select Project</option>
@@ -1140,11 +1140,11 @@ export default function TasksManagementPage() {
 
                   {/* Issue Type */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Issue type</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Issue type</label>
                     <select
                       value={formData.taskType}
                       onChange={(e) => setFormData({ ...formData, taskType: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="task">Task</option>
                       <option value="story">Story</option>
@@ -1157,11 +1157,11 @@ export default function TasksManagementPage() {
 
                   {/* Parent Task Selector */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Task</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Parent Task</label>
                     <select
                       value={formData.parentId}
                       onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                       disabled={!formData.projectId}
                     >
                       <option value="">None</option>
@@ -1177,11 +1177,11 @@ export default function TasksManagementPage() {
 
                   {/* Status */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Status</label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       {Object.entries(boardStatusLabels).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
@@ -1191,11 +1191,11 @@ export default function TasksManagementPage() {
 
                   {/* Assignee */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Assignee</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Assignee</label>
                     <select
                       value={formData.assignedTo}
                       onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="">Unassigned</option>
                       {employees.map((emp) => (
@@ -1206,11 +1206,11 @@ export default function TasksManagementPage() {
 
                   {/* Priority */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Priority</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Priority</label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       {Object.entries(priorityLabels).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
@@ -1220,47 +1220,47 @@ export default function TasksManagementPage() {
 
                   {/* Story Points */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Story Points</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Story Points</label>
                     <input
                       type="number"
                       min="0"
                       step="1"
                       value={formData.storyPoints}
                       onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                       placeholder="e.g., 5"
                     />
                   </div>
 
                   {/* Start Date */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Date</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Start Date</label>
                     <input
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
                   {/* Due Date */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Due date</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Due date</label>
                     <input
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
                   {/* Reporter */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Reporter</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Reporter</label>
                     <select
                       value={formData.assignedBy}
                       onChange={(e) => setFormData({ ...formData, assignedBy: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="">Auto (Current User)</option>
                       {employees.map((emp) => (
@@ -1272,26 +1272,26 @@ export default function TasksManagementPage() {
                   {/* Estimated vs Actual Hours */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Estimate (Hrs)</label>
+                      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Estimate (Hrs)</label>
                       <input
                         type="number"
                         value={formData.estimatedHours}
                         onChange={(e) => setFormData({ ...formData, estimatedHours: e.target.value })}
                         min="0"
                         step="0.5"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                         placeholder="Hrs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Actual (Hrs)</label>
+                      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Actual (Hrs)</label>
                       <input
                         type="number"
                         value={formData.actualHours}
                         onChange={(e) => setFormData({ ...formData, actualHours: e.target.value })}
                         min="0"
                         step="0.5"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                         placeholder="Hrs"
                       />
                     </div>
@@ -1303,7 +1303,7 @@ export default function TasksManagementPage() {
                   <Button 
                     variant="ghost"
                     onClick={() => setShowCreateModal(false)}
-                    className="text-slate-600 hover:text-slate-800 text-xs font-bold"
+                    className="text-slate-600 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs font-bold"
                   >
                     Cancel
                   </Button>
@@ -1324,17 +1324,17 @@ export default function TasksManagementPage() {
       {/* Edit Task Modal - Comprehensive Jira Style */}
       {showEditModal && selectedTask && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200">
             {/* Header */}
-            <div className="p-4 border-b flex justify-between items-center bg-slate-50/50">
+            <div className="p-4 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-500 bg-slate-100 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg">
                   {selectedTask.taskNumber}
                 </span>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 cursor-pointer transition-all"
+                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 cursor-pointer transition-all"
                 >
                   <option value="backlog">Backlog</option>
                   <option value="to_do">To Do</option>
@@ -1346,7 +1346,7 @@ export default function TasksManagementPage() {
               </div>
               <button 
                 onClick={() => setShowEditModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1358,12 +1358,12 @@ export default function TasksManagementPage() {
               <div className="flex-1 p-6 overflow-y-auto space-y-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Summary *</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Summary *</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-base font-bold text-slate-800 transition-all"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-base font-bold text-slate-800 dark:text-slate-200 transition-all"
                     placeholder="Task title"
                     required
                   />
@@ -1371,19 +1371,19 @@ export default function TasksManagementPage() {
                 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Description</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 transition-all resize-none min-h-[120px]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 dark:text-slate-200 transition-all resize-none min-h-[120px]"
                     placeholder="Add a description..."
                   />
                 </div>
 
                 {/* Subtasks */}
-                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/20">
+                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/20">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                       <CornerDownRight className="w-4 h-4 text-indigo-500" />
                       Subtasks ({subtasks.length})
                     </h4>
@@ -1406,12 +1406,12 @@ export default function TasksManagementPage() {
                           value={subtaskTitle}
                           onChange={(e) => setSubtaskTitle(e.target.value)}
                           placeholder="What needs to be done?"
-                          className="md:col-span-1 px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none bg-white"
+                          className="md:col-span-1 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:outline-none bg-white dark:bg-slate-900"
                         />
                         <select
                           value={subtaskAssignee}
                           onChange={(e) => setSubtaskAssignee(e.target.value)}
-                          className="px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white cursor-pointer"
+                          className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-white dark:bg-slate-900 cursor-pointer"
                         >
                           <option value="">Assignee</option>
                           {employees.map((emp) => (
@@ -1421,7 +1421,7 @@ export default function TasksManagementPage() {
                         <select
                           value={subtaskPriority}
                           onChange={(e) => setSubtaskPriority(e.target.value)}
-                          className="px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white cursor-pointer"
+                          className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-white dark:bg-slate-900 cursor-pointer"
                         >
                           <option value="low">Low Priority</option>
                           <option value="medium">Medium Priority</option>
@@ -1443,12 +1443,12 @@ export default function TasksManagementPage() {
                   <div className="space-y-2">
                     {subtasks.length > 0 ? (
                       subtasks.map((sub, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-2.5 border border-slate-100 hover:border-slate-200 rounded-xl bg-white transition-all">
+                        <div key={idx} className="flex justify-between items-center p-2.5 border border-slate-100 hover:border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 transition-all">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-50 border px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800 border px-1.5 py-0.5 rounded">
                               {sub.taskNumber}
                             </span>
-                            <span className="text-xs font-medium text-slate-800">{sub.title}</span>
+                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200">{sub.title}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
@@ -1463,24 +1463,24 @@ export default function TasksManagementPage() {
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs text-slate-400 italic py-2 text-center bg-slate-50/50 rounded-xl">No subtasks yet</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl">No subtasks yet</p>
                     )}
                   </div>
                 </div>
 
                 {/* Linked Work Items */}
-                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/20">
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/20">
+                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-3">
                     <Link2 className="w-4 h-4 text-indigo-500" />
                     Linked Issues
                   </h4>
 
                   {/* Add Link Form */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 bg-white border border-slate-100 rounded-xl">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-100 rounded-xl">
                     <select
                       value={linkType}
                       onChange={(e) => setLinkType(e.target.value as any)}
-                      className="px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white cursor-pointer"
+                      className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-white dark:bg-slate-900 cursor-pointer"
                     >
                       <option value="dependsOn">is blocked by</option>
                       <option value="blocks">blocks</option>
@@ -1489,7 +1489,7 @@ export default function TasksManagementPage() {
                     <select
                       value={linkTaskId}
                       onChange={(e) => setLinkTaskId(e.target.value)}
-                      className="px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white cursor-pointer"
+                      className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-white dark:bg-slate-900 cursor-pointer"
                     >
                       <option value="">Select issue to link...</option>
                       {projectTasks
@@ -1511,21 +1511,21 @@ export default function TasksManagementPage() {
                     {/* Depends On links */}
                     {selectedTask.dependsOn && selectedTask.dependsOn.length > 0 && (
                       <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">is blocked by</p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">is blocked by</p>
                         {selectedTask.dependsOn.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white">
-                            <span className="text-xs font-medium text-slate-800">
+                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white dark:bg-slate-900">
+                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
                               <span className="font-mono font-bold text-indigo-600 mr-2">{item.taskNumber}</span>
                               {item.title}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600 dark:text-slate-500">
                                 {item.status.replace('_', ' ')}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteLink(item._id, 'dependsOn')}
-                                className="text-slate-400 hover:text-red-500 p-1"
+                                className="text-slate-400 dark:text-slate-500 hover:text-red-500 p-1"
                               >
                                 ✕
                               </button>
@@ -1538,21 +1538,21 @@ export default function TasksManagementPage() {
                     {/* Blocks links */}
                     {selectedTask.blocks && selectedTask.blocks.length > 0 && (
                       <div className="space-y-1.5 mt-3">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">blocks</p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">blocks</p>
                         {selectedTask.blocks.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white">
-                            <span className="text-xs font-medium text-slate-800">
+                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white dark:bg-slate-900">
+                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
                               <span className="font-mono font-bold text-indigo-600 mr-2">{item.taskNumber}</span>
                               {item.title}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600 dark:text-slate-500">
                                 {item.status.replace('_', ' ')}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteLink(item._id, 'blocks')}
-                                className="text-slate-400 hover:text-red-500 p-1"
+                                className="text-slate-400 dark:text-slate-500 hover:text-red-500 p-1"
                               >
                                 ✕
                               </button>
@@ -1564,14 +1564,14 @@ export default function TasksManagementPage() {
 
                     {(!selectedTask.dependsOn || selectedTask.dependsOn.length === 0) &&
                      (!selectedTask.blocks || selectedTask.blocks.length === 0) && (
-                      <p className="text-xs text-slate-400 italic py-2 text-center bg-slate-50/50 rounded-xl">No linked issues yet</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl">No linked issues yet</p>
                     )}
                   </div>
                 </div>
 
                 {/* Activity Section */}
                 <div>
-                  <div className="border-b border-slate-200 mb-4">
+                  <div className="border-b border-slate-200 dark:border-slate-700 mb-4">
                     <div className="flex gap-6">
                       {['comments', 'history'].map((tab) => (
                         <button
@@ -1581,7 +1581,7 @@ export default function TasksManagementPage() {
                           className={`pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${
                             activityTab === tab
                               ? 'border-indigo-600 text-indigo-600'
-                              : 'border-transparent text-slate-400 hover:text-slate-600'
+                              : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500'
                           }`}
                         >
                           {tab}
@@ -1596,33 +1596,33 @@ export default function TasksManagementPage() {
                       <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
                         {selectedTask.comments && selectedTask.comments.length > 0 ? (
                           selectedTask.comments.map((comment: any, idx: number) => (
-                            <div key={idx} className="flex gap-3 bg-slate-50/30 border border-slate-100/50 p-3 rounded-2xl">
+                            <div key={idx} className="flex gap-3 bg-slate-50 dark:bg-slate-800/30 border border-slate-100/50 p-3 rounded-2xl">
                               <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0">
                                 {comment.userName.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center justify-between gap-2 mb-1">
                                   <div>
-                                    <span className="font-bold text-xs text-slate-800 mr-2">{comment.userName}</span>
-                                    <span className="text-[10px] text-slate-400">{new Date(comment.createdAt).toLocaleString()}</span>
+                                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mr-2">{comment.userName}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(comment.createdAt).toLocaleString()}</span>
                                   </div>
                                   {(comment.userId === user?.id || (user as any)?._id === comment.userId || ['admin', 'hr', 'manager'].includes(user?.role || '')) && (
                                     <button
                                       type="button"
                                       onClick={() => handleDeleteComment(comment._id)}
-                                      className="text-slate-400 hover:text-red-500 transition-colors"
+                                      className="text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors"
                                       title="Delete comment"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                   )}
                                 </div>
-                                <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">{comment.text}</p>
+                                <p className="text-xs text-slate-600 dark:text-slate-500 leading-relaxed font-medium whitespace-pre-line">{comment.text}</p>
                               </div>
                             </div>
                           ))
                         ) : (
-                          <p className="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-xl">No comments yet</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">No comments yet</p>
                         )}
                       </div>
 
@@ -1634,7 +1634,7 @@ export default function TasksManagementPage() {
                               key={quickText}
                               type="button"
                               onClick={() => setNewComment(quickText)}
-                              className="text-[10px] font-semibold px-2.5 py-1 bg-slate-50 border hover:bg-slate-100 text-slate-600 rounded-lg transition-colors"
+                              className="text-[10px] font-semibold px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border hover:bg-slate-100 text-slate-600 dark:text-slate-500 rounded-lg transition-colors"
                             >
                               {quickText}
                             </button>
@@ -1642,15 +1642,15 @@ export default function TasksManagementPage() {
                         </div>
                         <div className="relative">
                           {showMentionList && (
-                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1.5 text-xs z-50">
+                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1.5 text-xs z-50">
                               <div className="p-1 pb-1.5 mb-1 border-b border-slate-100 flex items-center gap-1.5">
-                                <Search className="w-3 h-3 text-slate-400 shrink-0" />
+                                <Search className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                                 <input
                                   type="text"
                                   placeholder="Search members..."
                                   value={mentionQuery}
                                   onChange={(e) => setMentionQuery(e.target.value)}
-                                  className="w-full text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                                  className="w-full text-[11px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
                                 />
                               </div>
                               {filteredMentionMembers.length > 0 ? (
@@ -1662,13 +1662,13 @@ export default function TasksManagementPage() {
                                       onClick={() => handleSelectMention(m.name)}
                                       className="w-full text-left px-2.5 py-1.5 hover:bg-indigo-50/80 rounded-lg flex items-center justify-between transition-colors"
                                     >
-                                      <span className="font-semibold text-slate-800">@{m.name}</span>
-                                      {m.email && <span className="text-[10px] text-slate-400 font-medium">{m.email}</span>}
+                                      <span className="font-semibold text-slate-800 dark:text-slate-200">@{m.name}</span>
+                                      {m.email && <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{m.email}</span>}
                                     </button>
                                   ))}
                                 </div>
                               ) : (
-                                <div className="px-2 py-2 text-[11px] text-slate-400 italic text-center">No matching members</div>
+                                <div className="px-2 py-2 text-[11px] text-slate-400 dark:text-slate-500 italic text-center">No matching members</div>
                               )}
                             </div>
                           )}
@@ -1676,7 +1676,7 @@ export default function TasksManagementPage() {
                             value={newComment}
                             onChange={handleCommentChange}
                             placeholder="Add a comment... (Type @ to mention members)"
-                            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs transition-all resize-none"
+                            className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs transition-all resize-none"
                             rows={3}
                           />
                         </div>
@@ -1690,7 +1690,7 @@ export default function TasksManagementPage() {
                   )}
 
                   {activityTab === 'history' && (
-                    <div className="py-6 text-center text-xs text-slate-400 italic bg-slate-50/50 rounded-xl border border-dashed">
+                    <div className="py-6 text-center text-xs text-slate-400 dark:text-slate-500 italic bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed">
                       History log coming soon...
                     </div>
                   )}
@@ -1698,17 +1698,17 @@ export default function TasksManagementPage() {
               </div>
 
               {/* Right Sidebar */}
-              <div className="w-80 border-l p-6 bg-slate-50/50 overflow-y-auto space-y-5">
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Details</h3>
+              <div className="w-80 border-l p-6 bg-slate-50 dark:bg-slate-800/50 overflow-y-auto space-y-5">
+                <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Details</h3>
                 
                 <div className="space-y-4 text-xs">
                   {/* Project selection */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Project *</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Project *</label>
                     <select
                       value={formData.projectId}
                       onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                       required
                     >
                       <option value="">Select Project</option>
@@ -1720,11 +1720,11 @@ export default function TasksManagementPage() {
 
                   {/* Issue Type */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Issue type</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Issue type</label>
                     <select
                       value={formData.taskType}
                       onChange={(e) => setFormData({ ...formData, taskType: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="task">Task</option>
                       <option value="story">Story</option>
@@ -1737,11 +1737,11 @@ export default function TasksManagementPage() {
 
                   {/* Parent Task Selector */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Task</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Parent Task</label>
                     <select
                       value={formData.parentId}
                       onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="">None</option>
                       {projectTasks
@@ -1756,11 +1756,11 @@ export default function TasksManagementPage() {
 
                   {/* Assignee */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Assignee</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Assignee</label>
                     <select
                       value={formData.assignedTo}
                       onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="">Unassigned</option>
                       {employees.map((emp) => (
@@ -1771,11 +1771,11 @@ export default function TasksManagementPage() {
 
                   {/* Priority */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Priority</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Priority</label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white font-semibold text-slate-800 cursor-pointer"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -1786,63 +1786,63 @@ export default function TasksManagementPage() {
 
                   {/* Story Points */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Story Points</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Story Points</label>
                     <input
                       type="number"
                       min="0"
                       step="1"
                       value={formData.storyPoints}
                       onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                       placeholder="e.g., 5"
                     />
                   </div>
 
                   {/* Start Date */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Date</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Start Date</label>
                     <input
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
                   {/* Due Date */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Due date</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Due date</label>
                     <input
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
                   {/* Estimated vs Actual Hours */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Estimate (Hrs)</label>
+                      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Estimate (Hrs)</label>
                       <input
                         type="number"
                         value={formData.estimatedHours}
                         onChange={(e) => setFormData({ ...formData, estimatedHours: e.target.value })}
                         min="0"
                         step="0.5"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                         placeholder="Hrs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Actual (Hrs)</label>
+                      <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Actual (Hrs)</label>
                       <input
                         type="number"
                         value={formData.actualHours}
                         onChange={(e) => setFormData({ ...formData, actualHours: e.target.value })}
                         min="0"
                         step="0.5"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800"
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 dark:text-slate-200"
                         placeholder="Hrs"
                       />
                     </div>
@@ -1850,12 +1850,12 @@ export default function TasksManagementPage() {
                   
                   {/* Creator */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Reporter</label>
+                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Reporter</label>
                     <div className="flex items-center gap-2 py-1">
-                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-[10px] font-bold">
+                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 dark:text-slate-500 text-[10px] font-bold">
                         {selectedTask.createdBy?.name?.charAt(0).toUpperCase() || 'R'}
                       </div>
-                      <span className="font-bold text-slate-700">{selectedTask.createdBy?.name || 'Unknown'}</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-300">{selectedTask.createdBy?.name || 'Unknown'}</span>
                     </div>
                   </div>
                 </div>
@@ -1865,7 +1865,7 @@ export default function TasksManagementPage() {
                   <Button 
                     variant="ghost"
                     onClick={() => setShowEditModal(false)}
-                    className="text-slate-600 hover:text-slate-800 text-xs font-bold"
+                    className="text-slate-600 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs font-bold"
                   >
                     Cancel
                   </Button>
@@ -1885,11 +1885,11 @@ export default function TasksManagementPage() {
       {/* View Task Modal - Jira Style */}
       {showViewModal && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-slate-900 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b flex justify-between items-center bg-slate-50">
+            <div className="p-4 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-800">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                <span className="text-sm font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
                   {selectedTask.taskNumber}
                 </span>
                 <select
@@ -1904,7 +1904,7 @@ export default function TasksManagementPage() {
               </div>
               <button 
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 ✕
               </button>
@@ -1915,40 +1915,40 @@ export default function TasksManagementPage() {
               {/* Left Content */}
               <div className="flex-1 p-6 overflow-y-auto">
                 {/* Title */}
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">{selectedTask.title}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{selectedTask.title}</h1>
                 
                 {/* Description */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Description</h3>
-                  <div className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedTask.description || 'No description provided'}</p>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h3>
+                  <div className="prose prose-sm max-w-none bg-gray-50 dark:bg-slate-950 p-4 rounded-lg">
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedTask.description || 'No description provided'}</p>
                   </div>
                 </div>
 
                 {/* Subtasks */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Subtasks</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-500 text-sm">No subtasks yet</p>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Subtasks</h3>
+                  <div className="bg-gray-50 dark:bg-slate-950 p-4 rounded-lg">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No subtasks yet</p>
                   </div>
                 </div>
 
                 {/* Linked Work Items */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Linked Work Items</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Linked Work Items</h3>
                   {selectedTask.dependsOn && selectedTask.dependsOn.length > 0 ? (
                     <div className="space-y-2">
                       {selectedTask.dependsOn.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg">
+                        <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-slate-950 p-3 rounded-lg">
                           <span className="text-xs font-mono text-blue-600">{item.taskNumber}</span>
-                          <span className="text-sm text-gray-700">{item.title}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{item.title}</span>
                           <Badge className={statusColors[item.status]} variant="outline">{statusLabels[item.status]}</Badge>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-gray-500 text-sm">No linked work items</p>
+                    <div className="bg-gray-50 dark:bg-slate-950 p-4 rounded-lg">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">No linked work items</p>
                     </div>
                   )}
                 </div>
@@ -1964,7 +1964,7 @@ export default function TasksManagementPage() {
                           className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                             activityTab === tab
                               ? 'border-blue-500 text-blue-600'
-                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -1984,14 +1984,14 @@ export default function TasksManagementPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium text-sm">{comment.userName}</span>
-                              <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(comment.createdAt).toLocaleString()}</span>
                             </div>
-                            <p className="text-sm text-gray-700">{comment.text}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500 text-sm">No activity yet</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">No activity yet</p>
                     )}
                   </div>
 
@@ -2002,7 +2002,7 @@ export default function TasksManagementPage() {
                         <button
                           key={quickText}
                           onClick={() => setNewComment(quickText)}
-                          className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                          className="text-xs px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded-full transition-colors"
                         >
                           {quickText}
                         </button>
@@ -2025,13 +2025,13 @@ export default function TasksManagementPage() {
               </div>
 
               {/* Right Sidebar */}
-              <div className="w-80 border-l p-6 bg-gray-50 overflow-y-auto">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Details</h3>
+              <div className="w-80 border-l p-6 bg-gray-50 dark:bg-slate-950 overflow-y-auto">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Details</h3>
                 
                 <div className="space-y-4">
                   {/* Assignee */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Assignee</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Assignee</label>
                     {selectedTask.assignedTo ? (
                       <button
                         onClick={() => handleInsertMentionFromBadge(selectedTask.assignedTo?.name || '')}
@@ -2045,7 +2045,7 @@ export default function TasksManagementPage() {
                       </button>
                     ) : (
                       <div className="mt-1">
-                        <span className="text-sm text-gray-500">Unassigned</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
                         <button className="text-xs text-blue-600 hover:underline ml-2">Assign to me</button>
                       </div>
                     )}
@@ -2053,13 +2053,13 @@ export default function TasksManagementPage() {
 
                   {/* Parent */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Parent</label>
-                    <p className="text-sm text-gray-500 mt-1">None</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Parent</label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">None</p>
                   </div>
 
                   {/* Labels */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Labels</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Labels</label>
                     {selectedTask.tags && selectedTask.tags.length > 0 ? (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {selectedTask.tags.map((tag, idx) => (
@@ -2067,35 +2067,35 @@ export default function TasksManagementPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 mt-1">None</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">None</p>
                     )}
                   </div>
 
                   {/* Due Date */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Due date</label>
-                    <p className="text-sm text-gray-700 mt-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due date</label>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                       {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : 'None'}
                     </p>
                   </div>
 
                   {/* Team */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Team</label>
-                    <p className="text-sm text-gray-500 mt-1">None</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Team</label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">None</p>
                   </div>
 
                   {/* Start Date */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Start date</label>
-                    <p className="text-sm text-gray-700 mt-1">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Start date</label>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                       {selectedTask.startDate ? new Date(selectedTask.startDate).toLocaleDateString() : 'None'}
                     </p>
                   </div>
 
                   {/* Reporter */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Reporter</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reporter</label>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-semibold">
                         {selectedTask.createdBy?.name?.charAt(0).toUpperCase() || 'R'}
@@ -2106,7 +2106,7 @@ export default function TasksManagementPage() {
 
                   {/* Priority */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Priority</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Priority</label>
                     <Badge className={`${priorityColors[selectedTask.priority]} mt-1`} variant="outline">
                       {priorityLabels[selectedTask.priority]}
                     </Badge>
@@ -2114,13 +2114,13 @@ export default function TasksManagementPage() {
 
                   {/* Project */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Project</label>
-                    <p className="text-sm text-gray-700 mt-1">{selectedTask.projectId?.name || 'Unknown Project'}</p>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Project</label>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{selectedTask.projectId?.name || 'Unknown Project'}</p>
                   </div>
 
                   {/* Progress */}
                   <div>
-                    <label className="text-xs text-gray-500 uppercase tracking-wider">Progress</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Progress</label>
                     <div className="mt-1">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
@@ -2128,14 +2128,14 @@ export default function TasksManagementPage() {
                           style={{ width: `${selectedTask.progressPercentage}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">{selectedTask.progressPercentage}%</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{selectedTask.progressPercentage}%</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Development Section */}
                 <div className="mt-6 pt-6 border-t">
-                  <button className="flex items-center gap-2 text-sm font-medium text-gray-700 w-full">
+                  <button className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 w-full">
                     <ChevronDown className="w-4 h-4" />
                     Development
                   </button>
@@ -2143,7 +2143,7 @@ export default function TasksManagementPage() {
 
                 {/* Automation Section */}
                 <div className="mt-4">
-                  <button className="flex items-center gap-2 text-sm font-medium text-gray-700 w-full">
+                  <button className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 w-full">
                     <ChevronDown className="w-4 h-4" />
                     Automation
                   </button>
@@ -2157,44 +2157,44 @@ export default function TasksManagementPage() {
       {/* Backlog Modal */}
       {showBacklogModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-200 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-in scale-in-95 duration-200 flex flex-col">
-            <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-in scale-in-95 duration-200 flex flex-col">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
                   <KanbanSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">Backlog</h2>
-                  <p className="text-sm text-slate-500">Manage your pending tasks</p>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Backlog</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-500">Manage your pending tasks</p>
                 </div>
-                <Badge variant="outline" className="bg-white border-slate-200 text-slate-600 px-3 py-1 rounded-full text-sm font-medium">
+                <Badge variant="outline" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-500 px-3 py-1 rounded-full text-sm font-medium">
                   {backlogTasks.length} tasks
                 </Badge>
               </div>
               <button 
                 onClick={() => setShowBacklogModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-all w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-all w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 dark:border-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-800/50">
               <div className="mb-6 flex gap-3">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type="text"
                     placeholder="Search backlog tasks..."
                     value={backlogSearchQuery}
                     onChange={(e) => setBacklogSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 shadow-sm transition-all"
                   />
                 </div>
                 <select
                   value={filterPriority}
                   onChange={(e) => setFilterPriority(e.target.value)}
-                  className="px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all min-w-[140px]"
+                  className="px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 shadow-sm transition-all min-w-[140px]"
                 >
                   <option value="">All Priority</option>
                   {Object.entries(priorityLabels).map(([value, label]) => (
@@ -2215,12 +2215,12 @@ export default function TasksManagementPage() {
                   task.title.toLowerCase().includes(backlogSearchQuery.toLowerCase()) ||
                   task.taskNumber.toLowerCase().includes(backlogSearchQuery.toLowerCase())
                 ).length === 0 ? (
-                  <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
+                  <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300">
                     <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                      <KanbanSquare className="w-10 h-10 text-slate-400" />
+                      <KanbanSquare className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                     </div>
-                    <p className="text-lg font-semibold text-slate-700 mb-2">No tasks in backlog</p>
-                    <p className="text-sm text-slate-500 mb-4">Click "Add to Backlog" to create your first task</p>
+                    <p className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No tasks in backlog</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-500 mb-4">Click "Add to Backlog" to create your first task</p>
                     <Button 
                       onClick={() => handleOpenCreateModal('backlog')}
                       variant="outline"
@@ -2237,14 +2237,14 @@ export default function TasksManagementPage() {
                   ).map((task) => (
                     <Card
                       key={task._id}
-                      className="hover:shadow-lg hover:scale-[1.01] transition-all duration-200 cursor-pointer border border-slate-200 rounded-2xl bg-white"
+                      className="hover:shadow-lg hover:scale-[1.01] transition-all duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-900"
                       onClick={() => handleOpenEditModal(task)}
                     >
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
-                              <span className="text-xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg font-medium">
+                              <span className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg font-medium">
                                 {task.taskNumber}
                               </span>
                               {task.taskType && (
@@ -2256,13 +2256,13 @@ export default function TasksManagementPage() {
                                 {priorityLabels[task.priority]}
                               </Badge>
                             </div>
-                            <h3 className="font-semibold text-slate-900 mb-2 text-base">{task.title}</h3>
-                            <p className="text-sm text-slate-600 mb-4 line-clamp-2 leading-relaxed">{task.description}</p>
+                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2 text-base">{task.title}</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-500 mb-4 line-clamp-2 leading-relaxed">{task.description}</p>
                             
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4 text-sm text-slate-500">
+                              <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-500">
                                 <div className="flex items-center gap-2">
-                                  <KanbanSquare className="w-4 h-4 text-slate-400" />
+                                  <KanbanSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                                   <span className="font-medium">{task.projectId?.name || 'Unknown'}</span>
                                 </div>
                                 {task.assignedTo && (

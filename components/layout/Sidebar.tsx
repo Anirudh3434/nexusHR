@@ -96,18 +96,26 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
           {!collapsed && (
             <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap animate-in fade-in zoom-in duration-300">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-                N
-              </div>
+              {user?.companyLogo ? (
+                <img src={user.companyLogo} alt={user.companyName || 'Company'} className="h-8 w-8 rounded-lg object-contain" />
+              ) : (
+                <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
+                  {(user?.companyName || 'N').charAt(0).toUpperCase()}
+                </div>
+              )}
               <h1 className="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-500">
-                NexusHR
+                {user?.companyName || 'NexusHR'}
               </h1>
             </div>
           )}
           {collapsed && (
-            <div className="mx-auto h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold animate-in fade-in duration-300">
-              N
-            </div>
+            user?.companyLogo ? (
+              <img src={user.companyLogo} alt={user.companyName || 'Company'} className="mx-auto h-8 w-8 rounded-lg object-contain animate-in fade-in duration-300" />
+            ) : (
+              <div className="mx-auto h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold animate-in fade-in duration-300">
+                {(user?.companyName || 'N').charAt(0).toUpperCase()}
+              </div>
+            )
           )}
           
           {/* Mobile Close Button */}

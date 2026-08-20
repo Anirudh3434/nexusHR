@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { 
   Receipt, DollarSign, CheckCircle, XCircle, Clock, 
   ChevronDown, ChevronUp, Calendar, User, Building, 
-  Filter, Search, Download, Banknote
+  Filter, Search, Download, Banknote, Loader2
 } from "lucide-react";
 
 interface ExpenseItem {
@@ -281,13 +281,13 @@ export default function ExpensesManagementPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'draft': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
       case 'submitted': return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'under_review': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'approved': return 'bg-green-100 text-green-700 border-green-200';
       case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
       case 'reimbursed': return 'bg-purple-100 text-purple-700 border-purple-200';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
     }
   };
 
@@ -316,18 +316,18 @@ export default function ExpensesManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Expense Management</h1>
-          <p className="text-sm text-gray-500">Review, approve, and reimburse employee expenses</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Expense Management</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Review, approve, and reimburse employee expenses</p>
         </div>
         <Button variant="outline" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-1.5" />
@@ -343,10 +343,10 @@ export default function ExpensesManagementPage() {
           { label: 'Approved', value: formatCurrency(stats.approvedAmount || 0, 'INR'), color: 'green' },
           { label: 'Reimbursed', value: formatCurrency(stats.reimbursedAmount || 0, 'INR'), color: 'purple' },
         ].map(({ label, value, color }) => (
-          <Card key={label} className="border-gray-200">
+          <Card key={label} className="border-gray-200 dark:border-gray-700">
             <CardContent className="p-3">
               <p className={`text-lg font-semibold text-${color}-600`}>{value}</p>
-              <p className="text-xs text-gray-500">{label}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
             </CardContent>
           </Card>
         ))}
@@ -355,19 +355,19 @@ export default function ExpensesManagementPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder="Search by ID, employee, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <select
           value={filterMonth}
           onChange={(e) => setFilterMonth(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
         >
           <option value="2026-04">April 2026</option>
           <option value="2026-03">March 2026</option>
@@ -378,7 +378,7 @@ export default function ExpensesManagementPage() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
         >
           <option value="">All Status</option>
           <option value="submitted">Submitted</option>
@@ -390,7 +390,7 @@ export default function ExpensesManagementPage() {
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
         >
           <option value="">All Categories</option>
           {categoryOptions.map((opt) => (
@@ -400,7 +400,7 @@ export default function ExpensesManagementPage() {
         <select
           value={filterEmployee}
           onChange={(e) => setFilterEmployee(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
         >
           <option value="">All Employees</option>
           {employees.map((emp) => (
@@ -410,35 +410,35 @@ export default function ExpensesManagementPage() {
       </div>
 
       {/* Expenses Table */}
-      <Card className="border-gray-200 overflow-hidden">
+      <Card className="border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-slate-950 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Expense ID</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Employee</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Category</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Amount</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Date</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Status</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Expense ID</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Employee</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Category</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Amount</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Date</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Status</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
-                    <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-900">No expenses found</p>
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <Receipt className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No expenses found</p>
                     <p className="text-sm">No expense claims match your filters</p>
                   </td>
                 </tr>
               ) : (
                 filteredExpenses.map((expense) => (
                   <React.Fragment key={expense._id}>
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-gray-50 dark:bg-slate-950">
                       <td className="px-4 py-3">
-                        <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+                        <code className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded font-mono">
                           {expense.expenseNumber}
                         </code>
                         {expense.billable && (
@@ -448,8 +448,8 @@ export default function ExpensesManagementPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{expense.employeeId.name}</div>
-                        <div className="text-xs text-gray-500">{expense.employeeId.department}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{expense.employeeId.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{expense.employeeId.department}</div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="capitalize">{categoryLabels[expense.category] || expense.category}</span>
@@ -457,7 +457,7 @@ export default function ExpensesManagementPage() {
                       <td className="px-4 py-3 font-medium">
                         {formatCurrency(expense.amount, expense.currency)}
                       </td>
-                      <td className="px-4 py-3 text-gray-500">
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                         {new Date(expense.expenseDate).toLocaleDateString('en-GB')}
                       </td>
                       <td className="px-4 py-3">
@@ -517,59 +517,59 @@ export default function ExpensesManagementPage() {
                     </tr>
                     {/* Accordion Row */}
                     {expandedId === expense._id && (
-                      <tr className="bg-gray-50">
+                      <tr className="bg-gray-50 dark:bg-slate-950">
                         <td colSpan={7} className="px-4 py-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {/* Description */}
                             <div className="space-y-1">
-                              <p className="text-xs font-medium text-gray-500 uppercase">Description</p>
-                              <p className="text-sm text-gray-900">{expense.description}</p>
+                              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Description</p>
+                              <p className="text-sm text-gray-900 dark:text-gray-100">{expense.description}</p>
                             </div>
                             
                             {/* Vendor */}
                             {expense.vendor && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Vendor</p>
-                                <p className="text-sm text-gray-900">{expense.vendor}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Vendor</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100">{expense.vendor}</p>
                               </div>
                             )}
                             
                             {/* Project */}
                             {expense.projectName && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Project</p>
-                                <p className="text-sm text-gray-900">{expense.projectName}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Project</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100">{expense.projectName}</p>
                               </div>
                             )}
                             
                             {/* Client */}
                             {expense.clientName && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Client</p>
-                                <p className="text-sm text-gray-900">{expense.clientName}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Client</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100">{expense.clientName}</p>
                               </div>
                             )}
                             
                             {/* Payment Method */}
                             {expense.paymentMethod && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Payment Method</p>
-                                <p className="text-sm text-gray-900 capitalize">{expense.paymentMethod.replace('_', ' ')}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Payment Method</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100 capitalize">{expense.paymentMethod.replace('_', ' ')}</p>
                               </div>
                             )}
                             
                             {/* Payment Reference */}
                             {expense.paymentReference && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Payment Reference</p>
-                                <p className="text-sm text-gray-900">{expense.paymentReference}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Payment Reference</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100">{expense.paymentReference}</p>
                               </div>
                             )}
                             
                             {/* Receipt */}
                             {expense.receiptUrl && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Receipt</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Receipt</p>
                                 <a 
                                   href={expense.receiptUrl} 
                                   target="_blank" 
@@ -584,7 +584,7 @@ export default function ExpensesManagementPage() {
                             {/* Rejection Reason */}
                             {expense.rejectionReason && (
                               <div className="space-y-1 md:col-span-2 lg:col-span-3">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Rejection Reason</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rejection Reason</p>
                                 <p className="text-sm text-red-600">{expense.rejectionReason}</p>
                               </div>
                             )}
@@ -592,33 +592,33 @@ export default function ExpensesManagementPage() {
                             {/* Approval Info */}
                             {expense.approvedAt && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Approved By</p>
-                                <p className="text-sm text-gray-900">{expense.approvedBy?.name || 'N/A'}</p>
-                                <p className="text-xs text-gray-500">{new Date(expense.approvedAt).toLocaleString()}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Approved By</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100">{expense.approvedBy?.name || 'N/A'}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(expense.approvedAt).toLocaleString()}</p>
                               </div>
                             )}
                             
                             {/* Reimbursement Info */}
                             {expense.reimbursedAt && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Reimbursed By</p>
-                                <p className="text-sm text-gray-900">{expense.reimbursedBy?.name || 'N/A'}</p>
-                                <p className="text-xs text-gray-500">{new Date(expense.reimbursedAt).toLocaleString()}</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reimbursed By</p>
+                                <p className="text-sm text-gray-900 dark:text-gray-100">{expense.reimbursedBy?.name || 'N/A'}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(expense.reimbursedAt).toLocaleString()}</p>
                               </div>
                             )}
                             
                             {/* Comments Section */}
                             {expense.comments && expense.comments.length > 0 && (
                               <div className="space-y-2 md:col-span-2 lg:col-span-3">
-                                <p className="text-xs font-medium text-gray-500 uppercase">Comments</p>
+                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Comments</p>
                                 <div className="space-y-2">
                                   {expense.comments.map((comment: any, idx: number) => (
-                                    <div key={idx} className="bg-white p-2 rounded border border-gray-200">
+                                    <div key={idx} className="bg-white dark:bg-slate-900 p-2 rounded border border-gray-200 dark:border-gray-700">
                                       <div className="flex items-center justify-between">
-                                        <p className="text-xs font-medium text-gray-900">{comment.authorName}</p>
-                                        <p className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</p>
+                                        <p className="text-xs font-medium text-gray-900 dark:text-gray-100">{comment.authorName}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(comment.createdAt).toLocaleString()}</p>
                                       </div>
-                                      <p className="text-sm text-gray-700 mt-1">{comment.message}</p>
+                                      <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{comment.message}</p>
                                     </div>
                                   ))}
                                 </div>
@@ -627,14 +627,14 @@ export default function ExpensesManagementPage() {
                             
                             {/* Add Comment */}
                             <div className="space-y-2 md:col-span-2 lg:col-span-3">
-                              <p className="text-xs font-medium text-gray-500 uppercase">Add Comment</p>
+                              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Add Comment</p>
                               <div className="flex gap-2">
                                 <input
                                   type="text"
                                   value={newComment}
                                   onChange={(e) => setNewComment(e.target.value)}
                                   placeholder="Type a comment..."
-                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 <Button
                                   size="sm"
@@ -674,7 +674,7 @@ export default function ExpensesManagementPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Rejection Reason *
                 </label>
                 <textarea
@@ -682,7 +682,7 @@ export default function ExpensesManagementPage() {
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Explain why this expense is being rejected..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
               </div>
 
@@ -730,13 +730,13 @@ export default function ExpensesManagementPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Payment Method
                 </label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm"
                 >
                   <option value="bank_transfer">Bank Transfer</option>
                   <option value="cash">Cash</option>
@@ -746,7 +746,7 @@ export default function ExpensesManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Payment Reference (Optional)
                 </label>
                 <input
@@ -754,7 +754,7 @@ export default function ExpensesManagementPage() {
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
                   placeholder="e.g., Transaction ID, Check Number"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm"
                 />
               </div>
 

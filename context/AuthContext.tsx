@@ -13,6 +13,8 @@ interface User {
   status?: string;
   avatar?: string;
   companyId?: string;
+  companyLogo?: string;
+  companyName?: string;
   workShiftId?: string;
   salary?: number;
   employeeId?: string;

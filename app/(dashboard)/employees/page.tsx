@@ -227,7 +227,7 @@ export default function EmployeesPage() {
             <Users className="h-8 w-8 text-blue-600" />
             Employees
           </h1>
-          <p className="text-gray-500">Manage your workforce, assign shifts and salaries.</p>
+          <p className="text-gray-500 dark:text-gray-400">Manage your workforce, assign shifts and salaries.</p>
         </div>
         {user.role === "admin" && (
           <Button onClick={() => setShowModal(true)}>
@@ -264,7 +264,7 @@ export default function EmployeesPage() {
                 </TableRow>
               ) : employees.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
                     No employees found.
                   </TableCell>
                 </TableRow>
@@ -281,7 +281,7 @@ export default function EmployeesPage() {
                       )}
                       <div>
                         <div className="font-medium">{employee.name}</div>
-                        <div className="text-xs text-gray-500 capitalize">{employee.role}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{employee.role}</div>
                       </div>
                     </TableCell>
                     <TableCell>{employee.department || "-"}</TableCell>
@@ -316,10 +316,10 @@ export default function EmployeesPage() {
       {/* Onboarding Modal with Stepper */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Onboard New Employee</h2>
-              <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b dark:border-slate-700">
+              <h2 className="text-lg font-semibold dark:text-slate-100">Onboard New Employee</h2>
+              <button onClick={resetForm} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -340,7 +340,7 @@ export default function EmployeesPage() {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name *</label>
                       <Input
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -349,7 +349,7 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address *</label>
                       <Input
                         type="email"
                         value={formData.email}
@@ -359,7 +359,7 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
                       <Input
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -367,7 +367,7 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password *</label>
                       <Input
                         type="password"
                         value={formData.password}
@@ -386,7 +386,7 @@ export default function EmployeesPage() {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
                       <select
                         value={formData.department}
                         onChange={(e) => setFormData({...formData, department: e.target.value, designation: ''})}
@@ -404,7 +404,7 @@ export default function EmployeesPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Designation</label>
                       <select
                         value={formData.designation}
                         onChange={(e) => setFormData({...formData, designation: e.target.value})}
@@ -427,7 +427,7 @@ export default function EmployeesPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
                       <select
                         value={formData.role}
                         onChange={(e) => setFormData({...formData, role: e.target.value})}
@@ -439,7 +439,7 @@ export default function EmployeesPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Joining Date</label>
                       <Input
                         type="date"
                         value={formData.joiningDate}
@@ -447,7 +447,7 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Work Shift</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Work Shift</label>
                       <div className="grid grid-cols-2 gap-3">
                         {shifts.map((shift) => {
                           const isNight = shift.name.toLowerCase().includes('night');
@@ -462,14 +462,14 @@ export default function EmployeesPage() {
                                   ? isNight 
                                     ? 'border-indigo-500 bg-indigo-50' 
                                     : 'border-blue-500 bg-blue-50'
-                                  : 'border-gray-200 hover:border-gray-300'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:border-gray-600'
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 {isNight ? <Moon className="h-4 w-4 text-indigo-600" /> : <Sun className="h-4 w-4 text-amber-600" />}
                                 <span className="font-medium text-sm">{shift.name}</span>
                               </div>
-                              <p className="text-xs text-gray-500 mt-1">{shift.startTime} - {shift.endTime}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{shift.startTime} - {shift.endTime}</p>
                             </button>
                           );
                         })}
@@ -484,9 +484,9 @@ export default function EmployeesPage() {
                 <>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Salary (₹)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Salary (₹)</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                        <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">₹</span>
                         <Input
                           type="number"
                           value={formData.salary}
@@ -497,23 +497,23 @@ export default function EmployeesPage() {
                       </div>
                     </div>
                     
-                    <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-blue-50">
+                    <div className="bg-gray-50 dark:bg-slate-950 p-4 rounded-xl space-y-2 border border-blue-50">
                       <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Salary Summary</h4>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Basic Salary</span>
+                        <span className="text-gray-500 dark:text-gray-400">Basic Salary</span>
                         <span className="font-bold">₹{formData.salary ? Number(formData.salary).toLocaleString() : '0'}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm pt-2 border-t border-blue-100/50">
-                        <span className="text-gray-500">Selected Shift</span>
-                        <span className="font-medium text-gray-700">{getShiftName(formData.workShiftId)}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Selected Shift</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{getShiftName(formData.workShiftId)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Department</span>
-                        <span className="font-medium text-gray-700">{formData.department || '-'}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Department</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{formData.department || '-'}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Role</span>
-                        <span className="capitalize font-medium text-gray-700">{formData.role}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Role</span>
+                        <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{formData.role}</span>
                       </div>
                     </div>
                   </div>
@@ -557,10 +557,10 @@ export default function EmployeesPage() {
       {/* Edit Employee Modal */}
       {showEditModal && editingEmployee && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Edit Employee</h2>
-              <button onClick={() => { setShowEditModal(false); setEditingEmployee(null); }} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => { setShowEditModal(false); setEditingEmployee(null); }} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -568,7 +568,7 @@ export default function EmployeesPage() {
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                   <Input
                     value={editFormData.name}
                     onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
@@ -576,7 +576,7 @@ export default function EmployeesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
                   <select
                     value={editFormData.department}
                     onChange={(e) => setEditFormData({...editFormData, department: e.target.value, designation: ''})}
@@ -589,7 +589,7 @@ export default function EmployeesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Designation</label>
                   <select
                     value={editFormData.designation}
                     onChange={(e) => setEditFormData({...editFormData, designation: e.target.value})}
@@ -604,7 +604,7 @@ export default function EmployeesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Work Shift</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Work Shift</label>
                   <select
                     value={editFormData.workShiftId}
                     onChange={(e) => setEditFormData({...editFormData, workShiftId: e.target.value})}
@@ -617,7 +617,7 @@ export default function EmployeesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={editFormData.status}
                     onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
@@ -630,16 +630,16 @@ export default function EmployeesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
                   <Input
                     value={editFormData.phone}
                     onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Salary (₹)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Salary (₹)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                    <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">₹</span>
                     <Input
                       type="number"
                       value={editFormData.salary}
@@ -656,8 +656,8 @@ export default function EmployeesPage() {
                         <MapPinOff size={18} />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Disable Geo-fencing Today</p>
-                        <p className="text-[10px] text-gray-500">Automatically re-enables tomorrow at 12:00 AM</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 dark:text-white">Disable Geo-fencing Today</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Automatically re-enables tomorrow at 12:00 AM</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -681,7 +681,7 @@ export default function EmployeesPage() {
                           });
                         }}
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-slate-900 after:border-gray-300 dark:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                 </div>
