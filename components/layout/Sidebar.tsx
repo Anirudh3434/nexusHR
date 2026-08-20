@@ -276,23 +276,16 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         })}
       </nav>
 
-      {/* Bottom Profile / Account Area Logout Component Wrapper */}
-      <div className="border-t border-gray-200 p-3 dark:border-gray-800">
-        <button
-          onClick={logout}
-          className={cn(
-            "group relative flex w-full items-center rounded-md p-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20",
-            collapsed ? "justify-center" : "gap-3"
-          )}
-        >
-          <LogOut size={20} />
-          {!collapsed && <span>Logout Account</span>}
-          {collapsed && (
-            <div className="absolute left-full ml-4 hidden rounded-md bg-red-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-sm transition-opacity group-hover:block group-hover:opacity-100 z-50 whitespace-nowrap">
-              Logout
-            </div>
-          )}
-        </button>
+      {/* Bottom App Info */}
+      <div className="border-t border-gray-200 p-3 pb-8 dark:border-gray-800">
+        {!collapsed && (
+          <div className="flex items-center justify-between px-2 pt-1 text-[11px] text-gray-400">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-medium">
+              📱 Mobile App
+            </span>
+            <span className="font-mono text-[10px]">v6.0.13</span>
+          </div>
+        )}
       </div>
     </div>
     </>

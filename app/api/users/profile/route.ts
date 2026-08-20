@@ -27,6 +27,7 @@ export async function GET(req: Request) {
       role: user.role,
       department: user.department,
       designation: user.designation,
+      employeeId: user.employeeId,
       companyId: user.companyId?.toString(),
       avatar: user.avatar,
       dob: user.dob,

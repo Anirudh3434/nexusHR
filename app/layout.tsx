@@ -8,9 +8,103 @@ import { ToastContainer } from "../components/ui/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const siteUrl = "https://nexus-hr-udh9.vercel.app";
+
 export const metadata: Metadata = {
-  title: "NexusHR - Modern HRM",
-  description: "A fast, scalable and beautiful Human Resources Management system.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "NexusHR — Unified Platform for HR & Projects",
+    template: "%s | NexusHR",
+  },
+  description:
+    "NexusHR is a unified HR management system and project management platform for modern enterprise teams. Geo-fenced attendance, leave management, automated payroll, GitHub-integrated sprint boards, and AI-powered insights — all in one portal.",
+  keywords: [
+    "HR software", "human resources management", "HRM system",
+    "attendance tracking", "leave management", "payroll software",
+    "employee management", "project management AI", "expense tracking",
+    "team collaboration", "geo-fencing attendance", "HR dashboard",
+    "NexusHR", "modern HRM", "employee portal",
+  ],
+  authors: [{ name: "Anirudh Bhardwaj" }],
+  creator: "Anirudh Bhardwaj",
+  publisher: "NexusHR",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "NexusHR",
+    title: "NexusHR — Unified Platform for HR & Projects",
+    description:
+      "NexusHR is a unified HR management system and project management platform for modern enterprise teams. Geo-fenced attendance, leave management, automated payroll, and AI-powered insights.",
+    images: [
+      {
+        url: "/favicon.png",
+        width: 1024,
+        height: 1024,
+        alt: "NexusHR Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NexusHR — Unified Platform for HR & Projects",
+    description:
+      "NexusHR is a unified HR management system and project management platform for modern enterprise teams. Geo-fenced attendance, leave management, automated payroll, and AI-powered insights.",
+    images: ["/favicon.png"],
+    creator: "@anirudh3434",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "NexusHR",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web, iOS, Android",
+  description:
+    "Modern HR Management System with attendance tracking, leave management, payroll processing, AI-powered project management, and real-time team collaboration.",
+  url: siteUrl,
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  author: {
+    "@type": "Person",
+    name: "Anirudh Bhardwaj",
+  },
+};
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "NexusHR",
+  url: siteUrl,
+  logo: `${siteUrl}/favicon.png`,
+  description:
+    "All-in-one HR Management System for modern teams.",
+  founder: {
+    "@type": "Person",
+    name: "Anirudh Bhardwaj",
+  },
 };
 
 export default function RootLayout({
@@ -20,6 +114,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+      </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-50 min-h-screen transition-colors`}>
         <ThemeProvider>
           <AuthProvider>

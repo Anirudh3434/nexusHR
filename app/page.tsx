@@ -406,8 +406,11 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
                 className="text-lg text-slate-600 max-w-2xl leading-relaxed"
               >
-                Connect your organization with Geo-Fenced GPS attendance, GitHub-integrated PMS sprint boards, 
-                employee Today Task & EOD reports, automated payroll, and AI voice executive briefings.
+                NexusHR is a modern HR management system that unifies attendance tracking, leave management,
+                payroll processing, expense tracking, and AI-powered project management into a single platform.
+                Connect your organization with geo-fenced GPS attendance, GitHub-integrated PMS sprint boards,
+                employee task and EOD reports, automated payroll, and AI voice executive briefings — all designed
+                for modern enterprise teams.
               </motion.p>
 
               {/* Direct Company Code Access */}
@@ -659,28 +662,152 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Why NexusHR — Rich content section for SEO */}
+      <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={containerVariants}
+            className="space-y-6"
+          >
+            <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Why Choose NexusHR as Your HR Management System?
+            </motion.h2>
+            <motion.p variants={itemVariants} className="text-slate-600 text-base leading-relaxed">
+              Managing human resources across distributed teams requires more than spreadsheets and scattered tools.
+              NexusHR is an all-in-one HR management system built for modern organizations that need real-time visibility
+              into attendance, leave balances, payroll, and project delivery. Unlike traditional HR software, NexusHR
+              combines enterprise-grade HR operations with an AI-powered project management system, giving managers a
+              single source of truth for both people and productivity.
+            </motion.p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+            >
+              <h3 className="text-lg font-bold text-slate-900">Geo-Fenced Attendance You Can Trust</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Traditional attendance systems rely on manual clock-ins that are easy to fake. NexusHR uses real-time
+                GPS verification to confirm every employee check-in happens within your defined office radius. Managers
+                can see live attendance dashboards, office boundary maps, and work-from-home vs office mode toggles — all
+                updated in real time through WebSocket-powered sync. The system also supports automatic punch-in when an
+                employee enters the geo-fenced zone, eliminating forgotten clock-ins entirely.
+              </p>
+            </motion.div>
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+            >
+              <h3 className="text-lg font-bold text-slate-900">GitHub-Integrated Project Management</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                NexusHR bridges the gap between engineering and HR with its GitHub-integrated project management system.
+                When a developer pushes a branch containing a ticket ID — for example <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono">feature/TSK26070010-auth</code> —
+                the sprint board automatically updates the task status to In Progress. This eliminates manual status
+                updates, keeps sprint boards accurate, and gives project managers real-time visibility into development
+                progress without interrupting the engineering workflow.
+              </p>
+            </motion.div>
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+            >
+              <h3 className="text-lg font-bold text-slate-900">Automated Payroll and Expense Tracking</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Processing payroll manually is time-consuming and error-prone. NexusHR automates salary calculations
+                based on attendance data, overtime hours, and leave records. The system generates payslips with tax
+                deductions, tracks employee expense claims, and maintains a complete financial audit trail. HR teams
+                can run payroll for the entire organization in minutes instead of days, with built-in compliance checks
+                and approval workflows that prevent costly mistakes before they happen.
+              </p>
+            </motion.div>
+            <motion.div
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+            >
+              <h3 className="text-lg font-bold text-slate-900">AI-Powered Insights and Voice Briefings</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                NexusHR goes beyond traditional HR software with its built-in AI assistant. Managers can request
+                voice-executive briefings that summarize team attendance, pending leave requests, active projects, and
+                budget utilization — all delivered through natural language voice synthesis. The AI project management
+                agent also helps teams break down complex tasks, estimate story points, and identify blockers before
+                they impact sprint timelines. This is the future of human resources management, powered by advanced
+                language models and real-time organizational data.
+              </p>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
+            className="bg-slate-50 border border-slate-200 rounded-2xl p-8 space-y-4"
+          >
+            <h3 className="text-lg font-bold text-slate-900">Built for Security and Compliance</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Enterprise HR systems handle sensitive employee data including salary information, personal identification,
+              and location history. NexusHR is built with security-first principles: JWT-based authentication, role-based
+              access control for admins, managers, and employees, encrypted data at rest, and QR-code device linking that
+              ensures only verified devices can access the platform. Every attendance check-in is geo-verified and
+              timestamped, creating an auditable trail that satisfies regulatory compliance requirements across industries.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Footer */}
       <motion.footer
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="relative z-10 border-t border-slate-200 py-12 bg-white text-slate-600"
+        className="relative z-10 border-t border-slate-200 py-16 bg-white text-slate-600"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <motion.div
-              whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
-              transition={{ duration: 0.4 }}
-              className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xs"
-            >
-              NX
-            </motion.div>
-            <span className="text-sm font-bold text-slate-900">NexusHR Enterprise System</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">NX</div>
+                <span className="text-sm font-bold text-slate-900">NexusHR</span>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Modern HR management system for enterprise teams. Attendance, payroll, projects, and AI — unified.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Product</h4>
+              <ul className="space-y-2 text-xs">
+                <li><a href="#features" className="hover:text-indigo-600 transition-colors">Features</a></li>
+                <li><a href="#github-integration" className="hover:text-indigo-600 transition-colors">GitHub Integration</a></li>
+                <li><a href="#how-it-works" className="hover:text-indigo-600 transition-colors">How It Works</a></li>
+                <li><Link href="/login" className="hover:text-indigo-600 transition-colors">Sign In</Link></li>
+                <li><Link href="/register" className="hover:text-indigo-600 transition-colors">Register Company</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Resources</h4>
+              <ul className="space-y-2 text-xs">
+                <li><a href="https://github.com/Anirudh3434" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">GitHub Repository</a></li>
+                <li><a href="https://github.com/Anirudh3434/nexus-hr-websocket" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">WebSocket Server</a></li>
+                <li><a href="https://github.com/Anirudh3434?tab=repositories" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">All Repositories</a></li>
+              </ul>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Legal</h4>
+              <ul className="space-y-2 text-xs">
+                <li><span className="text-slate-400">Privacy Policy</span></li>
+                <li><span className="text-slate-400">Terms of Service</span></li>
+                <li><span className="text-slate-400">Cookie Policy</span></li>
+              </ul>
+            </div>
           </div>
-          <p className="text-xs text-slate-500">© 2026 NexusHR. All rights reserved.</p>
-          <div className="flex gap-4 text-xs font-semibold text-slate-600">
-            <Link href="/login" className="hover:text-slate-900">Sign In</Link>
-            <Link href="/register" className="hover:text-slate-900">Register</Link>
+          <div className="border-t border-slate-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-slate-500">© 2026 NexusHR. All rights reserved. Built by Anirudh Bhardwaj.</p>
+            <div className="flex gap-4 text-xs font-semibold text-slate-600">
+              <Link href="/login" className="hover:text-slate-900">Sign In</Link>
+              <Link href="/register" className="hover:text-slate-900">Register</Link>
+              <a href="https://github.com/Anirudh3434" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900">GitHub</a>
+            </div>
           </div>
         </div>
       </motion.footer>
