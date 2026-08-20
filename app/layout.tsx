@@ -6,7 +6,7 @@ import { AuthProvider } from "../context/AuthContext";
 import { ToastProvider } from "../context/ToastContext";
 import { ToastContainer } from "../components/ui/Toast";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 const siteUrl = "https://nexus-hr-udh9.vercel.app";
 
