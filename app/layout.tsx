@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../context/ThemeContext";
 import { AuthProvider } from "../context/AuthContext";
 import { ToastProvider } from "../context/ToastContext";
 import { ToastContainer } from "../components/ui/Toast";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const sourceSans3 = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 const siteUrl = "https://nexus-hr-udh9.vercel.app";
 
@@ -113,7 +117,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={sourceSans3.variable} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -124,7 +128,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
       </head>
-      <body className={`${inter.className} bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-50 min-h-screen transition-colors`}>
+      <body className={`${sourceSans3.className} bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-50 min-h-screen transition-colors`}>
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

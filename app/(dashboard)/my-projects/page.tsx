@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { 
   FolderKanban, Search, Calendar, User, Users, DollarSign, 
-  TrendingUp, Clock, CheckCircle
+  TrendingUp, Clock, CheckCircle, Loader2
 } from "lucide-react";
 
 interface ProjectMember {
@@ -71,12 +71,12 @@ const statusColors: Record<string, string> = {
   planning: 'bg-blue-100 text-blue-700',
   active: 'bg-green-100 text-green-700',
   on_hold: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-gray-100 text-gray-700',
+  completed: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   cancelled: 'bg-red-100 text-red-700',
 };
 
 const priorityColors: Record<string, string> = {
-  low: 'bg-gray-100 text-gray-700',
+  low: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   medium: 'bg-blue-100 text-blue-700',
   high: 'bg-orange-100 text-orange-700',
   critical: 'bg-red-100 text-red-700',
@@ -125,7 +125,7 @@ export default function MyProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -133,8 +133,8 @@ export default function MyProjectsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">My Projects</h1>
-        <p className="text-gray-600">View your assigned projects</p>
+        <h1 className="text-3xl font-bold tracking-tight">My Projects</h1>
+        <p className="text-gray-600 dark:text-gray-400">View your assigned projects</p>
       </div>
 
       {/* Filters */}
@@ -142,7 +142,7 @@ export default function MyProjectsPage() {
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search projects..."
@@ -169,7 +169,7 @@ export default function MyProjectsPage() {
       <div className="space-y-4">
         {filteredProjects.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-center text-gray-500">
+            <CardContent className="pt-6 text-center text-gray-500 dark:text-gray-400">
               No projects found
             </CardContent>
           </Card>
@@ -188,10 +188,10 @@ export default function MyProjectsPage() {
                         {priorityLabels[project.priority]}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{project.projectNumber}</p>
-                    <p className="text-gray-700 mb-3">{project.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{project.projectNumber}</p>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">{project.description}</p>
                     
-                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4 flex-wrap">
+                    <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400 mb-4 flex-wrap">
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         <span>Manager: {project.managerId?.name || "Sunil Singh (CTO)"}</span>
@@ -215,7 +215,7 @@ export default function MyProjectsPage() {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-600 dark:text-gray-400">Progress</span>
                         <span className="font-medium">{project.progressPercentage || 0}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -228,7 +228,7 @@ export default function MyProjectsPage() {
 
                     {/* My Role */}
                     {project.members && project.members.length > 0 && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <Badge variant="outline">
                           {project.members.find((m: any) => (m.employeeId?._id || m.employeeId)?.toString() === (user as any)?._id?.toString() || (m.employeeId?._id || m.employeeId)?.toString() === (user as any)?.id?.toString())?.role || 'Team Member'}
                         </Badge>

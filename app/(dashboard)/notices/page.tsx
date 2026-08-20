@@ -105,7 +105,7 @@ export default function NoticesPage() {
       case 'High': return 'text-red-600 bg-red-50 border-red-200';
       case 'Medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       case 'Low': return 'text-green-600 bg-green-50 border-green-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -130,7 +130,7 @@ export default function NoticesPage() {
             <Megaphone className="h-8 w-8 text-blue-600" />
             Notice Management
           </h1>
-          <p className="text-gray-500">Create and manage company announcements.</p>
+          <p className="text-gray-500 dark:text-gray-400">Create and manage company announcements.</p>
         </div>
         <Button onClick={() => setShowModal(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -147,13 +147,13 @@ export default function NoticesPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
           ) : notices.length === 0 ? (
             <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No notices found</p>
-              <p className="text-sm text-gray-400 mt-1">Create your first notice to announce something!</p>
+              <AlertCircle className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">No notices found</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Create your first notice to announce something!</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -170,8 +170,8 @@ export default function NoticesPage() {
                           {notice.priority} Priority
                         </span>
                       </div>
-                      <p className="text-gray-700 mb-3">{notice.content}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <p className="text-gray-700 dark:text-gray-300 mb-3">{notice.content}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span>Posted by {notice.postedBy?.name || 'Admin'}</span>
                         <span>{new Date(notice.createdAt).toLocaleDateString()}</span>
                         {notice.expiryDate && (
@@ -203,17 +203,17 @@ export default function NoticesPage() {
       {/* Create Notice Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Post New Notice</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="h-5 w-5" />
               </button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title *</label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -223,23 +223,23 @@ export default function NoticesPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content *</label>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Enter notice content..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[100px]"
                   required
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="General">General</option>
                     <option value="Holiday">Holiday</option>
@@ -249,11 +249,11 @@ export default function NoticesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -263,13 +263,13 @@ export default function NoticesPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiry Date (Optional)</label>
                 <Input
                   type="date"
                   value={formData.expiryDate}
                   onChange={(e) => setFormData({...formData, expiryDate: e.target.value})}
                 />
-                <p className="text-xs text-gray-500 mt-1">Notice will be hidden after this date</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Notice will be hidden after this date</p>
               </div>
               
               <div className="flex gap-3 pt-4">

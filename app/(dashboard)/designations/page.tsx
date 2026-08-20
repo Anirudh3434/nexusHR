@@ -107,7 +107,7 @@ export default function DesignationsPage() {
             <Briefcase className="h-8 w-8 text-blue-600" />
             Designations
           </h1>
-          <p className="text-gray-500">Manage job designations linked to departments.</p>
+          <p className="text-gray-500 dark:text-gray-400">Manage job designations linked to departments.</p>
         </div>
         {canManage && (
           <Button onClick={() => setShowModal(true)}>
@@ -128,8 +128,8 @@ export default function DesignationsPage() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : designations.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Briefcase className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <Briefcase className="h-12 w-12 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
               <p>No designations found. Create one to use in employee onboarding.</p>
             </div>
           ) : (
@@ -152,10 +152,10 @@ export default function DesignationsPage() {
                           {desig.department}
                         </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-gray-400 dark:text-gray-500">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-gray-500">{desig.description || '-'}</TableCell>
+                    <TableCell className="text-gray-500 dark:text-gray-400">{desig.description || '-'}</TableCell>
                     {canManage && (
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
@@ -179,18 +179,18 @@ export default function DesignationsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">
                 {editingDesig ? "Edit Designation" : "Add Designation"}
               </h2>
-              <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
+              <button onClick={resetForm} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="h-5 w-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Designation Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Designation Name *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -199,7 +199,7 @@ export default function DesignationsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
                 <select
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
@@ -212,7 +212,7 @@ export default function DesignationsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
                 <Input
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}

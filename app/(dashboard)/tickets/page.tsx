@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { 
   Ticket, Search, Filter, Clock, CheckCircle, XCircle, 
   MessageSquare, ChevronDown, ChevronUp, Calendar, User,
-  AlertTriangle, ArrowRight, MoreHorizontal
+  AlertTriangle, ArrowRight, MoreHorizontal, Loader2
 } from "lucide-react";
 
 interface TicketItem {
@@ -179,9 +179,9 @@ export default function TicketsManagementPage() {
       case 'in_progress': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'pending': return 'bg-orange-100 text-orange-700 border-orange-200';
       case 'resolved': return 'bg-green-100 text-green-700 border-green-200';
-      case 'closed': return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'closed': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
       case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
     }
   };
 
@@ -191,7 +191,7 @@ export default function TicketsManagementPage() {
       case 'high': return 'bg-orange-100 text-orange-700';
       case 'medium': return 'bg-yellow-100 text-yellow-700';
       case 'low': return 'bg-green-100 text-green-700';
-      default: return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
     }
   };
 
@@ -222,18 +222,18 @@ export default function TicketsManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Ticket Management</h1>
-          <p className="text-sm text-gray-500">Manage and resolve employee support tickets</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Ticket Management</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Manage and resolve employee support tickets</p>
         </div>
       </div>
 
@@ -247,10 +247,10 @@ export default function TicketsManagementPage() {
           { label: 'Resolved', value: stats.resolved, color: 'green' },
           { label: 'Critical', value: stats.critical, color: 'red' },
         ].map(({ label, value, color }) => (
-          <Card key={label} className="border-gray-200">
+          <Card key={label} className="border-gray-200 dark:border-gray-700">
             <CardContent className="p-3">
-              <p className="text-2xl font-semibold text-gray-900">{value}</p>
-              <p className="text-xs text-gray-500">{label}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
             </CardContent>
           </Card>
         ))}
@@ -259,20 +259,20 @@ export default function TicketsManagementPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder="Search by ticket #, title, reporter, or department..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div className="flex gap-2">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
           >
             <option value="">All Status</option>
             <option value="open">Open</option>
@@ -284,7 +284,7 @@ export default function TicketsManagementPage() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
           >
             <option value="">All Categories</option>
             <option value="it_support">IT Support</option>
@@ -300,7 +300,7 @@ export default function TicketsManagementPage() {
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-white dark:bg-slate-900"
           >
             <option value="">All Priorities</option>
             <option value="critical">Critical</option>
@@ -314,22 +314,22 @@ export default function TicketsManagementPage() {
       {/* Tickets List */}
       <div className="space-y-3">
         {filteredTickets.length === 0 ? (
-          <Card className="border-gray-200">
+          <Card className="border-gray-200 dark:border-gray-700">
             <CardContent className="py-12 text-center">
-              <Ticket className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No tickets found</h3>
-              <p className="text-gray-500 text-sm">Try adjusting your filters</p>
+              <Ticket className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No tickets found</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Try adjusting your filters</p>
             </CardContent>
           </Card>
         ) : (
           filteredTickets.map((ticket) => (
-            <Card key={ticket._id} className="border-gray-200 overflow-hidden">
+            <Card key={ticket._id} className="border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   {/* Left: Ticket Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+                      <code className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded font-mono">
                         {ticket.ticketNumber}
                       </code>
                       <Badge className={`${getStatusColor(ticket.status)} text-xs px-2 py-0.5`}>
@@ -338,14 +338,14 @@ export default function TicketsManagementPage() {
                       <Badge className={`${getPriorityColor(ticket.priority)} text-xs px-2 py-0.5 border-0`}>
                         {ticket.priority}
                       </Badge>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {categoryLabels[ticket.category] || ticket.category}
                       </span>
                     </div>
-                    <h3 className="font-medium text-gray-900">{ticket.title}</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{ticket.title}</h3>
                     
                     {/* Reporter Info */}
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
                       <span className="flex items-center gap-1">
                         <User className="h-3.5 w-3.5" />
                         {ticket.reportedBy?.name}
@@ -386,7 +386,7 @@ export default function TicketsManagementPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleExpand(ticket._id)}
-                      className="text-gray-500 h-8 px-2"
+                      className="text-gray-500 dark:text-gray-400 h-8 px-2"
                     >
                       {expandedId === ticket._id ? (
                         <ChevronUp className="h-4 w-4" />
@@ -398,7 +398,7 @@ export default function TicketsManagementPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-3">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-3">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
                     {new Date(ticket.createdAt).toLocaleDateString('en-GB')}
@@ -425,16 +425,16 @@ export default function TicketsManagementPage() {
                 {expandedId === ticket._id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-1">Description</h4>
-                      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded whitespace-pre-wrap">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-slate-950 p-3 rounded whitespace-pre-wrap">
                         {ticket.description}
                       </p>
                     </div>
 
                     {ticket.resolutionNotes && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Resolution Notes</h4>
-                        <p className="text-sm text-gray-600 bg-green-50 p-3 rounded">
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resolution Notes</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 bg-green-50 p-3 rounded">
                           {ticket.resolutionNotes}
                         </p>
                       </div>
@@ -443,20 +443,20 @@ export default function TicketsManagementPage() {
                     {/* All Comments */}
                     {ticket.comments && ticket.comments.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Comments</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Comments</h4>
                         <div className="space-y-2">
                           {ticket.comments.map((comment, idx) => (
-                            <div key={idx} className={`p-3 rounded ${comment.internal ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50'}`}>
+                            <div key={idx} className={`p-3 rounded ${comment.internal ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 dark:bg-slate-950'}`}>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-gray-900">
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                   {comment.authorName}
                                   {comment.internal && <span className="ml-2 text-xs text-yellow-600">(Internal)</span>}
                                 </span>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   {new Date(comment.createdAt).toLocaleDateString('en-GB')}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-600">{comment.message}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{comment.message}</p>
                             </div>
                           ))}
                         </div>
@@ -465,22 +465,22 @@ export default function TicketsManagementPage() {
 
                     {/* Add Comment */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Add Comment</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add Comment</h4>
                       <div className="space-y-2">
                         <textarea
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
                           placeholder="Add a comment..."
                           rows={3}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                         <div className="flex items-center justify-between">
-                          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                          <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={internalComment}
                               onChange={(e) => setInternalComment(e.target.checked)}
-                              className="rounded border-gray-300"
+                              className="rounded border-gray-300 dark:border-gray-600"
                             />
                             Internal comment (staff only)
                           </label>
@@ -511,7 +511,7 @@ export default function TicketsManagementPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Resolution Notes *
                 </label>
                 <textarea
@@ -519,7 +519,7 @@ export default function TicketsManagementPage() {
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="Describe how the issue was resolved..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
               </div>
               <div className="flex gap-3 pt-2">

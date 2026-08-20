@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { 
   FolderKanban, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
-  AlertCircle, TrendingUp, Users, DollarSign, LayoutGrid, List
+  AlertCircle, TrendingUp, Users, DollarSign, LayoutGrid, List, Loader2
 } from "lucide-react";
 
 interface ProjectMember {
@@ -346,7 +346,7 @@ export default function ProjectsManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -356,7 +356,7 @@ export default function ProjectsManagementPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Projects</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Projects</h1>
           <p className="text-sm text-slate-500">Manage and track your company projects</p>
         </div>
         {user?.role !== 'employee' && (
