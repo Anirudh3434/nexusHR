@@ -407,8 +407,7 @@ export default function LandingPage() {
                 className="text-lg text-slate-600 max-w-2xl leading-relaxed"
               >
                 NexusHR is a modern HR management system that unifies attendance tracking, leave management,
-                payroll processing, expense tracking, and AI-powered project management into a single platform.
-                Connect your organization with geo-fenced GPS attendance, GitHub-integrated PMS sprint boards,
+                payroll processing, expense tracking, and AI-powered project management into a single platform.  Connect your organization with geo-fenced GPS attendance, GitHub-integrated PMS sprint boards,
                 employee task and EOD reports, automated payroll, and AI voice executive briefings — all designed
                 for modern enterprise teams.
               </motion.p>
