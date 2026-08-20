@@ -220,13 +220,14 @@ async function seedKnowledgeBase() {
     await mongoose.connect(MONGODB_URI as string);
     console.log('Connected to MongoDB successfully!');
 
-    const companies = await mongoose.connection.db.collection('companies').find({}).toArray();
+    const db = mongoose.connection.db!;
+    const companies = await db.collection('companies').find({}).toArray();
     console.log(`Found ${companies.length} companies:`, companies.map(c => c.name));
 
-    const users = await mongoose.connection.db.collection('users').find({}).toArray();
+    const users = await db.collection('users').find({}).toArray();
     const adminUser = users.find(u => u.role === 'admin') || users[0];
 
-    const kbCollection = mongoose.connection.db.collection('hrknowledgebases');
+    const kbCollection = db.collection('hrknowledgebases');
 
     // Remove existing test articles to avoid duplication
     const deleteResult = await kbCollection.deleteMany({});
