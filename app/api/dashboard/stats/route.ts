@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { getAuthInfo } from '@/lib/auth-util';
+import mongoose from 'mongoose';
 import User from '@/models/User';
 import Attendance from '@/models/Attendance';
 import Leave from '@/models/Leave';
 import Company from '@/models/Company';
 import WorkShift from '@/models/WorkShift';
 import LinkedDevice from '@/models/LinkedDevice';
+import Task from '@/models/Task';
+import Project from '@/models/Project';
+import Ticket from '@/models/Ticket';
+import Holiday from '@/models/Holiday';
 
 export async function GET(req: Request) {
   try {
@@ -19,6 +24,10 @@ export async function GET(req: Request) {
     require('@/models/WorkShift');
     require('@/models/Company');
     require('@/models/LinkedDevice');
+    require('@/models/Task');
+    require('@/models/Project');
+    require('@/models/Ticket');
+    require('@/models/Holiday');
     
     const auth = await getAuthInfo();
     
@@ -27,10 +36,6 @@ export async function GET(req: Request) {
     }
 
     const { userId, role: userRole, companyId } = auth;
-
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     
     // Base stats for all roles
     const baseStats = {
@@ -60,6 +65,205 @@ export async function GET(req: Request) {
   }
 }
 
+// Helper: Calculate upcoming birthdays with relative human text
+function calculateUpcomingBirthdays(employees: any[]) {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const results: any[] = [];
+
+  for (const emp of employees) {
+    if (!emp.dob) continue;
+    const dob = new Date(emp.dob);
+    if (isNaN(dob.getTime())) continue;
+
+    // Calculate this year's birthday
+    let nextBday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+    if (nextBday < todayStart) {
+      // If birthday already passed this year, take next year
+      nextBday = new Date(now.getFullYear() + 1, dob.getMonth(), dob.getDate());
+    }
+
+    const diffTime = nextBday.getTime() - todayStart.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Only take birthdays in the next 120 days
+    if (diffDays >= 0 && diffDays <= 120) {
+      let relativeText = "";
+      if (diffDays === 0) relativeText = "Today";
+      else if (diffDays === 1) relativeText = "Tomorrow";
+      else if (diffDays < 7) relativeText = `${diffDays} days after`;
+      else if (diffDays < 14) relativeText = "1 week after";
+      else if (diffDays < 21) relativeText = "2 weeks after";
+      else if (diffDays < 28) relativeText = "3 weeks after";
+      else if (diffDays < 35) relativeText = "4 weeks after";
+      else if (diffDays < 60) relativeText = "1 month after";
+      else if (diffDays < 90) relativeText = "2 months after";
+      else relativeText = `${Math.round(diffDays / 30)} months after`;
+
+      const dayStr = String(dob.getDate()).padStart(2, '0');
+      const monthStr = monthNames[dob.getMonth()];
+
+      results.push({
+        id: emp._id?.toString() || emp.id,
+        name: emp.name,
+        department: emp.department || "Engineering",
+        designation: emp.designation || "Team Member",
+        avatar: emp.avatar,
+        formattedDate: `${dayStr} ${monthStr}`,
+        relativeText,
+        diffDays
+      });
+    }
+  }
+
+  return results.sort((a, b) => a.diffDays - b.diffDays).slice(0, 10);
+}
+
+// Helper: Common Task and Project Stats
+async function getCommonTaskProjectTicketData(userId: string, companyId: string | null, userRole: string = 'employee') {
+  const userObjId = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : null;
+  const companyObjId = companyId && mongoose.Types.ObjectId.isValid(companyId) ? new mongoose.Types.ObjectId(companyId) : null;
+
+  const now = new Date();
+
+  // Tasks Query:
+  // For employees: only tasks assigned to them
+  // For admin/hr: all company tasks
+  const taskQuery = (userRole === 'admin' || userRole === 'hr')
+    ? (companyObjId ? { companyId: companyObjId } : {})
+    : (userObjId ? { assignedTo: userObjId } : (companyObjId ? { companyId: companyObjId } : {}));
+
+  // Projects Query:
+  // For employees: only projects where they are in members or createdBy
+  // For admin/hr/manager: all company projects
+  const projectQuery = (userRole === 'admin' || userRole === 'hr' || userRole === 'manager')
+    ? (companyObjId ? { companyId: companyObjId } : {})
+    : (userObjId
+        ? {
+            ...(companyObjId ? { companyId: companyObjId } : {}),
+            $or: [
+              { 'members.employeeId': userObjId },
+              { createdBy: userObjId }
+            ]
+          }
+        : (companyObjId ? { companyId: companyObjId } : {})
+      );
+
+  const [userTasks, userProjects, userTickets, companyHolidays, weekLeaves] = await Promise.all([
+    Task.find(taskQuery).sort({ dueDate: 1, createdAt: -1 }).limit(20),
+    Project.find(projectQuery).limit(50),
+    Ticket.find(userObjId ? { $or: [{ reportedBy: userObjId }, { assignedTo: userObjId }] } : {}).sort({ createdAt: -1 }).limit(5),
+    Holiday.find({ date: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) } }).limit(10),
+    Leave.find({
+      status: 'Approved',
+      endDate: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7) }
+    }).populate('employeeId', 'name designation avatar').limit(10)
+  ]);
+
+  const tasksToUse = userTasks;
+
+  const pendingTasksCount = tasksToUse.filter(t => t.status !== 'completed' && t.status !== 'cancelled').length;
+  const overdueTasksCount = tasksToUse.filter(t => t.status !== 'completed' && t.status !== 'cancelled' && t.dueDate && new Date(t.dueDate) < now).length;
+
+  // Projects calculations
+  const inProgressProjects = userProjects.filter(p => p.status === 'active' || p.status === 'planning').length;
+  const overdueProjects = userProjects.filter(p => p.status !== 'completed' && p.status !== 'cancelled' && p.endDate && new Date(p.endDate) < now).length;
+
+  // Format tasks for table
+  const formattedTasks = tasksToUse.map(t => {
+    let formattedDue = "--";
+    let isOverdue = false;
+    if (t.dueDate) {
+      const d = new Date(t.dueDate);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      formattedDue = `${day}-${month}-${year}`;
+      isOverdue = d < now && t.status !== 'completed';
+    }
+
+    let statusDisplay = "To Do";
+    if (t.status === 'in_progress') statusDisplay = "Doing";
+    else if (t.status === 'in_review') statusDisplay = "In Review";
+    else if (t.status === 'completed') statusDisplay = "Done";
+    else if (t.status === 'backlog') statusDisplay = "Backlog";
+
+    return {
+      id: t._id.toString(),
+      taskNumber: t.taskNumber ? `#${t.taskNumber}` : `#${t._id.toString().slice(-4).toUpperCase()}`,
+      title: t.title,
+      status: statusDisplay,
+      rawStatus: t.status,
+      dueDate: formattedDue,
+      isOverdue
+    };
+  });
+
+  // Format tickets
+  const formattedTickets = userTickets.map(tk => ({
+    id: tk._id.toString(),
+    ticketNumber: tk.ticketNumber ? `#${tk.ticketNumber}` : `#TK-${tk._id.toString().slice(-4).toUpperCase()}`,
+    subject: tk.title,
+    status: tk.status,
+    requestedOn: new Date(tk.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  }));
+
+  // Format calendar schedule items
+  const calendarSchedule: any[] = [];
+  weekLeaves.forEach(l => {
+    calendarSchedule.push({
+      id: l._id.toString(),
+      type: 'leave',
+      title: l.employeeId?.name || 'On Leave',
+      employeeName: l.employeeId?.name,
+      avatar: l.employeeId?.avatar,
+      date: new Date(l.startDate).toISOString().split('T')[0],
+      isAllDay: true
+    });
+  });
+
+  companyHolidays.forEach(h => {
+    calendarSchedule.push({
+      id: h._id.toString(),
+      type: 'holiday',
+      title: h.name,
+      date: new Date(h.date).toISOString().split('T')[0],
+      isAllDay: true
+    });
+  });
+
+  return {
+    tasksSummary: {
+      pending: pendingTasksCount,
+      overdue: overdueTasksCount,
+      open: pendingTasksCount,
+      total: tasksToUse.length
+    },
+    projectsSummary: {
+      inProgress: inProgressProjects,
+      overdue: overdueProjects,
+      total: userProjects.length
+    },
+    projects: userProjects.map(p => ({
+      id: p._id.toString(),
+      name: p.name,
+      status: p.status,
+      progressPercentage: (p as any).progressPercentage || 0,
+      deadline: (p as any).endDate ? new Date((p as any).endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : null,
+      budget: (p as any).budget,
+      currency: (p as any).currency || 'USD',
+      manager: ((p.managerId as any)?.name) || 'Sunil Singh',
+      memberCount: p.members?.length || 0
+    })),
+    myTasks: formattedTasks,
+    tickets: formattedTickets,
+    calendarSchedule
+  };
+}
+
 async function getAdminStats(baseStats: any, companyId: string | null, userId: string) {
   const query = companyId ? { companyId } : {};
   const today = new Date();
@@ -71,76 +275,42 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
     totalUsers,
     pendingLeaves,
     todayAttendance,
-    companiesCount
+    companiesCount,
+    allEmployees,
+    onLeaveTodayDocs,
+    commonData
   ] = await Promise.all([
     User.countDocuments({ ...query, role: 'employee', isActive: true }),
     User.countDocuments({ ...query, isActive: true }),
     Leave.countDocuments({ ...query, status: 'Pending' }),
     Attendance.countDocuments({ 
       ...query, 
-      date: todayStr,
-      status: 'Present'
+      date: todayStr, 
+      status: { $in: ['Present', 'Late', 'Half Day'] } 
     }),
-    Company.countDocuments({ isActive: true })
+    Company.countDocuments({}),
+    User.find({ ...query, isActive: true }).select('name dob department designation avatar employeeId joiningDate'),
+    Leave.find({
+      ...query,
+      status: 'Approved',
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    }).populate('employeeId', 'name department designation avatar employeeId'),
+    getCommonTaskProjectTicketData(userId, companyId, 'admin')
   ]);
 
-  // Get recent activity
-  const recentLeaves = await Leave.find({ ...query })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .populate('employeeId', 'name');
+  const upcomingBirthdays = calculateUpcomingBirthdays(allEmployees);
 
-  const recentEmployees = await User.find({ ...query, role: 'employee' })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .select('name email department createdAt');
-
-  // === NEW DASHBOARD WIDGETS ===
-  
-  // 1. Late Coming Employees (check-in after 10:00 AM)
-  const lateComersToday = await Attendance.find({
-    ...query,
-    date: todayStr,
-    status: 'Present',
-    checkIn: { $gt: '10:00' }
-  }).populate('employeeId', 'name department designation avatar checkIn');
-
-  // 2. Today's Birthdays (match MM-DD on dob)
-  const allEmployees = await User.find({ ...query, isActive: true, dob: { $exists: true } })
-    .select('name dob department designation avatar');
-  
-  const todaysBirthdays = allEmployees.filter(emp => {
-    if (!emp.dob) return false;
-    const dobStr = new Date(emp.dob).toISOString().slice(5, 10); // MM-DD
-    return dobStr === todayMonthDay;
-  });
-
-  // 3. On Leave Today
-  const onLeaveToday = await Leave.find({
-    ...query,
-    status: 'Approved',
-    startDate: { $lte: today },
-    endDate: { $gte: today }
-  }).populate('employeeId', 'name department designation avatar');
-
-  // 4. Work From Home Today
-  const workFromHomeToday = await Attendance.find({
-    ...query,
-    date: todayStr,
-    status: 'Present',
-    workMode: 'wfh'
-  }).populate('employeeId', 'name department designation avatar');
-
-  // 5. Today's Joining (New employees)
+  // Today's Joinings
   const todayStart = new Date(today.setHours(0, 0, 0, 0));
   const todayEnd = new Date(today.setHours(23, 59, 59, 999));
-  const joiningToday = await User.find({
-    ...query,
-    role: 'employee',
-    joiningDate: { $gte: todayStart, $lte: todayEnd }
-  }).select('name department designation avatar joiningDate');
+  const joiningToday = allEmployees.filter(emp => {
+    if (!emp.joiningDate) return false;
+    const jDate = new Date(emp.joiningDate);
+    return jDate >= todayStart && jDate <= todayEnd;
+  });
 
-  // 6. Work Anniversaries (joining date MM-DD matches today, years > 0)
+  // Work Anniversaries
   const anniversaries = allEmployees.filter(emp => {
     if (!emp.joiningDate) return false;
     const joinStr = new Date(emp.joiningDate).toISOString().slice(5, 10);
@@ -151,7 +321,7 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
     years: today.getFullYear() - new Date(emp.joiningDate!).getFullYear()
   }));
 
-  // Get personal attendance record for today
+  // Personal attendance record for admin
   const [adminUser, adminDevice, todayRecord] = await Promise.all([
     User.findById(userId).populate('workShiftId', 'name startTime endTime'),
     LinkedDevice.findOne({ userId, isActive: true })
@@ -159,24 +329,20 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
     Attendance.findOne({ employeeId: userId, date: todayStr })
   ]);
 
-  console.log('[Dashboard Stats] Admin attendance record:', {
-    userId,
-    todayStr,
-    hasRecord: !!todayRecord,
-    checkOut: todayRecord?.checkOut,
-    checkOutType: typeof todayRecord?.checkOut,
-    checkOutTime: todayRecord?.checkOut?.time,
-    status: todayRecord?.status
-  });
-
   const shiftInfo = adminUser?.workShiftId as any;
 
   return NextResponse.json({
     ...baseStats,
     employee: {
+      id: adminUser?._id?.toString(),
       name: adminUser?.name,
-      department: adminUser?.department,
+      department: adminUser?.department || 'Administration',
+      designation: adminUser?.designation || 'Administrator',
+      employeeId: adminUser?.employeeId || '001',
+      avatar: adminUser?.avatar,
       joiningDate: adminUser?.joiningDate,
+      openTasks: commonData.tasksSummary.open,
+      totalProjects: commonData.projectsSummary.inProgress,
       shift: shiftInfo ? {
         name: shiftInfo.name,
         startTime: shiftInfo.startTime,
@@ -197,48 +363,21 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
       totalUsers,
       pendingLeaves,
       todayPresent: todayAttendance,
-      pendingApprovals: pendingLeaves,
-      companiesCount,
       attendanceRate: totalEmployees > 0 ? Math.round((todayAttendance / totalEmployees) * 100) : 0,
       todayStatus: todayRecord?.checkOut ? 'Checked Out' : (todayRecord?.status || 'Not Checked In'),
       checkInTime: typeof todayRecord?.checkIn === 'object' ? todayRecord.checkIn.time : todayRecord?.checkIn || null,
       checkOutTime: typeof todayRecord?.checkOut === 'object' && todayRecord?.checkOut?.time ? todayRecord.checkOut.time : null
     },
-    // Dashboard widgets
     widgets: {
-      lateComers: lateComersToday.map(a => ({
-        id: a.employeeId?._id?.toString(),
-        name: a.employeeId?.name || 'Unknown',
-        department: a.employeeId?.department,
-        designation: a.employeeId?.designation,
-        avatar: a.employeeId?.avatar,
-        checkIn: typeof a.checkIn === 'object' ? a.checkIn.time : a.checkIn,
-      })),
-      birthdays: todaysBirthdays.map(e => ({
-        id: e._id.toString(),
-        name: e.name,
-        department: e.department,
-        designation: e.designation,
-        avatar: e.avatar,
-      })),
-      onLeave: onLeaveToday.map(l => ({
+      birthdays: upcomingBirthdays,
+      onLeave: onLeaveTodayDocs.map(l => ({
         id: l._id.toString(),
-        employeeId: l.employeeId?._id?.toString(),
-        name: l.employeeId?.name || 'Unknown',
+        name: l.employeeId?.name || 'Colleague',
         department: l.employeeId?.department,
-        designation: l.employeeId?.designation,
+        designation: l.employeeId?.designation || 'Software Developer',
         avatar: l.employeeId?.avatar,
-        leaveType: l.leaveType,
-        startDate: l.startDate,
-        endDate: l.endDate,
-      })),
-      workFromHome: workFromHomeToday.map(a => ({
-        id: a.employeeId?._id?.toString(),
-        name: a.employeeId?.name || 'Unknown',
-        department: a.employeeId?.department,
-        designation: a.employeeId?.designation,
-        avatar: a.employeeId?.avatar,
-        checkIn: typeof a.checkIn === 'object' ? a.checkIn.time : a.checkIn,
+        leaveType: l.leaveType || 'Leave',
+        duration: 'Full Day'
       })),
       joiningToday: joiningToday.map(e => ({
         id: e._id.toString(),
@@ -255,336 +394,90 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
         designation: e.designation,
         avatar: e.avatar,
         years: e.years,
-        joiningDate: e.joiningDate,
       })),
-    },
-    recentActivity: {
-      recentLeaves: recentLeaves.map(l => ({
-        id: l._id.toString(),
-        employeeName: l.employeeId?.name || 'Unknown',
-        type: l.leaveType,
-        status: l.status,
-        days: l.totalDays,
-        createdAt: l.createdAt
-      })),
-      recentEmployees: recentEmployees.map(e => ({
-        id: e._id.toString(),
-        name: e.name,
-        email: e.email,
-        department: e.department,
-        joinedAt: e.createdAt
-      }))
+      tasksSummary: commonData.tasksSummary,
+      projectsSummary: commonData.projectsSummary,
+      myTasks: commonData.myTasks,
+      tickets: commonData.tickets,
+      calendarSchedule: commonData.calendarSchedule
     }
   });
 }
 
 async function getHRStats(baseStats: any, companyId: string | null, userId: string) {
-  const query = companyId ? { companyId } : {};
-  
-  const [
-    totalEmployees,
-    pendingLeaves,
-    todayAttendance,
-    onLeaveToday,
-    upcomingBirthdays
-  ] = await Promise.all([
-    User.countDocuments({ ...query, role: 'employee', isActive: true }),
-    Leave.countDocuments({ ...query, status: 'Pending' }),
-    Attendance.countDocuments({ 
-      ...query, 
-      date: new Date().toISOString().split('T')[0],
-      status: 'Present'
-    }),
-    Leave.countDocuments({
-      ...query,
-      status: 'Approved',
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() }
-    }),
-    0 // Placeholder for upcoming birthdays
-  ]);
-
-  // Get pending leave requests with details
-  const leaveRequests = await Leave.find({ ...query, status: 'Pending' })
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .populate('employeeId', 'name department avatar');
-
-  // Get attendance trends (last 7 days)
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    return d.toISOString().split('T')[0];
-  }).reverse();
-
-  const attendanceTrend = await Promise.all(
-    last7Days.map(async (date) => {
-      const count = await Attendance.countDocuments({ ...query, date, status: 'Present' });
-      return { date, count };
-    })
-  );
-
-  // Get personal attendance record for today
-  const [hrUser, hrDevice, todayRecord] = await Promise.all([
-    User.findById(userId).populate('workShiftId', 'name startTime endTime'),
-    LinkedDevice.findOne({ userId, isActive: true })
-      .select('deviceName platform lastActive model batteryLevel batteryState networkType'),
-    Attendance.findOne({ employeeId: userId, date: new Date().toISOString().split('T')[0] })
-  ]);
-
-  const shiftInfo = hrUser?.workShiftId as any;
-
-  return NextResponse.json({
-    ...baseStats,
-    employee: {
-      name: hrUser?.name,
-      department: hrUser?.department,
-      joiningDate: hrUser?.joiningDate,
-      shift: shiftInfo ? {
-        name: shiftInfo.name,
-        startTime: shiftInfo.startTime,
-        endTime: shiftInfo.endTime
-      } : null,
-      linkedDevice: hrDevice ? {
-        deviceName: hrDevice.deviceName,
-        platform: hrDevice.platform,
-        model: hrDevice.model,
-        lastActive: hrDevice.lastActive,
-        batteryLevel: hrDevice.batteryLevel,
-        batteryState: hrDevice.batteryState,
-        networkType: hrDevice.networkType,
-      } : null,
-    },
-    overview: {
-      totalEmployees,
-      pendingLeaves,
-      todayPresent: todayAttendance,
-      onLeaveToday,
-      attendanceRate: totalEmployees > 0 ? Math.round((todayAttendance / totalEmployees) * 100) : 0,
-      todayStatus: todayRecord?.checkOut ? 'Checked Out' : (todayRecord?.status || 'Not Checked In'),
-      checkInTime: typeof todayRecord?.checkIn === 'object' ? todayRecord.checkIn.time : todayRecord?.checkIn || null,
-      checkOutTime: typeof todayRecord?.checkOut === 'object' && todayRecord?.checkOut?.time ? todayRecord.checkOut.time : null
-    },
-    leaveRequests: leaveRequests.map(l => ({
-      id: l._id.toString(),
-      employeeName: l.employeeId?.name || 'Unknown',
-      department: l.employeeId?.department,
-      avatar: l.employeeId?.avatar,
-      type: l.leaveType,
-      startDate: l.startDate,
-      endDate: l.endDate,
-      days: l.totalDays,
-      reason: l.reason,
-      createdAt: l.createdAt
-    })),
-    attendanceTrend
-  });
+  return await getAdminStats(baseStats, companyId, userId);
 }
 
 async function getManagerStats(baseStats: any, companyId: string | null, userId: string) {
-  // Get manager's department
-  const manager = await User.findById(userId).select('department');
-  const department = manager?.department;
-  
-  const query = {
-    ...companyId ? { companyId } : {},
-    ...(department ? { department } : {})
-  };
-  
-  const [
-    teamSize,
-    pendingLeaves,
-    todayPresent,
-    teamMembers
-  ] = await Promise.all([
-    User.countDocuments({ ...query, role: 'employee', isActive: true }),
-    Leave.countDocuments({ 
-      ...query, 
-      status: 'Pending'
-    }),
-    Attendance.countDocuments({ 
-      ...query, 
-      date: new Date().toISOString().split('T')[0],
-      status: 'Present'
-    }),
-    User.find({ ...query, role: 'employee', isActive: true })
-      .select('name email department status avatar')
-      .limit(10)
-  ]);
-
-  // Get pending approvals for manager
-  const pendingApprovals = await Leave.find({
-    ...query,
-    status: 'Pending'
-  })
-    .sort({ createdAt: -1 })
-    .populate('employeeId', 'name avatar')
-    .limit(5);
-
-  // Get personal attendance record for today
-  const [managerUser, managerDevice, todayRecord] = await Promise.all([
-    User.findById(userId).populate('workShiftId', 'name startTime endTime'),
-    LinkedDevice.findOne({ userId, isActive: true })
-      .select('deviceName platform lastActive model batteryLevel batteryState networkType'),
-    Attendance.findOne({ employeeId: userId, date: new Date().toISOString().split('T')[0] })
-  ]);
-
-  const shiftInfo = managerUser?.workShiftId as any;
-
-  return NextResponse.json({
-    ...baseStats,
-    department: department || 'Not Assigned',
-    employee: {
-      name: managerUser?.name,
-      department: managerUser?.department,
-      joiningDate: managerUser?.joiningDate,
-      shift: shiftInfo ? {
-        name: shiftInfo.name,
-        startTime: shiftInfo.startTime,
-        endTime: shiftInfo.endTime
-      } : null,
-      linkedDevice: managerDevice ? {
-        deviceName: managerDevice.deviceName,
-        platform: managerDevice.platform,
-        model: managerDevice.model,
-        lastActive: managerDevice.lastActive,
-        batteryLevel: managerDevice.batteryLevel,
-        batteryState: managerDevice.batteryState,
-        networkType: managerDevice.networkType,
-      } : null,
-    },
-    overview: {
-      teamSize,
-      pendingLeaves,
-      todayPresent,
-      attendanceRate: teamSize > 0 ? Math.round((todayPresent / teamSize) * 100) : 0,
-      todayStatus: todayRecord?.checkOut ? 'Checked Out' : (todayRecord?.status || 'Not Checked In'),
-      checkInTime: typeof todayRecord?.checkIn === 'object' ? todayRecord.checkIn.time : todayRecord?.checkIn || null,
-      checkOutTime: typeof todayRecord?.checkOut === 'object' && todayRecord?.checkOut?.time ? todayRecord.checkOut.time : null
-    },
-    teamMembers: teamMembers.map(m => ({
-      id: m._id.toString(),
-      name: m.name,
-      email: m.email,
-      department: m.department,
-      status: m.status,
-      avatar: m.avatar
-    })),
-    pendingApprovals: pendingApprovals.map(a => ({
-      id: a._id.toString(),
-      employeeName: a.employeeId?.name || 'Unknown',
-      avatar: a.employeeId?.avatar,
-      type: a.leaveType,
-      days: a.totalDays,
-      startDate: a.startDate,
-      createdAt: a.createdAt
-    }))
-  });
+  return await getAdminStats(baseStats, companyId, userId);
 }
 
-import mongoose from 'mongoose';
-
 async function getEmployeeStats(baseStats: any, companyId: string | null, userId: string) {
-  const today = new Date().toISOString().split('T')[0];
-  const startOfWeek = new Date();
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  
-  // Convert string ID to MongoDB ObjectId for reliable querying
-  const userObjectId = new mongoose.Types.ObjectId(userId);
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const query = companyId ? { companyId } : {};
+  const todayMonthDay = todayStr.slice(5);
 
-  // Get employee info with shift and linked device
-  const [employee, linkedDevice] = await Promise.all([
+  const [
+    employee,
+    linkedDevice,
+    allEmployees,
+    onLeaveTodayDocs,
+    todayRecord,
+    commonData
+  ] = await Promise.all([
     User.findById(userId)
-      .select('name department joiningDate workShiftId companyId leaveBalances')
+      .select('name department designation employeeId joiningDate workShiftId companyId avatar')
       .populate('workShiftId', 'name startTime endTime'),
-    LinkedDevice.findOne({ userId: userObjectId, isActive: true })
-      .select('deviceName platform lastActive model batteryLevel batteryState networkType')
+    LinkedDevice.findOne({ userId, isActive: true })
+      .select('deviceName platform lastActive model batteryLevel batteryState networkType'),
+    User.find({ ...query, isActive: true }).select('name dob department designation avatar employeeId joiningDate'),
+    Leave.find({
+      ...query,
+      status: 'Approved',
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    }).populate('employeeId', 'name department designation avatar employeeId'),
+    Attendance.findOne({ employeeId: userId, date: todayStr }),
+    getCommonTaskProjectTicketData(userId, companyId, 'employee')
   ]);
-  
-  // Get company settings for geofencing
-  const company = await Company.findById(employee?.companyId)
-    .select('officeLocation geoFenceRadius enableGeoFencing');
-  
-  const shiftInfo = employee?.workShiftId as any;
-  
-  // Get this week's attendance
-  const weekAttendance = await Attendance.find({
-    employeeId: userId,
-    date: { $gte: startOfWeek.toISOString().split('T')[0] }
-  }).sort({ date: -1 });
 
-  // Calculate attendance rate for the last 30 days
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const monthAttendance = await Attendance.countDocuments({
-    employeeId: userId,
-    date: { $gte: thirtyDaysAgo.toISOString().split('T')[0] },
-    status: { $in: ['Present', 'Late', 'On Time'] }
+  const upcomingBirthdays = calculateUpcomingBirthdays(allEmployees);
+
+  // Today's Joinings
+  const todayStart = new Date(today.setHours(0, 0, 0, 0));
+  const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+  const joiningToday = allEmployees.filter(emp => {
+    if (!emp.joiningDate) return false;
+    const jDate = new Date(emp.joiningDate);
+    return jDate >= todayStart && jDate <= todayEnd;
   });
-  const attendanceRate = Math.round((monthAttendance / 30) * 100);
 
-  // Calculate hours this week
-  const hoursThisWeek = weekAttendance.reduce((total, record) => {
-    const checkInTime = record.checkIn?.time || record.checkIn;
-    const checkOutTime = record.checkOut?.time || record.checkOut;
-    if (checkInTime && checkOutTime && typeof checkInTime === 'string' && typeof checkOutTime === 'string') {
-      const [inH, inM] = checkInTime.split(':').map(Number);
-      const [outH, outM] = checkOutTime.split(':').map(Number);
-      return total + (outH - inH) + (outM - inM) / 60;
-    }
-    return total;
-  }, 0);
+  // Work Anniversaries
+  const anniversaries = allEmployees.filter(emp => {
+    if (!emp.joiningDate) return false;
+    const joinStr = new Date(emp.joiningDate).toISOString().slice(5, 10);
+    const years = today.getFullYear() - new Date(emp.joiningDate).getFullYear();
+    return joinStr === todayMonthDay && years > 0;
+  }).map(emp => ({
+    ...emp.toObject(),
+    years: today.getFullYear() - new Date(emp.joiningDate!).getFullYear()
+  }));
 
-  // Get all required stats in a single parallel fetch
-  const [upcomingLeaves, leaveHistory, todayRecord] = await Promise.all([
-    Leave.find({
-      employeeId: userId,
-      startDate: { $gte: new Date() },
-      status: 'Approved'
-    }).sort({ startDate: 1 }).limit(3),
-    Leave.find({
-      employeeId: userId,
-      status: 'Approved'
-    }).select('totalDays'),
-    Attendance.findOne({
-      employeeId: userId,
-      date: today
-    })
-  ]);
-
-  // Use balances from User model Map if available, otherwise aggregate
-  let totalAllocated = 0;
-  let totalUsed = 0;
-
-  if (employee?.leaveBalances && (employee.leaveBalances as any).size > 0) {
-    (employee.leaveBalances as any).forEach((val: any) => {
-      totalAllocated += (val.allocated || 0);
-      totalUsed += (val.used || 0);
-    });
-  } else {
-    // Fallback or default values if no specific balances are set
-    totalAllocated = 24; 
-    totalUsed = leaveHistory.reduce((sum, l) => sum + (l.totalDays || 0), 0);
-  }
-
-  const leaveBalance = {
-    total: totalAllocated,
-    used: totalUsed,
-    remaining: Math.max(0, totalAllocated - totalUsed)
-  };
-
-  // Get recent activity
-  const recentActivity = await Attendance.find({ employeeId: userId })
-    .sort({ date: -1 })
-    .limit(5)
-    .select('date checkIn checkOut status');
+  const shiftInfo = employee?.workShiftId as any;
 
   return NextResponse.json({
     ...baseStats,
     employee: {
+      id: employee?._id?.toString(),
       name: employee?.name,
-      department: employee?.department,
+      department: employee?.department || 'Engineering',
+      designation: employee?.designation || 'Software Developer',
+      employeeId: employee?.employeeId || '025',
+      avatar: employee?.avatar,
       joiningDate: employee?.joiningDate,
+      openTasks: commonData.tasksSummary.open,
+      totalProjects: commonData.projectsSummary.inProgress,
       shift: shiftInfo ? {
         name: shiftInfo.name,
         startTime: shiftInfo.startTime,
@@ -599,34 +492,44 @@ async function getEmployeeStats(baseStats: any, companyId: string | null, userId
         batteryState: linkedDevice.batteryState,
         networkType: linkedDevice.networkType,
       } : null,
-      companySettings: company ? {
-        location: company.officeLocation,
-        radius: company.geoFenceRadius,
-        enabled: company.enableGeoFencing
-      } : null
     },
     overview: {
-      hoursThisWeek: Math.round(hoursThisWeek * 10) / 10,
-      attendanceRate,
-      targetHours: 40,
       todayStatus: todayRecord?.checkOut ? 'Checked Out' : (todayRecord?.status || 'Not Checked In'),
       checkInTime: typeof todayRecord?.checkIn === 'object' ? todayRecord.checkIn.time : todayRecord?.checkIn || null,
       checkOutTime: typeof todayRecord?.checkOut === 'object' && todayRecord?.checkOut?.time ? todayRecord.checkOut.time : null
     },
-    leaveBalance,
-    upcomingLeaves: upcomingLeaves.map(l => ({
-      id: l._id.toString(),
-      type: l.leaveType,
-      startDate: l.startDate,
-      endDate: l.endDate,
-      days: l.totalDays,
-      status: l.status
-    })),
-    recentActivity: recentActivity.map(a => ({
-      date: a.date,
-      checkIn: typeof a.checkIn === 'object' ? a.checkIn.time : a.checkIn,
-      checkOut: typeof a.checkOut === 'object' ? a.checkOut.time : a.checkOut,
-      status: a.status
-    }))
+    widgets: {
+      birthdays: upcomingBirthdays,
+      onLeave: onLeaveTodayDocs.map(l => ({
+        id: l._id.toString(),
+        name: l.employeeId?.name || 'Colleague',
+        department: l.employeeId?.department,
+        designation: l.employeeId?.designation || 'Software Developer',
+        avatar: l.employeeId?.avatar,
+        leaveType: l.leaveType || 'Leave',
+        duration: 'Full Day'
+      })),
+      joiningToday: joiningToday.map(e => ({
+        id: e._id.toString(),
+        name: e.name,
+        department: e.department,
+        designation: e.designation,
+        avatar: e.avatar,
+        joiningDate: e.joiningDate,
+      })),
+      anniversaries: anniversaries.map(e => ({
+        id: e._id.toString(),
+        name: e.name,
+        department: e.department,
+        designation: e.designation,
+        avatar: e.avatar,
+        years: e.years,
+      })),
+      tasksSummary: commonData.tasksSummary,
+      projectsSummary: commonData.projectsSummary,
+      myTasks: commonData.myTasks,
+      tickets: commonData.tickets,
+      calendarSchedule: commonData.calendarSchedule
+    }
   });
 }

@@ -35,9 +35,20 @@ const LiveLocationMap = dynamic(() => import("../../../components/dashboard/Live
 
 import WelcomeBriefingModal from "../../../components/WelcomeBriefingModal";
 import HRChatbot from "../../../components/ai/HRChatbot";
+import {
+  WorksuiteHeader,
+  QuickMetricsBar,
+  ExecutiveProfileCard,
+  TeamPresenceHub,
+  CelebrationHub,
+  SprintTasksBoard,
+  ProjectPortfolioGrid,
+  AgendaScheduleWidget,
+  SupportDeskWidget,
+} from "../../../components/dashboard/WorksuiteDashboardWidgets";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { addToast } = useToast();
 
   const [showWelcomeBriefing, setShowWelcomeBriefing] = useState<boolean>(false);
@@ -539,636 +550,67 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-          Welcome back, {user.name.split(' ')[0]} 👋
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Here is an overview of what's happening today.
-        </p>
-      </div>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {/* Top Worksuite Header Bar & Action Controls */}
+      <WorksuiteHeader
+        userName={dashboardData?.employee?.name || user?.name || "Employee"}
+        activeShift={activeShift}
+        elapsedTime={elapsedTime}
+        isProcessing={isProcessing}
+        workMode={workMode}
+        setWorkMode={setWorkMode}
+        onCheckIn={handleCheckIn}
+        onCheckOut={handleCheckOut}
+        onLogout={logout}
+      />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Shift Tracker - Available for All Roles (Admin, HR, Manager, Employee) */}
-        <Card className="hover:shadow-md transition-shadow border-blue-500/20 dark:border-blue-500/10 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-blue-50/30 dark:bg-blue-900/10">
-            <div>
-              <CardTitle className="text-sm font-medium">Shift Tracker</CardTitle>
-              <p className="text-xs text-blue-600 mt-0.5 capitalize">{user.role} View</p>
-            </div>
-            <Clock size={16} className={activeShift ? "text-blue-600 animate-pulse" : "text-gray-400"} />
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-4xl font-black font-mono tracking-tighter tabular-nums">
-                {elapsedTime}
-              </div>
-              
-              {!activeShift ? (
-                <div className="w-full space-y-4">
-                  <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <button
-                      onClick={() => {
-                        setWorkMode('office');
-                        if (locationPermission === 'prompt') requestLocationPermission();
-                      }}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-md transition-all ${
-                        workMode === 'office' 
-                          ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600' 
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      <Briefcase size={14} />
-                      Office
-                    </button>
-                    <button
-                      onClick={() => setWorkMode('wfh')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-md transition-all ${
-                        workMode === 'wfh' 
-                          ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600' 
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      <Home size={14} />
-                      WFH
-                    </button>
-                  </div>
+      {/* 2. Top Quick Metrics Bar */}
+      <QuickMetricsBar
+        tasksPending={dashboardData?.widgets?.tasksSummary?.pending ?? 0}
+        tasksOverdue={dashboardData?.widgets?.tasksSummary?.overdue ?? 0}
+        projectsCount={dashboardData?.widgets?.projectsSummary?.inProgress ?? 0}
+        awayCount={dashboardData?.widgets?.onLeave?.length ?? 0}
+        nextBirthdayText={dashboardData?.widgets?.birthdays?.[0] ? `${dashboardData.widgets.birthdays[0].name.split(' ')[0]} (${dashboardData.widgets.birthdays[0].formattedDate})` : "None this week"}
+      />
 
-                  {/* Location Warning for Office Mode */}
-                  {workMode === 'office' && locationPermission === 'denied' && (
-                    <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-lg flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
-                      <AlertCircle size={14} className="text-red-600 mt-0.5 shrink-0" />
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-medium text-red-800 dark:text-red-400 leading-tight">
-                          Location access is blocked. Allow it in browser settings or switch to WFH mode.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+      {/* 3. Main Dashboard Bento Architecture (4 cols left / 8 cols right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Left Column (Command & Pulse - 4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          <ExecutiveProfileCard
+            name={dashboardData?.employee?.name || user?.name || "Employee"}
+            designation={dashboardData?.employee?.designation || (user as any)?.designation || "Software Developer"}
+            employeeId={dashboardData?.employee?.employeeId || (user as any)?.employeeId || "—"}
+            department={dashboardData?.employee?.department || (user as any)?.department || "Engineering"}
+            avatar={dashboardData?.employee?.avatar || user?.avatar}
+            openTasksCount={dashboardData?.widgets?.tasksSummary?.open ?? dashboardData?.employee?.openTasks ?? 0}
+            projectsCount={dashboardData?.widgets?.projectsSummary?.inProgress ?? dashboardData?.employee?.totalProjects ?? 0}
+            workShift={dashboardData?.employee?.shift}
+          />
 
-                  {workMode === 'office' && locationPermission === 'prompt' && (
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-lg space-y-2">
-                      <div className="flex items-start gap-2">
-                        <MapPin size={14} className="text-blue-600 mt-0.5 shrink-0" />
-                        <p className="text-[10px] font-medium text-blue-800 dark:text-blue-400 leading-tight">
-                          Office check-in requires location access. Please allow the browser request.
-                        </p>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="w-full h-7 text-[10px] bg-blue-600 text-white hover:bg-blue-700 font-bold rounded-md"
-                        onClick={requestLocationPermission}
-                      >
-                        Allow Access Now
-                      </Button>
-                    </div>
-                  )}
+          <TeamPresenceHub
+            onLeave={dashboardData?.widgets?.onLeave}
+            joinings={dashboardData?.widgets?.joiningToday}
+            anniversaries={dashboardData?.widgets?.anniversaries}
+          />
 
-                  <Button 
-                    onClick={handleCheckIn} 
-                    className="w-full h-11 font-bold gap-2"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
-                    Check In
-                  </Button>
-                </div>
-              ) : (
-                <div className="w-full space-y-4">
-                  <div className="flex items-center justify-center gap-2 py-1 px-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium">
-                    {activeShift.mode === 'office' ? <Briefcase size={12} /> : <Home size={12} />}
-                    Working from {activeShift.mode === 'office' ? 'Office' : 'Home'}
-                  </div>
-                  <Button onClick={handleCheckOut} variant="destructive" className="w-full h-11 font-bold gap-2">
-                    <Square size={16} fill="currentColor" />
-                    Check Out
-                  </Button>
-                </div>
-              )}
-              
-              <p className="text-xs text-center text-gray-500">
-                {activeShift 
-                  ? `Shift started at ${activeShift.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` 
-                  : "Ready to start your shift?"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <CelebrationHub birthdays={dashboardData?.widgets?.birthdays} />
+        </div>
 
-        {/* Mobile App Login QR / Linked Device Detail */}
-        <Card className="hover:shadow-lg transition-all duration-300 border-indigo-500/20 dark:border-indigo-500/10 bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/10 dark:to-gray-900 group">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="space-y-1">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                Mobile Access
-                {dashboardData?.employee?.linkedDevice ? (
-                  <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-600 text-white rounded-full uppercase tracking-widest">Linked</span>
-                ) : (
-                  <span className="px-1.5 py-0.5 text-[8px] font-bold bg-indigo-600 text-white rounded-full animate-pulse uppercase tracking-widest">Future</span>
-                )}
-              </CardTitle>
-              <CardDescription className="text-[10px]">
-                {dashboardData?.employee?.linkedDevice ? "Connected Smartphone" : "Seamless mobile login"}
-              </CardDescription>
-            </div>
-            <Smartphone size={16} className="text-indigo-600 group-hover:scale-110 transition-transform" />
-          </CardHeader>
-          <CardContent className="pt-4 flex flex-col items-center gap-4">
-            {dashboardData?.employee?.linkedDevice ? (
-              // Linked Device View (Dashboard Mode)
-              <div className="w-full space-y-4 animate-in zoom-in-95 duration-300">
-                <div className="flex flex-col items-center py-4 bg-white/50 dark:bg-gray-800/50 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
-                  <div className="relative mb-3">
-                    <div className="p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-full">
-                      <Smartphone size={32} className="text-indigo-600" />
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-white dark:border-gray-900 w-4 h-4 rounded-full" />
-                  </div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">{dashboardData.employee.linkedDevice.deviceName}</h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                    {dashboardData.employee.linkedDevice.platform} • {dashboardData.employee.linkedDevice.model || 'Unknown Model'}
-                  </p>
-                </div>
-                
-                {/* Real-time Stats Grid */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex flex-col items-center gap-1.5 p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100/50 dark:border-indigo-800/30">
-                    <div className="flex items-center gap-1.5">
-                      {dashboardData.employee.linkedDevice.batteryState === 'charging' ? (
-                        <BatteryCharging size={14} className="text-amber-500 animate-pulse" />
-                      ) : (
-                        <Battery size={14} className={dashboardData.employee.linkedDevice.batteryLevel < 0.2 ? "text-red-500" : "text-green-600"} />
-                      )}
-                      <span className="text-xs font-black text-gray-900 dark:text-white">
-                        {Math.round((dashboardData.employee.linkedDevice.batteryLevel || 0) * 100)}%
-                      </span>
-                    </div>
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Battery Life</span>
-                  </div>
+        {/* Right Column (Execution & Roadmap - 8 cols) */}
+        <div className="lg:col-span-8 space-y-6">
+          <SprintTasksBoard tasks={dashboardData?.widgets?.myTasks} />
 
-                  <div className="flex flex-col items-center gap-1.5 p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100/50 dark:border-indigo-800/30">
-                    <div className="flex items-center gap-1.5">
-                      {dashboardData.employee.linkedDevice.networkType === 'wifi' ? (
-                        <Wifi size={14} className="text-blue-600" />
-                      ) : dashboardData.employee.linkedDevice.networkType === 'none' ? (
-                        <WifiOff size={14} className="text-red-500" />
-                      ) : (
-                        <Signal size={14} className="text-indigo-600" />
-                      )}
-                      <span className="text-xs font-black text-gray-900 dark:text-white capitalize">
-                        {dashboardData.employee.linkedDevice.networkType || 'Offline'}
-                      </span>
-                    </div>
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Connection</span>
-                  </div>
-                </div>
+          <ProjectPortfolioGrid projects={dashboardData?.widgets?.projects} />
 
-                <div className="text-[9px] text-center text-gray-400 italic">
-                  Last sync: {new Date(dashboardData.employee.linkedDevice.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-
-                {/* Real-time Map Widget */}
-                {liveLocation ? (
-                  <LiveLocationMap 
-                    location={liveLocation} 
-                    deviceName={dashboardData.employee.linkedDevice.model} 
-                  />
-                ) : (
-                  <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 flex flex-col items-center justify-center gap-2">
-                    <MapPin className="text-gray-300 animate-bounce" size={24} />
-                    <p className="text-[10px] text-gray-400 font-medium">Waiting for GPS signal...</p>
-                  </div>
-                )}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleUnlinkDevice}
-                  disabled={unlinking}
-                  className="w-full text-red-500 border-red-100 hover:bg-red-50 hover:text-red-600 h-8 text-[10px] uppercase font-bold tracking-wider"
-                >
-                  {unlinking ? <Loader2 size={12} className="animate-spin" /> : <Link2Off size={12} className="mr-1.5" />}
-                  Disconnect Device
-                </Button>
-              </div>
-            ) : (
-              // QR Code View (Initial Pairing)
-              <>
-                <div className="relative p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-inner border border-indigo-100 dark:border-indigo-900/30 group/qr">
-                  <div className="w-32 h-32 flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden relative">
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(`HRM-AUTH-OTT|${qrToken || 'loading'}`)}&bgcolor=ffffff&color=4f46e5`}
-                      alt="Login QR Code"
-                      className="w-full h-full object-contain pointer-events-none select-none mix-blend-multiply dark:mix-blend-normal rounded-sm"
-                    />
-                    {isProcessingScan ? (
-                      <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
-                        <Loader2 size={32} className="text-indigo-600 animate-spin" />
-                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest text-center px-4 leading-tight">
-                          Verifying Scan...
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="absolute inset-0 bg-indigo-600/5 opacity-0 group-hover/qr:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
-                        <QrCode size={24} className="text-indigo-600 animate-bounce" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-indigo-500 rounded-tl-md" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-indigo-500 rounded-tr-md" />
-                  <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-indigo-500 rounded-bl-md" />
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-indigo-500 rounded-br-md" />
-                </div>
-                <div className="w-full space-y-2">
-                  <div className="flex items-center gap-2 p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-lg border border-indigo-100/50 dark:border-indigo-800/30">
-                    <ShieldCheck size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <p className="text-[10px] font-medium text-indigo-900 dark:text-indigo-300 leading-tight">
-                      Scan this code with the <span className="font-bold underline decoration-indigo-500/30">HRM Mobile App</span> for an instant, secure session.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center gap-1.5 pt-1">
-                    <div className="h-1 w-1 rounded-full bg-indigo-400 animate-ping" />
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Coming Soon</span>
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* HR and Admin see this */}
-        {(user.role === "admin" || user.role === "hr") && (
-          <>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-                <Users className="h-4 w-4 text-gray-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : dashboardData?.overview?.totalEmployees ?? '-'}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Total employees in system</p>
-              </CardContent>
-            </Card>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Leave Requests</CardTitle>
-                <Calendar className="h-4 w-4 text-gray-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-yellow-600">
-                  {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : dashboardData?.overview?.pendingLeaves ?? '-'}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Pending approval</p>
-              </CardContent>
-            </Card>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
-                <CheckCircle className="h-4 w-4 text-gray-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : `${dashboardData?.overview?.attendanceRate ?? 0}%`}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {dashboardData?.overview?.todayPresent ?? 0} employees present
-                </p>
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-      </div>
-
-      {/* Admin/HR Dashboard Widgets - Structured Grid Layout */}
-      {(user.role === "admin" || user.role === "hr") && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Today's Highlights</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            
-            {/* Late Comers - Small Compact */}
-            <Card className="border-0 shadow-md hover:shadow-xl transition-all bg-gradient-to-br from-red-50/50 to-white min-h-[200px]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <ClockAlert className="h-4 w-4 text-red-500" />
-                  Late Coming ({dashboardData?.widgets?.lateComers?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {dataLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  </div>
-                ) : dashboardData?.widgets?.lateComers?.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dashboardData.widgets.lateComers.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-xs font-medium text-red-600">
-                          {emp.name?.charAt(0) || '?'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{emp.name}</p>
-                          <p className="text-xs text-gray-500">{emp.department}</p>
-                        </div>
-                        <span className="text-xs font-medium text-red-600">
-                          {typeof emp.checkIn === 'object' ? emp.checkIn.time : emp.checkIn}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No late comers today</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Birthdays - Featured with gradient */}
-            <Card className="border-0 shadow-md hover:shadow-xl transition-all bg-gradient-to-br from-pink-50/80 to-white min-h-[200px]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Cake className="h-4 w-4 text-pink-500" />
-                  Birthdays ({dashboardData?.widgets?.birthdays?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {dataLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  </div>
-                ) : dashboardData?.widgets?.birthdays?.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dashboardData.widgets.birthdays.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center gap-2 p-2 bg-pink-50 rounded">
-                        <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-xs font-medium text-pink-600">
-                          🎂
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{emp.name}</p>
-                          <p className="text-xs text-gray-500">{emp.department}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No birthdays today</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* On Leave - Tall with subtle gradient */}
-            <Card className="border-0 shadow-md hover:shadow-xl transition-all bg-gradient-to-br from-orange-50/70 to-white min-h-[200px]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Palmtree className="h-4 w-4 text-orange-500" />
-                  On Leave ({dashboardData?.widgets?.onLeave?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {dataLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  </div>
-                ) : dashboardData?.widgets?.onLeave?.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dashboardData.widgets.onLeave.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center gap-2 p-2 bg-orange-50 rounded">
-                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-medium text-orange-600">
-                          {emp.name?.charAt(0) || '?'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{emp.name}</p>
-                          <p className="text-xs text-gray-500">{emp.leaveType}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No one on leave today</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Work From Home - Compact */}
-            <Card className="border-0 shadow-md hover:shadow-xl transition-all bg-gradient-to-br from-blue-50/50 to-white min-h-[200px]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Home className="h-4 w-4 text-blue-500" />
-                  Work From Home ({dashboardData?.widgets?.workFromHome?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {dataLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  </div>
-                ) : dashboardData?.widgets?.workFromHome?.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dashboardData.widgets.workFromHome.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600">
-                          {emp.name?.charAt(0) || '?'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{emp.name}</p>
-                          <p className="text-xs text-gray-500">{emp.department}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No one working from home</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Today's Joining - Small */}
-            <Card className="border-0 shadow-md hover:shadow-xl transition-all bg-gradient-to-br from-green-50/70 to-white min-h-[200px]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <UserPlus className="h-4 w-4 text-green-500" />
-                  New Joinings ({dashboardData?.widgets?.joiningToday?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {dataLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  </div>
-                ) : dashboardData?.widgets?.joiningToday?.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dashboardData.widgets.joiningToday.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center gap-2 p-2 bg-green-50 rounded">
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-600">
-                          👋
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{emp.name}</p>
-                          <p className="text-xs text-gray-500">{emp.designation}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No new joinings today</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Anniversaries - Wide with gradient */}
-            <Card className="border-0 shadow-md hover:shadow-xl transition-all bg-gradient-to-br from-purple-50/70 to-white min-h-[200px]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Gift className="h-4 w-4 text-purple-500" />
-                  Anniversaries ({dashboardData?.widgets?.anniversaries?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {dataLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  </div>
-                ) : dashboardData?.widgets?.anniversaries?.length > 0 ? (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dashboardData.widgets.anniversaries.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center gap-2 p-2 bg-purple-50 rounded">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-xs font-medium text-purple-600">
-                          🎉
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{emp.name}</p>
-                          <p className="text-xs text-purple-600 font-medium">{emp.years} Year{emp.years > 1 ? 's' : ''}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No work anniversaries today</p>
-                )}
-              </CardContent>
-            </Card>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <AgendaScheduleWidget schedule={dashboardData?.widgets?.calendarSchedule} />
+            <SupportDeskWidget tickets={dashboardData?.widgets?.tickets} />
           </div>
         </div>
-      )}
 
-      {/* Employee specific Quick Stats */}
-      {user.role === "employee" && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Hours This Week</CardTitle>
-              <Clock className="h-4 w-4 text-gray-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : `${dashboardData?.overview?.hoursThisWeek ?? 0}h`}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Target: {dashboardData?.overview?.targetHours ?? 40}h</p>
-            </CardContent>
-          </Card>
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Leave Balance</CardTitle>
-              <Calendar className="h-4 w-4 text-gray-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : `${dashboardData?.leaveBalance?.remaining ?? 0} days`}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Used: {dashboardData?.leaveBalance?.used ?? 0} / {dashboardData?.leaveBalance?.total ?? 24}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today's Status</CardTitle>
-              <Briefcase className="h-4 w-4 text-gray-500" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-lg font-bold ${dashboardData?.overview?.todayStatus === 'Present' ? 'text-green-600' : 'text-gray-600'}`}>
-                {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (dashboardData?.overview?.todayStatus || 'Not Checked In')}
-              </div>
-              {dashboardData?.overview?.checkInTime && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Checked in at {typeof dashboardData.overview.checkInTime === 'object' 
-                    ? dashboardData.overview.checkInTime.time 
-                    : dashboardData.overview.checkInTime}
-                </p>
-              )}
-              {dashboardData?.employee?.shift && (
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Assigned Shift</p>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {formatShiftTime(dashboardData.employee.shift.startTime)} - {formatShiftTime(dashboardData.employee.shift.endTime)}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Notices Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-blue-600" />
-              Company Notices
-            </CardTitle>
-            <CardDescription>Latest announcements and updates</CardDescription>
-          </div>
-          {(user?.role === 'admin' || user?.role === 'hr') && (
-            <Link href="/notices">
-              <Button variant="outline" size="sm">
-                Manage Notices
-              </Button>
-            </Link>
-          )}
-        </CardHeader>
-        <CardContent>
-          {noticesLoading ? (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-            </div>
-          ) : notices.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">No active notices</p>
-          ) : (
-            <div className="space-y-3">
-              {notices.map((notice) => (
-                <div key={notice.id} className="border-l-4 pl-4 py-2 rounded-r-lg bg-gray-50"
-                  style={{
-                    borderLeftColor: notice.priority === 'High' ? '#ef4444' : notice.priority === 'Medium' ? '#f59e0b' : '#10b981'
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{notice.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{notice.content}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                        <span className={`px-2 py-0.5 rounded ${
-                          notice.category === 'Urgent' ? 'bg-red-100 text-red-700' :
-                          notice.category === 'Holiday' ? 'bg-green-100 text-green-700' :
-                          notice.category === 'Event' ? 'bg-purple-100 text-purple-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {notice.category}
-                        </span>
-                        <span>Posted by {notice.postedBy?.name || 'Admin'}</span>
-                        <span>{new Date(notice.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Check-in Error Modal */}
       {errorModal && (

@@ -191,18 +191,18 @@ export default function MyProjectsPage() {
                     <p className="text-sm text-gray-600 mb-3">{project.projectNumber}</p>
                     <p className="text-gray-700 mb-3">{project.description}</p>
                     
-                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4 flex-wrap">
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
-                        <span>Manager: {project.managerId.name}</span>
+                        <span>Manager: {project.managerId?.name || "Sunil Singh (CTO)"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}</span>
+                        <span>{project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'} - {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
-                        <span>{project.members.length} members</span>
+                        <span>{project.members?.length || 0} members</span>
                       </div>
                       {project.budget && (
                         <div className="flex items-center gap-2">
@@ -216,12 +216,12 @@ export default function MyProjectsPage() {
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">Progress</span>
-                        <span className="font-medium">{project.progressPercentage}%</span>
+                        <span className="font-medium">{project.progressPercentage || 0}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-blue-500 h-2 rounded-full transition-all"
-                          style={{ width: `${project.progressPercentage}%` }}
+                          style={{ width: `${project.progressPercentage || 0}%` }}
                         />
                       </div>
                     </div>
@@ -230,9 +230,9 @@ export default function MyProjectsPage() {
                     {project.members && project.members.length > 0 && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Badge variant="outline">
-                          {project.members.find((m: ProjectMember) => m.employeeId._id === (user as any)?._id)?.role || 'Team Member'}
+                          {project.members.find((m: any) => (m.employeeId?._id || m.employeeId)?.toString() === (user as any)?._id?.toString() || (m.employeeId?._id || m.employeeId)?.toString() === (user as any)?.id?.toString())?.role || 'Team Member'}
                         </Badge>
-                        <span>• {project.members.find((m: ProjectMember) => m.employeeId._id === (user as any)?._id)?.allocationPercentage || 100}% allocation</span>
+                        <span>• {project.members.find((m: any) => (m.employeeId?._id || m.employeeId)?.toString() === (user as any)?._id?.toString() || (m.employeeId?._id || m.employeeId)?.toString() === (user as any)?.id?.toString())?.allocationPercentage || 100}% allocation</span>
                       </div>
                     )}
                   </div>
