@@ -105,63 +105,130 @@ const calculatePerformanceScore = async (employeeId: string, daysToLookBack: num
 };
 
 // Calculate engagement score (0-100, higher is better)
-// Placeholder for now - can be enhanced with survey data, activity logs, etc.
 const calculateEngagementScore = async (employeeId: string): Promise<{ score: number; trend: string }> => {
-  // For Phase 1, return a neutral score
-  // In Phase 2, integrate with Survey model, activity logs, etc.
-  return { score: 60, trend: 'stable' };
+  try {
+    const Task = (await import('@/models/Task')).default;
+    const completedTasks = await Task.countDocuments({
+      assignedTo: employeeId,
+      status: 'completed',
+    });
+    const totalTasks = await Task.countDocuments({
+      assignedTo: employeeId,
+    });
+
+    if (totalTasks === 0) return { score: 65, trend: 'stable' };
+    const completionRate = (completedTasks / totalTasks) * 100;
+    const score = Math.min(100, Math.max(30, Math.round(completionRate * 0.7 + 30)));
+    return { score, trend: completionRate > 75 ? 'improving' : completionRate < 40 ? 'declining' : 'stable' };
+  } catch {
+    return { score: 65, trend: 'stable' };
+  }
 };
 
 // Calculate tenure score (0-100, higher is better for retention)
 const calculateTenureScore = async (employeeId: string): Promise<{ score: number; trend: string }> => {
   const employee = await Employee.findOne({ userId: employeeId });
-  if (!employee || !employee.joiningDate) {
-    return { score: 50, trend: 'stable' };
+  let joiningDate = employee?.joiningDate;
+
+  if (!joiningDate) {
+    const user = await User.findById(employeeId);
+    joiningDate = user?.createdAt || new Date();
   }
 
-  const joiningDate = new Date(employee.joiningDate);
   const now = new Date();
-  const tenureMonths = (now.getFullYear() - joiningDate.getFullYear()) * 12 + (now.getMonth() - joiningDate.getMonth());
+  const tenureMonths = (now.getFullYear() - new Date(joiningDate).getFullYear()) * 12 + (now.getMonth() - new Date(joiningDate).getMonth());
 
   // Tenure curve: higher score for longer tenure
   let score = 50;
   if (tenureMonths < 3) {
-    score = 30; // High risk in first 3 months
+    score = 35; // New hire adjustment period
   } else if (tenureMonths < 6) {
-    score = 50; // Medium risk
+    score = 55; // 3-6 months ramp up
   } else if (tenureMonths < 12) {
-    score = 70; // Lower risk after 6 months
+    score = 72; // Approaching 1 year
   } else if (tenureMonths < 24) {
-    score = 85; // Good retention after 1 year
+    score = 88; // 1-2 years
   } else {
-    score = 95; // Very stable after 2 years
+    score = 95; // 2+ years established
   }
 
-  return { score, trend: 'stable' }; // Tenure trend is not applicable
+  return { score, trend: 'stable' };
 };
 
 // Calculate compensation score (0-100, higher is better)
-// Placeholder for Phase 1 - Phase 2 will integrate with market data
 const calculateCompensationScore = async (employeeId: string): Promise<{ score: number; trend: string }> => {
-  // For Phase 1, return neutral score
-  // In Phase 2, integrate with MarketData model
-  return { score: 60, trend: 'stable' };
+  try {
+    const employee = await Employee.findOne({ userId: employeeId });
+    if (!employee || !employee.salary) return { score: 65, trend: 'stable' };
+
+    // Compare with company average salary
+    const allEmployees = await Employee.find({ companyId: employee.companyId, salary: { $exists: true, $gt: 0 } });
+    if (allEmployees.length === 0) return { score: 70, trend: 'stable' };
+
+    const avgSalary = allEmployees.reduce((sum, e) => sum + (e.salary || 0), 0) / allEmployees.length;
+    const ratio = employee.salary / avgSalary;
+
+    let score = 65;
+    if (ratio >= 1.3) score = 92;
+    else if (ratio >= 1.1) score = 82;
+    else if (ratio >= 0.9) score = 70;
+    else if (ratio >= 0.7) score = 50;
+    else score = 38;
+
+    return { score, trend: 'stable' };
+  } catch {
+    return { score: 65, trend: 'stable' };
+  }
 };
 
-// Calculate workload score (0-100, higher is better)
-// Placeholder for Phase 1 - can integrate with task data, overtime, etc.
+// Calculate workload score (0-100, higher score = healthy workload, lower = overload / burnout)
 const calculateWorkloadScore = async (employeeId: string): Promise<{ score: number; trend: string }> => {
-  // For Phase 1, return neutral score
-  // In Phase 2, integrate with Task model, overtime data
-  return { score: 60, trend: 'stable' };
+  try {
+    const Task = (await import('@/models/Task')).default;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+
+    const [activeTasks, recentAttendances] = await Promise.all([
+      Task.countDocuments({ assignedTo: employeeId, status: { $in: ['in_progress', 'to_do'] } }),
+      Attendance.find({ employeeId, date: { $gte: startDate } }),
+    ]);
+
+    let score = 75;
+
+    // Overtime hours check
+    const avgDailyHours = recentAttendances.length > 0
+      ? recentAttendances.reduce((sum, a) => sum + (a.totalHours || 8), 0) / recentAttendances.length
+      : 8;
+
+    if (avgDailyHours > 10.5) score -= 30; // Severe overtime
+    else if (avgDailyHours > 9.5) score -= 18; // Moderate overtime
+    else if (avgDailyHours >= 7.5 && avgDailyHours <= 8.5) score += 10; // Optimal work-life balance
+
+    // Active tasks check
+    if (activeTasks > 8) score -= 20; // Task overload
+    else if (activeTasks > 5) score -= 10;
+    else if (activeTasks >= 1 && activeTasks <= 4) score += 10;
+
+    score = Math.min(95, Math.max(25, score));
+    const trend = avgDailyHours > 9.5 || activeTasks > 6 ? 'declining' : 'stable';
+    return { score, trend };
+  } catch {
+    return { score: 70, trend: 'stable' };
+  }
 };
 
 // Calculate manager relationship score (0-100, higher is better)
-// Placeholder for Phase 1 - can integrate with feedback, 1:1s, etc.
 const calculateManagerRelationshipScore = async (employeeId: string): Promise<{ score: number; trend: string }> => {
-  // For Phase 1, return neutral score
-  // In Phase 2, integrate with feedback, survey data
-  return { score: 60, trend: 'stable' };
+  try {
+    const recentReviews = await PerformanceAnalysis.find({ employeeId }).sort({ date: -1 }).limit(3);
+    if (recentReviews.length === 0) return { score: 70, trend: 'stable' };
+
+    const avgRating = recentReviews.reduce((sum, r) => sum + (r.rating || 5), 0) / recentReviews.length;
+    const score = Math.min(100, Math.max(30, Math.round((avgRating / 10) * 100)));
+    return { score, trend: avgRating >= 7.5 ? 'improving' : avgRating < 5 ? 'declining' : 'stable' };
+  } catch {
+    return { score: 70, trend: 'stable' };
+  }
 };
 
 // Main prediction function using rule-based scoring (Phase 1)

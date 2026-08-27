@@ -13,28 +13,28 @@ import {
   MapPin, 
   CheckCircle, 
   ArrowRight, 
-  ArrowLeft,
-  Upload,
-  MapPinned,
-  Landmark,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Loader2
+  ArrowLeft, 
+  Upload, 
+  MapPinned, 
+  Landmark, 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  Loader2,
+  RefreshCw,
+  Copy,
+  Check,
 } from "lucide-react";
 import { GeoFencePicker } from "@/components/ui/GeoFencePicker";
 
 interface CompanyData {
-  // Step 1: Company Info
   name: string;
   code: string;
   email: string;
   phone: string;
   website: string;
   logo: string | null;
-  
-  // Step 2: Address & Tax
   street: string;
   city: string;
   state: string;
@@ -42,27 +42,25 @@ interface CompanyData {
   country: string;
   gstNumber: string;
   panNumber: string;
-  
-  // Step 3: Office Location (Geo-fencing)
   officeLatitude: string;
   officeLongitude: string;
   officeAddress: string;
   geoFenceRadius: number;
   enableGeoFencing: boolean;
-  
-  // Step 4: Admin Account
   adminName: string;
   adminEmail: string;
   adminPassword: string;
   confirmPassword: string;
 }
 
-const steps = [
-  { title: "Company Info", description: "Basic details" },
-  { title: "Address & Tax", description: "GST & location" },
-  { title: "Office Location", description: "Geo-fencing setup" },
-  { title: "Admin Account", description: "Create login" },
-];
+const generate6CharID = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let res = '';
+  for (let i = 0; i < 6; i++) {
+    res += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return res;
+};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -72,11 +70,12 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [registeredCompanyCode, setRegisteredCompanyCode] = useState<string>("");
+  const [copiedCode, setCopiedCode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [data, setData] = useState<CompanyData>({
+  const [data, setData] = useState<CompanyData>(() => ({
     name: "",
-    code: "",
+    code: generate6CharID(),
     email: "",
     phone: "",
     website: "",
@@ -97,7 +96,7 @@ export default function RegisterPage() {
     adminEmail: "",
     adminPassword: "",
     confirmPassword: "",
-  });
+  }));
 
   const handleInputChange = (field: keyof CompanyData, value: string | boolean | number) => {
     setData(prev => ({ ...prev, [field]: value }));
@@ -108,7 +107,7 @@ export default function RegisterPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setError("Logo file size must be less than 2MB");
+        setError("Logo image size should be less than 2MB");
         return;
       }
       const reader = new FileReader();
@@ -119,8 +118,56 @@ export default function RegisterPage() {
     }
   };
 
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
+  const steps = [
+    { title: "Company Details", description: "Basic company information" },
+    { title: "Address & Tax", description: "Location & tax details" },
+    { title: "Office Location", description: "Geo-fencing for attendance" },
+    { title: "Admin Account", description: "Master admin credentials" },
+  ];
+
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 0:
+        if (!data.name.trim()) return setError("Company name is required"), false;
+        if (!data.code.trim()) return setError("6-character Company ID is required"), false;
+        if (data.code.trim().length !== 6) return setError("Company ID must be exactly 6 alphanumeric characters"), false;
+        if (!data.email.trim()) return setError("Email address is required"), false;
+        if (!data.phone.trim()) return setError("Phone number is required"), false;
+        break;
+      case 1:
+        if (!data.street.trim()) return setError("Street address is required"), false;
+        if (!data.city.trim()) return setError("City is required"), false;
+        if (!data.state.trim()) return setError("State is required"), false;
+        if (!data.zipCode.trim()) return setError("ZIP/PIN code is required"), false;
+        break;
+      case 2:
+        if (!data.officeAddress.trim()) return setError("Office address is required"), false;
+        break;
+      case 3:
+        if (!data.adminName.trim()) return setError("Admin name is required"), false;
+        if (!data.adminEmail.trim()) return setError("Admin email is required"), false;
+        if (!data.adminPassword) return setError("Password is required"), false;
+        if (data.adminPassword.length < 8) return setError("Password must be at least 8 characters"), false;
+        if (data.adminPassword !== data.confirmPassword) return setError("Passwords do not match"), false;
+        break;
+    }
+    setError(null);
+    return true;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, steps.length));
+    }
+  };
+
+  const handlePrev = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 0));
+    setError(null);
+  };
+
+  const handleGetCurrentLocation = () => {
+    if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setData(prev => ({
@@ -130,102 +177,43 @@ export default function RegisterPage() {
           }));
         },
         (err) => {
-          setError("Unable to get location. Please enter coordinates manually.");
+          setError("Could not retrieve your location. Please enter manually.");
         }
       );
     } else {
-      setError("Geolocation is not supported by this browser.");
-    }
-  };
-
-  const validateStep = (): boolean => {
-    setError(null);
-    
-    switch (currentStep) {
-      case 0:
-        if (!data.name.trim()) return setError("Company name is required"), false;
-        if (!data.code.trim()) return setError("Company code is required"), false;
-        if (!data.email.trim()) return setError("Company email is required"), false;
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return setError("Invalid email format"), false;
-        if (!data.phone.trim()) return setError("Phone number is required"), false;
-        return true;
-        
-      case 1:
-        if (!data.street.trim()) return setError("Street address is required"), false;
-        if (!data.city.trim()) return setError("City is required"), false;
-        if (!data.state.trim()) return setError("State is required"), false;
-        if (!data.zipCode.trim()) return setError("ZIP/PIN code is required"), false;
-        if (data.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(data.gstNumber)) {
-          return setError("Invalid GST number format"), false;
-        }
-        return true;
-        
-      case 2:
-        if (!data.officeLatitude.trim()) return setError("Office latitude is required"), false;
-        if (!data.officeLongitude.trim()) return setError("Office longitude is required"), false;
-        if (isNaN(parseFloat(data.officeLatitude)) || isNaN(parseFloat(data.officeLongitude))) {
-          return setError("Invalid coordinates"), false;
-        }
-        if (!data.officeAddress.trim()) return setError("Office address is required"), false;
-        return true;
-        
-      case 3:
-        if (!data.adminName.trim()) return setError("Admin name is required"), false;
-        if (!data.adminEmail.trim()) return setError("Admin email is required"), false;
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.adminEmail)) return setError("Invalid admin email format"), false;
-        if (!data.adminPassword.trim()) return setError("Password is required"), false;
-        if (data.adminPassword.length < 8) return setError("Password must be at least 8 characters"), false;
-        if (data.adminPassword !== data.confirmPassword) return setError("Passwords do not match"), false;
-        return true;
-        
-      default:
-        return true;
-    }
-  };
-
-  const handleNext = () => {
-    if (validateStep()) {
-      if (currentStep < steps.length - 1) {
-        setCurrentStep(prev => prev + 1);
-      }
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-      setError(null);
+      setError("Geolocation is not supported by your browser");
     }
   };
 
   const handleSubmit = async () => {
-    if (!validateStep()) return;
-    
+    if (!validateStep(3)) return;
+
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.message || 'Registration failed');
       }
-      
+
       // Registration successful
       setCurrentStep(steps.length); // Show success screen
       const companyCode = result.company?.code || data.code.toUpperCase();
       setRegisteredCompanyCode(companyCode);
 
-      // Redirect to the company portal login after 3 seconds
-      setTimeout(() => {
-        router.push(`/${companyCode}`);
-      }, 3000);
+      // Store in cookies for 1-time setup memory
+      if (typeof document !== "undefined") {
+        document.cookie = `nexushr_company_code=${encodeURIComponent(companyCode)}; path=/; max-age=31536000; SameSite=Lax`;
+        localStorage.setItem("nexushr_company_code", companyCode);
+      }
       
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration');
@@ -234,21 +222,63 @@ export default function RegisterPage() {
     }
   };
 
+  const copyToClipboard = () => {
+    if (typeof navigator !== "undefined" && registeredCompanyCode) {
+      navigator.clipboard.writeText(registeredCompanyCode);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2500);
+    }
+  };
+
   // Success Screen
   if (currentStep >= steps.length) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-8 pb-8">
-            <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center shadow-2xl border-indigo-100 rounded-3xl p-2 bg-white">
+          <CardContent className="pt-8 pb-8 space-y-5">
+            <div className="h-20 w-20 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle className="h-10 w-10 text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Complete!</h2>
-            <p className="text-gray-600 mb-6">
-              Your company has been registered successfully. You will be redirected to your company portal login shortly.
-            </p>
-            <Button onClick={() => router.push(`/${registeredCompanyCode || data.code.toUpperCase()}`)} className="w-full">
-              Go to Company Portal Login
+            
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Registration Complete!</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Your organization is configured and ready for your team.
+              </p>
+            </div>
+
+            {/* Prominent 6-Character ID Display Box */}
+            <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xl space-y-2 border border-slate-800">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-400">
+                Your Unique 6-Character Company ID
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-3xl font-black tracking-widest text-white font-mono bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700">
+                  {registeredCompanyCode || data.code.toUpperCase()}
+                </span>
+                <button
+                  type="button"
+                  onClick={copyToClipboard}
+                  className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md active:scale-95"
+                  title="Copy Company ID"
+                >
+                  {copiedCode ? <Check className="h-5 w-5 text-emerald-300" /> : <Copy className="h-5 w-5" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400">
+                {copiedCode ? "✓ Copied to clipboard!" : "Saved in your browser cookies. Employees use this ID to sign in."}
+              </p>
+            </div>
+
+            <Button 
+              onClick={() => {
+                const nameSlug = data.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || registeredCompanyCode;
+                router.push(`/${nameSlug}`);
+              }} 
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white font-bold shadow-lg shadow-indigo-600/25"
+            >
+              Enter Workspace Portal
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardContent>
         </Card>
@@ -261,11 +291,12 @@ export default function RegisterPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">HRM Pro</span>
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-xl shadow-[#03081c]/20 border border-[#03081c]">
+            <img 
+              src="/logo.png" 
+              alt="NexusHR Logo" 
+              className="h-full w-full object-contain scale-105" 
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Register Your Company</h1>
           <p className="text-gray-600">Complete the 4-step process to set up your company</p>
@@ -356,14 +387,27 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Company Code *
-                    </label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-gray-700">
+                        6-Character Company ID *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('code', generate6CharID())}
+                        className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                        title="Generate a new 6-character ID"
+                      >
+                        <RefreshCw className="h-3 w-3" /> Regenerate
+                      </button>
+                    </div>
                     <Input
                       value={data.code}
-                      onChange={(e) => handleInputChange('code', e.target.value.toUpperCase())}
-                      placeholder="e.g., ACME001"
+                      onChange={(e) => handleInputChange('code', e.target.value.toUpperCase().slice(0, 6))}
+                      placeholder="e.g., NX8K2P"
+                      maxLength={6}
+                      className="uppercase font-mono font-bold tracking-widest"
                     />
+                    <p className="text-[11px] text-gray-500 mt-1">Unique 6-character code used by your employees to log in.</p>
                   </div>
                 </div>
 
@@ -673,7 +717,7 @@ export default function RegisterPage() {
         <div className="flex justify-between mt-6">
           <Button
             variant="outline"
-            onClick={handleBack}
+            onClick={handlePrev}
             disabled={currentStep === 0}
             className="flex items-center gap-2"
           >

@@ -298,17 +298,16 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <motion.div
-                whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
-                transition={{ duration: 0.4 }}
-                className="h-10 w-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform text-white"
-              >
-                <Building2 className="h-5 w-5" />
-              </motion.div>
+              <div className="h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] transition-transform group-hover:scale-105 shrink-0">
+                <img 
+                  src="/logo.png" 
+                  alt="NexusHR Logo" 
+                  className="h-full w-full object-contain scale-110" 
+                />
+              </div>
               <div className="flex flex-col">
-                <span className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-1.5">
+                <span className="text-xl font-black tracking-tight text-slate-900">
                   Nexus<span className="text-indigo-600">HR</span>
-                  <span className="text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded-full">PRO</span>
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">Enterprise HR & PMS Suite</span>
               </div>
@@ -766,7 +765,13 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xs">NX</div>
+                <div className="h-11 w-11 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] shrink-0">
+                  <img 
+                    src="/logo.png" 
+                    alt="NexusHR Logo" 
+                    className="h-full w-full object-contain scale-110" 
+                  />
+                </div>
                 <span className="text-sm font-bold text-slate-900">NexusHR</span>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed">

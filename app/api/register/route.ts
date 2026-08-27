@@ -43,9 +43,9 @@ export async function POST(req: Request) {
     } = body;
     
     // Validate required fields
-    if (!name || !code || !email || !phone) {
+    if (!name || !email || !phone) {
       return NextResponse.json(
-        { message: 'Company name, code, email, and phone are required' },
+        { message: 'Company name, email, and phone are required' },
         { status: 400 }
       );
     }
@@ -56,15 +56,41 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Function to generate a clean 6-character alphanumeric ID
+    const generate6CharID = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let res = '';
+      for (let i = 0; i < 6; i++) {
+        res += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return res;
+    };
+
+    // Determine final 6-character company code
+    let finalCode = (code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (finalCode.length !== 6) {
+      finalCode = generate6CharID();
+    }
+
+    // Ensure company code is 100% unique in DB
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 10) {
+      const existing = await Company.findOne({ code: finalCode });
+      if (!existing) {
+        isUnique = true;
+      } else {
+        finalCode = generate6CharID();
+        attempts++;
+      }
+    }
     
-    // Check if company code already exists
-    const existingCompany = await Company.findOne({ 
-      $or: [{ code }, { email }] 
-    });
-    
-    if (existingCompany) {
+    // Check if email already exists for another company
+    const existingCompanyEmail = await Company.findOne({ email });
+    if (existingCompanyEmail) {
       return NextResponse.json(
-        { message: 'Company with this code or email already exists' },
+        { message: 'A company with this email address already exists' },
         { status: 400 }
       );
     }
@@ -92,7 +118,7 @@ export async function POST(req: Request) {
     // Create the company
     const company = await Company.create({
       name,
-      code: code.toUpperCase(),
+      code: finalCode,
       email,
       phone,
       website,

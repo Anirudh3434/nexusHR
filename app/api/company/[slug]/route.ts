@@ -11,12 +11,16 @@ export async function GET(
     
     const { slug } = await params;
     
-    // Find company by code OR name (case-insensitive)
-    const searchSlug = slug.toUpperCase();
+    // Find company by code OR name / slug (case-insensitive & hyphen-friendly)
+    const decodedSlug = decodeURIComponent(slug).trim();
+    const searchCode = decodedSlug.toUpperCase();
+    const nameRegexPattern = decodedSlug.replace(/[-_]/g, '[\\s-_]?');
+
     const company = await Company.findOne({
       $or: [
-        { code: searchSlug },
-        { name: { $regex: new RegExp(`^${slug}$`, 'i') } }
+        { code: searchCode },
+        { name: { $regex: new RegExp(`^${nameRegexPattern}$`, 'i') } },
+        { name: { $regex: new RegExp(`^${decodedSlug}$`, 'i') } }
       ],
       isActive: true,
       onboardingComplete: true
@@ -28,6 +32,12 @@ export async function GET(
         { status: 404 }
       );
     }
+
+    const companyNameSlug = company.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || company.code.toLowerCase();
     
     return NextResponse.json({
       exists: true,
@@ -35,6 +45,7 @@ export async function GET(
         id: company._id.toString(),
         name: company.name,
         code: company.code,
+        slug: companyNameSlug,
         logo: company.logo,
         email: company.email,
       }

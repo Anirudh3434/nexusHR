@@ -65,13 +65,19 @@ export default function CandidatePortalLayout({
           isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-indigo-100 px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-              <Briefcase size={18} />
+        <div className="flex h-18 items-center justify-between border-b border-indigo-100 px-4">
+          <div className="flex items-center gap-3 min-w-0 pr-2">
+            <div className="h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] shrink-0">
+              <img 
+                src={user.companyLogo || "/logo.png"} 
+                alt={user.companyName || 'Logo'} 
+                className="h-full w-full object-contain scale-110" 
+              />
             </div>
-            <div>
-              <h1 className="text-sm font-extrabold tracking-tight text-indigo-600">NexusHR</h1>
+            <div className="min-w-0">
+              <h1 className="text-sm font-extrabold tracking-tight text-slate-900 truncate">
+                {user.companyName || 'NexusHR'}
+              </h1>
               <p className="text-[10px] font-semibold text-gray-400">Candidate Portal</p>
             </div>
           </div>

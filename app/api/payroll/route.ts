@@ -238,7 +238,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    const { id, status, paymentDate, note, ...manualFields } = await req.json();
+    const { id, status, paymentDate, paymentMethod, paymentDetails, transactionReference, accountNumber, note, ...manualFields } = await req.json();
 
     if (!id) {
       return NextResponse.json({ message: 'Missing payroll ID' }, { status: 400 });
@@ -247,6 +247,22 @@ export async function PATCH(req: Request) {
     const updateData: any = { note };
     if (status) updateData.status = status;
     if (paymentDate) updateData.paymentDate = new Date(paymentDate);
+    if (paymentMethod) updateData.paymentMethod = paymentMethod;
+
+    // Encrypt sensitive payment payload if provided
+    if (paymentDetails || transactionReference || accountNumber) {
+      const { encryptObject, maskAccountNumber, maskGeneric } = await import('@/lib/security/encryption');
+      const payload = {
+        ...(paymentDetails || {}),
+        accountNumber: accountNumber || paymentDetails?.accountNumber,
+        transactionReference: transactionReference || paymentDetails?.transactionReference,
+        paymentMethod: paymentMethod || 'bank_transfer',
+        paidAt: paymentDate || new Date(),
+      };
+      updateData.encryptedPaymentDetails = encryptObject(payload);
+      if (payload.accountNumber) updateData.accountNumberMasked = maskAccountNumber(payload.accountNumber);
+      if (payload.transactionReference) updateData.transactionReferenceMasked = maskGeneric(payload.transactionReference, 4);
+    }
 
     if (Object.keys(manualFields).length > 0) {
       Object.assign(updateData, manualFields);

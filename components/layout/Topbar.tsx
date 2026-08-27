@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, Sun, Moon } from "lucide-react";
+import { Menu, LogOut, Sun, Moon, Building2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { Button } from "../ui/Button";
@@ -27,12 +27,16 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         </button>
 
         {/* Mobile Logo - only visible on small screens */}
-        <div className="flex items-center gap-2 md:hidden">
-          <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-            N
+        <div className="flex items-center gap-2.5 md:hidden">
+          <div className="h-11 w-11 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] shrink-0">
+            <img 
+              src={user.companyLogo || "/logo.png"} 
+              alt={user.companyName || 'Logo'} 
+              className="h-full w-full object-contain scale-110" 
+            />
           </div>
-          <span className="font-bold text-blue-600 dark:text-blue-500 truncate max-w-[100px]">
-            NexusHR
+          <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm truncate max-w-[120px]">
+            {user.companyName || 'NexusHR'}
           </span>
         </div>
       </div>

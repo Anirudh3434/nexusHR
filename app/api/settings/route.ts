@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Settings from '@/models/Settings';
+import Company from '@/models/Company';
 
 // GET settings for a company
 export async function GET(req: Request) {
@@ -77,6 +78,10 @@ export async function POST(req: Request) {
       },
       { new: true, upsert: true }
     );
+
+    if (logo !== undefined) {
+      await Company.findByIdAndUpdate(companyId, { logo });
+    }
 
     return NextResponse.json({
       message: 'Settings updated successfully',

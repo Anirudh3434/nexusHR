@@ -59,6 +59,27 @@ const EmployeeSchema = new Schema({
     state: String,
     zip: String,
   },
+  // Crucial Data Protection: AES-256 Encrypted Banking & Identification
+  encryptedBankDetails: {
+    type: String, // iv:authTag:encryptedPayload storing Account#, IFSC, Bank Name, UPI
+  },
+  encryptedGovernmentId: {
+    type: String, // iv:authTag:encryptedPayload storing PAN, Aadhaar, Passport
+  },
+  bankAccountMasked: {
+    type: String, // "••••••••1234"
+  },
+  panMasked: {
+    type: String, // "•••••1234A"
+  },
+  blindIndexBank: {
+    type: String,
+    index: true,
+  },
+  blindIndexPan: {
+    type: String,
+    index: true,
+  },
   status: {
     type: String,
     enum: ['Active', 'Resigned', 'Terminated', 'On Leave'],
@@ -92,6 +113,9 @@ const EmployeeSchema = new Schema({
 }, {
   timestamps: true,
 });
+
+EmployeeSchema.index({ companyId: 1, blindIndexBank: 1 });
+EmployeeSchema.index({ companyId: 1, blindIndexPan: 1 });
 
 const Employee = models.Employee || model('Employee', EmployeeSchema);
 

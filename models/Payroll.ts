@@ -77,6 +77,21 @@ const PayrollSchema = new Schema({
   paymentDate: {
     type: Date,
   },
+  paymentMethod: {
+    type: String,
+    enum: ['bank_transfer', 'upi', 'cheque', 'cash', 'other'],
+    default: 'bank_transfer',
+  },
+  // Crucial Payment Security: AES-256 Encrypted Payload
+  encryptedPaymentDetails: {
+    type: String, // iv:authTag:encryptedPayload storing account, IFSC, UTR, transaction refs
+  },
+  accountNumberMasked: {
+    type: String, // Safe display: "••••••••1234"
+  },
+  transactionReferenceMasked: {
+    type: String, // Safe display: "TXN••••5678"
+  },
   note: {
     type: String,
   },

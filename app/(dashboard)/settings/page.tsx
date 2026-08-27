@@ -27,7 +27,7 @@ import { CareersSection } from "../../../components/settings/CareersSection";
 type TabType = 'branding' | 'attendance' | 'email' | 'email-templates' | 'careers';
 
 function SettingsContent() {
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, updateUser } = useAuth();
   const { addToast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -104,6 +104,12 @@ function SettingsContent() {
         companyId: user.companyId,
         updatedBy: user.id || '',
       });
+      if (user) {
+        updateUser({
+          ...user,
+          companyLogo: settings.logo || undefined,
+        });
+      }
       addToast({ type: 'success', title: 'Saved', description: 'Branding updated successfully' });
     } catch (error) {
       addToast({ type: 'error', title: 'Error', description: 'Failed to update branding' });

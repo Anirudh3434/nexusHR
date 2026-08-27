@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { sidebarConfig, SidebarGroup, SidebarRoute, Role } from "../../config/sidebarConfig";
 import { cn } from "../../lib/utils";
-import { Menu, ChevronLeft, ChevronRight, LogOut, ChevronDown, ChevronUp, X, KanbanSquare } from "lucide-react";
+import { Menu, ChevronLeft, ChevronRight, LogOut, ChevronDown, ChevronUp, X, KanbanSquare, Building2 } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,11 +24,21 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   const [projects, setProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
 
   useEffect(() => {
     if (user?.companyId) {
       fetchProjects();
+      if (!user.companyLogo) {
+        fetch(`/api/settings?companyId=${user.companyId}`)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data?.logo) {
+              updateUser({ ...user, companyLogo: data.logo });
+            }
+          })
+          .catch(() => {});
+      }
     }
   }, [user?.companyId]);
 
@@ -93,29 +103,34 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         )}
       >
         {/* Header Logo Area */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex h-18 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
           {!collapsed && (
-            <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap animate-in fade-in zoom-in duration-300">
-              {user?.companyLogo ? (
-                <img src={user.companyLogo} alt={user.companyName || 'Company'} className="h-8 w-8 rounded-lg object-contain" />
-              ) : (
-                <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-                  {(user?.companyName || 'N').charAt(0).toUpperCase()}
-                </div>
-              )}
-              <h1 className="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-500">
-                {user?.companyName || 'NexusHR'}
-              </h1>
+            <div className="flex items-center gap-3 overflow-hidden animate-in fade-in zoom-in duration-300 min-w-0 pr-2">
+              <div className="h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-md shadow-[#03081c]/20 border border-[#03081c] shrink-0">
+                <img 
+                  src={user?.companyLogo || "/logo.png"} 
+                  alt={user?.companyName || 'Logo'} 
+                  className="h-full w-full object-contain scale-110" 
+                />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100 truncate">
+                  {user?.companyName || 'NexusHR'}
+                </span>
+                <span className="text-[10px] text-gray-400 font-semibold tracking-wide uppercase truncate">
+                  Workspace
+                </span>
+              </div>
             </div>
           )}
           {collapsed && (
-            user?.companyLogo ? (
-              <img src={user.companyLogo} alt={user.companyName || 'Company'} className="mx-auto h-8 w-8 rounded-lg object-contain animate-in fade-in duration-300" />
-            ) : (
-              <div className="mx-auto h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold animate-in fade-in duration-300">
-                {(user?.companyName || 'N').charAt(0).toUpperCase()}
-              </div>
-            )
+            <div className="mx-auto h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-md shadow-[#03081c]/20 border border-[#03081c] animate-in fade-in duration-300">
+              <img 
+                src={user?.companyLogo || "/favicon.png"} 
+                alt={user?.companyName || 'Logo'} 
+                className="h-full w-full object-contain scale-110" 
+              />
+            </div>
           )}
           
           {/* Mobile Close Button */}
