@@ -18,7 +18,7 @@ interface Report {
   merits: string[];
   demerits: string[];
 }
-
+// hy
 export default function PerformanceInsight({ companyId }: { companyId: string }) {
   const [data, setData] = useState<{ date: string; reports: Report[] } | null>(null);
   const [loading, setLoading] = useState(true);
