@@ -7,10 +7,14 @@ import mongoose from 'mongoose';
 // length checks on filter values (qr/verify, login), per-source filter
 // allowlists (reports), and escaped literals for $regex input.
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hrm';
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  (process.env.NODE_ENV === 'production' ? '' : 'mongodb://localhost:27017/hrm');
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  throw new Error(
+    'MONGODB_URI is not set. Configure it in your deployment environment (e.g. Vercel Project Settings > Environment Variables) so the app does not fall back to localhost.'
+  );
 }
 
 /**
