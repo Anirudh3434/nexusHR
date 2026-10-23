@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { 
   LogOut, Users, Clock, CheckCircle, XCircle, AlertCircle,
   Search, Calendar, MessageSquare, ExternalLink, FileText, 
@@ -125,12 +126,12 @@ export default function ResignationsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'under_review': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'approved': return 'bg-green-100 text-green-700 border-green-200';
-      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
-      case 'withdrawn': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30';
+      case 'under_review': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30';
+      case 'approved': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30';
+      case 'withdrawn': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
@@ -166,8 +167,8 @@ export default function ResignationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Resignations</h1>
-          <p className="text-sm text-gray-500">Manage employee resignation requests</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Resignations</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Manage employee resignation requests</p>
         </div>
       </div>
 
@@ -180,14 +181,14 @@ export default function ResignationsPage() {
           { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'green' },
           { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'red' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label} className="border-gray-200">
+          <Card key={label} className="border-gray-200 dark:border-slate-700">
             <CardContent className="p-4 flex items-center gap-3">
               <div className={`p-2 rounded-md bg-${color}-50`}>
                 <Icon className={`h-4 w-4 text-${color}-600`} />
               </div>
               <div>
-                <p className="text-xl font-semibold text-gray-900">{value}</p>
-                <p className="text-xs text-gray-500">{label}</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-slate-100">{value}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -203,13 +204,13 @@ export default function ResignationsPage() {
             placeholder="Search by name, ID, department, or reason..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white dark:border-slate-700 dark:bg-slate-900"
         >
           <option value="">All Status</option>
           <option value="pending">Pending</option>
@@ -223,44 +224,44 @@ export default function ResignationsPage() {
       {/* Resignations List */}
       <div className="space-y-3">
         {filteredResignations.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="py-12 text-center">
-              <LogOut className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No resignations</h3>
-              <p className="text-gray-500 text-sm">No resignation requests found</p>
-            </CardContent>
+          <Card className="border-gray-200 dark:border-slate-700">
+            <EmptyState
+              icon={<LogOut size={18} />}
+              title="No resignations"
+              description="No resignation requests found"
+            />
           </Card>
         ) : (
           filteredResignations.map((resignation) => (
-            <Card key={resignation._id} className="border-gray-200 overflow-hidden">
+            <Card key={resignation._id} className="border-gray-200 overflow-hidden dark:border-slate-700">
               <div className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   {/* Left: Employee Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 dark:text-slate-100">
                         {resignation.employeeId?.firstName} {resignation.employeeId?.lastName}
                       </span>
                       <Badge className={`${getStatusColor(resignation.status)} text-xs px-2 py-0.5`}>
                         {resignation.status.replace('_', ' ')}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-2 dark:text-slate-400">
                       <span>{resignation.employeeId?.employeeId}</span>
                       <span>{resignation.employeeId?.department}</span>
                       <span>{resignation.employeeId?.designation}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                      <span className="flex items-center gap-1 text-gray-600">
+                      <span className="flex items-center gap-1 text-gray-600 dark:text-slate-400">
                         <Calendar className="h-3.5 w-3.5" />
                         Submitted: {new Date(resignation.createdAt).toLocaleDateString('en-GB')}
                       </span>
-                      <span className="flex items-center gap-1 text-gray-600">
+                      <span className="flex items-center gap-1 text-gray-600 dark:text-slate-400">
                         <LogOut className="h-3.5 w-3.5" />
                         Last Working Day: {new Date(resignation.lastWorkingDate).toLocaleDateString('en-GB')}
                       </span>
-                      <span className="flex items-center gap-1 text-gray-600">
+                      <span className="flex items-center gap-1 text-gray-600 dark:text-slate-400">
                         <Clock className="h-3.5 w-3.5" />
                         Notice: {resignation.noticePeriodDays} days
                       </span>
@@ -283,7 +284,7 @@ export default function ResignationsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedResignation(resignation)}
-                          className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                          className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3 dark:border-red-500/30 dark:text-red-400"
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Reject
@@ -304,7 +305,7 @@ export default function ResignationsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedResignation(resignation)}
-                          className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                          className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3 dark:border-red-500/30 dark:text-red-400"
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Reject
@@ -315,7 +316,7 @@ export default function ResignationsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleExpand(resignation._id)}
-                      className="text-gray-500 h-8 px-2"
+                      className="text-gray-500 h-8 px-2 dark:text-slate-400"
                     >
                       {expandedId === resignation._id ? (
                         <ChevronUp className="h-4 w-4" />
@@ -328,17 +329,17 @@ export default function ResignationsPage() {
 
                 {/* Expanded Details */}
                 {expandedId === resignation._id && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 dark:border-slate-800">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Reason for Resignation</h4>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Reason for Resignation</h4>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded dark:text-slate-400 dark:bg-slate-800/50">
                           {reasonLabels[resignation.reason] || resignation.reason}
                         </p>
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Detailed Reason</h4>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded min-h-[60px]">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Detailed Reason</h4>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded min-h-[60px] dark:text-slate-400 dark:bg-slate-800/50">
                           {resignation.detailedReason || 'No detailed reason provided'}
                         </p>
                       </div>
@@ -346,8 +347,8 @@ export default function ResignationsPage() {
 
                     {resignation.hrRemarks && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">HR Remarks</h4>
-                        <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">HR Remarks</h4>
+                        <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded dark:text-slate-400 dark:bg-blue-500/10">
                           {resignation.hrRemarks}
                         </p>
                       </div>
@@ -355,8 +356,8 @@ export default function ResignationsPage() {
 
                     {resignation.exitInterviewCompleted && resignation.exitInterviewNotes && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Exit Interview Notes</h4>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Exit Interview Notes</h4>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded dark:text-slate-400 dark:bg-slate-800/50">
                           {resignation.exitInterviewNotes}
                         </p>
                       </div>
@@ -364,25 +365,25 @@ export default function ResignationsPage() {
 
                     <div className="flex items-center gap-6 text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Exit Interview:</span>
+                        <span className="text-gray-500 dark:text-slate-400">Exit Interview:</span>
                         <Badge variant={resignation.exitInterviewCompleted ? 'default' : 'outline'} className="text-xs">
                           {resignation.exitInterviewCompleted ? 'Completed' : 'Pending'}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Assets Returned:</span>
+                        <span className="text-gray-500 dark:text-slate-400">Assets Returned:</span>
                         <Badge variant={resignation.assetsReturned ? 'default' : 'outline'} className="text-xs">
                           {resignation.assetsReturned ? 'Yes' : 'No'}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Clearance:</span>
+                        <span className="text-gray-500 dark:text-slate-400">Clearance:</span>
                         <span className={`text-xs px-2 py-0.5 rounded ${
                           resignation.clearanceStatus === 'completed' 
-                            ? 'bg-green-100 text-green-700' 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' 
                             : resignation.clearanceStatus === 'in_progress'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300'
+                            : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400'
                         }`}>
                           {resignation.clearanceStatus.replace('_', ' ')}
                         </span>
@@ -390,7 +391,7 @@ export default function ResignationsPage() {
                     </div>
 
                     {resignation.approvedBy && (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-slate-400">
                         Approved by: <span className="font-medium">{resignation.approvedBy.name}</span>
                         {resignation.approvedAt && (
                           <span> on {new Date(resignation.approvedAt).toLocaleDateString('en-GB')}</span>
@@ -414,25 +415,25 @@ export default function ResignationsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   HR Remarks (Optional)
                 </label>
                 <textarea
                   value={hrRemarks}
                   onChange={(e) => setHrRemarks(e.target.value)}
                   placeholder="Enter reason for rejection..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Exit Interview Notes
                 </label>
                 <textarea
                   value={exitInterviewNotes}
                   onChange={(e) => setExitInterviewNotes(e.target.value)}
                   placeholder="Enter exit interview notes..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                 />
               </div>
               <div className="flex gap-3 pt-2">

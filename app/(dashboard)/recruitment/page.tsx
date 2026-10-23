@@ -6,6 +6,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 const MOCK_CANDIDATES = [
   { id: "C-101", name: "Sarah Jenkins", role: "Frontend Engineer", stage: "Interview", dateApplied: "2024-10-15", rating: "★★★★☆" },
@@ -31,28 +32,28 @@ export default function RecruitmentPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Recruitment Pipeline</h1>
-          <p className="text-gray-500">Manage candidates, track application states, and process offers.</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline">
-            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Import
-          </Button>
-          <Button>
-            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Candidate
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Recruitment Pipeline"
+        description="Manage candidates, track application states, and process offers."
+        actions={
+          <>
+            <Button variant="outline">
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              Import
+            </Button>
+            <Button>
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Add Candidate
+            </Button>
+          </>
+        }
+      />
 
       {/* KPI Overview */}
       <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Applicants</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Applicants</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">142</div>
@@ -61,7 +62,7 @@ export default function RecruitmentPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Currently Interviewing</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Currently Interviewing</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">24</div>
@@ -70,7 +71,7 @@ export default function RecruitmentPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Offers Extended</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Offers Extended</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-500">4</div>
@@ -79,7 +80,7 @@ export default function RecruitmentPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Hired (Oct)</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Hired (Oct)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600 dark:text-green-500">9</div>
@@ -111,7 +112,7 @@ export default function RecruitmentPage() {
                 <TableRow key={candidate.id}>
                   <TableCell>
                     <div className="font-medium text-gray-900 dark:text-gray-100">{candidate.name}</div>
-                    <div className="text-xs text-gray-500 capitalize">{candidate.id}</div>
+                    <div className="text-xs text-gray-500 capitalize dark:text-slate-400">{candidate.id}</div>
                   </TableCell>
                   <TableCell className="text-gray-600 dark:text-gray-400">{candidate.role}</TableCell>
                   <TableCell className="text-gray-600 dark:text-gray-400">{candidate.dateApplied}</TableCell>
@@ -127,7 +128,7 @@ export default function RecruitmentPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400">
                       View Profile
                     </Button>
                   </TableCell>

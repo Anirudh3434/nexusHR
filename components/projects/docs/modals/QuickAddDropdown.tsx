@@ -45,7 +45,7 @@ export default function QuickAddDropdown({ onAddDocument, onAddNote, onAddCreden
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200 dark:bg-slate-900 dark:border-slate-700">
           <div className="py-1">
             {options.map((option, index) => {
               const Icon = option.icon;
@@ -56,9 +56,9 @@ export default function QuickAddDropdown({ onAddDocument, onAddNote, onAddCreden
                     option.onClick();
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-800"
                 >
-                  <Icon className="w-4 h-4 text-slate-500" />
+                  <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   {option.label}
                 </button>
               );

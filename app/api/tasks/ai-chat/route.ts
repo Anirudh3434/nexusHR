@@ -6,6 +6,7 @@ import ActivityLog from '@/models/ActivityLog';
 import User from '@/models/User';
 import mongoose from 'mongoose';
 import { headers } from 'next/headers';
+import { getAuthInfo } from '@/lib/auth-util';
 
 // Helper to generate task numbers for created tasks
 async function generateTaskNumber(): Promise<string> {
@@ -41,16 +42,19 @@ function normalizeStatus(status?: string): TaskStatus {
 }
 
 // Helper to resolve task by either 24-char ObjectId or taskNumber (e.g. TSK26070010)
-async function findTaskByIdOrNumber(idOrNumber: string, projectId?: string) {
+// Always scoped to the session company.
+async function findTaskByIdOrNumber(idOrNumber: string, projectId?: string, companyId?: string) {
   if (!idOrNumber) return null;
   const clean = idOrNumber.trim();
+  const scope: any = companyId ? { companyId } : {};
   if (mongoose.Types.ObjectId.isValid(clean)) {
-    const found = await Task.findById(clean);
+    const found = await Task.findOne({ _id: clean, ...scope });
     if (found) return found;
   }
   return await Task.findOne({
     taskNumber: { $regex: new RegExp(`^${clean}$`, 'i') },
-    ...(projectId && mongoose.Types.ObjectId.isValid(projectId) ? { projectId } : {})
+    ...(projectId && mongoose.Types.ObjectId.isValid(projectId) ? { projectId } : {}),
+    ...scope
   });
 }
 
@@ -59,12 +63,16 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const headersList = await headers();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
     const body = await req.json().catch(() => ({}));
 
-    // Robust extraction of user identity from headers or body
-    let userId = headersList.get('x-user-id') || body.userId || body.user?.id || body.user?._id;
-    let userName = headersList.get('x-user-name') || body.userName || body.user?.name;
-    let companyId = headersList.get('x-company-id') || body.companyId || body.user?.companyId;
+    // Identity comes from the session ONLY — no body fallbacks.
+    const userId = auth.userId;
+    let userName = headersList.get('x-user-name') || undefined;
+    const companyId = auth.companyId;
 
     const prompt = body.prompt || body.message || '';
     let projectId = body.projectId;
@@ -76,23 +84,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Prompt or message is required' }, { status: 400 });
     }
 
-    // Resolve user details if needed
-    if (userId && mongoose.Types.ObjectId.isValid(userId) && (!userName || !companyId)) {
+    // Resolve user details if needed (session user only)
+    if (mongoose.Types.ObjectId.isValid(userId) && !userName) {
       const userDoc = await User.findById(userId).select('name companyId').lean();
       if (userDoc) {
+        // Never adopt a companyId from anywhere but the session.
+        if (userDoc.companyId?.toString() !== companyId) {
+          return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+        }
         if (!userName) userName = userDoc.name;
-        if (!companyId) companyId = userDoc.companyId?.toString();
       }
     }
 
     if (!userName) userName = 'Team Member';
 
-    // 1. Resolve active project context
+    // 1. Resolve active project context (scoped to the session company)
     let project: any = null;
     if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
-      project = await Project.findById(projectId)
+      project = await Project.findOne({ _id: projectId, companyId })
         .populate('managerId', 'name email')
         .populate('members.employeeId', 'name email');
+      if (!project) {
+        return NextResponse.json({ message: 'Forbidden: project not found in your company' }, { status: 403 });
+      }
     }
 
     // If project not specified or not found, pick the most recent project for company
@@ -106,25 +120,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const effectiveCompanyId = companyId || project?.companyId?.toString();
+    const effectiveCompanyId = companyId;
 
-    // 2. Fetch company members & relevant tasks
-    const companyMembers = effectiveCompanyId
-      ? await User.find({ companyId: effectiveCompanyId }).select('name email department').lean()
-      : [];
+    // 2. Fetch company members & relevant tasks (all scoped to session company)
+    const companyMembers = await User.find({ companyId: effectiveCompanyId }).select('name email department').lean();
 
     let projectTasks: any[] = [];
     const taskNumberMatches = prompt.match(/TSK\d+/gi);
     if (taskNumberMatches && taskNumberMatches.length > 0) {
       projectTasks = await Task.find({
-        taskNumber: { $in: taskNumberMatches.map((t: string) => t.toUpperCase()) }
+        taskNumber: { $in: taskNumberMatches.map((t: string) => t.toUpperCase()) },
+        companyId: effectiveCompanyId
       }).lean();
     } else if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
-      projectTasks = await Task.find({ projectId })
+      projectTasks = await Task.find({ projectId, companyId: effectiveCompanyId })
         .sort({ updatedAt: -1 })
         .limit(50)
         .lean();
-    } else if (effectiveCompanyId) {
+    } else {
       projectTasks = await Task.find({ companyId: effectiveCompanyId })
         .sort({ updatedAt: -1 })
         .limit(50)
@@ -306,7 +319,7 @@ Output raw JSON only.`;
       for (const action of actions) {
         try {
           if (action.type === 'move_task' && action.taskId) {
-            const task = await findTaskByIdOrNumber(action.taskId, projectId);
+            const task = await findTaskByIdOrNumber(action.taskId, projectId, effectiveCompanyId);
             if (task) {
               const newStatus = normalizeStatus(action.status);
               task.status = newStatus;
@@ -329,7 +342,7 @@ Output raw JSON only.`;
               }
             }
           } else if (action.type === 'assign_task' && action.taskId) {
-            const task = await findTaskByIdOrNumber(action.taskId, projectId);
+            const task = await findTaskByIdOrNumber(action.taskId, projectId, effectiveCompanyId);
             if (task) {
               let targetUserId = action.assigneeId;
               if (targetUserId && !mongoose.Types.ObjectId.isValid(targetUserId)) {
@@ -362,7 +375,7 @@ Output raw JSON only.`;
               }
             }
           } else if (action.type === 'add_comment' && action.taskId && action.text) {
-            const task = await findTaskByIdOrNumber(action.taskId, projectId);
+            const task = await findTaskByIdOrNumber(action.taskId, projectId, effectiveCompanyId);
             if (task) {
               const commenterId = (userId && mongoose.Types.ObjectId.isValid(userId))
                 ? new mongoose.Types.ObjectId(userId)
@@ -393,7 +406,7 @@ Output raw JSON only.`;
               }
             }
           } else if (action.type === 'set_priority' && action.taskId && action.priority) {
-            const task = await findTaskByIdOrNumber(action.taskId, projectId);
+            const task = await findTaskByIdOrNumber(action.taskId, projectId, effectiveCompanyId);
             if (task) {
               task.priority = action.priority.toLowerCase() as any;
               await task.save();
@@ -407,9 +420,8 @@ Output raw JSON only.`;
               const creatorId = (userId && mongoose.Types.ObjectId.isValid(userId))
                 ? new mongoose.Types.ObjectId(userId)
                 : (companyMembers.length > 0 ? companyMembers[0]._id : new mongoose.Types.ObjectId());
-              const compId = effectiveCompanyId && mongoose.Types.ObjectId.isValid(effectiveCompanyId)
-                ? new mongoose.Types.ObjectId(effectiveCompanyId)
-                : (project?.companyId || new mongoose.Types.ObjectId());
+              // companyId is authoritative from the session.
+              const compId = new mongoose.Types.ObjectId(effectiveCompanyId);
               
               await Task.create({
                 taskNumber: newTaskNumber,
@@ -436,13 +448,11 @@ Output raw JSON only.`;
       }
     }
 
-    // 8. Return refreshed task list & AI response
+    // 8. Return refreshed task list & AI response (always company-scoped)
     let updatedTasks: any[] = [];
-    const queryFilter: any = {};
+    const queryFilter: any = { companyId: effectiveCompanyId };
     if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
       queryFilter.projectId = projectId;
-    } else if (effectiveCompanyId && mongoose.Types.ObjectId.isValid(effectiveCompanyId)) {
-      queryFilter.companyId = effectiveCompanyId;
     }
 
     if (Object.keys(queryFilter).length > 0) {

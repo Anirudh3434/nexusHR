@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hasPermission, canView, type Role, type Module, type Permission } from "./permissions";
+import { hasPermission, hasPermissionIn, type Role, type Module, type Permission, type RolePermissionMap } from "./permissions";
+import { hasFeature, type Feature, FEATURE_LABELS } from "./entitlements";
 
 // Get user info from request headers (set by middleware)
 export interface RequestUser {
@@ -8,6 +9,39 @@ export interface RequestUser {
   name: string;
   companyId: string;
   department?: string;
+}
+
+/**
+ * Effective permission map for this request. Middleware forwards the
+ * verified session's snapshot via `x-user-perms`; absent/invalid means
+ * the hardcoded defaults apply (pre-overrides behavior).
+ */
+function getRequestPermissions(req: NextRequest): RolePermissionMap | null {
+  const raw = req.headers.get("x-user-perms");
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const map: RolePermissionMap = {};
+    for (const [module, perms] of Object.entries(parsed)) {
+      if (!Array.isArray(perms) || !perms.every((p) => typeof p === "string")) return null;
+      (map as Record<string, Permission[]>)[module] = perms as Permission[];
+    }
+    return map;
+  } catch {
+    return null;
+  }
+}
+
+function requestHasPermission(
+  req: NextRequest,
+  role: Role,
+  module: Module,
+  permission: Permission
+): boolean {
+  const effective = getRequestPermissions(req);
+  if (effective) return hasPermissionIn(effective, module, permission);
+  return hasPermission(role, module, permission);
 }
 
 export function getUserFromRequest(req: NextRequest): RequestUser | null {
@@ -46,7 +80,7 @@ export function apiGuard(
     };
   }
 
-  if (!hasPermission(user.role, module, permission)) {
+  if (!requestHasPermission(req, user.role, module, permission)) {
     return {
       authorized: false,
       response: NextResponse.json(
@@ -67,6 +101,30 @@ export function canViewApi(req: NextRequest, module: Module) {
 // Check if user can create
 export function canCreateApi(req: NextRequest, module: Module) {
   return apiGuard(req, module, "create");
+}
+
+/**
+ * Plan-entitlement guard. Middleware already rejects feature APIs for
+ * under-entitled plans; this lets individual routes defend themselves too.
+ * Returns a 402 response to short-circuit, or null to continue.
+ * Absent/unknown features claim (legacy token) is fail-open.
+ */
+export function requireFeature(req: NextRequest, feature: Feature): NextResponse | null {
+  const raw = req.headers.get("x-user-features");
+  if (!raw) return null;
+  let features: string[];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    features = parsed;
+  } catch {
+    return null;
+  }
+  if (hasFeature(features, feature)) return null;
+  return NextResponse.json(
+    { error: `Your plan doesn't include ${FEATURE_LABELS[feature]}.`, code: "plan_upgrade_required", feature },
+    { status: 402 }
+  );
 }
 
 // Check if user can edit

@@ -1,8 +1,35 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Task from '@/models/Task';
+import Project from '@/models/Project';
 import { headers } from 'next/headers';
 import mongoose from 'mongoose';
+
+// Verify the caller may write to this task: same-company + project membership
+// (same pattern as projects/[id] GET).
+async function requireTaskProjectAccess(task: any, userId: string, userRole: string, companyId: string | null): Promise<string | null> {
+  if (!companyId || task.companyId?.toString() !== companyId) {
+    return "Forbidden: task belongs to another company";
+  }
+  const project = await Project.findById(task.projectId).select('companyId managerId members');
+  if (!project) return 'Project not found';
+  if (project.companyId.toString() !== companyId) {
+    return "Forbidden: Access to another company's project is not allowed";
+  }
+  if (userRole === 'employee') {
+    const isMember = project.members.some(
+      (m: any) => m.employeeId && (m.employeeId._id || m.employeeId).toString() === userId
+    );
+    if (!isMember) return 'Forbidden: You are not a member of this project';
+  } else if (userRole === 'manager') {
+    const isManager = project.managerId && project.managerId.toString() === userId;
+    const isMember = project.members.some(
+      (m: any) => m.employeeId && (m.employeeId._id || m.employeeId).toString() === userId
+    );
+    if (!isManager && !isMember) return 'Forbidden: You do not manage or belong to this project';
+  }
+  return null;
+}
 
 // POST - Link two tasks reciprocally
 export async function POST(req: Request) {
@@ -14,13 +41,15 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+    const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
+
     const body = await req.json();
     const { taskId, targetTaskId, linkType } = body;
 
     if (!taskId || !targetTaskId || !linkType) {
-      return NextResponse.json({ 
-        message: 'taskId, targetTaskId, and linkType are required' 
+      return NextResponse.json({
+        message: 'taskId, targetTaskId, and linkType are required'
       }, { status: 400 });
     }
 
@@ -33,6 +62,11 @@ export async function POST(req: Request) {
 
     if (!task || !targetTask) {
       return NextResponse.json({ message: 'One or both tasks not found' }, { status: 404 });
+    }
+
+    for (const t of [task, targetTask]) {
+      const accessError = await requireTaskProjectAccess(t, userId, userRole, companyId);
+      if (accessError) return NextResponse.json({ message: accessError }, { status: 403 });
     }
 
     // Initialize arrays if they don't exist
@@ -116,15 +150,17 @@ export async function DELETE(req: Request) {
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+    const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
+
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');
     const targetTaskId = searchParams.get('targetTaskId');
     const linkType = searchParams.get('linkType');
 
     if (!taskId || !targetTaskId || !linkType) {
-      return NextResponse.json({ 
-        message: 'taskId, targetTaskId, and linkType are required' 
+      return NextResponse.json({
+        message: 'taskId, targetTaskId, and linkType are required'
       }, { status: 400 });
     }
 
@@ -133,6 +169,11 @@ export async function DELETE(req: Request) {
 
     if (!task || !targetTask) {
       return NextResponse.json({ message: 'One or both tasks not found' }, { status: 404 });
+    }
+
+    for (const t of [task, targetTask]) {
+      const accessError = await requireTaskProjectAccess(t, userId, userRole, companyId);
+      if (accessError) return NextResponse.json({ message: accessError }, { status: 403 });
     }
 
     if (linkType === 'dependsOn') {

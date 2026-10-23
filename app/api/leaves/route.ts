@@ -1,18 +1,42 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Leave from '@/models/Leave';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
 // GET leave requests
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const isSuperAdmin = auth.role === 'super_admin';
+    const isEmployee = auth.role === 'employee';
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const employeeId = searchParams.get('employeeId');
+    const queryCompanyId = searchParams.get('companyId');
+
+    if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
 
     let query: any = {};
+    // Tenant scope: always from session (super_admin may optionally filter)
+    if (isSuperAdmin) {
+      if (queryCompanyId) query.companyId = queryCompanyId;
+      else if (auth.companyId) query.companyId = auth.companyId;
+    } else {
+      if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = auth.companyId;
+    }
     if (status) query.status = status;
-    if (employeeId) query.employeeId = employeeId;
+    if (isEmployee) {
+      // Employees see only their own leaves; ignore employeeId param
+      query.employeeId = auth.userId;
+    } else if (employeeId) {
+      query.employeeId = employeeId;
+    }
 
     const leaves = await Leave.find(query)
       .populate('employeeId', 'name department')
@@ -37,11 +61,17 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
     const data = await req.json();
 
-    const { employeeId, companyId, type, startDate, endDate, totalDays, reason } = data;
+    // employeeId + companyId always from session; ignore body values
+    const employeeId = auth.userId;
+    const companyId = auth.companyId;
+    const { type, startDate, endDate, totalDays, reason } = data;
 
-    if (!employeeId || !companyId || !type || !startDate || !endDate) {
+    if (!type || !startDate || !endDate) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -69,17 +99,39 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr', 'manager'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const data = await req.json();
 
-    const { id, status, approvedBy, comment } = data;
+    // approvedBy always from session; ignore body value
+    const { id, status, comment } = data;
 
     if (!id || !status) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
+    const existing = await Leave.findById(id);
+    if (!existing) {
+      return NextResponse.json({ message: 'Leave request not found' }, { status: 404 });
+    }
+    // Same-company check (super_admin bypasses)
+    if (auth.role !== 'super_admin' && existing.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    // Only Pending requests can transition
+    if (existing.status !== 'Pending') {
+      return NextResponse.json({ message: `Cannot update leave with status ${existing.status}` }, { status: 400 });
+    }
+    if (!['Approved', 'Rejected', 'Cancelled'].includes(status)) {
+      return NextResponse.json({ message: 'Invalid status transition' }, { status: 400 });
+    }
+
     const leave = await Leave.findByIdAndUpdate(
       id,
-      { status, approvedBy, comment },
+      { status, approvedBy: auth.userId, comment },
       { new: true }
     );
 

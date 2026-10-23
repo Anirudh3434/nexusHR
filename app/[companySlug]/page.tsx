@@ -107,8 +107,8 @@ export default function CompanyLoginPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-gray-500">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center dark:bg-slate-800/50">
+        <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400">
           <Loader2 className="h-5 w-5 animate-spin" />
           Loading...
         </div>
@@ -118,14 +118,14 @@ export default function CompanyLoginPage() {
 
   if (error || !company) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 dark:bg-slate-800/50">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-8 pb-8">
-            <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="h-8 w-8 text-red-600" />
+            <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-red-500/15">
+              <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Company Not Found</h2>
-            <p className="text-gray-600 mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2 dark:text-slate-100">Company Not Found</h2>
+            <p className="text-gray-600 mb-6 dark:text-slate-400">
               The company &quot;{companySlug}&quot; does not exist or is not registered.
             </p>
             <Link href="/">
@@ -185,25 +185,25 @@ export default function CompanyLoginPage() {
               <Building2 className="h-10 w-10" />
             </div>
           )}
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{loginTitle}</h1>
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 mt-1">{company.name}</p>
-          <p className="text-sm text-slate-500 mt-0.5">{loginSubtitle}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{loginTitle}</h1>
+          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 mt-1 dark:text-indigo-400">{company.name}</p>
+          <p className="text-sm text-slate-500 mt-0.5 dark:text-slate-400">{loginSubtitle}</p>
         </div>
 
         {/* Login Card */}
-        <Card className="bg-white/95 backdrop-blur-xl shadow-2xl shadow-indigo-500/10 border-slate-200/80 rounded-2xl">
+        <Card className="bg-white/95 backdrop-blur-xl shadow-2xl shadow-indigo-500/10 border-slate-200/80 rounded-2xl dark:bg-slate-900 dark:border-slate-700">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl font-bold tracking-tight text-slate-900">
+            <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Employee Sign In
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
               Enter your credentials to access your workplace dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Email Address
                 </label>
                 <div className="relative">
@@ -213,14 +213,14 @@ export default function CompanyLoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
-                    className="pl-10 h-11 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-all"
+                    className="pl-10 h-11 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-all dark:bg-slate-800/70 dark:border-slate-700 dark:focus:bg-slate-900"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <div className="relative">
@@ -230,7 +230,7 @@ export default function CompanyLoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 pr-10 h-11 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-all"
+                    className="pl-10 pr-10 h-11 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-all dark:bg-slate-800/70 dark:border-slate-700 dark:focus:bg-slate-900"
                     required
                   />
                   <button
@@ -260,7 +260,7 @@ export default function CompanyLoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+            <div className="mt-6 pt-4 border-t border-slate-100 text-center dark:border-slate-800">
               <button 
                 type="button"
                 onClick={() => {
@@ -285,7 +285,7 @@ export default function CompanyLoginPage() {
                   }
                   router.push("/login?switch=true");
                 }}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline transition-colors"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline transition-colors dark:text-slate-400"
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Switch Organization (Enter Different ID)
               </button>
@@ -295,7 +295,7 @@ export default function CompanyLoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-slate-400 mt-8">
-          Powered by <span className="font-semibold text-slate-600">NexusHR Enterprise</span>
+          Powered by <span className="font-semibold text-slate-600 dark:text-slate-400">NexusHR Enterprise</span>
         </p>
       </div>
     </div>

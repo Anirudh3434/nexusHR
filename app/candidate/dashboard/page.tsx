@@ -10,16 +10,17 @@ import { Badge } from "@/components/ui/Badge";
 import {
   Briefcase, FileText, ClipboardList, ArrowRight, SearchX, PartyPopper, Clock, ListChecks,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const statusMeta: Record<string, { label: string; classes: string }> = {
-  new: { label: "New", classes: "bg-gray-100 text-gray-700 border-gray-200" },
-  under_review: { label: "Under Review", classes: "bg-blue-100 text-blue-700 border-blue-200" },
-  considered: { label: "Considered", classes: "bg-indigo-100 text-indigo-700 border-indigo-200" },
-  shortlisted: { label: "Shortlisted", classes: "bg-purple-100 text-purple-700 border-purple-200" },
-  interview: { label: "Interview", classes: "bg-cyan-100 text-cyan-700 border-cyan-200" },
-  hired: { label: "Hired", classes: "bg-green-100 text-green-700 border-green-200" },
-  rejected: { label: "Rejected", classes: "bg-red-100 text-red-700 border-red-200" },
-  spam: { label: "Spam", classes: "bg-gray-100 text-gray-500 border-gray-200" },
+  new: { label: "New", classes: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
+  under_review: { label: "Under Review", classes: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30" },
+  considered: { label: "Considered", classes: "bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/30" },
+  shortlisted: { label: "Shortlisted", classes: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30" },
+  interview: { label: "Interview", classes: "bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-500/30" },
+  hired: { label: "Hired", classes: "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30" },
+  rejected: { label: "Rejected", classes: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30" },
+  spam: { label: "Spam", classes: "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" },
 };
 
 function OnboardingTimeline({ record }: { record: any }) {
@@ -40,12 +41,12 @@ function OnboardingTimeline({ record }: { record: any }) {
       <CardContent className="space-y-4 p-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-green-600">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-400">
               <ClipboardList size={22} />
             </div>
             <div>
-              <p className="font-semibold text-gray-900">Onboarding Progress</p>
-              <p className="text-sm text-gray-500">Your journey to day one — {record?.progress ?? 0}% complete</p>
+              <p className="font-semibold text-gray-900 dark:text-slate-100">Onboarding Progress</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Your journey to day one — {record?.progress ?? 0}% complete</p>
             </div>
           </div>
           <Link href="/candidate/my-onboarding">
@@ -56,14 +57,14 @@ function OnboardingTimeline({ record }: { record: any }) {
         <div className="space-y-3">
           {steps.map((step, idx) => {
             const stateClass = step.done
-              ? "border-green-500 bg-green-50"
+              ? "border-green-500 bg-green-50 dark:bg-green-500/10"
               : step.pending
-                ? "border-gray-200 bg-gray-50"
-                : "border-blue-300 bg-blue-50";
+                ? "border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/50"
+                : "border-blue-300 bg-blue-50 dark:bg-blue-500/10";
             const iconClass = step.done
               ? "bg-green-600 text-white"
               : step.pending
-                ? "bg-gray-300 text-gray-500"
+                ? "bg-gray-300 text-gray-500 dark:text-slate-400"
                 : "bg-blue-500 text-white";
             return (
               <div key={idx} className={`flex items-center gap-3 rounded-xl border p-3 ${stateClass}`}>
@@ -71,8 +72,8 @@ function OnboardingTimeline({ record }: { record: any }) {
                   {step.done ? "✓" : idx + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-800">{step.label}</p>
-                  <p className="text-xs text-gray-500">{step.detail}</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{step.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{step.detail}</p>
                 </div>
               </div>
             );
@@ -145,13 +146,13 @@ export default function CandidateDashboard() {
           <Card className="transition-all hover:shadow-lg hover:border-indigo-300 cursor-pointer h-full">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
                   <FileText size={22} />
                 </div>
                 <ArrowRight size={18} className="text-gray-300" />
               </div>
-              <h3 className="mt-3 font-semibold text-gray-900">My Application</h3>
-              <p className="mt-1 text-sm text-gray-500">Application status, interview rounds and offer letter.</p>
+              <h3 className="mt-3 font-semibold text-gray-900 dark:text-slate-100">My Application</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Application status, interview rounds and offer letter.</p>
             </CardContent>
           </Card>
         </Link>
@@ -159,13 +160,13 @@ export default function CandidateDashboard() {
           <Card className="transition-all hover:shadow-lg hover:border-green-300 cursor-pointer h-full">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-400">
                   <ClipboardList size={22} />
                 </div>
                 <ArrowRight size={18} className="text-gray-300" />
               </div>
-              <h3 className="mt-3 font-semibold text-gray-900">My Onboarding</h3>
-              <p className="mt-1 text-sm text-gray-500">Offer acceptance, document uploads and checklist tasks.</p>
+              <h3 className="mt-3 font-semibold text-gray-900 dark:text-slate-100">My Onboarding</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Offer acceptance, document uploads and checklist tasks.</p>
             </CardContent>
           </Card>
         </Link>
@@ -177,12 +178,12 @@ export default function CandidateDashboard() {
           <CardContent className="space-y-4 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
                   <Briefcase size={22} />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{latest.appliedPosition || 'Application'}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-semibold text-gray-900 dark:text-slate-100">{latest.appliedPosition || 'Application'}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
                     {latest.jobId ? `${latest.jobId} · ` : ''}Applied{" "}
                     {latest.receivedAt ? new Date(latest.receivedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                   </p>
@@ -193,7 +194,7 @@ export default function CandidateDashboard() {
 
             {/* Progress */}
             <div>
-              <div className="mb-1 flex justify-between text-xs text-gray-500">
+              <div className="mb-1 flex justify-between text-xs text-gray-500 dark:text-slate-400">
                 <span>Application progress</span>
                 <span>
                   {rounds.length > 0
@@ -201,7 +202,7 @@ export default function CandidateDashboard() {
                     : isHired ? 'Offer ready' : 'Awaiting review'}
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
@@ -214,7 +215,7 @@ export default function CandidateDashboard() {
 
             {/* Round count */}
             {rounds.length > 0 && (
-              <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+              <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-3 text-sm text-gray-600 dark:bg-slate-800/50 dark:text-slate-400">
                 <ListChecks size={16} className="text-indigo-500" />
                 <span>{rounds.length} interview round{rounds.length === 1 ? '' : 's'}</span>
                 {latest.interviewRounds?.some((r: any) => r.scheduledDate) && (
@@ -227,8 +228,8 @@ export default function CandidateDashboard() {
             )}
 
             {isHired && (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
-                <p className="flex items-center gap-1.5 font-semibold text-green-800">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-500/30 dark:bg-green-500/10">
+                <p className="flex items-center gap-1.5 font-semibold text-green-800 dark:text-green-300">
                   <PartyPopper size={16} /> Congratulations! You&apos;re hired.
                 </p>
                 {onboardingRecord && (
@@ -250,11 +251,11 @@ export default function CandidateDashboard() {
         </Card>
       ) : (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <SearchX className="mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-gray-500">No applications found for your account yet.</p>
-            <p className="mt-1 text-sm text-gray-400">Once HR considers your application, your status will appear here.</p>
-          </CardContent>
+          <EmptyState
+            icon={<SearchX size={18} />}
+            title="No applications found for your account yet."
+            description="Once HR considers your application, your status will appear here."
+          />
         </Card>
       )}
 

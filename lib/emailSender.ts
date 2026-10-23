@@ -1,5 +1,6 @@
 import EmailConfig from '../models/EmailConfig';
 import CompanyContentConfig, { EmailTemplateOverride, EmailTemplateKey } from '../models/CompanyContentConfig';
+import { encryptToken, decryptToken } from './email-token';
 
 export interface EmailOverrides {
   subject?: string;
@@ -79,14 +80,22 @@ export interface SendEmailResult {
 }
 
 async function getConfig(companyId: string): Promise<EmailConfigDoc | null> {
-  return EmailConfig.findOne({ companyId })
+  const doc = await EmailConfig.findOne({ companyId })
     .select('+accessToken +refreshToken +tokenExpiry')
-    .lean() as unknown as Promise<EmailConfigDoc | null>;
+    .lean() as unknown as EmailConfigDoc | null;
+  if (!doc) return doc;
+  // Tokens are encrypted at rest; decrypt on read (migration-tolerant).
+  return {
+    ...doc,
+    accessToken: doc.accessToken ? decryptToken(doc.accessToken) : doc.accessToken,
+    refreshToken: doc.refreshToken ? decryptToken(doc.refreshToken) : doc.refreshToken,
+  };
 }
 
 async function refreshToken(config: EmailConfigDoc, provider: 'gmail' | 'outlook'): Promise<string | null> {
   try {
     if (!config.refreshToken) return null;
+    const rawRefresh = decryptToken(config.refreshToken);
     const url = provider === 'gmail'
       ? 'https://oauth2.googleapis.com/token'
       : 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
@@ -98,7 +107,7 @@ async function refreshToken(config: EmailConfigDoc, provider: 'gmail' | 'outlook
       body: new URLSearchParams({
         client_id: clientId!,
         client_secret: clientSecret!,
-        refresh_token: config.refreshToken,
+        refresh_token: rawRefresh,
         grant_type: 'refresh_token',
       }),
     });
@@ -107,7 +116,7 @@ async function refreshToken(config: EmailConfigDoc, provider: 'gmail' | 'outlook
     const tokenExpiry = new Date(Date.now() + (tokenData.expires_in || 3600) * 1000);
     await EmailConfig.findOneAndUpdate(
       { companyId: config.companyId },
-      { accessToken: tokenData.access_token, tokenExpiry },
+      { accessToken: encryptToken(tokenData.access_token), tokenExpiry },
       { new: true }
     );
     return tokenData.access_token;

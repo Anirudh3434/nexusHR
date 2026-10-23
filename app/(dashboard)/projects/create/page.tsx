@@ -298,21 +298,21 @@ export default function CreateProjectPage() {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] -m-6 bg-slate-50/50 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-4rem)] -m-6 bg-slate-50/50 overflow-hidden dark:bg-slate-800/70">
       {/* Container 1: Top Header Toolbar */}
-      <div className="bg-white border-b border-slate-200/80 shadow-sm px-6 py-4 flex-shrink-0 z-10">
+      <div className="bg-white border-b border-slate-200/80 shadow-sm px-6 py-4 flex-shrink-0 z-10 dark:bg-slate-900 dark:border-slate-700">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => window.location.href = '/projects'}
-                className="flex items-center justify-center w-9 h-9 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/60 rounded-xl text-slate-500 hover:text-slate-800 transition-all shadow-sm"
+                className="flex items-center justify-center w-9 h-9 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/60 rounded-xl text-slate-500 hover:text-slate-800 transition-all shadow-sm dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <div className="h-6 w-px bg-slate-200"></div>
+              <div className="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
               <div>
-                <h1 className="text-lg font-bold text-slate-800 tracking-tight">
+                <h1 className="text-lg font-bold text-slate-800 tracking-tight dark:text-slate-200">
                   {isEditMode ? 'Edit Project' : 'Create New Project'}
                 </h1>
                 <p className="text-xs text-slate-400">
@@ -323,7 +323,7 @@ export default function CreateProjectPage() {
 
             {/* Custom Stepper */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center bg-slate-100/80 border border-slate-200/20 p-1.5 rounded-2xl gap-1">
+              <div className="flex items-center bg-slate-100/80 border border-slate-200/20 p-1.5 rounded-2xl gap-1 dark:bg-slate-800/70 dark:border-slate-700">
                 {[
                   { num: 1, label: 'Basic Info' },
                   { num: 2, label: 'Board Config' },
@@ -345,18 +345,18 @@ export default function CreateProjectPage() {
                         } ${isActive
                           ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10 border border-indigo-500/20 scale-105'
                           : isCompleted
-                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/40'
+                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/40 dark:bg-indigo-500/10 dark:text-indigo-300'
                             : 'text-slate-400 hover:text-slate-600'
                           }`}
                       >
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white text-indigo-600' : isCompleted ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white text-indigo-600 dark:bg-slate-900 dark:text-indigo-400' : isCompleted ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
                           }`}>
                           {isCompleted ? <Check className="w-2.5 h-2.5 stroke-[3]" /> : item.num}
                         </div>
                         <span className="hidden sm:inline">{item.label}</span>
                       </div>
                       {idx < 3 && (
-                        <div className="w-4 h-px bg-slate-200 mx-1 hidden sm:block" />
+                        <div className="w-4 h-px bg-slate-200 mx-1 hidden sm:block dark:bg-slate-700" />
                       )}
                     </div>
                   );
@@ -380,32 +380,32 @@ export default function CreateProjectPage() {
             {/* Step 1: Basic Information */}
             {step === 1 && (
               <div className="w-full space-y-6">
-                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden">
-                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5">
-                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800">
-                      <Info className="w-4.5 h-4.5 text-indigo-600" />
+                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800 dark:bg-slate-800/70">
+                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-200">
+                      <Info className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
                       Basic Information
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-5">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Project Name *</label>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 dark:text-slate-300">Project Name *</label>
                       <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all placeholder:text-slate-400"
+                        className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all placeholder:text-slate-400 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700"
                         placeholder="e.g., Nexus AI Redesign"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Description</label>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 dark:text-slate-300">Description</label>
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all placeholder:text-slate-400"
+                        className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all placeholder:text-slate-400 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700"
                         rows={4}
                         placeholder="Outline the core objectives, deliverables, and targets for this project..."
                       />
@@ -413,11 +413,11 @@ export default function CreateProjectPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Status</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 dark:text-slate-300">Status</label>
                         <select
                           value={formData.status}
                           onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all text-slate-700 cursor-pointer"
+                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all text-slate-700 cursor-pointer dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                         >
                           <option value="planning">Planning</option>
                           <option value="active">Active</option>
@@ -425,11 +425,11 @@ export default function CreateProjectPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Priority</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 dark:text-slate-300">Priority</label>
                         <select
                           value={formData.priority}
                           onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all text-slate-700 cursor-pointer"
+                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all text-slate-700 cursor-pointer dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                         >
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
@@ -441,11 +441,11 @@ export default function CreateProjectPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Department</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 dark:text-slate-300">Department</label>
                         <select
                           value={formData.department}
                           onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all text-slate-700 font-medium"
+                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all text-slate-700 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                         >
                           <option value="">Select Department...</option>
                           {departments.map((dept) => (
@@ -456,21 +456,21 @@ export default function CreateProjectPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Client Name</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 dark:text-slate-300">Client Name</label>
                         <input
                           type="text"
                           value={formData.clientName}
                           onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all placeholder:text-slate-400"
+                          className="w-full px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all placeholder:text-slate-400 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700"
                           placeholder="Optional client or sponsor reference"
                         />
                       </div>
                     </div>
 
                     {/* Assign Collaborators */}
-                    <div className="border-t border-slate-100 pt-5">
+                    <div className="border-t border-slate-100 pt-5 dark:border-slate-800">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Assign Team Members</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider dark:text-slate-300">Assign Team Members</label>
                         <div className="relative w-full sm:w-64">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
                           <input
@@ -478,7 +478,7 @@ export default function CreateProjectPage() {
                             placeholder="Search employees..."
                             value={memberSearchQuery}
                             onChange={(e) => setMemberSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs transition-all placeholder:text-slate-400"
+                            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs transition-all placeholder:text-slate-400 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700"
                           />
                         </div>
                       </div>
@@ -489,7 +489,7 @@ export default function CreateProjectPage() {
                           Loading employees...
                         </div>
                       ) : (
-                        <div className="border border-slate-100 rounded-2xl p-3 max-h-56 overflow-y-auto space-y-1.5 bg-slate-50/20">
+                        <div className="border border-slate-100 rounded-2xl p-3 max-h-56 overflow-y-auto space-y-1.5 bg-slate-50/20 dark:border-slate-800 dark:bg-slate-800/70">
                           {filteredEmployees.length === 0 ? (
                             <div className="text-center py-8 text-xs text-slate-400 italic">No employees found.</div>
                           ) : (
@@ -499,11 +499,11 @@ export default function CreateProjectPage() {
 
                                 const getAvatarBg = (name: string) => {
                                   const colors = [
-                                    'bg-indigo-50 text-indigo-700 border-indigo-200',
-                                    'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30',
+                                    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
                                     'bg-sky-50 text-sky-700 border-sky-200',
-                                    'bg-amber-50 text-amber-700 border-amber-200',
-                                    'bg-rose-50 text-rose-700 border-rose-200',
+                                    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
+                                    'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
                                     'bg-violet-50 text-violet-700 border-violet-200',
                                   ];
                                   let hash = 0;
@@ -531,24 +531,24 @@ export default function CreateProjectPage() {
                                       }
                                     }}
                                     className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all duration-200 ${isSelected
-                                      ? 'border-indigo-500 bg-indigo-50/30 shadow-sm'
-                                      : 'border-slate-100 bg-white hover:bg-slate-50 hover:border-slate-300'
+                                      ? 'border-indigo-500 bg-indigo-50/30 shadow-sm dark:bg-indigo-500/10'
+                                      : 'border-slate-100 bg-white hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800'
                                       }`}
                                   >
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border ${avatarBg} shrink-0`}>
                                       {initials}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <div className="text-xs font-bold text-slate-800 truncate">{employee.name}</div>
+                                      <div className="text-xs font-bold text-slate-800 truncate dark:text-slate-200">{employee.name}</div>
                                       <div className="text-[10px] text-slate-400 truncate">{employee.email}</div>
                                     </div>
                                     <div className="shrink-0 flex items-center gap-1.5">
                                       {employee.department && (
-                                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-slate-200 text-slate-500 capitalize shrink-0 font-medium">
+                                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-slate-200 text-slate-500 capitalize shrink-0 font-medium dark:border-slate-700 dark:text-slate-400">
                                           {employee.department}
                                         </Badge>
                                       )}
-                                      <div className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-350 bg-white'
+                                      <div className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-350 bg-white dark:bg-slate-900'
                                         }`}>
                                         {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                                       </div>
@@ -561,7 +561,7 @@ export default function CreateProjectPage() {
                         </div>
                       )}
                       {selectedEmployees.length > 0 && (
-                        <div className="mt-2.5 text-[11px] font-semibold text-indigo-600 bg-indigo-50/50 px-3 py-1 rounded-lg inline-block border border-indigo-100/30">
+                        <div className="mt-2.5 text-[11px] font-semibold text-indigo-600 bg-indigo-50/50 px-3 py-1 rounded-lg inline-block border border-indigo-100/30 dark:text-indigo-400 dark:bg-indigo-500/10">
                           {selectedEmployees.length} member{selectedEmployees.length !== 1 ? 's' : ''} assigned to project
                         </div>
                       )}
@@ -570,7 +570,7 @@ export default function CreateProjectPage() {
                 </Card>
 
                 <div className="flex justify-end gap-3">
-                  <Button variant="ghost" onClick={() => window.location.href = '/projects'} className="rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 font-medium">
+                  <Button variant="ghost" onClick={() => window.location.href = '/projects'} className="rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Cancel
                   </Button>
                   <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-5">
@@ -583,17 +583,17 @@ export default function CreateProjectPage() {
             {/* Step 2: Board Configuration */}
             {step === 2 && (
               <div className="w-full space-y-6">
-                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden">
-                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5">
-                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800">
-                      <Layout className="w-4.5 h-4.5 text-indigo-600" />
+                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800 dark:bg-slate-800/70">
+                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-200">
+                      <Layout className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
                       Board Configuration
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     {/* Board Type */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Board Type</label>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 dark:text-slate-300">Board Type</label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
                           { value: 'kanban', icon: KanbanSquare, label: 'Kanban', desc: 'Continuous flow with WIP limits' },
@@ -606,16 +606,16 @@ export default function CreateProjectPage() {
                               key={type.value}
                               onClick={() => setFormData({ ...formData, boardType: type.value as any })}
                               className={`p-4 border rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden ${isSelected
-                                ? 'border-indigo-500 bg-indigo-50/30 shadow-md shadow-indigo-500/5'
-                                : 'border-slate-200/80 bg-white hover:border-slate-350 hover:bg-slate-50/50'
+                                ? 'border-indigo-500 bg-indigo-50/30 shadow-md shadow-indigo-500/5 dark:bg-indigo-500/10'
+                                : 'border-slate-200/80 bg-white hover:border-slate-350 hover:bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/70'
                                 }`}
                             >
-                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 transition-colors ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 transition-colors ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                 }`}>
                                 <type.icon className="w-4.5 h-4.5" />
                               </div>
-                              <h3 className={`font-bold text-sm mb-1 ${isSelected ? 'text-indigo-950' : 'text-slate-800'}`}>{type.label}</h3>
-                              <p className="text-xs text-slate-500 leading-relaxed">{type.desc}</p>
+                              <h3 className={`font-bold text-sm mb-1 ${isSelected ? 'text-indigo-950 dark:text-indigo-200' : 'text-slate-800 dark:text-slate-200'}`}>{type.label}</h3>
+                              <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">{type.desc}</p>
 
                               {isSelected && (
                                 <div className="absolute top-3 right-3 w-4 h-4 bg-indigo-600 text-white rounded-full flex items-center justify-center">
@@ -629,9 +629,9 @@ export default function CreateProjectPage() {
                     </div>
 
                     {/* Sprint Toggle */}
-                    <div className="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
+                    <div className="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl dark:bg-slate-800/70 dark:border-slate-800">
                       <div>
-                        <h3 className="font-bold text-sm text-slate-800">Enable Sprints (Scrum)</h3>
+                        <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Enable Sprints (Scrum)</h3>
                         <p className="text-xs text-slate-400">Implement dynamic sprint cycles, backlogs, and velocity tracking.</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -641,14 +641,14 @@ export default function CreateProjectPage() {
                           onChange={(e) => setFormData({ ...formData, useSprints: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600 dark:bg-slate-700"></div>
                       </label>
                     </div>
                   </CardContent>
                 </Card>
 
                 <div className="flex justify-between">
-                  <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium">
+                  <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Back
                   </Button>
                   <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-5">
@@ -661,16 +661,16 @@ export default function CreateProjectPage() {
             {/* Step 3: Board Columns */}
             {step === 3 && (
               <div className="w-full space-y-6">
-                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden">
-                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5 flex flex-row items-center justify-between">
+                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5 flex flex-row items-center justify-between dark:border-slate-800 dark:bg-slate-800/70">
                     <div>
-                      <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800">
-                        <KanbanSquare className="w-4.5 h-4.5 text-indigo-600" />
+                      <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-200">
+                        <KanbanSquare className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
                         Board Columns Configuration
                       </CardTitle>
                       <p className="text-[11px] text-slate-400 mt-1">Manage columns, WIP limits, transition rules, and drag handles to reorder.</p>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={addCustomColumn} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50/50 rounded-lg text-xs font-semibold">
+                    <Button variant="ghost" size="sm" onClick={addCustomColumn} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50/50 rounded-lg text-xs font-semibold dark:text-indigo-400 dark:hover:bg-indigo-500/10">
                       <Plus className="w-3.5 h-3.5 mr-1" />
                       Add Custom Status
                     </Button>
@@ -684,8 +684,8 @@ export default function CreateProjectPage() {
                           onDragStart={(e) => handleColumnDragStart(e, index)}
                           onDragOver={(e) => handleColumnDragOver(e, index)}
                           onDragEnd={handleColumnDragEnd}
-                          className={`p-4 border rounded-2xl bg-white shadow-sm transition-all ${
-                            draggedColumnIndex === index ? 'border-indigo-400 bg-indigo-50/20 opacity-60' : 'border-slate-200/80 hover:border-slate-300'
+                          className={`p-4 border rounded-2xl bg-white dark:bg-slate-900 shadow-sm transition-all ${
+                            draggedColumnIndex === index ? 'border-indigo-400 bg-indigo-50/20 opacity-60 dark:bg-indigo-500/10' : 'border-slate-200/80 hover:border-slate-300 dark:border-slate-700'
                           }`}
                         >
                           <div className="flex items-start gap-3">
@@ -699,20 +699,20 @@ export default function CreateProjectPage() {
                                   type="text"
                                   value={column.name}
                                   onChange={(e) => updateColumn(column.id, 'name', e.target.value)}
-                                  className="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-bold text-slate-800"
+                                  className="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-bold text-slate-800 dark:border-slate-700 dark:text-slate-200"
                                   placeholder="Status Name"
                                 />
                                 <input
                                   type="color"
                                   value={column.color}
                                   onChange={(e) => updateColumn(column.id, 'color', e.target.value)}
-                                  className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 shrink-0 p-0.5"
+                                  className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 shrink-0 p-0.5 dark:border-slate-700"
                                 />
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setExpandedColumn(expandedColumn === column.id ? null : column.id)}
-                                  className={`w-8 h-8 p-0 rounded-lg ${expandedColumn === column.id ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'}`}
+                                  className={`w-8 h-8 p-0 rounded-lg ${expandedColumn === column.id ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                   title="Advanced Rules"
                                 >
                                   <Settings className="w-4 h-4" />
@@ -738,39 +738,39 @@ export default function CreateProjectPage() {
                                     placeholder="None"
                                     value={column.wipLimit || ''}
                                     onChange={(e) => updateColumn(column.id, 'wipLimit', e.target.value ? parseInt(e.target.value) : null)}
-                                    className="w-16 px-2.5 py-1 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 font-medium text-slate-700"
+                                    className="w-16 px-2.5 py-1 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300"
                                   />
                                   <span className="text-slate-400">WIP limit tickets</span>
                                 </div>
                                 {column.isDefault && (
-                                  <Badge variant="outline" className="text-[10px] font-semibold text-slate-400 border-slate-200 px-2 py-0.5 rounded-full">Default</Badge>
+                                  <Badge variant="outline" className="text-[10px] font-semibold text-slate-400 border-slate-200 px-2 py-0.5 rounded-full dark:border-slate-700">Default</Badge>
                                 )}
                               </div>
 
                               {/* Advanced Settings */}
                               {expandedColumn === column.id && (
-                                <div className="p-4 bg-slate-50/50 border border-slate-100 rounded-xl space-y-4 animate-in slide-in-from-top-2 duration-200 text-xs">
-                                  <h4 className="font-bold text-slate-800">Advanced Transition & Transition Rules</h4>
+                                <div className="p-4 bg-slate-50/50 border border-slate-100 rounded-xl space-y-4 animate-in slide-in-from-top-2 duration-200 text-xs dark:bg-slate-800/70 dark:border-slate-800">
+                                  <h4 className="font-bold text-slate-800 dark:text-slate-200">Advanced Transition & Transition Rules</h4>
 
                                   <div>
-                                    <label className="block text-slate-600 font-semibold mb-1">Target SLA Threshold (hours)</label>
+                                    <label className="block text-slate-600 font-semibold mb-1 dark:text-slate-400">Target SLA Threshold (hours)</label>
                                     <input
                                       type="number"
                                       placeholder="e.g., 24"
                                       value={column.slaHours || ''}
                                       onChange={(e) => updateColumn(column.id, 'slaHours', e.target.value ? parseInt(e.target.value) : undefined)}
-                                      className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-slate-700"
+                                      className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-slate-700 dark:border-slate-700 dark:text-slate-300"
                                     />
                                     <p className="text-[10px] text-slate-400 mt-1">Automatic alert warning threshold after a ticket remains in this status.</p>
                                   </div>
 
                                   <div>
-                                    <label className="block text-slate-600 font-semibold mb-1.5">Allowed Inbound Transitions</label>
+                                    <label className="block text-slate-600 font-semibold mb-1.5 dark:text-slate-400">Allowed Inbound Transitions</label>
                                     <div className="flex flex-wrap gap-2 mt-1">
                                       {formData.columns.filter(c => c.id !== column.id).map((col) => {
                                         const isChecked = column.allowedTransitions?.includes(col.id) || false;
                                         return (
-                                          <label key={col.id} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium cursor-pointer transition-all ${isChecked ? 'border-indigo-500 bg-indigo-50/40 text-indigo-700' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                                          <label key={col.id} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium cursor-pointer transition-all ${isChecked ? 'border-indigo-500 bg-indigo-50/40 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-400'
                                             }`}>
                                             <input
                                               type="checkbox"
@@ -792,12 +792,12 @@ export default function CreateProjectPage() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-slate-600 font-semibold mb-1.5">Required Submission Fields</label>
+                                    <label className="block text-slate-600 font-semibold mb-1.5 dark:text-slate-400">Required Submission Fields</label>
                                     <div className="flex flex-wrap gap-2 mt-1">
                                       {['description', 'assignee', 'priority', 'storyPoints'].map((field) => {
                                         const isChecked = column.requiredFields?.includes(field) || false;
                                         return (
-                                          <label key={field} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium cursor-pointer transition-all ${isChecked ? 'border-indigo-500 bg-indigo-50/40 text-indigo-700' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                                          <label key={field} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium cursor-pointer transition-all ${isChecked ? 'border-indigo-500 bg-indigo-50/40 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-400'
                                             }`}>
                                             <input
                                               type="checkbox"
@@ -819,11 +819,11 @@ export default function CreateProjectPage() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-slate-600 font-semibold mb-1">Auto-assign ticket to Role</label>
+                                    <label className="block text-slate-600 font-semibold mb-1 dark:text-slate-400">Auto-assign ticket to Role</label>
                                     <select
                                       value={column.autoAssign || ''}
                                       onChange={(e) => updateColumn(column.id, 'autoAssign', e.target.value || undefined)}
-                                      className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-slate-700 cursor-pointer"
+                                      className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-slate-700 cursor-pointer dark:border-slate-700 dark:text-slate-300"
                                     >
                                       <option value="">None</option>
                                       <option value="developer">Developer</option>
@@ -843,7 +843,7 @@ export default function CreateProjectPage() {
                 </Card>
 
                 <div className="flex justify-between">
-                  <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium">
+                  <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Back
                   </Button>
                   <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-5">
@@ -856,10 +856,10 @@ export default function CreateProjectPage() {
             {/* Step 4: Review */}
             {step === 4 && (
               <div className="w-full space-y-6">
-                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden">
-                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5">
-                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800">
-                      <CheckCircle className="w-4.5 h-4.5 text-indigo-600" />
+                <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl bg-white overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800 dark:bg-slate-800/70">
+                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-200">
+                      <CheckCircle className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
                       Review Specifications
                     </CardTitle>
                   </CardHeader>
@@ -867,32 +867,32 @@ export default function CreateProjectPage() {
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                       {/* Left: Summary Specs */}
                       <div className="md:col-span-3 space-y-4">
-                        <div className="p-5 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-3.5">
-                          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Project Configuration</h3>
+                        <div className="p-5 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-3.5 dark:bg-slate-800/70 dark:border-slate-800">
+                          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider dark:text-slate-200">Project Configuration</h3>
                           <div className="space-y-2 text-xs">
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
+                            <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                               <span className="text-slate-400 font-medium">Project Name</span>
-                              <span className="font-bold text-slate-800">{formData.name}</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{formData.name}</span>
                             </div>
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
+                            <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                               <span className="text-slate-400 font-medium">Board Type</span>
-                              <span className="font-bold text-slate-800 capitalize">{formData.boardType}</span>
+                              <span className="font-bold text-slate-800 capitalize dark:text-slate-200">{formData.boardType}</span>
                             </div>
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
+                            <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                               <span className="text-slate-400 font-medium">Sprints Cycles</span>
-                              <span className="font-bold text-slate-800">{formData.useSprints ? 'Enabled (Scrum)' : 'Disabled'}</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{formData.useSprints ? 'Enabled (Scrum)' : 'Disabled'}</span>
                             </div>
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
+                            <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                               <span className="text-slate-400 font-medium">Active Columns</span>
-                              <span className="font-bold text-slate-800">{formData.columns.length} columns</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{formData.columns.length} columns</span>
                             </div>
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
+                            <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                               <span className="text-slate-400 font-medium">Department Context</span>
-                              <span className="font-bold text-slate-800">{formData.department || 'General'}</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{formData.department || 'General'}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-slate-400 font-medium">Assigned Team Members</span>
-                              <span className="font-bold text-slate-800">{selectedEmployees.length} members</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{selectedEmployees.length} members</span>
                             </div>
                           </div>
                         </div>
@@ -900,19 +900,19 @@ export default function CreateProjectPage() {
 
                       {/* Right: Real-time Dashboard Card Mockup Preview */}
                       <div className="md:col-span-2 space-y-2.5">
-                        <h3 className="font-bold text-slate-700 text-xs uppercase tracking-wider">Dashboard Card Mockup</h3>
+                        <h3 className="font-bold text-slate-700 text-xs uppercase tracking-wider dark:text-slate-300">Dashboard Card Mockup</h3>
 
-                        <Card className="border border-slate-200/80 shadow-[0_6px_25px_rgba(0,0,0,0.03)] overflow-hidden border-t-4 border-t-indigo-500 rounded-2xl bg-white max-w-sm">
+                        <Card className="border border-slate-200/80 shadow-[0_6px_25px_rgba(0,0,0,0.03)] overflow-hidden border-t-4 border-t-indigo-500 rounded-2xl bg-white max-w-sm dark:border-slate-700 dark:bg-slate-900">
                           <CardContent className="p-4.5 flex flex-col space-y-3">
-                            <div className="flex justify-between items-center text-[9px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 inline-block w-fit">
+                            <div className="flex justify-between items-center text-[9px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 inline-block w-fit dark:bg-slate-800/50 dark:border-slate-800">
                               PRJXXXXX
                             </div>
                             <div>
-                              <h3 className="font-bold text-slate-800 text-sm mb-1 truncate">
+                              <h3 className="font-bold text-slate-800 text-sm mb-1 truncate dark:text-slate-200">
                                 {formData.name || 'Project Name'}
                               </h3>
                               <div className="flex gap-1">
-                                <Badge className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                <Badge className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
                                   {formData.status}
                                 </Badge>
                                 <Badge className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
@@ -920,10 +920,10 @@ export default function CreateProjectPage() {
                                 </Badge>
                               </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 line-clamp-2 min-h-6 leading-relaxed">
+                            <p className="text-[11px] text-slate-500 line-clamp-2 min-h-6 leading-relaxed dark:text-slate-400">
                               {formData.description || 'No description provided.'}
                             </p>
-                            <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-[10px] text-slate-500 font-medium">
+                            <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-[10px] text-slate-500 font-medium dark:border-slate-800 dark:text-slate-400">
                               <div className="flex items-center gap-1">
                                 <User className="w-3 h-3 text-slate-400" />
                                 <span>PM: {user?.name || 'You'}</span>
@@ -934,11 +934,11 @@ export default function CreateProjectPage() {
                               </div>
                             </div>
                             <div className="space-y-1">
-                              <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                              <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400">
                                 <span>Progress</span>
                                 <span>0%</span>
                               </div>
-                              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden dark:bg-slate-800">
                                 <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: '0%' }} />
                               </div>
                             </div>
@@ -949,14 +949,14 @@ export default function CreateProjectPage() {
 
                     {/* Columns Preview */}
                     <div>
-                      <h3 className="font-bold text-slate-700 text-xs uppercase tracking-wider mb-3">Board Columns Layout Preview</h3>
+                      <h3 className="font-bold text-slate-700 text-xs uppercase tracking-wider mb-3 dark:text-slate-300">Board Columns Layout Preview</h3>
                       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
                         {formData.columns.map((column) => (
-                          <div key={column.id} className="flex-shrink-0 w-44 p-3.5 rounded-2xl border-2 bg-white" style={{ borderColor: column.color }}>
+                          <div key={column.id} className="flex-shrink-0 w-44 p-3.5 rounded-2xl border-2 bg-white dark:bg-slate-900" style={{ borderColor: column.color }}>
                             <div className="flex items-center justify-between mb-2">
-                              <span className="font-bold text-slate-800 text-xs truncate max-w-[100px]">{column.name}</span>
+                              <span className="font-bold text-slate-800 text-xs truncate max-w-[100px] dark:text-slate-200">{column.name}</span>
                               {column.wipLimit && (
-                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-slate-200 text-slate-500 font-semibold">WIP: {column.wipLimit}</Badge>
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-slate-200 text-slate-500 font-semibold dark:border-slate-700 dark:text-slate-400">WIP: {column.wipLimit}</Badge>
                               )}
                             </div>
                             <div className="text-[10px] text-slate-400 font-medium">
@@ -967,18 +967,18 @@ export default function CreateProjectPage() {
                       </div>
                     </div>
 
-                    <div className="p-4 bg-amber-50/60 border border-amber-100/50 rounded-2xl flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <div className="p-4 bg-amber-50/60 border border-amber-100/50 rounded-2xl flex items-start gap-3 dark:bg-amber-500/10">
+                      <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0 dark:text-amber-400" />
                       <div className="text-xs">
-                        <p className="font-bold text-amber-800">Final Verification Note</p>
-                        <p className="text-amber-700 mt-0.5 leading-relaxed">Ensure all parameters are set correctly. You can customize transitions, columns, and add team members after this initial creation step.</p>
+                        <p className="font-bold text-amber-800 dark:text-amber-300">Final Verification Note</p>
+                        <p className="text-amber-700 mt-0.5 leading-relaxed dark:text-amber-300">Ensure all parameters are set correctly. You can customize transitions, columns, and add team members after this initial creation step.</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <div className="flex justify-between">
-                  <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium">
+                  <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Back
                   </Button>
                   <Button onClick={handleCreateProject} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-bold px-6">

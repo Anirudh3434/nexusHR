@@ -1,5 +1,12 @@
 import mongoose from 'mongoose';
 
+// NOTE: do NOT enable mongoose.set('sanitizeFilter', true) globally — it
+// wraps every operator ({ $gte, $in, $ne, ... }) in $eq, which breaks all
+// legitimate range/set queries (dashboard stats, expiries, atomic FSM
+// transitions). Injection is instead fixed at each sink: strict typeof /
+// length checks on filter values (qr/verify, login), per-source filter
+// allowlists (reports), and escaped literals for $regex input.
+
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hrm';
 
 if (!MONGODB_URI) {

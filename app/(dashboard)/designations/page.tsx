@@ -10,6 +10,8 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Briefcase, Plus, Pencil, Trash2, Loader2, X } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 export default function DesignationsPage() {
   const { user, hasRole } = useAuth();
@@ -101,21 +103,23 @@ export default function DesignationsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Briefcase className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Briefcase className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Designations
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">Manage job designations linked to departments.</p>
-        </div>
-        {canManage && (
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Designation
-          </Button>
-        )}
-      </div>
+          </span>
+        }
+        description="Manage job designations linked to departments."
+        actions={
+          canManage && (
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Designation
+            </Button>
+          )
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -128,10 +132,11 @@ export default function DesignationsPage() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : designations.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Briefcase className="h-12 w-12 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-              <p>No designations found. Create one to use in employee onboarding.</p>
-            </div>
+            <EmptyState
+              icon={<Briefcase size={18} />}
+              title="No designations found."
+              description="Create one to use in employee onboarding."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -148,7 +153,7 @@ export default function DesignationsPage() {
                     <TableCell className="font-medium">{desig.name}</TableCell>
                     <TableCell>
                       {desig.department ? (
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded dark:bg-blue-500/15 dark:text-blue-300">
                           {desig.department}
                         </span>
                       ) : (
@@ -162,7 +167,7 @@ export default function DesignationsPage() {
                           <Button variant="ghost" size="sm" onClick={() => openEditModal(desig)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(desig._id)} className="text-red-600 hover:text-red-700">
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(desig._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

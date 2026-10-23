@@ -473,7 +473,7 @@ export default function TodayTasksPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
@@ -481,13 +481,13 @@ export default function TodayTasksPage() {
   return (
     <div className="space-y-6 mx-auto pb-12 font-sans">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-700">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm dark:bg-indigo-500/10 dark:text-indigo-400">
             <CheckSquare className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Today Task & EOD Status</h1>
+            <h1 className="text-xl font-extrabold text-slate-800 tracking-tight dark:text-slate-200">Today Task & EOD Status</h1>
             <p className="text-xs text-slate-400 font-medium mt-0.5">
               {isAdminView 
                 ? 'Review submitted employee daily task plans and EOD status updates across the company'
@@ -499,22 +499,22 @@ export default function TodayTasksPage() {
 
         {/* Date Selector & Tab Control */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300">
             <Calendar className="w-4 h-4 text-slate-400" />
             <input 
               type="date" 
               value={date} 
               onChange={(e) => setDate(e.target.value)} 
-              className="bg-transparent border-none focus:outline-none text-xs font-semibold text-slate-800"
+              className="bg-transparent border-none focus:outline-none text-xs font-semibold text-slate-800 dark:text-slate-200"
             />
           </div>
 
           {!isAdminView && companyReports.length > 0 && (
-            <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+            <div className="flex bg-slate-100 p-1 rounded-xl gap-1 dark:bg-slate-800">
               <button
                 onClick={() => setActiveTab('my_tasks')}
                 className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'my_tasks' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  activeTab === 'my_tasks' ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-900 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
                 }`}
               >
                 My Today Task
@@ -522,7 +522,7 @@ export default function TodayTasksPage() {
               <button
                 onClick={() => setActiveTab('team_eod')}
                 className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                  activeTab === 'team_eod' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  activeTab === 'team_eod' ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-900 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -538,13 +538,13 @@ export default function TodayTasksPage() {
           {/* Left Column: Pick Assigned Tickets - Show in edit mode */}
           {isEmployeeEditMode && (
             <div className="lg:col-span-1 space-y-4">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 dark:bg-slate-900 dark:border-slate-700">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <ListOrdered className="w-4 h-4 text-indigo-500" />
-                    <h2 className="font-bold text-sm text-slate-800">Assigned Tickets ({assignedTasks.length})</h2>
+                    <h2 className="font-bold text-sm text-slate-800 dark:text-slate-200">Assigned Tickets ({assignedTasks.length})</h2>
                   </div>
-                  <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Pick for today</span>
+                  <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold dark:bg-indigo-500/10 dark:text-indigo-300">Pick for today</span>
                 </div>
 
                 {assignedTasks.length === 0 ? (
@@ -561,16 +561,16 @@ export default function TodayTasksPage() {
                           key={task._id} 
                           className={`p-3 rounded-xl border text-xs transition-all flex items-center justify-between gap-3 ${
                             isPicked 
-                              ? 'bg-slate-50 border-slate-200 opacity-60' 
-                              : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm'
+                              ? 'bg-slate-50 border-slate-200 opacity-60 dark:bg-slate-800/50 dark:border-slate-700' 
+                              : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm dark:bg-slate-900 dark:border-slate-700'
                           }`}
                         >
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold">{task.taskNumber}</span>
+                              <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold dark:bg-slate-800 dark:text-slate-300">{task.taskNumber}</span>
                               <span className="text-[9px] uppercase font-bold text-slate-400">{task.taskType}</span>
                             </div>
-                            <p className="font-bold text-slate-800 truncate text-[11px]">{task.title}</p>
+                            <p className="font-bold text-slate-800 truncate text-[11px] dark:text-slate-200">{task.title}</p>
                           </div>
                           
                           <button
@@ -578,8 +578,8 @@ export default function TodayTasksPage() {
                             disabled={isPicked}
                             className={`p-1.5 rounded-lg border transition-all shrink-0 ${
                               isPicked 
-                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' 
-                                : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white'
+                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:border-slate-700' 
+                                : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400'
                             }`}
                             title={isPicked ? 'Already added to today task' : 'Add to today plan'}
                           >
@@ -596,26 +596,26 @@ export default function TodayTasksPage() {
 
           {/* Right Column: Tabular Plan & EOD Status Submission */}
           <div className={`${isEmployeeEditMode ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4`}>
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5 dark:bg-slate-900 dark:border-slate-700">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                 <div>
-                  <h2 className="font-bold text-slate-800 text-base flex items-center gap-2">
+                  <h2 className="font-bold text-slate-800 text-base flex items-center gap-2 dark:text-slate-200">
                     Today's Task Plan
                     {reportStatus === 'submitted' && (
                       <>
                         {managerApproval === 'changes_requested' ? (
-                          <span className="flex items-center gap-1 text-[10px] bg-amber-50 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full font-bold uppercase">
-                            <AlertCircle className="w-3 h-3 text-amber-600" />
+                          <span className="flex items-center gap-1 text-[10px] bg-amber-50 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full font-bold uppercase dark:bg-amber-500/10 dark:text-amber-300">
+                            <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                             Changes Requested
                           </span>
                         ) : managerApproval === 'approved' ? (
-                          <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold uppercase">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold uppercase dark:bg-emerald-500/10 dark:text-emerald-300">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                             Approved
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-bold">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-bold dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                             Submitted to Management
                           </span>
                         )}
@@ -633,7 +633,7 @@ export default function TodayTasksPage() {
                       size="sm"
                       onClick={() => handleSubmitReport('save_draft')}
                       disabled={submitting || pickedItems.length === 0}
-                      className="text-xs rounded-xl border-slate-200"
+                      className="text-xs rounded-xl border-slate-200 dark:border-slate-700"
                     >
                       Save Draft
                     </Button>
@@ -666,9 +666,9 @@ export default function TodayTasksPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => reportId && handleRequestEdit(reportId)}
-                        className="text-xs rounded-xl border-amber-200 text-amber-800 hover:bg-amber-50 flex items-center gap-1.5"
+                        className="text-xs rounded-xl border-amber-200 text-amber-800 hover:bg-amber-50 flex items-center gap-1.5 dark:border-amber-500/30 dark:text-amber-300"
                       >
-                        <Clock className="w-3.5 h-3.5 text-amber-600" />
+                        <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                         Request Edit Permission
                       </Button>
                     )}
@@ -677,16 +677,16 @@ export default function TodayTasksPage() {
               </div>
 
               {(managerRemarks || managerApproval === 'changes_requested') && (
-                <div className="bg-amber-50/90 border border-amber-300 p-4 rounded-xl flex items-start gap-3 shadow-sm">
-                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="bg-amber-50/90 border border-amber-300 p-4 rounded-xl flex items-start gap-3 shadow-sm dark:bg-amber-500/10">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-amber-900 text-xs">Manager Remarks / Feedback</h4>
-                      <span className="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full font-bold uppercase">
+                      <span className="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full font-bold uppercase dark:bg-amber-500/15 dark:text-amber-300">
                         {managerApproval === 'changes_requested' ? 'Changes Requested' : 'Manager Comment'}
                       </span>
                     </div>
-                    <p className="text-xs text-amber-800 font-semibold">
+                    <p className="text-xs text-amber-800 font-semibold dark:text-amber-300">
                       {managerRemarks ? `"${managerRemarks}"` : 'Manager requested changes to your task plan. You can edit tickets and estimates on the left and re-submit.'}
                     </p>
                   </div>
@@ -697,27 +697,27 @@ export default function TodayTasksPage() {
                 <>
                   {/* Employee Comment Section */}
                   {companyReports.find(r => r._id === reportId)?.employeeComment && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 dark:bg-blue-500/10 dark:border-blue-500/30">
                       <div className="flex items-center gap-2 mb-2">
-                        <User className="w-4 h-4 text-blue-600" />
-                        <span className="text-xs font-bold text-blue-800">Your Comment:</span>
+                        <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-xs font-bold text-blue-800 dark:text-blue-300">Your Comment:</span>
                       </div>
-                      <p className="text-xs text-blue-700">{companyReports.find(r => r._id === reportId)?.employeeComment}</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">{companyReports.find(r => r._id === reportId)?.employeeComment}</p>
                     </div>
                   )}
 
                   {/* Comments Section */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                    <h3 className="text-xs font-bold text-slate-700">Comments</h3>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 dark:bg-slate-800/50 dark:border-slate-700">
+                    <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Comments</h3>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {companyReports.find(r => r._id === reportId)?.comments.map((comment) => (
-                        <div key={comment.id} className={`p-2 rounded-lg text-xs ${comment.isManager ? 'bg-indigo-50 border border-indigo-200' : 'bg-white border border-slate-200'}`}>
+                        <div key={comment.id} className={`p-2 rounded-lg text-xs ${comment.isManager ? 'bg-indigo-50 border border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/30' : 'bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-700'}`}>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-slate-800">{comment.userName}</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{comment.userName}</span>
                             <span className="text-[10px] text-slate-400">{new Date(comment.createdAt).toLocaleTimeString()}</span>
-                            {comment.isManager && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">Manager</span>}
+                            {comment.isManager && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold dark:bg-indigo-500/15 dark:text-indigo-300">Manager</span>}
                           </div>
-                          <p className="text-slate-600">{comment.content}</p>
+                          <p className="text-slate-600 dark:text-slate-400">{comment.content}</p>
                         </div>
                       ))}
                     </div>
@@ -727,7 +727,7 @@ export default function TodayTasksPage() {
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Add a comment..."
-                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:bg-slate-900 dark:border-slate-700"
                       />
                       <Button
                         size="sm"
@@ -746,7 +746,7 @@ export default function TodayTasksPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => reportId && handleRequestEdit(reportId)}
-                      className="text-xs border-amber-200 text-amber-700 hover:bg-amber-50"
+                      className="text-xs border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-500/30 dark:text-amber-300"
                     >
                       Request Edit Window
                     </Button>
@@ -755,19 +755,19 @@ export default function TodayTasksPage() {
               )}
 
               {pickedItems.length === 0 ? (
-                <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl space-y-3 bg-slate-50/50">
+                <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl space-y-3 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/70">
                   <Sparkles className="w-10 h-10 text-indigo-400 mx-auto animate-pulse" />
                   <div>
-                    <h3 className="font-bold text-slate-700 text-sm">No tasks picked for today yet</h3>
+                    <h3 className="font-bold text-slate-700 text-sm dark:text-slate-300">No tasks picked for today yet</h3>
                     <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
                       Select tickets from your assigned tasks list on the left to build today's plan and set estimates.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                   <table className="w-full text-left text-xs font-medium">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px] dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400">
                       <tr>
                         <th className="px-4 py-3">Ticket ID</th>
                         <th className="px-4 py-3">Title</th>
@@ -778,13 +778,13 @@ export default function TodayTasksPage() {
                         {isEmployeeEditMode && <th className="px-4 py-3 text-right">Action</th>}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white">
+                    <tbody className="divide-y divide-slate-100 bg-white dark:bg-slate-900">
                       {pickedItems.map((item) => (
-                        <tr key={item.taskId} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="px-4 py-3 whitespace-nowrap font-mono font-bold text-slate-700">{item.taskNumber}</td>
-                          <td className="px-4 py-3 font-semibold text-slate-800 max-w-xs truncate">{item.title}</td>
+                        <tr key={item.taskId} className="hover:bg-slate-50/60 transition-colors dark:hover:bg-slate-800/70">
+                          <td className="px-4 py-3 whitespace-nowrap font-mono font-bold text-slate-700 dark:text-slate-300">{item.taskNumber}</td>
+                          <td className="px-4 py-3 font-semibold text-slate-800 max-w-xs truncate dark:text-slate-200">{item.title}</td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                            <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase dark:bg-indigo-500/10 dark:text-indigo-300">
                               {item.currentStatus.replace('_', ' ')}
                             </span>
                           </td>
@@ -795,8 +795,8 @@ export default function TodayTasksPage() {
                               disabled={!isEmployeeEditMode}
                               className={`px-2 py-1 rounded-lg text-xs font-semibold focus:outline-none ${
                                 !isEmployeeEditMode 
-                                  ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed' 
-                                  : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-indigo-400/20 text-slate-800'
+                                  ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400' 
+                                  : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-indigo-400/20 text-slate-800 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-200'
                               }`}
                             >
                               {ESTIMATE_OPTIONS.map(opt => (
@@ -809,10 +809,10 @@ export default function TodayTasksPage() {
                               value={item.eodStatus}
                               onChange={(e) => handleUpdateItem(item.taskId, 'eodStatus', e.target.value as any)}
                               className={`px-2 py-1 border rounded-lg text-xs font-bold focus:outline-none transition-all cursor-pointer ${
-                                item.eodStatus === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                                item.eodStatus === 'blocked' ? 'bg-rose-50 text-rose-700 border-rose-300' :
-                                item.eodStatus === 'in_progress' ? 'bg-amber-50 text-amber-700 border-amber-300' :
-                                'bg-slate-50 text-slate-700 border-slate-300'
+                                item.eodStatus === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-300' :
+                                item.eodStatus === 'blocked' ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/10 dark:text-rose-300' :
+                                item.eodStatus === 'in_progress' ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/10 dark:text-amber-300' :
+                                'bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-600'
                               }`}
                             >
                               <option value="in_progress">In Progress</option>
@@ -827,7 +827,7 @@ export default function TodayTasksPage() {
                               value={item.eodRemarks || ''}
                               onChange={(e) => handleUpdateItem(item.taskId, 'eodRemarks', e.target.value)}
                               placeholder="Add EOD notes..."
-                              className="px-2.5 py-1 w-full bg-white border border-slate-200 focus:border-indigo-400 rounded-lg text-xs focus:outline-none text-slate-700"
+                              className="px-2.5 py-1 w-full bg-white border border-slate-200 focus:border-indigo-400 rounded-lg text-xs focus:outline-none text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
                             />
                           </td>
                           {isEmployeeEditMode && (
@@ -852,9 +852,9 @@ export default function TodayTasksPage() {
         </div>
       ) : (
         /* Team EOD Reports View (for Management / Admin) */
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6 dark:bg-slate-900 dark:border-slate-700">
           <div>
-            <h2 className="font-bold text-slate-800 text-lg">Team EOD Reports ({companyReports.length})</h2>
+            <h2 className="font-bold text-slate-800 text-lg dark:text-slate-200">Team EOD Reports ({companyReports.length})</h2>
             <p className="text-xs text-slate-400 font-medium">Review submitted daily plans, completion estimates, and status updates across the company</p>
           </div>
 
@@ -866,30 +866,30 @@ export default function TodayTasksPage() {
           ) : (
             <div className="space-y-6">
               {companyReports.map((report) => (
-                <div key={report._id} className="border border-slate-200 rounded-2xl p-5 space-y-4 bg-slate-50/40">
-                  <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                <div key={report._id} className="border border-slate-200 rounded-2xl p-5 space-y-4 bg-slate-50/40 dark:border-slate-700 dark:bg-slate-800/70">
+                  <div className="flex items-center justify-between border-b border-slate-200/60 pb-3 dark:border-slate-700">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                         {report.userName ? report.userName.slice(0, 2).toUpperCase() : 'EM'}
                       </div>
                       <div>
-                        <h4 className="font-bold text-slate-800 text-sm">{report.userName}</h4>
+                        <h4 className="font-bold text-slate-800 text-sm dark:text-slate-200">{report.userName}</h4>
                         <p className="text-[10px] text-slate-400">{report.userEmail}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        report.status === 'submitted' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600'
+                        report.status === 'submitted' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                       }`}>
                         {report.status === 'submitted' ? 'Submitted' : 'Draft'}
                       </span>
                       {report.managerApproval && (
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          report.managerApproval === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
-                          report.managerApproval === 'rejected' ? 'bg-red-50 text-red-700 border border-red-200' :
-                          report.managerApproval === 'changes_requested' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
-                          'bg-slate-100 text-slate-600'
+                          report.managerApproval === 'approved' ? 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-300 dark:border-green-500/30' :
+                          report.managerApproval === 'rejected' ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30' :
+                          report.managerApproval === 'changes_requested' ? 'bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/30' :
+                          'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                         }`}>
                           {report.managerApproval === 'approved' ? 'Approved' :
                            report.managerApproval === 'rejected' ? 'Rejected' :
@@ -899,9 +899,9 @@ export default function TodayTasksPage() {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white">
+                  <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white dark:border-slate-700 dark:bg-slate-900">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[9px]">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[9px] dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400">
                         <tr>
                           <th className="px-3.5 py-2.5">Ticket ID</th>
                           <th className="px-3.5 py-2.5">Title</th>
@@ -913,20 +913,20 @@ export default function TodayTasksPage() {
                       <tbody className="divide-y divide-slate-100 font-medium">
                         {report.items.map((item, idx) => (
                           <tr key={idx}>
-                            <td className="px-3.5 py-2.5 font-mono font-bold text-slate-700">{item.taskNumber}</td>
-                            <td className="px-3.5 py-2.5 text-slate-800 font-semibold">{item.title}</td>
-                            <td className="px-3.5 py-2.5 text-indigo-600 font-bold">{item.estimateTime}</td>
+                            <td className="px-3.5 py-2.5 font-mono font-bold text-slate-700 dark:text-slate-300">{item.taskNumber}</td>
+                            <td className="px-3.5 py-2.5 text-slate-800 font-semibold dark:text-slate-200">{item.title}</td>
+                            <td className="px-3.5 py-2.5 text-indigo-600 font-bold dark:text-indigo-400">{item.estimateTime}</td>
                             <td className="px-3.5 py-2.5">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                item.eodStatus === 'completed' ? 'bg-emerald-100 text-emerald-800' :
-                                item.eodStatus === 'blocked' ? 'bg-rose-100 text-rose-800' :
-                                item.eodStatus === 'in_progress' ? 'bg-amber-100 text-amber-800' :
-                                'bg-slate-100 text-slate-700'
+                                item.eodStatus === 'completed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                                item.eodStatus === 'blocked' ? 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300' :
+                                item.eodStatus === 'in_progress' ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300' :
+                                'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                               }`}>
                                 {item.eodStatus.replace('_', ' ')}
                               </span>
                             </td>
-                            <td className="px-3.5 py-2.5 text-slate-500 italic">{item.eodRemarks || '-'}</td>
+                            <td className="px-3.5 py-2.5 text-slate-500 italic dark:text-slate-400">{item.eodRemarks || '-'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -935,28 +935,28 @@ export default function TodayTasksPage() {
 
                   {/* Employee Comment */}
                   {report.employeeComment && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 dark:bg-blue-500/10 dark:border-blue-500/30">
                       <div className="flex items-center gap-2 mb-1">
-                        <User className="w-3.5 h-3.5 text-blue-600" />
-                        <span className="text-[10px] font-bold text-blue-800">Employee Comment:</span>
+                        <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        <span className="text-[10px] font-bold text-blue-800 dark:text-blue-300">Employee Comment:</span>
                       </div>
-                      <p className="text-[10px] text-blue-700">{report.employeeComment}</p>
+                      <p className="text-[10px] text-blue-700 dark:text-blue-300">{report.employeeComment}</p>
                     </div>
                   )}
 
                   {/* Comments Section */}
                   {report.comments && report.comments.length > 0 && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
-                      <h4 className="text-[10px] font-bold text-slate-700">Comments</h4>
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 dark:bg-slate-800/50 dark:border-slate-700">
+                      <h4 className="text-[10px] font-bold text-slate-700 dark:text-slate-300">Comments</h4>
                       <div className="space-y-1.5 max-h-32 overflow-y-auto">
                         {report.comments.map((comment) => (
-                          <div key={comment.id} className={`p-1.5 rounded-lg text-[10px] ${comment.isManager ? 'bg-indigo-50 border border-indigo-200' : 'bg-white border border-slate-200'}`}>
+                          <div key={comment.id} className={`p-1.5 rounded-lg text-[10px] ${comment.isManager ? 'bg-indigo-50 border border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/30' : 'bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-700'}`}>
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className="font-bold text-slate-800">{comment.userName}</span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{comment.userName}</span>
                               <span className="text-[9px] text-slate-400">{new Date(comment.createdAt).toLocaleTimeString()}</span>
-                              {comment.isManager && <span className="text-[8px] bg-indigo-100 text-indigo-700 px-1 py-0.5 rounded font-bold">Manager</span>}
+                              {comment.isManager && <span className="text-[8px] bg-indigo-100 text-indigo-700 px-1 py-0.5 rounded font-bold dark:bg-indigo-500/15 dark:text-indigo-300">Manager</span>}
                             </div>
-                            <p className="text-slate-600">{comment.content}</p>
+                            <p className="text-slate-600 dark:text-slate-400">{comment.content}</p>
                           </div>
                         ))}
                       </div>
@@ -965,23 +965,23 @@ export default function TodayTasksPage() {
 
                   {/* Manager Actions */}
                   {isAdminView && report.status === 'submitted' && (
-                    <div className="mt-4 pt-4 border-t border-slate-200/60">
+                    <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700">
                       {report.managerApproval === 'approved' || report.managerApproval === 'rejected' ? (
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-200/80 rounded-xl dark:bg-slate-800/50 dark:border-slate-700">
                           <div className="flex items-center gap-2">
                             {report.managerApproval === 'approved' ? (
                               <>
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                <span className="text-xs font-bold text-slate-800">Report Approved by Manager</span>
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 dark:text-emerald-400" />
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Report Approved by Manager</span>
                               </>
                             ) : (
                               <>
-                                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                                <span className="text-xs font-bold text-slate-800">Report Rejected by Manager</span>
+                                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 dark:text-rose-400" />
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Report Rejected by Manager</span>
                               </>
                             )}
                             {report.managerRemarks && (
-                              <span className="text-xs text-slate-500 font-medium ml-2">
+                              <span className="text-xs text-slate-500 font-medium ml-2 dark:text-slate-400">
                                 — "{report.managerRemarks}"
                               </span>
                             )}
@@ -993,7 +993,7 @@ export default function TodayTasksPage() {
                               const remarks = prompt('Enter reason to request changes / re-open plan:');
                               if (remarks !== null) handleManagerApproval(report._id || '', 'changes_requested', remarks);
                             }}
-                            className="text-[11px] font-bold text-amber-700 hover:text-amber-900 underline shrink-0 transition-colors"
+                            className="text-[11px] font-bold text-amber-700 hover:text-amber-900 underline shrink-0 transition-colors dark:text-amber-300"
                           >
                             Re-open / Request Changes
                           </button>
@@ -1001,7 +1001,7 @@ export default function TodayTasksPage() {
                       ) : (
                         <div>
                           <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xs font-bold text-slate-700">Manager Actions:</span>
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Manager Actions:</span>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             <Button
@@ -1019,7 +1019,7 @@ export default function TodayTasksPage() {
                                 const remarks = prompt('Enter rejection reason:');
                                 if (remarks) handleManagerApproval(report._id || '', 'rejected', remarks);
                               }}
-                              className="border-red-200 text-red-600 hover:bg-red-50 text-xs rounded-lg"
+                              className="border-red-200 text-red-600 hover:bg-red-50 text-xs rounded-lg dark:border-red-500/30 dark:text-red-400"
                             >
                               <AlertCircle className="w-3 h-3 mr-1" />
                               Reject
@@ -1031,7 +1031,7 @@ export default function TodayTasksPage() {
                                 const remarks = prompt('Enter requested changes:');
                                 if (remarks) handleManagerApproval(report._id || '', 'changes_requested', remarks);
                               }}
-                              className="border-orange-200 text-orange-600 hover:bg-orange-50 text-xs rounded-lg"
+                              className="border-orange-200 text-orange-600 hover:bg-orange-50 text-xs rounded-lg dark:border-orange-500/30 dark:text-orange-400"
                             >
                               Request Changes
                             </Button>
@@ -1040,7 +1040,7 @@ export default function TodayTasksPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleOpenAddTaskModal(report)}
-                                className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs rounded-lg"
+                                className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs rounded-lg dark:border-indigo-500/30 dark:text-indigo-400"
                               >
                                 <Plus className="w-3 h-3 mr-1" />
                                 Add Task
@@ -1048,7 +1048,7 @@ export default function TodayTasksPage() {
                             )}
                           </div>
                           {report.managerRemarks && (
-                            <div className="mt-3 p-2 bg-slate-50 rounded-lg text-xs text-slate-600">
+                            <div className="mt-3 p-2 bg-slate-50 rounded-lg text-xs text-slate-600 dark:bg-slate-800/50 dark:text-slate-400">
                               <span className="font-bold">Manager Remarks:</span> {report.managerRemarks}
                             </div>
                           )}
@@ -1066,20 +1066,20 @@ export default function TodayTasksPage() {
       {/* Comment Modal for < 8 hours */}
       {showCommentModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl dark:bg-slate-900">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-amber-500" />
-              <h3 className="text-lg font-bold text-slate-800">Work Time Less Than 8 Hours</h3>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Work Time Less Than 8 Hours</h3>
             </div>
-            <p className="text-sm text-slate-600 mb-4">
-              Your total estimated work time is <span className="font-bold text-amber-600">{totalHours.toFixed(1)} hours</span>. 
+            <p className="text-sm text-slate-600 mb-4 dark:text-slate-400">
+              Your total estimated work time is <span className="font-bold text-amber-600 dark:text-amber-400">{totalHours.toFixed(1)} hours</span>. 
               Please add a comment explaining this to your manager before submitting.
             </p>
             <textarea
               value={employeeComment}
               onChange={(e) => setEmployeeComment(e.target.value)}
               placeholder="Explain why your work time is less than 8 hours..."
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/20 resize-none"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/20 resize-none dark:border-slate-700"
               rows={4}
             />
             <div className="flex gap-3 mt-4">
@@ -1109,13 +1109,13 @@ export default function TodayTasksPage() {
       {/* Manager Add Task Modal */}
       {showAddTaskModal && selectedReportForTask && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[80vh] flex flex-col">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[80vh] flex flex-col dark:bg-slate-900">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Plus className="w-6 h-6 text-indigo-500" />
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Add Task to Employee's Plan</h3>
-                  <p className="text-xs text-slate-500">{selectedReportForTask.userName}</p>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Add Task to Employee's Plan</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{selectedReportForTask.userName}</p>
                 </div>
               </div>
               <button
@@ -1144,16 +1144,16 @@ export default function TodayTasksPage() {
                       key={task._id} 
                       className={`p-3 rounded-xl border text-xs transition-all flex items-center justify-between gap-3 ${
                         isAlreadyAdded 
-                          ? 'bg-slate-50 border-slate-200 opacity-60' 
-                          : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm'
+                          ? 'bg-slate-50 border-slate-200 opacity-60 dark:bg-slate-800/50 dark:border-slate-700' 
+                          : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm dark:bg-slate-900 dark:border-slate-700'
                       }`}
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold">{task.taskNumber}</span>
+                          <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold dark:bg-slate-800 dark:text-slate-300">{task.taskNumber}</span>
                           <span className="text-[9px] uppercase font-bold text-slate-400">{task.taskType}</span>
                         </div>
-                        <p className="font-bold text-slate-800 truncate text-[11px]">{task.title}</p>
+                        <p className="font-bold text-slate-800 truncate text-[11px] dark:text-slate-200">{task.title}</p>
                       </div>
                       
                       <button
@@ -1161,8 +1161,8 @@ export default function TodayTasksPage() {
                         disabled={isAlreadyAdded}
                         className={`p-1.5 rounded-lg border transition-all shrink-0 ${
                           isAlreadyAdded 
-                            ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' 
-                            : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white'
+                            ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:border-slate-700' 
+                            : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400'
                         }`}
                         title={isAlreadyAdded ? 'Already added' : 'Add to plan'}
                       >
@@ -1174,7 +1174,7 @@ export default function TodayTasksPage() {
               </div>
             )}
 
-            <div className="mt-4 pt-4 border-t border-slate-200">
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
               <Button
                 variant="outline"
                 onClick={() => {

@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   KanbanSquare, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
@@ -74,36 +76,36 @@ const taskTypeLabels: Record<string, string> = {
 
 const taskTypeColors: Record<string, string> = {
   task: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-  story: 'bg-blue-100 text-blue-700',
-  bug: 'bg-red-100 text-red-700',
-  epic: 'bg-purple-100 text-purple-700',
-  subtask: 'bg-green-100 text-green-700',
-  improvement: 'bg-orange-100 text-orange-700',
+  story: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  bug: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
+  epic: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+  subtask: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  improvement: 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
 };
 
 const statusColors: Record<string, string> = {
   backlog: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-  to_do: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  in_review: 'bg-purple-100 text-purple-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  to_do: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
+  in_review: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+  completed: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 const priorityColors: Record<string, string> = {
   low: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-  medium: 'bg-blue-100 text-blue-700',
-  high: 'bg-orange-100 text-orange-700',
-  critical: 'bg-red-100 text-red-700',
+  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  high: 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+  critical: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 const statusThemes: Record<string, { dot: string; headerText: string; lightBg: string; border: string }> = {
   backlog: { dot: 'bg-slate-400', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-slate-50 dark:bg-slate-800/50', border: 'border-slate-200 dark:border-slate-700/50' },
-  to_do: { dot: 'bg-blue-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-blue-50/40', border: 'border-blue-200/40' },
-  in_progress: { dot: 'bg-amber-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-amber-50/40', border: 'border-amber-200/40' },
-  in_review: { dot: 'bg-purple-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-purple-50/40', border: 'border-purple-200/40' },
-  completed: { dot: 'bg-emerald-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-emerald-50/40', border: 'border-emerald-200/40' },
-  cancelled: { dot: 'bg-rose-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-rose-50/40', border: 'border-rose-200/40' },
+  to_do: { dot: 'bg-blue-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-blue-50/40 dark:bg-blue-500/10', border: 'border-blue-200/40 dark:border-blue-500/30' },
+  in_progress: { dot: 'bg-amber-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-amber-50/40 dark:bg-amber-500/10', border: 'border-amber-200/40 dark:border-amber-500/30' },
+  in_review: { dot: 'bg-purple-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-purple-50/40 dark:bg-purple-500/10', border: 'border-purple-200/40 dark:border-purple-500/30' },
+  completed: { dot: 'bg-emerald-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-emerald-50/40 dark:bg-emerald-500/10', border: 'border-emerald-200/40 dark:border-emerald-500/30' },
+  cancelled: { dot: 'bg-rose-500', headerText: 'text-slate-800 dark:text-slate-200', lightBg: 'bg-rose-50/40 dark:bg-rose-500/10', border: 'border-rose-200/40 dark:border-rose-500/30' },
 };
 
 export default function TasksManagementPage() {
@@ -665,51 +667,51 @@ export default function TasksManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage project tasks</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center border rounded-lg">
+      <PageHeader
+        title="Tasks"
+        description="Manage project tasks"
+        actions={
+          <>
+            <div className="flex items-center border rounded-lg">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-r-none"
+              >
+                List
+              </Button>
+              <Button
+                variant={viewMode === 'board' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('board')}
+                className="rounded-l-none"
+              >
+                <KanbanSquare className="w-4 h-4 mr-2" />
+                Board
+              </Button>
+            </div>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="rounded-r-none"
-            >
-              List
-            </Button>
-            <Button
-              variant={viewMode === 'board' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('board')}
-              className="rounded-l-none"
+              variant="outline"
+              onClick={() => setShowBacklogModal(true)}
             >
               <KanbanSquare className="w-4 h-4 mr-2" />
-              Board
+              Backlog
             </Button>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowBacklogModal(true)}
-          >
-            <KanbanSquare className="w-4 h-4 mr-2" />
-            Backlog
-          </Button>
-          <Button onClick={() => handleOpenCreateModal()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Task
-          </Button>
-        </div>
-      </div>
+            <Button onClick={() => handleOpenCreateModal()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Task
+            </Button>
+          </>
+        }
+      />
 
       {/* Filters */}
       <Card>
@@ -754,9 +756,7 @@ export default function TasksManagementPage() {
         <div className="space-y-4">
           {filteredTasks.length === 0 ? (
             <Card>
-              <CardContent className="pt-6 text-center text-gray-500 dark:text-gray-400">
-                No tasks found
-              </CardContent>
+              <EmptyState title="No tasks found" icon={<KanbanSquare size={18} />} />
             </Card>
           ) : (
             filteredTasks.map((task) => (
@@ -792,8 +792,8 @@ export default function TasksManagementPage() {
                           className="flex items-center gap-2 hover:bg-blue-50 rounded-lg px-2 py-1 transition-colors cursor-pointer"
                           title="Click to mention in comment"
                         >
-                          <User className="w-4 h-4 text-blue-600" />
-                          <span className="text-blue-600 font-medium">Assigned: {task.assignedTo.name}</span>
+                          <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-blue-600 font-medium dark:text-blue-400">Assigned: {task.assignedTo.name}</span>
                         </button>
                       )}
                       <div className="flex items-center gap-2">
@@ -814,7 +814,7 @@ export default function TasksManagementPage() {
                         <span className="text-gray-600 dark:text-gray-400">Progress</span>
                         <span className="font-medium">{task.progressPercentage}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className="bg-blue-500 h-2 rounded-full transition-all"
                           style={{ width: `${task.progressPercentage}%` }}
@@ -873,14 +873,14 @@ export default function TasksManagementPage() {
                 onDrop={(e) => handleDrop(e, status)}
                 className={`flex-shrink-0 w-80 rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
                   dragOverColumn === status 
-                    ? 'border-indigo-500 bg-indigo-50/30 shadow-[inset_0_2px_8px_rgba(99,102,241,0.05)]' 
+                    ? 'border-indigo-500 bg-indigo-50/30 shadow-[inset_0_2px_8px_rgba(99,102,241,0.05)] dark:bg-indigo-500/10' 
                     : isOverWip
-                      ? 'border-rose-200 bg-rose-50/20'
+                      ? 'border-rose-200 bg-rose-50/20 dark:border-rose-500/30 dark:bg-rose-500/10'
                       : 'border-slate-200 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40'
                 }`}
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className={`w-2.5 h-2.5 rounded-full ${theme.dot} shrink-0`} />
                     <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">{label}</h3>
@@ -898,7 +898,7 @@ export default function TasksManagementPage() {
                         variant={taskCount >= wipLimit ? "destructive" : "outline"}
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           taskCount >= wipLimit 
-                            ? 'bg-rose-50 border-rose-200 text-rose-700 animate-pulse' 
+                            ? 'bg-rose-50 border-rose-200 text-rose-700 animate-pulse dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-300' 
                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-500'
                         }`}
                       >
@@ -917,9 +917,9 @@ export default function TasksManagementPage() {
                   {taskCount === 0 ? (
                     <button
                       onClick={() => handleOpenCreateModal(status)}
-                      className="w-full border border-dashed border-slate-250/80 rounded-xl p-8 text-center bg-white dark:bg-slate-900/40 flex flex-col items-center justify-center space-y-2 hover:bg-white dark:bg-slate-900 hover:border-slate-350 transition-all duration-200 group"
+                      className="w-full border border-dashed border-slate-250/80 rounded-xl p-8 text-center bg-white dark:bg-slate-900/40 flex flex-col items-center justify-center space-y-2 hover:bg-white dark:bg-slate-900 hover:border-slate-350 transition-all duration-200 group dark:hover:bg-slate-800"
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-300`}>
                         <Plus className="w-4 h-4 text-slate-550" />
                       </div>
                       <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 group-hover:text-indigo-650 transition-colors">Create task</p>
@@ -936,7 +936,7 @@ export default function TasksManagementPage() {
                           <CardContent className="p-3.5 space-y-3">
                             <div className="flex justify-between items-start gap-2">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-100 shrink-0">
+                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-100 shrink-0 dark:border-slate-800">
                                   {task.taskNumber}
                                 </span>
                                 <span className="text-[10px] font-semibold text-indigo-650 truncate">
@@ -976,13 +976,13 @@ export default function TasksManagementPage() {
                                   <span>Progress</span>
                                   <span>{task.progressPercentage || 0}%</span>
                                 </div>
-                                <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
+                                <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden dark:bg-slate-800">
                                   <div className="h-1 bg-indigo-600 rounded-full" style={{ width: `${task.progressPercentage || 0}%` }} />
                                 </div>
                               </div>
                             )}
 
-                            <div className="border-t border-slate-100 pt-3 flex items-center justify-between gap-2">
+                            <div className="border-t border-slate-100 pt-3 flex items-center justify-between gap-2 dark:border-slate-800">
                               <div className="flex items-center gap-2">
                                 <Badge className={`${priorityColors[task.priority]} text-[9px] font-semibold px-2 py-0.5 rounded-full`} variant="outline">
                                   {priorityLabels[task.priority]}
@@ -1001,7 +1001,7 @@ export default function TasksManagementPage() {
                                     e.stopPropagation();
                                     handleOpenEditModal(task);
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 rounded"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 rounded dark:hover:bg-slate-700"
                                 >
                                   <Edit className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                                 </button>
@@ -1011,11 +1011,11 @@ export default function TasksManagementPage() {
                                       const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                                       const initials = getInitials(task.assignedTo.name);
                                       const colors = [
-                                        'bg-indigo-50 text-indigo-700 border-indigo-150',
-                                        'bg-emerald-50 text-emerald-700 border-emerald-150',
+                                        'bg-indigo-50 text-indigo-700 border-indigo-150 dark:bg-indigo-500/10 dark:text-indigo-300',
+                                        'bg-emerald-50 text-emerald-700 border-emerald-150 dark:bg-emerald-500/10 dark:text-emerald-300',
                                         'bg-sky-50 text-sky-700 border-sky-150',
-                                        'bg-amber-50 text-amber-700 border-amber-150',
-                                        'bg-rose-50 text-rose-700 border-rose-150'
+                                        'bg-amber-50 text-amber-700 border-amber-150 dark:bg-amber-500/10 dark:text-amber-300',
+                                        'bg-rose-50 text-rose-700 border-rose-150 dark:bg-rose-500/10 dark:text-rose-300'
                                       ];
                                       let hash = 0;
                                       for (let i = 0; i < task.assignedTo.name.length; i++) {
@@ -1044,7 +1044,7 @@ export default function TasksManagementPage() {
                       ))}
                       <button
                         onClick={() => handleOpenCreateModal(status)}
-                        className="w-full border border-dashed border-slate-200 dark:border-slate-700/80 hover:border-indigo-400 hover:bg-indigo-50/10 rounded-xl py-2 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-indigo-650 transition-all bg-white dark:bg-slate-900/40 mt-1"
+                        className="w-full border border-dashed border-slate-200 dark:border-slate-700/80 hover:border-indigo-400 hover:bg-indigo-50/10 rounded-xl py-2 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-indigo-650 transition-all bg-white dark:bg-slate-900/40 mt-1 dark:hover:bg-indigo-500/10"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add task</span>
@@ -1061,7 +1061,7 @@ export default function TasksManagementPage() {
       {/* Create Task Modal - Comprehensive Jira Style */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200 dark:border-slate-800">
             {/* Header */}
             <div className="p-4 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <div>
@@ -1070,7 +1070,7 @@ export default function TasksManagementPage() {
               </div>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1324,11 +1324,11 @@ export default function TasksManagementPage() {
       {/* Edit Task Modal - Comprehensive Jira Style */}
       {showEditModal && selectedTask && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200 dark:border-slate-800">
             {/* Header */}
             <div className="p-4 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-500 bg-slate-100 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg">
+                <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-500 bg-slate-100 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg dark:bg-slate-800">
                   {selectedTask.taskNumber}
                 </span>
                 <select
@@ -1346,7 +1346,7 @@ export default function TasksManagementPage() {
               </div>
               <button 
                 onClick={() => setShowEditModal(false)}
-                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1381,7 +1381,7 @@ export default function TasksManagementPage() {
                 </div>
 
                 {/* Subtasks */}
-                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/20">
+                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/20 dark:border-slate-800">
                   <div className="flex justify-between items-center mb-3">
                     <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                       <CornerDownRight className="w-4 h-4 text-indigo-500" />
@@ -1390,7 +1390,7 @@ export default function TasksManagementPage() {
                     <button
                       type="button"
                       onClick={() => setShowAddSubtaskForm(!showAddSubtaskForm)}
-                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors dark:text-indigo-400"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add subtask
@@ -1398,7 +1398,7 @@ export default function TasksManagementPage() {
                   </div>
 
                   {showAddSubtaskForm && (
-                    <form onSubmit={handleCreateSubtask} className="mb-4 p-3.5 border border-indigo-100 rounded-xl bg-indigo-50/30 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                    <form onSubmit={handleCreateSubtask} className="mb-4 p-3.5 border border-indigo-100 rounded-xl bg-indigo-50/30 space-y-3 animate-in slide-in-from-top-2 duration-200 dark:bg-indigo-500/10">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input
                           type="text"
@@ -1452,7 +1452,7 @@ export default function TasksManagementPage() {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                              sub.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
+                              sub.status === 'completed' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                             }`}>
                               {sub.status.replace('_', ' ')}
                             </span>
@@ -1469,14 +1469,14 @@ export default function TasksManagementPage() {
                 </div>
 
                 {/* Linked Work Items */}
-                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/20">
+                <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/20 dark:border-slate-800">
                   <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-3">
                     <Link2 className="w-4 h-4 text-indigo-500" />
                     Linked Issues
                   </h4>
 
                   {/* Add Link Form */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-100 rounded-xl">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-100 rounded-xl dark:border-slate-800">
                     <select
                       value={linkType}
                       onChange={(e) => setLinkType(e.target.value as any)}
@@ -1513,13 +1513,13 @@ export default function TasksManagementPage() {
                       <div className="space-y-1.5">
                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">is blocked by</p>
                         {selectedTask.dependsOn.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white dark:bg-slate-900">
+                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white dark:bg-slate-900 dark:border-slate-800">
                             <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
-                              <span className="font-mono font-bold text-indigo-600 mr-2">{item.taskNumber}</span>
+                              <span className="font-mono font-bold text-indigo-600 mr-2 dark:text-indigo-400">{item.taskNumber}</span>
                               {item.title}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600 dark:text-slate-500">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600 dark:text-slate-500 dark:bg-slate-800">
                                 {item.status.replace('_', ' ')}
                               </span>
                               <button
@@ -1540,13 +1540,13 @@ export default function TasksManagementPage() {
                       <div className="space-y-1.5 mt-3">
                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">blocks</p>
                         {selectedTask.blocks.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white dark:bg-slate-900">
+                          <div key={idx} className="flex justify-between items-center p-2 border border-slate-100 rounded-lg bg-white dark:bg-slate-900 dark:border-slate-800">
                             <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
-                              <span className="font-mono font-bold text-indigo-600 mr-2">{item.taskNumber}</span>
+                              <span className="font-mono font-bold text-indigo-600 mr-2 dark:text-indigo-400">{item.taskNumber}</span>
                               {item.title}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600 dark:text-slate-500">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-slate-100 text-slate-600 dark:text-slate-500 dark:bg-slate-800">
                                 {item.status.replace('_', ' ')}
                               </span>
                               <button
@@ -1580,7 +1580,7 @@ export default function TasksManagementPage() {
                           onClick={() => setActivityTab(tab as any)}
                           className={`pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${
                             activityTab === tab
-                              ? 'border-indigo-600 text-indigo-600'
+                              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                               : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500'
                           }`}
                         >
@@ -1597,7 +1597,7 @@ export default function TasksManagementPage() {
                         {selectedTask.comments && selectedTask.comments.length > 0 ? (
                           selectedTask.comments.map((comment: any, idx: number) => (
                             <div key={idx} className="flex gap-3 bg-slate-50 dark:bg-slate-800/30 border border-slate-100/50 p-3 rounded-2xl">
-                              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0">
+                              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0 dark:bg-indigo-500/10 dark:text-indigo-400">
                                 {comment.userName.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-1">
@@ -1634,7 +1634,7 @@ export default function TasksManagementPage() {
                               key={quickText}
                               type="button"
                               onClick={() => setNewComment(quickText)}
-                              className="text-[10px] font-semibold px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border hover:bg-slate-100 text-slate-600 dark:text-slate-500 rounded-lg transition-colors"
+                              className="text-[10px] font-semibold px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border hover:bg-slate-100 text-slate-600 dark:text-slate-500 rounded-lg transition-colors dark:hover:bg-slate-700"
                             >
                               {quickText}
                             </button>
@@ -1643,7 +1643,7 @@ export default function TasksManagementPage() {
                         <div className="relative">
                           {showMentionList && (
                             <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1.5 text-xs z-50">
-                              <div className="p-1 pb-1.5 mb-1 border-b border-slate-100 flex items-center gap-1.5">
+                              <div className="p-1 pb-1.5 mb-1 border-b border-slate-100 flex items-center gap-1.5 dark:border-slate-800">
                                 <Search className="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" />
                                 <input
                                   type="text"
@@ -1660,7 +1660,7 @@ export default function TasksManagementPage() {
                                       key={m._id}
                                       type="button"
                                       onClick={() => handleSelectMention(m.name)}
-                                      className="w-full text-left px-2.5 py-1.5 hover:bg-indigo-50/80 rounded-lg flex items-center justify-between transition-colors"
+                                      className="w-full text-left px-2.5 py-1.5 hover:bg-indigo-50/80 rounded-lg flex items-center justify-between transition-colors dark:hover:bg-indigo-500/10"
                                     >
                                       <span className="font-semibold text-slate-800 dark:text-slate-200">@{m.name}</span>
                                       {m.email && <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{m.email}</span>}
@@ -1852,7 +1852,7 @@ export default function TasksManagementPage() {
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Reporter</label>
                     <div className="flex items-center gap-2 py-1">
-                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 dark:text-slate-500 text-[10px] font-bold">
+                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 dark:text-slate-500 text-[10px] font-bold dark:bg-slate-700">
                         {selectedTask.createdBy?.name?.charAt(0).toUpperCase() || 'R'}
                       </div>
                       <span className="font-bold text-slate-700 dark:text-slate-300">{selectedTask.createdBy?.name || 'Unknown'}</span>
@@ -1940,7 +1940,7 @@ export default function TasksManagementPage() {
                     <div className="space-y-2">
                       {selectedTask.dependsOn.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-slate-950 p-3 rounded-lg">
-                          <span className="text-xs font-mono text-blue-600">{item.taskNumber}</span>
+                          <span className="text-xs font-mono text-blue-600 dark:text-blue-400">{item.taskNumber}</span>
                           <span className="text-sm text-gray-700 dark:text-gray-300">{item.title}</span>
                           <Badge className={statusColors[item.status]} variant="outline">{statusLabels[item.status]}</Badge>
                         </div>
@@ -1963,7 +1963,7 @@ export default function TasksManagementPage() {
                           onClick={() => setActivityTab(tab as any)}
                           className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                             activityTab === tab
-                              ? 'border-blue-500 text-blue-600'
+                              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                               : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300'
                           }`}
                         >
@@ -1978,7 +1978,7 @@ export default function TasksManagementPage() {
                     {selectedTask.comments && selectedTask.comments.length > 0 ? (
                       selectedTask.comments.map((comment, idx) => (
                         <div key={idx} className="flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm dark:bg-blue-500/15 dark:text-blue-400">
                             {comment.userName.charAt(0)}
                           </div>
                           <div className="flex-1">
@@ -2038,15 +2038,15 @@ export default function TasksManagementPage() {
                         className="flex items-center gap-2 mt-1 hover:bg-blue-50 rounded-lg px-2 py-1 transition-colors cursor-pointer"
                         title="Click to mention in comment"
                       >
-                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-semibold">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-semibold dark:bg-blue-500/15 dark:text-blue-400">
                           {selectedTask.assignedTo.name.charAt(0)}
                         </div>
-                        <span className="text-sm text-blue-600 font-medium">{selectedTask.assignedTo.name}</span>
+                        <span className="text-sm text-blue-600 font-medium dark:text-blue-400">{selectedTask.assignedTo.name}</span>
                       </button>
                     ) : (
                       <div className="mt-1">
                         <span className="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
-                        <button className="text-xs text-blue-600 hover:underline ml-2">Assign to me</button>
+                        <button className="text-xs text-blue-600 hover:underline ml-2 dark:text-blue-400">Assign to me</button>
                       </div>
                     )}
                   </div>
@@ -2097,7 +2097,7 @@ export default function TasksManagementPage() {
                   <div>
                     <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reporter</label>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-semibold">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-semibold dark:bg-green-500/15 dark:text-green-400">
                         {selectedTask.createdBy?.name?.charAt(0).toUpperCase() || 'R'}
                       </div>
                       <span className="text-sm">{selectedTask.createdBy?.name || 'Unknown'}</span>
@@ -2122,7 +2122,7 @@ export default function TasksManagementPage() {
                   <div>
                     <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Progress</label>
                     <div className="mt-1">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className="bg-blue-500 h-2 rounded-full"
                           style={{ width: `${selectedTask.progressPercentage}%` }}
@@ -2173,7 +2173,7 @@ export default function TasksManagementPage() {
               </div>
               <button 
                 onClick={() => setShowBacklogModal(false)}
-                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-all w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 dark:border-slate-700"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-500 transition-all w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 dark:border-slate-700 dark:hover:bg-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2215,21 +2215,21 @@ export default function TasksManagementPage() {
                   task.title.toLowerCase().includes(backlogSearchQuery.toLowerCase()) ||
                   task.taskNumber.toLowerCase().includes(backlogSearchQuery.toLowerCase())
                 ).length === 0 ? (
-                  <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                      <KanbanSquare className="w-10 h-10 text-slate-400 dark:text-slate-500" />
-                    </div>
-                    <p className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No tasks in backlog</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-500 mb-4">Click "Add to Backlog" to create your first task</p>
-                    <Button 
-                      onClick={() => handleOpenCreateModal('backlog')}
-                      variant="outline"
-                      className="rounded-xl"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create First Task
-                    </Button>
-                  </div>
+                  <EmptyState
+                    title="No tasks in backlog"
+                    description='Click "Add to Backlog" to create your first task'
+                    icon={<KanbanSquare size={18} />}
+                    action={
+                      <Button
+                        onClick={() => handleOpenCreateModal('backlog')}
+                        variant="outline"
+                        className="rounded-xl"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create First Task
+                      </Button>
+                    }
+                  />
                 ) : (
                   backlogTasks.filter(task => 
                     task.title.toLowerCase().includes(backlogSearchQuery.toLowerCase()) ||
@@ -2244,7 +2244,7 @@ export default function TasksManagementPage() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
-                              <span className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg font-medium">
+                              <span className="text-xs font-mono text-slate-500 dark:text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg font-medium dark:bg-slate-800">
                                 {task.taskNumber}
                               </span>
                               {task.taskType && (
@@ -2271,8 +2271,8 @@ export default function TasksManagementPage() {
                                     className="flex items-center gap-2 hover:bg-blue-50 rounded-lg px-2 py-1 transition-colors cursor-pointer"
                                     title="Click to mention in comment"
                                   >
-                                    <User className="w-4 h-4 text-blue-600" />
-                                    <span className="font-medium text-blue-600">{task.assignedTo.name}</span>
+                                    <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    <span className="font-medium text-blue-600 dark:text-blue-400">{task.assignedTo.name}</span>
                                   </button>
                               )}
                               {task.estimatedHours && (

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAuthInfo } from '@/lib/auth-util';
+import { signState } from '@/lib/oauth-state';
 
 // Microsoft OAuth configuration
 const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || '';
@@ -14,18 +16,20 @@ const SCOPES = [
 // GET - Start Microsoft OAuth flow
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
-
-    if (!companyId) {
-      return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
+    // Require auth; companyId comes from the verified SESSION only (query ignored).
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const companyId = auth.companyId;
 
     if (!MICROSOFT_CLIENT_ID) {
-      return NextResponse.json({ 
-        message: 'Microsoft OAuth not configured. Please set MICROSOFT_CLIENT_ID environment variable.' 
+      return NextResponse.json({
+        message: 'Microsoft OAuth not configured. Please set MICROSOFT_CLIENT_ID environment variable.'
       }, { status: 500 });
     }
+
+    const state = signState({ companyId, userId: auth.userId });
 
     // Build OAuth URL
     const params = new URLSearchParams({
@@ -34,7 +38,7 @@ export async function GET(req: Request) {
       response_type: 'code',
       scope: SCOPES.join(' '),
       response_mode: 'query',
-      state: companyId,
+      state,
     });
 
     const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;

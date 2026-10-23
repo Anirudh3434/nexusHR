@@ -62,6 +62,7 @@ export async function PATCH(
     const userId = headersList.get('x-user-id');
     const userName = headersList.get('x-user-name') || '';
     const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
 
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -73,6 +74,10 @@ export async function PATCH(
     const record = await Onboarding.findById(id);
     if (!record) {
       return NextResponse.json({ message: 'Onboarding record not found' }, { status: 404 });
+    }
+
+    if (record.companyId.toString() !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: Access to another company\'s record is not allowed' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -127,6 +132,7 @@ export async function DELETE(
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
 
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -138,6 +144,10 @@ export async function DELETE(
     const record = await Onboarding.findById(id);
     if (!record) {
       return NextResponse.json({ message: 'Onboarding record not found' }, { status: 404 });
+    }
+
+    if (record.companyId.toString() !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: Access to another company\'s record is not allowed' }, { status: 403 });
     }
 
     if (record.status !== 'draft') {

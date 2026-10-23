@@ -40,7 +40,7 @@ export function LoginPageView({ settings, companyName = "Your Company", isFullSc
 
   return (
     <div 
-      className={`flex items-center justify-center transition-all duration-500 overflow-hidden ${isFullScreen ? 'fixed inset-0 z-[100] w-screen h-screen' : 'w-full min-h-[500px] rounded-xl border border-gray-200'}`}
+      className={`flex items-center justify-center transition-all duration-500 overflow-hidden ${isFullScreen ? 'fixed inset-0 z-[100] w-screen h-screen' : 'w-full min-h-[500px] rounded-xl border border-gray-200 dark:border-slate-700'}`}
       style={{
         backgroundColor: loginBackground ? 'transparent' : (loginBackgroundColor || '#f9fafb'),
         backgroundImage: loginBackground ? `url(${loginBackground})` : 'none',
@@ -65,12 +65,12 @@ export function LoginPageView({ settings, companyName = "Your Company", isFullSc
               <Building2 className="h-8 w-8 text-white" />
             </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{loginTitle || 'Welcome Back'}</h1>
-          <p className="text-sm text-gray-500 mt-1 font-medium">{loginSubtitle || `Sign in to ${companyName}`}</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight dark:text-slate-100">{loginTitle || 'Welcome Back'}</h1>
+          <p className="text-sm text-gray-500 mt-1 font-medium dark:text-slate-400">{loginSubtitle || `Sign in to ${companyName}`}</p>
         </div>
 
         {/* Login Card */}
-        <Card className="bg-white/90 backdrop-blur-xl border-white shadow-2xl overflow-hidden">
+        <Card className="bg-white/90 backdrop-blur-xl border-white shadow-2xl overflow-hidden dark:bg-slate-900">
           <CardHeader className="pb-4">
             <CardTitle className="text-center text-lg font-bold" style={{ color: primaryColor || '#2563eb' }}>
               Employee Login
@@ -78,7 +78,7 @@ export function LoginPageView({ settings, companyName = "Your Company", isFullSc
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1 dark:text-slate-400">
                 Email Address
               </label>
               <div className="relative group">
@@ -86,14 +86,14 @@ export function LoginPageView({ settings, companyName = "Your Company", isFullSc
                 <Input
                   type="email"
                   placeholder="name@company.com"
-                  className="pl-10 h-11 bg-white/50 border-gray-200 focus:bg-white transition-all uppercase text-[11px] font-bold"
+                  className="pl-10 h-11 bg-white/50 border-gray-200 focus:bg-white transition-all uppercase text-[11px] font-bold dark:bg-slate-900 dark:border-slate-700 dark:focus:bg-slate-900"
                   disabled
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1 dark:text-slate-400">
                 Password
               </label>
               <div className="relative group">
@@ -101,7 +101,7 @@ export function LoginPageView({ settings, companyName = "Your Company", isFullSc
                 <Input
                   type="password"
                   placeholder="••••••••"
-                  className="pl-10 h-11 bg-white/50 border-gray-200 focus:bg-white transition-all"
+                  className="pl-10 h-11 bg-white/50 border-gray-200 focus:bg-white transition-all dark:bg-slate-900 dark:border-slate-700 dark:focus:bg-slate-900"
                   disabled
                 />
               </div>

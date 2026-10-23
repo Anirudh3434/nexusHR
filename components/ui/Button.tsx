@@ -14,13 +14,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           {
-            "bg-blue-600 text-white hover:bg-blue-700 shadow-sm": variant === "default",
-            "bg-red-500 text-white hover:bg-red-600 shadow-sm": variant === "destructive",
-            "border border-gray-200 bg-white hover:bg-gray-100 hover:text-gray-900 text-gray-700": variant === "outline",
-            "bg-gray-100 text-gray-900 hover:bg-gray-200": variant === "secondary",
-            "hover:bg-gray-100 hover:text-gray-900": variant === "ghost",
+            "bg-primary text-primary-foreground hover:opacity-90 shadow-none": variant === "default",
+            "bg-destructive text-white hover:opacity-90 shadow-none": variant === "destructive",
+            "border border-border bg-card hover:bg-muted text-foreground": variant === "outline",
+            "bg-secondary text-secondary-foreground hover:bg-muted": variant === "secondary",
+            "hover:bg-muted hover:text-foreground": variant === "ghost",
             "h-10 px-4 py-2": size === "default",
             "h-9 rounded-md px-3": size === "sm",
             "h-11 rounded-md px-8": size === "lg",

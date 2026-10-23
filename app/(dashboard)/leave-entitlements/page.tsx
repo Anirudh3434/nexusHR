@@ -17,6 +17,8 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Award, Plus, Pencil, Trash2, Loader2, X, Calculator, Calendar } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 // Preset experience tiers
 const experienceTiers = [
@@ -170,30 +172,32 @@ export default function LeaveEntitlementsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Award className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Award className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Leave Entitlements
-          </h1>
-          <p className="text-gray-500">Define leave allocations based on employee experience tiers.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowCalculator(true)}>
-            <Calculator className="mr-2 h-4 w-4" />
-            Calculator
-          </Button>
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Rule
-          </Button>
-        </div>
-      </div>
+          </span>
+        }
+        description="Define leave allocations based on employee experience tiers."
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setShowCalculator(true)}>
+              <Calculator className="mr-2 h-4 w-4" />
+              Calculator
+            </Button>
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Rule
+            </Button>
+          </>
+        }
+      />
 
       {/* Experience Tiers Reference */}
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30">
         <CardContent className="p-4">
-          <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+          <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2 dark:text-blue-300">
             <Award className="h-4 w-4" />
             Experience Tiers
           </h3>
@@ -201,7 +205,7 @@ export default function LeaveEntitlementsPage() {
             {experienceTiers.map((tier) => (
               <span 
                 key={tier.name} 
-                className="text-xs bg-white px-3 py-1 rounded-full border border-blue-200 text-blue-700"
+                className="text-xs bg-white px-3 py-1 rounded-full border border-blue-200 text-blue-700 dark:bg-slate-900 dark:border-blue-500/30 dark:text-blue-300"
               >
                 {tier.name}
               </span>
@@ -221,10 +225,11 @@ export default function LeaveEntitlementsPage() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : entitlements.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Award className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-              <p>No entitlement rules found. Create rules to allocate leave based on experience.</p>
-            </div>
+            <EmptyState
+              title="No entitlement rules found."
+              description="Create rules to allocate leave based on experience."
+              icon={<Award size={18} />}
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -251,14 +256,14 @@ export default function LeaveEntitlementsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{ent.tierName}</TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                    <TableCell className="text-sm text-gray-500 dark:text-slate-400">
                       {ent.minYears} - {ent.maxYears === null ? '∞' : ent.maxYears} yrs
                     </TableCell>
                     <TableCell className="font-medium">{ent.daysPerYear} days</TableCell>
                     <TableCell className="capitalize">{ent.accrualType}</TableCell>
                     <TableCell>
                       {ent.canCarryForward ? (
-                        <span className="text-green-600 text-sm">Yes (max {ent.maxCarryForwardDays})</span>
+                        <span className="text-green-600 text-sm dark:text-green-400">Yes (max {ent.maxCarryForwardDays})</span>
                       ) : (
                         <span className="text-gray-400 text-sm">No</span>
                       )}
@@ -268,7 +273,7 @@ export default function LeaveEntitlementsPage() {
                         <Button variant="ghost" size="sm" onClick={() => openEditModal(ent)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(ent._id)} className="text-red-600 hover:text-red-700">
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(ent._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -284,7 +289,7 @@ export default function LeaveEntitlementsPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto dark:bg-slate-900">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">
                 {editingEntitlement ? "Edit Entitlement" : "Add Entitlement Rule"}
@@ -295,7 +300,7 @@ export default function LeaveEntitlementsPage() {
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Leave Type *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Leave Type *</label>
                 <select
                   value={formData.leaveTypeId}
                   onChange={(e) => setFormData({...formData, leaveTypeId: e.target.value})}
@@ -310,7 +315,7 @@ export default function LeaveEntitlementsPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Experience Tier *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Experience Tier *</label>
                 <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
                   {experienceTiers.map((tier) => (
                     <button
@@ -319,12 +324,12 @@ export default function LeaveEntitlementsPage() {
                       onClick={() => selectTier(tier)}
                       className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
                         formData.tierName === tier.name 
-                          ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300' 
+                          : 'border-gray-200 hover:border-gray-300 dark:border-slate-700'
                       }`}
                     >
                       <span className="font-medium">{tier.name}</span>
-                      <span className="text-gray-500 ml-2">({tier.min} - {tier.max === null ? '∞' : tier.max} yrs)</span>
+                      <span className="text-gray-500 ml-2 dark:text-slate-400">({tier.min} - {tier.max === null ? '∞' : tier.max} yrs)</span>
                     </button>
                   ))}
                 </div>
@@ -332,7 +337,7 @@ export default function LeaveEntitlementsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Years</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Min Years</label>
                   <Input
                     type="number"
                     value={formData.minYears}
@@ -342,7 +347,7 @@ export default function LeaveEntitlementsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Years (empty = unlimited)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Max Years (empty = unlimited)</label>
                   <Input
                     type="number"
                     value={formData.maxYears || ''}
@@ -358,7 +363,7 @@ export default function LeaveEntitlementsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Days Per Year *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Days Per Year *</label>
                   <Input
                     type="number"
                     value={formData.daysPerYear}
@@ -368,7 +373,7 @@ export default function LeaveEntitlementsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Accrual Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Accrual Type</label>
                   <select
                     value={formData.accrualType}
                     onChange={(e) => setFormData({...formData, accrualType: e.target.value as any})}
@@ -389,14 +394,14 @@ export default function LeaveEntitlementsPage() {
                   onChange={(e) => setFormData({...formData, canCarryForward: e.target.checked})}
                   className="rounded"
                 />
-                <label htmlFor="canCarryForward" className="text-sm text-gray-700">
+                <label htmlFor="canCarryForward" className="text-sm text-gray-700 dark:text-slate-300">
                   Allow carry forward to next year
                 </label>
               </div>
 
               {formData.canCarryForward && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Carry Forward Days</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Max Carry Forward Days</label>
                   <Input
                     type="number"
                     value={formData.maxCarryForwardDays}
@@ -422,7 +427,7 @@ export default function LeaveEntitlementsPage() {
       {/* Calculator Modal */}
       {showCalculator && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg dark:bg-slate-900">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Calculator className="h-5 w-5" />
@@ -434,7 +439,7 @@ export default function LeaveEntitlementsPage() {
             </div>
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employee Joining Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Employee Joining Date</label>
                 <div className="flex gap-2">
                   <Input
                     type="date"
@@ -449,8 +454,8 @@ export default function LeaveEntitlementsPage() {
               </div>
 
               {calcExperience > 0 && (
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-500/10">
+                  <p className="text-sm text-blue-800 dark:text-blue-300">
                     <strong>Experience:</strong> {calcExperience} years of service
                   </p>
                 </div>
@@ -468,17 +473,20 @@ export default function LeaveEntitlementsPage() {
                         />
                         <div>
                           <p className="font-medium">{ent.leaveTypeId?.name}</p>
-                          <p className="text-xs text-gray-500">{ent.tierName} • {ent.daysPerYear} days/year</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{ent.tierName} • {ent.daysPerYear} days/year</p>
                         </div>
                       </div>
-                      <span className="text-green-600 font-medium">{ent.daysPerYear} days</span>
+                      <span className="text-green-600 font-medium dark:text-green-400">{ent.daysPerYear} days</span>
                     </div>
                   ))}
                 </div>
               )}
 
               {calcResults.length === 0 && calcExperience > 0 && (
-                <p className="text-gray-500 text-center py-4">No entitlements found for this experience level.</p>
+                <EmptyState
+                  title="No entitlements found for this experience level."
+                  icon={<Award size={18} />}
+                />
               )}
             </div>
             <div className="p-4 border-t">

@@ -78,6 +78,51 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Name, category, and layout are required' }, { status: 400 });
     }
 
+    // NoSQL-injection defense: validate layout.components[].config
+    const ALLOWED_DATA_SOURCES = ['attendance', 'performance', 'leave', 'payroll'];
+    const ALLOWED_KEYS = ['status', 'department', 'designation', 'month', 'year'];
+    const components = layout?.components;
+    if (components !== undefined) {
+      if (!Array.isArray(components)) {
+        return NextResponse.json({ message: 'Invalid layout components' }, { status: 400 });
+      }
+      for (const comp of components) {
+        const cfg = comp?.config;
+        if (!cfg) continue;
+        if (!ALLOWED_DATA_SOURCES.includes(cfg.dataSource)) {
+          return NextResponse.json({ message: 'Invalid dataSource' }, { status: 400 });
+        }
+        if (cfg.groupBy !== undefined && !ALLOWED_KEYS.includes(cfg.groupBy)) {
+          return NextResponse.json({ message: 'Invalid groupBy' }, { status: 400 });
+        }
+        const filters = cfg.filters;
+        if (filters !== undefined) {
+          if (!filters || typeof filters !== 'object' || Array.isArray(filters)) {
+            return NextResponse.json({ message: 'Invalid filters' }, { status: 400 });
+          }
+          for (const [k, v] of Object.entries(filters)) {
+            if (k === 'companyId' || k.startsWith('$') || k.includes('.')) {
+              return NextResponse.json({ message: 'Invalid filter key' }, { status: 400 });
+            }
+            if (!ALLOWED_KEYS.includes(k)) {
+              return NextResponse.json({ message: 'Invalid filter key' }, { status: 400 });
+            }
+            // Reject operator objects outright; only scalars / arrays of scalars allowed
+            if (v !== null && typeof v === 'object') {
+              if (!Array.isArray(v)) {
+                return NextResponse.json({ message: 'Invalid filter value' }, { status: 400 });
+              }
+              for (const el of v) {
+                if (el !== null && typeof el === 'object') {
+                  return NextResponse.json({ message: 'Invalid filter value' }, { status: 400 });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     const template = await ReportTemplate.create({
       companyId,
       name,

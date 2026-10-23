@@ -29,9 +29,9 @@ export default function TransitionErrorPopup({ show, message, onClose }: Transit
           exit={{ opacity: 0, y: -20 }}
           className="fixed top-20 left-1/2 -translate-x-1/2 z-[9999]"
         >
-          <div className="bg-red-50 border border-red-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 min-w-[300px]">
-            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-800 flex-1">{message}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 min-w-[300px] dark:bg-red-500/10 dark:border-red-500/30">
+            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 dark:text-red-400" />
+            <p className="text-sm text-red-800 flex-1 dark:text-red-300">{message}</p>
             <button
               onClick={onClose}
               className="text-red-400 hover:text-red-600 transition-colors flex-shrink-0"

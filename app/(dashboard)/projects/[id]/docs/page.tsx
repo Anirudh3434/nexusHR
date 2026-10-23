@@ -62,26 +62,26 @@ export default function ProjectDocsPage() {
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] -m-6 bg-slate-50 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-4rem)] -m-6 bg-slate-50 overflow-hidden dark:bg-slate-800/50">
       {/* Container 1: Top Header Toolbar */}
-      <div className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0 z-10 px-8 pt-4">
+      <div className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0 z-10 px-8 pt-4 dark:bg-slate-900 dark:border-slate-700">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push(`/projects/${projectId}/board`)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700 transition-all shadow-sm"
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700 transition-all shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Board</span>
             </button>
-            <div className="h-6 w-px bg-slate-200"></div>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
                 <Vault className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">Vault</h1>
-                <p className="text-xs text-slate-500">Centralized documentation and resources</p>
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight dark:text-slate-100">Vault</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Centralized documentation and resources</p>
               </div>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function ProjectDocsPage() {
                 placeholder="Search across all sections..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 w-80 text-sm bg-slate-50/50 focus:bg-white transition-all"
+                className="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 w-80 text-sm bg-slate-50/50 focus:bg-white transition-all dark:border-slate-700 dark:bg-slate-800/70 dark:focus:bg-slate-900"
               />
             </div>
             <QuickAddDropdown
@@ -106,7 +106,7 @@ export default function ProjectDocsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 border-b border-slate-200/80">
+        <div className="flex items-center gap-1 border-b border-slate-200/80 dark:border-slate-700">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -115,8 +115,8 @@ export default function ProjectDocsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
                   activeTab === tab.id
-                    ? 'text-indigo-600 border-indigo-600 bg-indigo-50/30'
-                    : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-50'
+                    ? 'text-indigo-600 border-indigo-600 bg-indigo-50/30 dark:text-indigo-400 dark:bg-indigo-500/10'
+                    : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 <Icon className="w-4 h-4" />

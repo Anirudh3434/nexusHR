@@ -108,13 +108,13 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 overflow-y-auto">
-      <Card className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full animate-in scale-in-95 duration-200 my-8">
+      <Card className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full animate-in scale-in-95 duration-200 my-8 dark:bg-slate-900 dark:border-slate-800">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-slate-900">Add Credential</CardTitle>
+            <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">Add Credential</CardTitle>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
             >
               <X className="w-5 h-5" />
             </button>
@@ -124,22 +124,22 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Service *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Service *</label>
                 <input
                   type="text"
                   value={formData.service}
                   onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="e.g., AWS, GitHub"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Environment *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Environment *</label>
                 <select
                   value={formData.environment}
                   onChange={(e) => setFormData({ ...formData, environment: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   required
                 >
                   {environments.map(env => (
@@ -151,11 +151,11 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Category</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -163,12 +163,12 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Login URL</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Login URL</label>
                 <input
                   type="url"
                   value={formData.loginUrl}
                   onChange={(e) => setFormData({ ...formData, loginUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="https://..."
                 />
               </div>
@@ -176,34 +176,34 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Username</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Username</label>
                 <input
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Email</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Password</label>
                 <div className="relative">
                   <input
                     type={showPasswords.password ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   />
                   <button
                     type="button"
@@ -215,13 +215,13 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">OTP Secret</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">OTP Secret</label>
                 <div className="relative">
                   <input
                     type={showPasswords.otpSecret ? 'text' : 'password'}
                     value={formData.otpSecret}
                     onChange={(e) => setFormData({ ...formData, otpSecret: e.target.value })}
-                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   />
                   <button
                     type="button"
@@ -236,13 +236,13 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">API Key</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">API Key</label>
                 <div className="relative">
                   <input
                     type={showPasswords.apiKey ? 'text' : 'password'}
                     value={formData.apiKey}
                     onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   />
                   <button
                     type="button"
@@ -254,13 +254,13 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Secret Key</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Secret Key</label>
                 <div className="relative">
                   <input
                     type={showPasswords.secretKey ? 'text' : 'password'}
                     value={formData.secretKey}
                     onChange={(e) => setFormData({ ...formData, secretKey: e.target.value })}
-                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   />
                   <button
                     type="button"
@@ -275,13 +275,13 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Access Token</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Access Token</label>
                 <div className="relative">
                   <input
                     type={showPasswords.accessToken ? 'text' : 'password'}
                     value={formData.accessToken}
                     onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
-                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   />
                   <button
                     type="button"
@@ -293,33 +293,33 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Expiry Date</label>
                 <input
                   type="date"
                   value={formData.expiryDate}
                   onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={2}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Tags</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Tags</label>
                 <input
                   type="text"
                   value={formData.tags}
                   onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="Comma-separated tags"
                 />
               </div>
@@ -331,9 +331,9 @@ export default function CredentialCreationModal({ projectId, isOpen, onClose, on
                 id="isFavorite"
                 checked={formData.isFavorite}
                 onChange={(e) => setFormData({ ...formData, isFavorite: e.target.checked })}
-                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 dark:text-indigo-400 dark:border-slate-600"
               />
-              <label htmlFor="isFavorite" className="text-sm text-slate-700 flex items-center gap-1">
+              <label htmlFor="isFavorite" className="text-sm text-slate-700 flex items-center gap-1 dark:text-slate-300">
                 <Star className="w-3 h-3" />
                 Add to favorites
               </label>

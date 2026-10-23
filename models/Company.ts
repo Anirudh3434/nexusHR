@@ -59,6 +59,27 @@ const CompanySchema = new Schema({
   logo: {
     type: String, // URL to stored logo
   },
+  // Subscription & trial (1-month free trial from company creation)
+  trialStartsAt: {
+    type: Date,
+  },
+  trialEndsAt: {
+    type: Date,
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['trial', 'active', 'expired'],
+    default: 'trial',
+  },
+  subscriptionPlan: {
+    type: String, // starter | growth | enterprise (placeholder billing)
+  },
+  subscribedAt: {
+    type: Date,
+  },
+  subscriptionEndsAt: {
+    type: Date,
+  },
   // Company Settings
   isActive: {
     type: Boolean,

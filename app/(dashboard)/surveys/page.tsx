@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   FileText, Search, Filter, Clock, CheckCircle, XCircle, 
   Plus, Calendar, Users, Eye, Edit, Trash2, ChevronDown,
@@ -57,9 +59,9 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 dark:bg-gray-800 text-gray-800',
-  active: 'bg-green-100 text-green-800',
-  closed: 'bg-red-100 text-red-800',
+  draft: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-slate-200',
+  active: 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300',
+  closed: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300',
   archived: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
 };
 
@@ -154,26 +156,26 @@ export default function SurveysManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Surveys</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage employee surveys</p>
-        </div>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Create Survey
-        </Button>
-      </div>
+      <PageHeader
+        title="Surveys"
+        description="Create and manage employee surveys"
+        actions={
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Survey
+          </Button>
+        }
+      />
 
       {/* Filters */}
       <Card>
@@ -225,16 +227,15 @@ export default function SurveysManagementPage() {
       <div className="space-y-4">
         {filteredSurveys.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <FileText className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">No surveys found</p>
-              <Button
-                onClick={() => setShowCreateModal(true)}
-                className="mt-4"
-              >
-                Create Your First Survey
-              </Button>
-            </CardContent>
+            <EmptyState
+              title="No surveys found"
+              icon={<FileText size={18} />}
+              action={
+                <Button onClick={() => setShowCreateModal(true)}>
+                  Create Your First Survey
+                </Button>
+              }
+            />
           </Card>
         ) : (
           filteredSurveys.map((survey) => (
@@ -251,7 +252,7 @@ export default function SurveysManagementPage() {
                         {typeLabels[survey.type]}
                       </Badge>
                       {survey.isAnonymous && (
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                        <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">
                           Anonymous
                         </Badge>
                       )}
@@ -323,7 +324,7 @@ export default function SurveysManagementPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(survey._id)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 dark:text-red-400"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -560,7 +561,7 @@ function CreateSurveyModal({ onClose, onSuccess }: { onClose: () => void; onSucc
                         variant="ghost"
                         size="sm"
                         onClick={() => removeQuestion(index)}
-                        className="text-red-600"
+                        className="text-red-600 dark:text-red-400"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -698,7 +699,7 @@ function ViewSurveyModal({ survey, onClose }: { survey: SurveyItem; onClose: () 
                       <p className="font-medium">{question.text}</p>
                       <div className="flex gap-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{question.type}</span>
-                        {question.required && <span className="bg-red-50 text-red-600 px-2 py-1 rounded">Required</span>}
+                        {question.required && <span className="bg-red-50 text-red-600 px-2 py-1 rounded dark:bg-red-500/10 dark:text-red-400">Required</span>}
                       </div>
                       {question.options && question.options.length > 0 && (
                         <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -750,7 +751,7 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-slate-900 rounded-lg max-w-4xl w-full p-6">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
           </div>
         </div>
       </div>
@@ -762,7 +763,7 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-slate-900 rounded-lg max-w-4xl w-full p-6">
           <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500 dark:text-gray-400">No analytics data available</p>
+            <EmptyState title="No analytics data available" icon={<BarChart3 size={18} />} />
           </div>
         </div>
       </div>
@@ -820,9 +821,9 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
                         <p className="font-medium">{qa.questionText}</p>
                         <div className="flex gap-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
                           <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{qa.questionType}</span>
-                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">{qa.answeredCount} answered</span>
+                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded dark:bg-blue-500/10 dark:text-blue-300">{qa.answeredCount} answered</span>
                           {qa.skipCount > 0 && (
-                            <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded">{qa.skipCount} skipped</span>
+                            <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded dark:bg-yellow-500/10 dark:text-yellow-300">{qa.skipCount} skipped</span>
                           )}
                         </div>
                       </div>
@@ -833,13 +834,13 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
                       <div className="mt-4">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">Average Rating:</span>
-                          <span className="text-lg font-bold text-blue-600">{qa.averageRating}</span>
+                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{qa.averageRating}</span>
                         </div>
                         <div className="space-y-2">
                           {qa.distribution.map((d: any) => (
                             <div key={d.star} className="flex items-center gap-2">
                               <span className="text-sm w-8">{d.star}★</span>
-                              <div className="flex-1 bg-gray-200 rounded-full h-4">
+                              <div className="flex-1 bg-gray-200 rounded-full h-4 dark:bg-slate-700">
                                 <div
                                   className="bg-blue-500 h-4 rounded-full transition-all"
                                   style={{ width: `${d.percentage}%` }}
@@ -857,7 +858,7 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
                         {qa.optionCounts.map((oc: any) => (
                           <div key={oc.option} className="flex items-center gap-2">
                             <span className="text-sm flex-1">{oc.option}</span>
-                            <div className="w-32 bg-gray-200 rounded-full h-4">
+                            <div className="w-32 bg-gray-200 rounded-full h-4 dark:bg-slate-700">
                               <div
                                 className="bg-green-500 h-4 rounded-full transition-all"
                                 style={{ width: `${oc.percentage}%` }}
@@ -875,7 +876,7 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
                         {qa.optionCounts.map((oc: any) => (
                           <div key={oc.option} className="flex items-center gap-2">
                             <span className="text-sm flex-1">{oc.option}</span>
-                            <div className="w-32 bg-gray-200 rounded-full h-4">
+                            <div className="w-32 bg-gray-200 rounded-full h-4 dark:bg-slate-700">
                               <div
                                 className="bg-purple-500 h-4 rounded-full transition-all"
                                 style={{ width: `${oc.percentage}%` }}
@@ -890,12 +891,12 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
 
                     {qa.questionType === 'yes_no' && (
                       <div className="mt-4 grid grid-cols-2 gap-4">
-                        <div className="bg-green-50 rounded-lg p-4 text-center">
-                          <div className="text-2xl font-bold text-green-600">{qa.yesCount}</div>
+                        <div className="bg-green-50 rounded-lg p-4 text-center dark:bg-green-500/10">
+                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{qa.yesCount}</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">Yes ({qa.yesPercentage.toFixed(1)}%)</div>
                         </div>
-                        <div className="bg-red-50 rounded-lg p-4 text-center">
-                          <div className="text-2xl font-bold text-red-600">{qa.noCount}</div>
+                        <div className="bg-red-50 rounded-lg p-4 text-center dark:bg-red-500/10">
+                          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{qa.noCount}</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">No ({qa.noPercentage.toFixed(1)}%)</div>
                         </div>
                       </div>

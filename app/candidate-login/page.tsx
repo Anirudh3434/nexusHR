@@ -42,11 +42,11 @@ export default function CandidateLoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-50/80 p-4 overflow-hidden select-none">
+    <div className="relative min-h-screen flex items-center justify-center bg-slate-50/80 p-4 overflow-hidden select-none dark:bg-slate-800/70">
       {/* Vibrant Light-Mode Ambient Glow Auroras */}
       <div className="absolute -top-[15%] -left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-300/40 via-indigo-200/30 to-blue-200/20 blur-[100px] pointer-events-none animate-pulse duration-1000" />
       <div className="absolute -bottom-[15%] -right-[10%] w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-teal-200/40 via-purple-200/30 to-indigo-200/30 blur-[110px] pointer-events-none animate-pulse duration-700" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-purple-100/30 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-purple-100/30 blur-[120px] pointer-events-none dark:bg-purple-500/15" />
 
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e125_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e125_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
@@ -54,7 +54,7 @@ export default function CandidateLoginPage() {
       <div className="relative w-full max-w-md z-10">
         {/* Top Feature Pill */}
         <div className="flex justify-center mb-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-purple-100 text-purple-700 text-xs font-bold shadow-sm shadow-purple-100/50 backdrop-blur-md transition-all hover:border-purple-300">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-purple-100 text-purple-700 text-xs font-bold shadow-sm shadow-purple-100/50 backdrop-blur-md transition-all hover:border-purple-300 dark:bg-slate-900 dark:text-purple-300">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
@@ -76,11 +76,11 @@ export default function CandidateLoginPage() {
               />
             </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
             Nexus<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-teal-600">HR</span>
           </h1>
-          <p className="mt-1 text-xs font-bold uppercase tracking-widest text-purple-600">Candidate Portal</p>
-          <p className="mt-1 text-xs text-slate-500">Track your interview stages, offers, and onboarding status</p>
+          <p className="mt-1 text-xs font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400">Candidate Portal</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Track your interview stages, offers, and onboarding status</p>
         </div>
 
         {/* High-Dopamine Glassmorphic Card */}
@@ -88,20 +88,20 @@ export default function CandidateLoginPage() {
           {/* Card Border Glow */}
           <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-b from-purple-200/60 via-indigo-100/40 to-teal-200/50 opacity-80 blur-sm group-hover:opacity-100 transition duration-500" />
           
-          <Card className="relative shadow-2xl shadow-purple-900/5 border-white/80 bg-white/90 backdrop-blur-2xl rounded-3xl overflow-hidden p-1">
+          <Card className="relative shadow-2xl shadow-purple-900/5 border-white/80 bg-white/90 backdrop-blur-2xl rounded-3xl overflow-hidden p-1 dark:bg-slate-900">
             <CardHeader className="space-y-1.5 text-center pb-2 pt-5">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 border border-purple-100 mb-1">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 border border-purple-100 mb-1 dark:bg-purple-500/10 dark:text-purple-400">
                 <ShieldCheck size={20} />
               </div>
-              <CardTitle className="text-lg font-extrabold tracking-tight text-slate-900">Candidate Sign In</CardTitle>
-              <CardDescription className="text-xs text-slate-500 font-medium">
+              <CardTitle className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Candidate Sign In</CardTitle>
+              <CardDescription className="text-xs text-slate-500 font-medium dark:text-slate-400">
                 Sign in with the credentials provided by your hiring team
               </CardDescription>
             </CardHeader>
             <CardContent className="px-6 pb-6">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700">Email Address</label>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">Email Address</label>
                   <div className="relative group/input">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/input:text-purple-600 transition-colors" />
                     <Input
@@ -109,14 +109,14 @@ export default function CandidateLoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="pl-10 h-12 rounded-xl bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:ring-4 focus:ring-purple-100 transition-all shadow-inner font-medium"
+                      className="pl-10 h-12 rounded-xl bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:ring-4 focus:ring-purple-100 transition-all shadow-inner font-medium dark:bg-slate-800/70 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-900"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700">Password</label>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">Password</label>
                   <div className="relative group/input">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/input:text-purple-600 transition-colors" />
                     <Input
@@ -124,7 +124,7 @@ export default function CandidateLoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your security password"
-                      className="pl-10 pr-10 h-12 rounded-xl bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:ring-4 focus:ring-purple-100 transition-all shadow-inner font-medium"
+                      className="pl-10 pr-10 h-12 rounded-xl bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-600 focus:ring-4 focus:ring-purple-100 transition-all shadow-inner font-medium dark:bg-slate-800/70 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-900"
                       required
                     />
                     <button
@@ -156,8 +156,8 @@ export default function CandidateLoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-                <Link href="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-purple-600 transition-colors">
+              <div className="mt-6 pt-4 border-t border-slate-100 text-center dark:border-slate-800">
+                <Link href="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-purple-600 transition-colors dark:text-slate-400">
                   <ArrowLeft className="h-3.5 w-3.5" /> Switch to Employee Login
                 </Link>
               </div>
@@ -166,7 +166,7 @@ export default function CandidateLoginPage() {
         </div>
 
         {/* Dopamine Micro Trust Badges */}
-        <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-slate-500 font-medium">
+        <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-slate-500 font-medium dark:text-slate-400">
           <span className="flex items-center gap-1">🔒 Private Data</span>
           <span>•</span>
           <span className="flex items-center gap-1">⚡ Fast-Track Hiring</span>

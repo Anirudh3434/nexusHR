@@ -131,7 +131,7 @@ export async function grantPortalAccess(input: {
 
   if (!user) {
     password = generateTemporaryPassword();
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 12);
     user = await User.create({
       name: fullName,
       email,
@@ -150,7 +150,7 @@ export async function grantPortalAccess(input: {
     // account (e.g. an employee, or a leftover account from a previous flow).
     // Issue fresh temporary credentials so the candidate can actually log in.
     password = generateTemporaryPassword();
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 12);
     user.password = hashed;
     user.mustChangePassword = true;
     user.isCandidate = true;
@@ -238,7 +238,7 @@ export async function hireCandidate(input: HireInput): Promise<HireResult> {
   let password: string | null = null;
   if (!user) {
     password = generateTemporaryPassword();
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 12);
     user = await User.create({
       name: fullName,
       email,
@@ -378,7 +378,7 @@ export async function resetPortalPassword(input: {
   }
 
   const password = generateTemporaryPassword();
-  user.password = await bcrypt.hash(password, 10);
+  user.password = await bcrypt.hash(password, 12);
   user.mustChangePassword = true;
   await user.save();
 

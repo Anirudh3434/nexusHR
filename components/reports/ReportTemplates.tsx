@@ -8,6 +8,7 @@ import {
   Plus, Search, Edit, Trash2, Play, FileText, 
   Calendar, Users, TrendingUp, Clock 
 } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 
 interface ReportTemplate {
   _id: string;
@@ -168,13 +169,15 @@ export default function ReportTemplates({ onSelectTemplate, onCreateNew }: {
       {/* Templates Grid */}
       {isLoading ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">Loading templates...</CardContent>
+          <CardContent className="p-8 text-center text-gray-500 dark:text-slate-400">Loading templates...</CardContent>
         </Card>
       ) : filteredTemplates.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">
-            No templates found. Create your first report to get started.
-          </CardContent>
+          <EmptyState
+            icon={<FileText size={18} />}
+            title="No templates found."
+            description="Create your first report to get started."
+          />
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -190,7 +193,7 @@ export default function ReportTemplates({ onSelectTemplate, onCreateNew }: {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                        <Icon className="w-5 h-5 text-blue-600" />
+                        <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
                         <CardTitle className="text-base">{template.name}</CardTitle>
@@ -206,7 +209,7 @@ export default function ReportTemplates({ onSelectTemplate, onCreateNew }: {
                     {template.description || 'No description'}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
                     <div className="flex items-center gap-1">
                       <FileText className="w-3 h-3" />
                       {template.viewCount} views
@@ -239,7 +242,7 @@ export default function ReportTemplates({ onSelectTemplate, onCreateNew }: {
                         e.stopPropagation();
                         handleDelete(template._id);
                       }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>

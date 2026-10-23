@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import CompanyContentConfig, { EMAIL_TEMPLATE_KEYS } from '@/models/CompanyContentConfig';
-import { headers } from 'next/headers';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
+const ADMIN_ROLES = ['super_admin', 'admin'];
 
 // GET - fetch content config for a company (email template overrides + careers)
 export async function GET(req: NextRequest) {
@@ -35,12 +38,19 @@ export async function PUT(req: NextRequest) {
   try {
     await connectDB();
 
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ADMIN_ROLES)) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    const isSuperAdmin = auth.role === 'super_admin';
+    const userId = auth.userId;
 
     const body = await req.json();
-    const { companyId, emailTemplates, careers } = body;
+    const { companyId: bodyCompanyId, emailTemplates, careers } = body;
+
+    if (bodyCompanyId && !isSuperAdmin && bodyCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = isSuperAdmin ? (bodyCompanyId || auth.companyId) : auth.companyId;
 
     if (!companyId) {
       return NextResponse.json({ message: 'Company ID is required' }, { status: 400 });

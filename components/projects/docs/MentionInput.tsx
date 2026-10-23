@@ -148,7 +148,7 @@ export default function MentionInput({
     return parts.map((part, index) => {
       if (part.startsWith('@')) {
         return (
-          <span key={index} className="bg-indigo-100 text-indigo-700 px-1 rounded font-medium">
+          <span key={index} className="bg-indigo-100 text-indigo-700 px-1 rounded font-medium dark:bg-indigo-500/15 dark:text-indigo-300">
             {part}
           </span>
         );
@@ -166,13 +166,13 @@ export default function MentionInput({
         onKeyDown={handleKeyDown}
         rows={rows}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 resize-none"
+        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 resize-none dark:border-slate-700"
       />
       
       {showSuggestions && filteredUsers.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-slate-900 dark:border-slate-700"
         >
           {/* Show current user at top with "me" label */}
           {user && searchTerm === '' && (
@@ -180,14 +180,14 @@ export default function MentionInput({
               key="current-user"
               type="button"
               onClick={() => selectUser({ id: user.id, name: user.name, email: user.email })}
-              className="w-full px-3 py-2 flex items-center gap-3 hover:bg-indigo-50 transition-colors text-left bg-indigo-50/50 border-b border-slate-100"
+              className="w-full px-3 py-2 flex items-center gap-3 hover:bg-indigo-50 transition-colors text-left bg-indigo-50/50 border-b border-slate-100 dark:bg-indigo-500/10 dark:border-slate-800"
             >
               <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-slate-900">{user.name} <span className="text-indigo-600 font-normal">(me)</span></p>
-                <p className="text-xs text-slate-500">{user.email}</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.name} <span className="text-indigo-600 font-normal dark:text-indigo-400">(me)</span></p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
               </div>
             </button>
           )}
@@ -198,14 +198,14 @@ export default function MentionInput({
                 key={userItem.id}
                 type="button"
                 onClick={() => selectUser(userItem)}
-                className="w-full px-3 py-2 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left"
+                className="w-full px-3 py-2 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left dark:hover:bg-slate-800"
               >
-                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-indigo-600" />
+                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center dark:bg-indigo-500/15">
+                  <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{userItem.name}</p>
-                  <p className="text-xs text-slate-500">{userItem.email}</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{userItem.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{userItem.email}</p>
                 </div>
               </button>
             ))}

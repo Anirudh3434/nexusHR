@@ -117,10 +117,10 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Mail className="h-6 w-6 text-blue-600" />
+            <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             Email Templates
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             Customize the subject line and key text of every email the company sends to candidates.
           </p>
         </div>
@@ -152,17 +152,17 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                 onClick={() => setSelectedKey(template.key)}
                 className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
                   isActive
-                    ? "border-blue-500 bg-blue-50/40 ring-4 ring-blue-50"
-                    : "border-gray-100 bg-white hover:border-gray-200"
+                    ? "border-blue-500 bg-blue-50/40 ring-4 ring-blue-50 dark:bg-blue-500/10"
+                    : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-bold text-sm text-gray-900">{template.name}</h3>
-                    <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{template.description}</p>
+                    <h3 className="font-bold text-sm text-gray-900 dark:text-slate-100">{template.name}</h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5 leading-snug dark:text-slate-400">{template.description}</p>
                   </div>
                   {customized && (
-                    <span className="flex items-center gap-1 shrink-0 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1 shrink-0 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30">
                       <CheckCircle2 className="h-3 w-3" /> Custom
                     </span>
                   )}
@@ -178,20 +178,20 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
         {/* Editor + Preview */}
         <div className="lg:col-span-2 space-y-4">
           {currentMeta && (
-            <Card className="border-gray-100 shadow-sm">
-              <CardHeader className="bg-gray-50/50 pb-4">
+            <Card className="border-gray-100 shadow-sm dark:border-slate-800">
+              <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
                 <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                   <FileText className="h-4 w-4" />
                   {currentMeta.name}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-2">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-2 dark:bg-slate-800/50 dark:border-slate-700">
                   <div className="flex gap-1">
                     <button
                       onClick={() => setHtmlMode(false)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                        !htmlMode ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                        !htmlMode ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400" : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
                       }`}
                     >
                       Simple Editor
@@ -199,7 +199,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     <button
                       onClick={() => setHtmlMode(true)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                        htmlMode ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                        htmlMode ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400" : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
                       }`}
                     >
                       HTML Code
@@ -209,21 +209,21 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
 
                 {!htmlMode ? (<>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                     Subject Line
                   </label>
                   <Input
                     value={currentTemplate.subject}
                     onChange={(e) => updateField("subject", e.target.value)}
                     placeholder="Enter email subject..."
-                    className="h-11 border-gray-100 font-semibold"
+                    className="h-11 border-gray-100 font-semibold dark:border-slate-800"
                   />
                   <p className="text-[10px] text-gray-400 mt-1 ml-1">
                     You can use placeholders like {"{name}"}, {"{companyName}"}, {"{position}"}.
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                     Opening Paragraph
                   </label>
                   <textarea
@@ -231,11 +231,11 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     onChange={(e) => updateField("intro", e.target.value)}
                     placeholder="Enter the opening paragraph..."
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:border-slate-800"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                     Main Body Text
                   </label>
                   <textarea
@@ -243,11 +243,11 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     onChange={(e) => updateField("body", e.target.value)}
                     placeholder="Enter the main body text..."
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:border-slate-800"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                     Closing / Instructions
                   </label>
                   <textarea
@@ -255,12 +255,12 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     onChange={(e) => updateField("closing", e.target.value)}
                     placeholder="Enter the closing text..."
                     rows={2}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:border-slate-800"
                   />
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3">
+                <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3 dark:bg-blue-500/10">
                   <AlertCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-blue-700 leading-relaxed">
+                  <p className="text-[11px] text-blue-700 leading-relaxed dark:text-blue-300">
                     Leave a field empty to keep the default text for that section. Changes apply the next time this
                     email is sent.
                   </p>
@@ -268,13 +268,13 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                 </>) : (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 dark:text-slate-400">
                         Custom HTML Body
                       </label>
                       {currentTemplate.html && (
                         <button
                           onClick={() => updateField("html", "")}
-                          className="text-[11px] font-bold text-red-600 hover:text-red-700"
+                          className="text-[11px] font-bold text-red-600 hover:text-red-700 dark:text-red-400"
                         >
                           Reset to Default
                         </button>
@@ -286,11 +286,11 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                       placeholder={`<!-- Write your custom HTML here. -->\n<!-- Use placeholders like {name}, {companyName}, {position}, {loginUrl} -->\n<div style="font-family: Arial, sans-serif;">\n  <h2>Hello {name},</h2>\n  <p>We are excited to share the position of {position}.</p>\n</div>`}
                       rows={18}
                       spellCheck={false}
-                      className="w-full px-3 py-3 border rounded-xl text-xs font-mono border-gray-200 bg-slate-900 text-green-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all leading-relaxed"
+                      className="w-full px-3 py-3 border rounded-xl text-xs font-mono border-gray-200 bg-slate-900 text-green-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all leading-relaxed dark:border-slate-700"
                     />
-                    <div className="flex items-start gap-2 bg-purple-50/60 border border-purple-100 rounded-xl p-3 mt-3">
+                    <div className="flex items-start gap-2 bg-purple-50/60 border border-purple-100 rounded-xl p-3 mt-3 dark:bg-purple-500/10">
                       <AlertCircle className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-purple-700 leading-relaxed">
+                      <p className="text-[11px] text-purple-700 leading-relaxed dark:text-purple-300">
                         When a custom HTML body is set, it completely replaces the standard template. The subject line
                         above still applies. Available placeholders: {"{name}"}, {"{companyName}"}, {"{position}"}, {"{roundName}"}, {"{loginUrl}"}.
                       </p>
@@ -302,18 +302,18 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
           )}
 
           {showPreview && (
-            <div className="rounded-2xl border border-gray-200 bg-slate-50 p-6">
+            <div className="rounded-2xl border border-gray-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800/50">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Eye className="h-4 w-4 text-gray-400" />
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Live Preview</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest dark:text-slate-400">Live Preview</span>
                 </div>
-                <span className="text-[11px] font-semibold text-gray-400 bg-white border border-gray-200 px-2.5 py-1 rounded-lg">
+                <span className="text-[11px] font-semibold text-gray-400 bg-white border border-gray-200 px-2.5 py-1 rounded-lg dark:bg-slate-900 dark:border-slate-700">
                   Subject: {preview.subject || "—"}
                 </span>
               </div>
               <div
-                className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm dark:bg-slate-900 dark:border-slate-700"
                 dangerouslySetInnerHTML={{ __html: preview.html }}
               />
             </div>

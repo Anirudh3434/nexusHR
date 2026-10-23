@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { PageHeader } from '../../../components/ui/PageHeader';
 
 export default function PayrollPage() {
   const { user } = useAuth();
@@ -245,28 +247,28 @@ export default function PayrollPage() {
   return (
     <div className="space-y-6">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">Payroll Management</h1>
-          <p className="text-gray-500 dark:text-gray-400">Review and manage monthly employee salaries.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setShowSettings(true)}
-            className="gap-2 bg-white dark:bg-gray-800"
-          >
-            <SettingsIcon size={16} /> Schedule
-          </Button>
-          <Button variant="outline" className="gap-2 bg-white dark:bg-gray-800">
-            <Printer size={16} /> Print Report
-          </Button>
-          <Button onClick={generatePayroll} disabled={isGenerating} className="gap-2">
-            {isGenerating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <TrendingUp size={16} />}
-            Generate Payroll
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Payroll Management"
+        description="Review and manage monthly employee salaries."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setShowSettings(true)}
+              className="gap-2 bg-white dark:bg-gray-800"
+            >
+              <SettingsIcon size={16} /> Schedule
+            </Button>
+            <Button variant="outline" className="gap-2 bg-white dark:bg-gray-800">
+              <Printer size={16} /> Print Report
+            </Button>
+            <Button onClick={generatePayroll} disabled={isGenerating} className="gap-2">
+              {isGenerating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <TrendingUp size={16} />}
+              Generate Payroll
+            </Button>
+          </>
+        }
+      />
 
       {/* Summary Stats */}
       <div className="grid gap-6 md:grid-cols-3">
@@ -296,7 +298,7 @@ export default function PayrollPage() {
             <div className="text-2xl font-bold">
               {filteredPayrolls.filter(p => p.status !== 'Paid').length}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Need review or payment</p>
+            <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">Need review or payment</p>
           </CardContent>
         </Card>
 
@@ -309,7 +311,7 @@ export default function PayrollPage() {
             <div className="text-2xl font-bold">
               {filteredPayrolls.filter(p => p.status === 'Paid').length}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Successfully paid out</p>
+            <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">Successfully paid out</p>
           </CardContent>
         </Card>
       </div>
@@ -320,7 +322,7 @@ export default function PayrollPage() {
           <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 border rounded-lg px-3 py-1 bg-white dark:bg-gray-800">
-                <Calendar size={16} className="text-gray-500" />
+                <Calendar size={16} className="text-gray-500 dark:text-slate-400" />
                 <select 
                   value={selectedMonth} 
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
@@ -357,7 +359,7 @@ export default function PayrollPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-gray-900/20 border-b">
+              <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-gray-900/20 border-b dark:text-slate-400">
                 <tr>
                   <th className="px-6 py-4 font-semibold italic">Employee</th>
                   <th className="px-6 py-4 font-semibold italic">Base Salary</th>
@@ -371,7 +373,7 @@ export default function PayrollPage() {
               <tbody className="divide-y">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
                       <div className="flex flex-col items-center gap-2">
                         <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
                         <p>Loading payroll records...</p>
@@ -380,14 +382,16 @@ export default function PayrollPage() {
                   </tr>
                 ) : filteredPayrolls.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                      <div className="flex flex-col items-center gap-2">
-                        <AlertCircle className="h-8 w-8 text-gray-300" />
-                        <p>No payroll records found for this period.</p>
-                        <Button variant="outline" onClick={generatePayroll} size="sm" className="mt-2">
-                          Generate Now
-                        </Button>
-                      </div>
+                    <td colSpan={7} className="p-0">
+                      <EmptyState
+                        title="No payroll records found for this period."
+                        icon={<AlertCircle size={18} />}
+                        action={
+                          <Button variant="outline" onClick={generatePayroll} size="sm">
+                            Generate Now
+                          </Button>
+                        }
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -400,14 +404,14 @@ export default function PayrollPage() {
                           </div>
                           <div>
                             <p className="font-semibold text-gray-900 dark:text-gray-100">{payroll.employeeId?.name}</p>
-                            <p className="text-[10px] text-gray-500">{payroll.employeeId?.department} • {payroll.employeeId?.designation}</p>
+                            <p className="text-[10px] text-gray-500 dark:text-slate-400">{payroll.employeeId?.department} • {payroll.employeeId?.designation}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 font-medium">₹{payroll.baseSalary.toLocaleString()}</td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-1 text-green-600 text-xs">
+                          <div className="flex items-center gap-1 text-green-600 text-xs dark:text-green-400">
                             <TrendingUp size={10} />
                             <span>
                               OT: {payroll.overtimePay > 0 
@@ -424,11 +428,11 @@ export default function PayrollPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-1 text-red-600 text-xs text-italic">
+                          <div className="flex items-center gap-1 text-red-600 text-xs text-italic dark:text-red-400">
                             <TrendingDown size={10} />
                             <span>Late: ₹{payroll.lateDeduction.toLocaleString()}</span>
                           </div>
-                          <div className="flex items-center gap-1 text-orange-600 text-xs text-italic">
+                          <div className="flex items-center gap-1 text-orange-600 text-xs text-italic dark:text-orange-400">
                             <Clock size={10} />
                             <span>Leave: ₹{payroll.leaveDeduction.toLocaleString()}</span>
                           </div>
@@ -460,7 +464,7 @@ export default function PayrollPage() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-gray-500"
+                            className="h-8 w-8 text-gray-500 dark:text-slate-400"
                             onClick={() => setViewingPayroll(payroll)}
                             title="View Breakdown"
                           >
@@ -469,7 +473,7 @@ export default function PayrollPage() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-blue-600"
+                            className="h-8 w-8 text-blue-600 dark:text-blue-400"
                             onClick={() => openEditModal(payroll)}
                             title="Edit Record"
                           >
@@ -533,29 +537,29 @@ export default function PayrollPage() {
                   </h4>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-500">Base Salary</span>
+                      <span className="text-gray-500 dark:text-slate-400">Base Salary</span>
                       <span className="font-semibold">₹{viewingPayroll.baseSalary.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-start text-sm">
                       <div className="flex flex-col">
-                        <span className="text-gray-500">Overtime Pay</span>
+                        <span className="text-gray-500 dark:text-slate-400">Overtime Pay</span>
                         <span className="text-[10px] text-gray-400 italic">
                           {viewingPayroll.overtimeHours}h × (Rate × {overtimeRate})
                         </span>
                       </div>
-                      <span className="font-semibold text-green-600">
+                      <span className="font-semibold text-green-600 dark:text-green-400">
                         {viewingPayroll.overtimePay > 0 ? `+ ₹${viewingPayroll.overtimePay.toLocaleString()}` : '—'}
                       </span>
                     </div>
                     {viewingPayroll.bonus > 0 && (
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Bonus Additions</span>
-                        <span className="font-semibold text-green-600">+ ₹{viewingPayroll.bonus.toLocaleString()}</span>
+                        <span className="text-gray-500 dark:text-slate-400">Bonus Additions</span>
+                        <span className="font-semibold text-green-600 dark:text-green-400">+ ₹{viewingPayroll.bonus.toLocaleString()}</span>
                       </div>
                     )}
                     <div className="pt-2 border-t flex justify-between items-center font-bold">
                       <span>Total Earnings</span>
-                      <span className="text-green-600">₹{(viewingPayroll.baseSalary + viewingPayroll.overtimePay + viewingPayroll.bonus).toLocaleString()}</span>
+                      <span className="text-green-600 dark:text-green-400">₹{(viewingPayroll.baseSalary + viewingPayroll.overtimePay + viewingPayroll.bonus).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -568,35 +572,35 @@ export default function PayrollPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-start text-sm">
                       <div className="flex flex-col">
-                        <span className="text-gray-500">Late Arriving</span>
+                        <span className="text-gray-500 dark:text-slate-400">Late Arriving</span>
                         <span className="text-[10px] text-gray-400 italic">
                           {viewingPayroll.totalLateMinutes} mins late
                         </span>
                       </div>
-                      <span className="font-semibold text-red-600">
+                      <span className="font-semibold text-red-600 dark:text-red-400">
                         {viewingPayroll.lateDeduction > 0 ? `- ₹${viewingPayroll.lateDeduction.toLocaleString()}` : '—'}
                       </span>
                     </div>
                     <div className="flex justify-between items-start text-sm">
                       <div className="flex flex-col">
-                        <span className="text-gray-500">Unpaid Leaves</span>
+                        <span className="text-gray-500 dark:text-slate-400">Unpaid Leaves</span>
                         <span className="text-[10px] text-gray-400 italic">
                           {viewingPayroll.unpaidLeaves} days approved
                         </span>
                       </div>
-                      <span className="font-semibold text-red-600">
+                      <span className="font-semibold text-red-600 dark:text-red-400">
                         {viewingPayroll.leaveDeduction > 0 ? `- ₹${viewingPayroll.leaveDeduction.toLocaleString()}` : '—'}
                       </span>
                     </div>
                     {viewingPayroll.otherDeductions > 0 && (
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Manual Deductions</span>
-                        <span className="font-semibold text-red-600">- ₹{viewingPayroll.otherDeductions.toLocaleString()}</span>
+                        <span className="text-gray-500 dark:text-slate-400">Manual Deductions</span>
+                        <span className="font-semibold text-red-600 dark:text-red-400">- ₹{viewingPayroll.otherDeductions.toLocaleString()}</span>
                       </div>
                     )}
                     <div className="pt-2 border-t flex justify-between items-center font-bold">
                       <span>Total Deductions</span>
-                      <span className="text-red-600">₹{(viewingPayroll.lateDeduction + viewingPayroll.leaveDeduction + viewingPayroll.otherDeductions).toLocaleString()}</span>
+                      <span className="text-red-600 dark:text-red-400">₹{(viewingPayroll.lateDeduction + viewingPayroll.leaveDeduction + viewingPayroll.otherDeductions).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -623,7 +627,7 @@ export default function PayrollPage() {
 
               <div className="mt-6 flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setViewingPayroll(null)}>Close Window</Button>
-                <Button className="flex-1 gap-2 bg-white text-blue-600 border border-blue-200 hover:bg-blue-50" onClick={() => {
+                <Button className="flex-1 gap-2 bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:border-blue-500/30" onClick={() => {
                   const p = viewingPayroll;
                   setViewingPayroll(null);
                   openEditModal(p);
@@ -652,7 +656,7 @@ export default function PayrollPage() {
             <CardContent className="pt-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-gray-500">Bonus (₹)</label>
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Bonus (₹)</label>
                   <input 
                     type="number" 
                     value={editFormData.bonus}
@@ -661,18 +665,18 @@ export default function PayrollPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-gray-500">Other Deductions (₹)</label>
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Other Deductions (₹)</label>
                   <input 
                     type="number" 
                     value={editFormData.otherDeductions}
                     onChange={(e) => handleEditChange('otherDeductions', e.target.value)}
-                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-red-600"
+                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-red-600 dark:text-red-400"
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase text-gray-500">Notes / Remarks</label>
+                <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Notes / Remarks</label>
                 <textarea 
                   value={editFormData.note}
                   onChange={(e) => handleEditChange('note', e.target.value)}
@@ -708,7 +712,7 @@ export default function PayrollPage() {
           <Card className="w-full max-w-sm shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2">
-                <SettingsIcon size={18} className="text-blue-600" />
+                <SettingsIcon size={18} className="text-blue-600 dark:text-blue-400" />
                 <CardTitle className="text-lg">Payroll Schedule</CardTitle>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setShowSettings(false)}>
@@ -731,7 +735,7 @@ export default function PayrollPage() {
                     ))}
                   </select>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed italic">
+                <p className="text-xs text-gray-500 leading-relaxed italic dark:text-slate-400">
                   Payroll will be automatically generated for all employees on this date every month.
                 </p>
               </div>
@@ -751,7 +755,7 @@ export default function PayrollPage() {
                     className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed italic">
+                <p className="text-xs text-gray-500 leading-relaxed italic dark:text-slate-400">
                   The hourly rate will be multiplied by this value for overtime calculations (e.g., 1.5 for time-and-a-half).
                 </p>
               </div>

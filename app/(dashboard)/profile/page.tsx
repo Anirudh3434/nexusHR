@@ -258,7 +258,7 @@ export default function ProfilePage() {
                     <span>ID: #{displayEmpId}</span>
                     <Copy size={11} className="text-gray-400" />
                   </button>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/50">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/50 dark:border-emerald-500/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Active Employee
                   </span>
@@ -342,7 +342,7 @@ export default function ProfilePage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                 isActive 
                   ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-white shadow-xs' 
-                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'
+                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 dark:text-slate-400'
               }`}
             >
               <Icon size={14} className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'} />
@@ -363,7 +363,7 @@ export default function ProfilePage() {
             {/* Bio Card (1 col) */}
             <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600">
+                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
                   <Sparkles size={16} />
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">About & Bio</h3>
@@ -391,7 +391,7 @@ export default function ProfilePage() {
             <div className="lg:col-span-2 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600">
+                  <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
                     <User size={16} />
                   </div>
                   <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Personal Information</h3>
@@ -520,7 +520,7 @@ export default function ProfilePage() {
           <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                   <MapPin size={16} />
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Residential Address</h3>
@@ -586,7 +586,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="p-6 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-800 flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600">
+                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                   <MapPin size={20} />
                 </div>
                 <div className="space-y-1 text-xs">
@@ -613,7 +613,7 @@ export default function ProfilePage() {
           <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600">
+                <div className="p-2 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400">
                   <Globe size={16} />
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Online Portfolios & Profiles</h3>
@@ -671,7 +671,7 @@ export default function ProfilePage() {
               {/* Website */}
               <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-800 space-y-2">
                 <div className="flex items-center gap-2 font-bold text-gray-800 dark:text-gray-200">
-                  <Globe size={16} className="text-emerald-600" />
+                  <Globe size={16} className="text-emerald-600 dark:text-emerald-400" />
                   <span>Personal Website / Portfolio</span>
                 </div>
                 {isEditing ? (

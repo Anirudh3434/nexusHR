@@ -147,13 +147,13 @@ export function GeoFencePicker({
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.length > 2 && setShowSuggestions(true)}
               placeholder="Search address or landmark..."
-              className="pl-10 bg-white shadow-sm border-gray-200"
+              className="pl-10 bg-white shadow-sm border-gray-200 dark:bg-slate-900 dark:border-slate-700"
             />
           </form>
 
           {/* Autocomplete Suggestions Dropdown */}
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 backdrop-blur-xl rounded-xl border border-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 backdrop-blur-xl rounded-xl border border-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 dark:bg-slate-900">
               <div className="py-2">
                 {suggestions.map((suggestion, index) => (
                   <button
@@ -163,17 +163,17 @@ export function GeoFencePicker({
                   >
                     <MapPin className="h-4 w-4 text-gray-400 group-hover:text-blue-500 mt-1 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                      <p className="text-sm font-medium text-gray-900 line-clamp-1 dark:text-slate-100">
                         {suggestion.display_name.split(',')[0]}
                       </p>
-                      <p className="text-[10px] text-gray-500 line-clamp-1">
+                      <p className="text-[10px] text-gray-500 line-clamp-1 dark:text-slate-400">
                         {suggestion.display_name.split(',').slice(1).join(',').trim()}
                       </p>
                     </div>
                   </button>
                 ))}
               </div>
-              <div className="bg-gray-50 px-4 py-2 border-t border-gray-100 flex items-center justify-between">
+              <div className="bg-gray-50 px-4 py-2 border-t border-gray-100 flex items-center justify-between dark:bg-slate-800/50 dark:border-slate-800">
                 <span className="text-[10px] text-gray-400 font-medium tracking-tight">Powered by OpenStreetMap</span>
               </div>
             </div>
@@ -185,9 +185,9 @@ export function GeoFencePicker({
             type="button"
             variant="outline"
             onClick={getCurrentLocation}
-            className="flex items-center gap-2 bg-white shadow-sm border-gray-200"
+            className="flex items-center gap-2 bg-white shadow-sm border-gray-200 dark:bg-slate-900 dark:border-slate-700"
           >
-            <Navigation className="h-4 w-4 text-blue-600" />
+            <Navigation className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span className="hidden sm:inline font-medium">My Location</span>
           </Button>
         </div>
@@ -212,7 +212,7 @@ export function GeoFencePicker({
                 draggable
                 onDragEnd={handleDragEnd}
               >
-                <MarkerContent className="bg-white p-1 rounded-full shadow-2xl border-2 border-blue-600">
+                <MarkerContent className="bg-white p-1 rounded-full shadow-2xl border-2 border-blue-600 dark:bg-slate-900">
                   <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center animate-pulse">
                     <MapPin className="h-4 w-4 text-white" />
                   </div>
@@ -236,14 +236,14 @@ export function GeoFencePicker({
 
           {/* Overlay Info Panel */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-             <div className="bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-white shadow-xl max-w-[240px] animate-in slide-in-from-left duration-500">
+             <div className="bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-white shadow-xl max-w-[240px] animate-in slide-in-from-left duration-500 dark:bg-slate-900">
                 <div className="flex items-start gap-2.5">
-                  <div className="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Info className="h-5 w-5 text-blue-600" />
+                  <div className="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 dark:bg-blue-500/10">
+                    <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <h5 className="text-xs font-bold text-gray-900">Geofence Active</h5>
-                    <p className="text-[10px] text-gray-500 leading-relaxed font-medium">
+                    <h5 className="text-xs font-bold text-gray-900 dark:text-slate-100">Geofence Active</h5>
+                    <p className="text-[10px] text-gray-500 leading-relaxed font-medium dark:text-slate-400">
                       Setup your office boundary. Drag the marker or click to move center.
                     </p>
                   </div>
@@ -253,11 +253,11 @@ export function GeoFencePicker({
 
           {/* Map Layer Switcher */}
           <div className="absolute bottom-4 left-4 z-10">
-            <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-xl border border-white shadow-xl flex gap-1">
+            <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-xl border border-white shadow-xl flex gap-1 dark:bg-slate-900">
               <button title="Street" className="p-2 bg-blue-600 rounded-lg text-white shadow-md transition-all active:scale-95">
                 <MapIcon className="h-4 w-4" />
               </button>
-              <button title="Satellite" className="p-2 hover:bg-gray-50 rounded-lg text-gray-500 transition-all hover:text-blue-600">
+              <button title="Satellite" className="p-2 hover:bg-gray-50 rounded-lg text-gray-500 transition-all hover:text-blue-600 dark:hover:bg-slate-800 dark:text-slate-400">
                 <Layers className="h-4 w-4" />
               </button>
             </div>
@@ -269,11 +269,11 @@ export function GeoFencePicker({
           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 animate-in fade-in slide-in-from-bottomDuration-300">
             <div className="bg-gray-900/90 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-4">
                <div className="flex items-center gap-2 border-r border-white/10 pr-4">
-                 <span className="text-[9px] uppercase font-black text-gray-500 tracking-widest">Latitude</span>
+                 <span className="text-[9px] uppercase font-black text-gray-500 tracking-widest dark:text-slate-400">Latitude</span>
                  <span className="text-sm font-bold font-mono text-white tabular-nums tracking-tight">{latitude}</span>
                </div>
                <div className="flex items-center gap-2">
-                 <span className="text-[9px] uppercase font-black text-gray-500 tracking-widest">Longitude</span>
+                 <span className="text-[9px] uppercase font-black text-gray-500 tracking-widest dark:text-slate-400">Longitude</span>
                  <span className="text-sm font-bold font-mono text-white tabular-nums tracking-tight">{longitude}</span>
                </div>
             </div>
@@ -283,15 +283,15 @@ export function GeoFencePicker({
 
       {/* Radius Controls & Manual Coordinates */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xl space-y-5">
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xl space-y-5 dark:bg-slate-900 dark:border-slate-800">
           <div className="flex justify-between items-center">
-            <label className="text-sm font-bold text-gray-900 flex items-center gap-2.5">
-              <div className="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                <Move className="h-4 w-4 text-blue-600" />
+            <label className="text-sm font-bold text-gray-900 flex items-center gap-2.5 dark:text-slate-100">
+              <div className="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center dark:bg-blue-500/10">
+                <Move className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               Fence Radius
             </label>
-            <div className="text-xs font-black text-blue-600 px-3 py-1 bg-blue-50 rounded-full border border-blue-100 uppercase tracking-tighter">
+            <div className="text-xs font-black text-blue-600 px-3 py-1 bg-blue-50 rounded-full border border-blue-100 uppercase tracking-tighter dark:text-blue-400 dark:bg-blue-500/10">
               {radius} meters
             </div>
           </div>
@@ -303,7 +303,7 @@ export function GeoFencePicker({
             step="50"
             value={radius}
             onChange={(e) => onRadiusChange?.(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-colors"
+            className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-colors dark:bg-slate-800"
           />
 
           <div className="grid grid-cols-2 gap-3 pt-2">

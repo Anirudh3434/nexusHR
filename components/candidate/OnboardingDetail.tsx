@@ -15,13 +15,13 @@ import {
 } from "lucide-react";
 
 const statusMeta: Record<string, { label: string; classes: string }> = {
-  draft: { label: "Draft", classes: "bg-gray-100 text-gray-700 border-gray-200" },
-  offer_sent: { label: "Offer Sent", classes: "bg-blue-100 text-blue-700 border-blue-200" },
-  offer_accepted: { label: "Offer Accepted", classes: "bg-indigo-100 text-indigo-700 border-indigo-200" },
-  in_progress: { label: "In Progress", classes: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  completed: { label: "Completed", classes: "bg-green-100 text-green-700 border-green-200" },
-  offer_declined: { label: "Offer Declined", classes: "bg-red-100 text-red-700 border-red-200" },
-  cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200" },
+  draft: { label: "Draft", classes: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
+  offer_sent: { label: "Offer Sent", classes: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30" },
+  offer_accepted: { label: "Offer Accepted", classes: "bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/30" },
+  in_progress: { label: "In Progress", classes: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30" },
+  completed: { label: "Completed", classes: "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30" },
+  offer_declined: { label: "Offer Declined", classes: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30" },
+  cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" },
 };
 
 const docCategoryLabels: Record<string, string> = {
@@ -29,17 +29,17 @@ const docCategoryLabels: Record<string, string> = {
 };
 
 const taskStatusMeta: Record<string, { label: string; classes: string }> = {
-  pending: { label: "Pending", classes: "bg-gray-100 text-gray-600 border-gray-200" },
-  in_progress: { label: "In Progress", classes: "bg-blue-100 text-blue-700 border-blue-200" },
-  completed: { label: "Completed", classes: "bg-green-100 text-green-700 border-green-200" },
-  cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-400 border-gray-200" },
+  pending: { label: "Pending", classes: "bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" },
+  in_progress: { label: "In Progress", classes: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30" },
+  completed: { label: "Completed", classes: "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30" },
+  cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-400 border-gray-200 dark:bg-slate-800 dark:border-slate-700" },
 };
 
 const docStatusMeta: Record<string, { label: string; classes: string }> = {
-  pending: { label: "Pending", classes: "bg-gray-100 text-gray-600 border-gray-200" },
-  submitted: { label: "Submitted", classes: "bg-blue-100 text-blue-700 border-blue-200" },
-  verified: { label: "Verified", classes: "bg-green-100 text-green-700 border-green-200" },
-  rejected: { label: "Rejected", classes: "bg-red-100 text-red-700 border-red-200" },
+  pending: { label: "Pending", classes: "bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" },
+  submitted: { label: "Submitted", classes: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30" },
+  verified: { label: "Verified", classes: "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30" },
+  rejected: { label: "Rejected", classes: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30" },
 };
 
 interface Task {
@@ -333,7 +333,7 @@ export default function OnboardingDetail() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <XCircle className="mb-3 h-10 w-10 text-red-400" />
-        <p className="text-gray-600">{forbidden ? "You don't have access to this onboarding record." : "Onboarding record not found."}</p>
+        <p className="text-gray-600 dark:text-slate-400">{forbidden ? "You don't have access to this onboarding record." : "Onboarding record not found."}</p>
         <Button variant="outline" className="mt-4" onClick={() => router.push(backHref)}>Back</Button>
       </div>
     );
@@ -368,15 +368,15 @@ export default function OnboardingDetail() {
               <h1 className="text-2xl font-bold tracking-tight">{record.candidate.fullName}</h1>
               <Badge className={meta.classes}>{meta.label}</Badge>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               {record.candidate.position || 'Position TBD'}{record.candidate.department && ` · ${record.candidate.department}`}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="mr-2 w-32">
-            <div className="mb-1 flex justify-between text-xs text-gray-500"><span>Progress</span><span>{record.progress}%</span></div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="mb-1 flex justify-between text-xs text-gray-500 dark:text-slate-400"><span>Progress</span><span>{record.progress}%</span></div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700">
               <div className="h-full rounded-full bg-blue-600" style={{ width: `${record.progress}%` }} />
             </div>
           </div>
@@ -390,7 +390,7 @@ export default function OnboardingDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1 rounded-lg border border-gray-200 bg-white p-1">
+      <div className="flex flex-wrap gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -424,18 +424,18 @@ export default function OnboardingDetail() {
                       ['department', 'Department'], ['reportingManager', 'Reporting Manager'], ['workLocation', 'Work Location'],
                     ].map(([key, label]) => (
                       <div key={key} className="space-y-1.5">
-                        <label className="text-sm font-medium text-gray-700">{label}</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">{label}</label>
                         <Input value={candidateForm[key] || ''} onChange={(e) => setCandidateForm((p: any) => ({ ...p, [key]: e.target.value }))} />
                       </div>
                     ))}
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700">Joining Date</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Joining Date</label>
                       <Input type="date" value={candidateForm.joiningDate ? new Date(candidateForm.joiningDate).toISOString().split('T')[0] : ''} onChange={(e) => setCandidateForm((p: any) => ({ ...p, joiningDate: e.target.value }))} />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700">Notes</label>
-                    <textarea className="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Notes</label>
+                    <textarea className="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={saveCandidate} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
@@ -452,13 +452,13 @@ export default function OnboardingDetail() {
                     ['Joining Date', record.candidate.joiningDate ? new Date(record.candidate.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'],
                   ].map(([label, value]) => (
                     <div key={label}>
-                      <p className="text-xs text-gray-500">{label}</p>
-                      <p className="font-medium text-gray-800">{value}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
+                      <p className="font-medium text-gray-800 dark:text-slate-200">{value}</p>
                     </div>
                   ))}
                   <div>
-                    <p className="text-xs text-gray-500">Account</p>
-                    <p className="font-medium text-gray-800">
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Account</p>
+                    <p className="font-medium text-gray-800 dark:text-slate-200">
                       {record.employeeId ? (record.employeeId.name ? record.employeeId.name : 'Linked') : 'Not created'}
                       {record.employeeId?.isActive === false && <span className="text-red-500"> · Inactive</span>}
                     </p>
@@ -466,9 +466,9 @@ export default function OnboardingDetail() {
                 </div>
               )}
               {record.notes && !editCandidate && (
-                <div className="mt-4 rounded-md bg-gray-50 p-3">
-                  <p className="text-xs font-medium text-gray-500">Notes</p>
-                  <p className="text-sm text-gray-700">{record.notes}</p>
+                <div className="mt-4 rounded-md bg-gray-50 p-3 dark:bg-slate-800/50">
+                  <p className="text-xs font-medium text-gray-500 dark:text-slate-400">Notes</p>
+                  <p className="text-sm text-gray-700 dark:text-slate-300">{record.notes}</p>
                 </div>
               )}
             </CardContent>
@@ -482,7 +482,7 @@ export default function OnboardingDetail() {
                 <div key={i} className="flex gap-3">
                   <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
                   <div>
-                    <p className="text-sm text-gray-800">{a.details || a.action}</p>
+                    <p className="text-sm text-gray-800 dark:text-slate-200">{a.details || a.action}</p>
                     <p className="text-xs text-gray-400">{a.userName} · {new Date(a.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                 </div>
@@ -501,7 +501,7 @@ export default function OnboardingDetail() {
               <CardHeader><CardTitle className="text-base">Offer Details</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Annual CTC</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Annual CTC</label>
                   <Input
                     value={record.offerLetter.ctc}
                     disabled={!canManage}
@@ -509,14 +509,14 @@ export default function OnboardingDetail() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Probation (months)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Probation (months)</label>
                   <Input
                     type="number" min={0} value={record.offerLetter.probationMonths}
                     disabled={!canManage}
                     onChange={(e) => setRecord((p: any) => ({ ...p, offerLetter: { ...p.offerLetter, probationMonths: Number(e.target.value) } }))}
                   />
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
                   <Badge className={statusMeta[record.offerLetter.status === 'accepted' ? 'offer_accepted' : record.offerLetter.status === 'declined' ? 'offer_declined' : record.offerLetter.status === 'sent' ? 'offer_sent' : 'draft']?.classes}>
                     {record.offerLetter.status}
                   </Badge>
@@ -537,7 +537,7 @@ export default function OnboardingDetail() {
 
                 {canRespond && (
                   <div className="space-y-2">
-                    <textarea className="w-full rounded-md border border-gray-300 p-3 text-sm" rows={2} placeholder="Optional note with your response" value={offerNotes} onChange={(e) => setOfferNotes(e.target.value)} />
+                    <textarea className="w-full rounded-md border border-gray-300 p-3 text-sm dark:border-slate-600" rows={2} placeholder="Optional note with your response" value={offerNotes} onChange={(e) => setOfferNotes(e.target.value)} />
                     <div className="flex gap-2">
                       <Button className="flex-1" onClick={() => respondOffer('accept')} disabled={saving}><CheckCircle2 size={16} className="mr-1" /> Accept</Button>
                       <Button className="flex-1" variant="destructive" onClick={() => respondOffer('decline')} disabled={saving}><XCircle size={16} className="mr-1" /> Decline</Button>
@@ -548,7 +548,7 @@ export default function OnboardingDetail() {
             </Card>
             {record.offerLetter.generatedBy?.name && (
               <Card>
-                <CardContent className="p-4 text-sm text-gray-500">
+                <CardContent className="p-4 text-sm text-gray-500 dark:text-slate-400">
                   Generated by {record.offerLetter.generatedBy.name}
                   {record.offerLetter.generatedAt && <> · {new Date(record.offerLetter.generatedAt).toLocaleDateString('en-IN')}</>}
                   {record.offerLetter.sentAt && <> · Sent {new Date(record.offerLetter.sentAt).toLocaleDateString('en-IN')}</>}
@@ -568,7 +568,7 @@ export default function OnboardingDetail() {
             </CardHeader>
             <CardContent>
               {record.offerLetter.content ? (
-                <div className="rounded-md border border-gray-200">
+                <div className="rounded-md border border-gray-200 dark:border-slate-700">
                   <iframe title="Offer Letter" srcDoc={record.offerLetter.content} className="h-[36rem] w-full rounded-md" />
                 </div>
               ) : (
@@ -596,27 +596,27 @@ export default function OnboardingDetail() {
               <CardHeader><CardTitle className="text-base">Add Checklist Task</CardTitle></CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Title *</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Title *</label>
                   <Input value={taskForm.title} onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Due Date</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Due Date</label>
                   <Input type="date" value={taskForm.dueDate} onChange={(e) => setTaskForm((p) => ({ ...p, dueDate: e.target.value }))} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Category</label>
-                  <select className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm" value={taskForm.category} onChange={(e) => setTaskForm((p) => ({ ...p, category: e.target.value }))}>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Category</label>
+                  <select className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-slate-900" value={taskForm.category} onChange={(e) => setTaskForm((p) => ({ ...p, category: e.target.value }))}>
                     {['HR', 'IT', 'Admin', 'Manager', 'Employee'].map((c) => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Assignee</label>
-                  <select className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm" value={taskForm.assigneeRole} onChange={(e) => setTaskForm((p) => ({ ...p, assigneeRole: e.target.value }))}>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Assignee</label>
+                  <select className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-slate-900" value={taskForm.assigneeRole} onChange={(e) => setTaskForm((p) => ({ ...p, assigneeRole: e.target.value }))}>
                     {[['hr', 'HR'], ['it', 'IT'], ['admin', 'Admin'], ['manager', 'Manager'], ['employee', 'Employee']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-sm font-medium text-gray-700">Description</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Description</label>
                   <Input value={taskForm.description} onChange={(e) => setTaskForm((p) => ({ ...p, description: e.target.value }))} />
                 </div>
                 <div className="flex gap-2 sm:col-span-2">
@@ -643,20 +643,20 @@ export default function OnboardingDetail() {
                   {tasks.map((task: Task) => {
                     const tMeta = taskStatusMeta[task.status] || taskStatusMeta.pending;
                     return (
-                      <div key={task._id} className="rounded-md border border-gray-200 p-3">
+                      <div key={task._id} className="rounded-md border border-gray-200 p-3 dark:border-slate-700">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-medium text-gray-800">{task.title}</p>
+                              <p className="font-medium text-gray-800 dark:text-slate-200">{task.title}</p>
                               <Badge className={tMeta.classes}>{tMeta.label}</Badge>
                               <Badge variant="outline">{task.assigneeRole}</Badge>
                             </div>
-                            {task.description && <p className="mt-1 text-sm text-gray-500">{task.description}</p>}
+                            {task.description && <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{task.description}</p>}
                             <p className="mt-1 text-xs text-gray-400">
                               {task.dueDate && <>Due {new Date(task.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</>}
                               {task.completedBy?.name && <> · Completed by {task.completedBy.name}</>}
                             </p>
-                            {task.notes && <p className="mt-1 text-xs italic text-gray-500">Note: {task.notes}</p>}
+                            {task.notes && <p className="mt-1 text-xs italic text-gray-500 dark:text-slate-400">Note: {task.notes}</p>}
                           </div>
                           {canEditTask(task) && (
                             <div className="flex shrink-0 gap-1">
@@ -701,18 +701,18 @@ export default function OnboardingDetail() {
               <CardHeader><CardTitle className="text-base">Add Document Requirement</CardTitle></CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Title *</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Title *</label>
                   <Input value={docForm.title} onChange={(e) => setDocForm((p) => ({ ...p, title: e.target.value }))} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-700">Category</label>
-                  <select className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm" value={docForm.category} onChange={(e) => setDocForm((p) => ({ ...p, category: e.target.value }))}>
+                  <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Category</label>
+                  <select className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-slate-900" value={docForm.category} onChange={(e) => setDocForm((p) => ({ ...p, category: e.target.value }))}>
                     {Object.entries(docCategoryLabels).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
                 <label className="flex items-center gap-2 sm:col-span-2">
                   <input type="checkbox" checked={docForm.isRequired} onChange={(e) => setDocForm((p) => ({ ...p, isRequired: e.target.checked }))} className="h-4 w-4 accent-blue-600" />
-                  <span className="text-sm text-gray-700">Required document</span>
+                  <span className="text-sm text-gray-700 dark:text-slate-300">Required document</span>
                 </label>
                 <div className="flex gap-2 sm:col-span-2">
                   <Button onClick={addDoc} disabled={saving}>Add</Button>
@@ -732,17 +732,17 @@ export default function OnboardingDetail() {
               {(record.documents || []).map((doc: Doc) => {
                 const dMeta = docStatusMeta[doc.status] || docStatusMeta.pending;
                 return (
-                  <div key={doc._id} className="rounded-md border border-gray-200 p-3">
+                  <div key={doc._id} className="rounded-md border border-gray-200 p-3 dark:border-slate-700">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-gray-800">{doc.title}</p>
+                          <p className="font-medium text-gray-800 dark:text-slate-200">{doc.title}</p>
                           {doc.isRequired && <Badge variant="secondary">Required</Badge>}
                           <Badge variant="outline">{docCategoryLabels[doc.category] || doc.category}</Badge>
                           <Badge className={dMeta.classes}>{dMeta.label}</Badge>
                         </div>
                         {doc.status === 'submitted' && doc.fileUrl && (
-                          <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline">
+                          <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
                             <Eye size={14} /> {doc.fileName || 'View document'}
                           </a>
                         )}
@@ -754,7 +754,7 @@ export default function OnboardingDetail() {
                       <div className="flex shrink-0 flex-wrap items-center gap-1">
                         {/* Uploader: employee (own) or staff */}
                         {doc.status === 'pending' || doc.status === 'rejected' ? (
-                          <label className="inline-flex h-9 cursor-pointer items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100">
+                          <label className="inline-flex h-9 cursor-pointer items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-700">
                             <input type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadDoc(doc, f); }} />
                             <Upload size={14} /> Upload
                           </label>

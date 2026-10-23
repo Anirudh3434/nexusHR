@@ -6,18 +6,39 @@ import WorkShift from '@/models/WorkShift';
 import Company from '@/models/Company';
 import { emitToRoom } from '@/lib/socketEmit';
 
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
 // GET attendance records
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const isSuperAdmin = auth.role === 'super_admin';
+    const isEmployee = auth.role === 'employee';
     const { searchParams } = new URL(req.url);
     const employeeId = searchParams.get('employeeId');
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
     const date = searchParams.get('date');
 
+    if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+
     let query: any = {};
-    if (employeeId) query.employeeId = employeeId;
-    if (companyId) query.companyId = companyId;
+    if (isSuperAdmin) {
+      if (queryCompanyId) query.companyId = queryCompanyId;
+      else if (auth.companyId) query.companyId = auth.companyId;
+    } else {
+      if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = auth.companyId;
+    }
+    if (isEmployee) {
+      query.employeeId = auth.userId;
+    } else if (employeeId) {
+      query.employeeId = employeeId;
+    }
     if (date) query.date = date;
 
     const attendance = await Attendance.find(query)
@@ -213,7 +234,38 @@ function calculateOvertime(checkOutTime: string, shiftEndTime: string, lateMinut
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { employeeId, date, checkIn, checkOut, companyId, note, location, workMode } = await req.json();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const body = await req.json();
+    const { date, checkIn, checkOut, note, location, workMode } = body;
+    let { employeeId, companyId } = body;
+
+    // Bind identity: default to self; staff override allowed ONLY for same-company admin/hr
+    if (employeeId && employeeId !== auth.userId) {
+      if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+        return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+      }
+      const targetUser = await User.findById(employeeId).select('companyId');
+      if (!targetUser) return NextResponse.json({ message: 'Employee not found' }, { status: 404 });
+      if (auth.role !== 'super_admin' && targetUser.companyId?.toString() !== auth.companyId) {
+        return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+      }
+    } else {
+      employeeId = auth.userId;
+    }
+    // companyId ALWAYS from verified identity; reject body mismatch (except super_admin)
+    if (companyId && auth.role !== 'super_admin' && companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    // Resolve company from target employee (verified) or session
+    const resolvedEmployee = await User.findById(employeeId).select('companyId');
+    companyId = resolvedEmployee?.companyId?.toString() || auth.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Missing companyId' }, { status: 400 });
+    }
+    if (auth.role !== 'super_admin' && companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
 
     // Parse date string to Date object
     if (!employeeId || !date) {
@@ -482,6 +534,11 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const { id, checkIn, checkOut, date, workMode, status: manualStatus, note } = await req.json();
 
     if (!id) {
@@ -491,6 +548,9 @@ export async function PUT(req: Request) {
     const attendance = await Attendance.findById(id);
     if (!attendance) {
       return NextResponse.json({ message: 'Attendance record not found' }, { status: 404 });
+    }
+    if (auth.role !== 'super_admin' && attendance.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     // Update fields
@@ -560,6 +620,11 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
@@ -567,6 +632,11 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'Missing record ID' }, { status: 400 });
     }
 
+    const record = await Attendance.findById(id).select('companyId');
+    if (!record) return NextResponse.json({ message: 'Attendance record not found' }, { status: 404 });
+    if (auth.role !== 'super_admin' && record.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
     await Attendance.findByIdAndDelete(id);
     return NextResponse.json({ message: 'Attendance record deleted successfully' });
   } catch (error: any) {

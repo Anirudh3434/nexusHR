@@ -9,6 +9,7 @@ import {
   AlertTriangle, Check, X, Filter, RefreshCw, 
   Clock, User, AlertCircle 
 } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 
 interface Alert {
   _id: string;
@@ -179,7 +180,7 @@ export default function RetentionAlerts() {
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="w-4 h-4 text-gray-500 dark:text-slate-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters:</span>
             </div>
 
@@ -210,13 +211,15 @@ export default function RetentionAlerts() {
       {/* Alerts List */}
       {isLoading ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">Loading alerts...</CardContent>
+          <CardContent className="p-8 text-center text-gray-500 dark:text-slate-400">Loading alerts...</CardContent>
         </Card>
       ) : alerts.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">
-            No alerts found. All clear!
-          </CardContent>
+          <EmptyState
+            icon={<AlertTriangle size={18} />}
+            title="No alerts found."
+            description="All clear!"
+          />
         </Card>
       ) : (
         <div className="space-y-4">
@@ -236,7 +239,7 @@ export default function RetentionAlerts() {
                         {getAlertTypeLabel(alert.alertType)}
                       </Badge>
                       {alert.acknowledged && (
-                        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 dark:bg-green-500/15 dark:text-green-300">
                           <Check className="w-3 h-3 mr-1" />
                           Acknowledged
                         </Badge>
@@ -244,7 +247,7 @@ export default function RetentionAlerts() {
                     </div>
 
                     <div className="flex items-center gap-2 mb-2">
-                      <User className="w-4 h-4 text-gray-500" />
+                      <User className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                       <span className="font-medium text-gray-900 dark:text-white">
                         {alert.employeeId.name}
                       </span>
@@ -260,7 +263,7 @@ export default function RetentionAlerts() {
                       {alert.message}
                     </p>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {new Date(alert.createdAt).toLocaleString()}

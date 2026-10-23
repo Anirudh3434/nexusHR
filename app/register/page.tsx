@@ -233,16 +233,16 @@ export default function RegisterPage() {
   // Success Screen
   if (currentStep >= steps.length) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center shadow-2xl border-indigo-100 rounded-3xl p-2 bg-white">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 dark:bg-slate-800/50">
+        <Card className="w-full max-w-md text-center shadow-2xl border-indigo-100 rounded-3xl p-2 bg-white dark:bg-slate-900">
           <CardContent className="pt-8 pb-8 space-y-5">
-            <div className="h-20 w-20 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-sm">
-              <CheckCircle className="h-10 w-10 text-emerald-600" />
+            <div className="h-20 w-20 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-sm dark:bg-emerald-500/10 dark:border-emerald-500/30">
+              <CheckCircle className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
             </div>
             
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Registration Complete!</h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">Registration Complete!</h2>
+              <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
                 Your organization is configured and ready for your team.
               </p>
             </div>
@@ -287,7 +287,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 dark:bg-slate-800/50">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -298,8 +298,8 @@ export default function RegisterPage() {
               className="h-full w-full object-contain scale-105" 
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Register Your Company</h1>
-          <p className="text-gray-600">Complete the 4-step process to set up your company</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">Register Your Company</h1>
+          <p className="text-gray-600 dark:text-slate-400">Complete the 4-step process to set up your company</p>
         </div>
 
         {/* Stepper */}
@@ -311,7 +311,7 @@ export default function RegisterPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300">
             {error}
           </div>
         )}
@@ -320,10 +320,10 @@ export default function RegisterPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {currentStep === 0 && <Building2 className="h-5 w-5 text-blue-600" />}
-              {currentStep === 1 && <Landmark className="h-5 w-5 text-blue-600" />}
-              {currentStep === 2 && <MapPinned className="h-5 w-5 text-blue-600" />}
-              {currentStep === 3 && <User className="h-5 w-5 text-blue-600" />}
+              {currentStep === 0 && <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+              {currentStep === 1 && <Landmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+              {currentStep === 2 && <MapPinned className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+              {currentStep === 3 && <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
               {steps[currentStep].title}
             </CardTitle>
             <CardDescription>
@@ -341,7 +341,7 @@ export default function RegisterPage() {
                 {/* Logo Upload */}
                 <div className="flex items-center gap-4">
                   <div 
-                    className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-gray-50"
+                    className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-gray-50 dark:border-slate-600 dark:bg-slate-800/50"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     {data.logo ? (
@@ -349,13 +349,13 @@ export default function RegisterPage() {
                     ) : (
                       <>
                         <Upload className="h-8 w-8 text-gray-400 mb-1" />
-                        <span className="text-xs text-gray-500">Upload Logo</span>
+                        <span className="text-xs text-gray-500 dark:text-slate-400">Upload Logo</span>
                       </>
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Company Logo</p>
-                    <p className="text-xs text-gray-500 mb-2">Recommended: 200x200px, PNG or JPG, max 2MB</p>
+                    <p className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Company Logo</p>
+                    <p className="text-xs text-gray-500 mb-2 dark:text-slate-400">Recommended: 200x200px, PNG or JPG, max 2MB</p>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -367,7 +367,7 @@ export default function RegisterPage() {
                       <button
                         type="button"
                         onClick={() => setData(prev => ({ ...prev, logo: null }))}
-                        className="text-sm text-red-600 hover:text-red-700"
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
                       >
                         Remove logo
                       </button>
@@ -377,7 +377,7 @@ export default function RegisterPage() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Company Name *
                     </label>
                     <Input
@@ -388,13 +388,13 @@ export default function RegisterPage() {
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                         6-Character Company ID *
                       </label>
                       <button
                         type="button"
                         onClick={() => handleInputChange('code', generate6CharID())}
-                        className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                        className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold dark:text-indigo-400"
                         title="Generate a new 6-character ID"
                       >
                         <RefreshCw className="h-3 w-3" /> Regenerate
@@ -407,13 +407,13 @@ export default function RegisterPage() {
                       maxLength={6}
                       className="uppercase font-mono font-bold tracking-widest"
                     />
-                    <p className="text-[11px] text-gray-500 mt-1">Unique 6-character code used by your employees to log in.</p>
+                    <p className="text-[11px] text-gray-500 mt-1 dark:text-slate-400">Unique 6-character code used by your employees to log in.</p>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Email Address *
                     </label>
                     <div className="relative">
@@ -428,7 +428,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Phone Number *
                     </label>
                     <Input
@@ -440,7 +440,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Website
                   </label>
                   <Input
@@ -456,7 +456,7 @@ export default function RegisterPage() {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Street Address *
                   </label>
                   <Input
@@ -468,7 +468,7 @@ export default function RegisterPage() {
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       City *
                     </label>
                     <Input
@@ -478,7 +478,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       State *
                     </label>
                     <Input
@@ -488,7 +488,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       ZIP / PIN Code *
                     </label>
                     <Input
@@ -501,7 +501,7 @@ export default function RegisterPage() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       GST Number
                     </label>
                     <div className="relative">
@@ -513,10 +513,10 @@ export default function RegisterPage() {
                         className="pl-10"
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">15 character GSTIN format</p>
+                    <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">15 character GSTIN format</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       PAN Number
                     </label>
                     <Input
@@ -532,12 +532,12 @@ export default function RegisterPage() {
             {/* Step 3: Office Location */}
             {currentStep === 2 && (
               <div className="space-y-6">
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 dark:bg-blue-500/10">
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <MapPin className="h-5 w-5 text-blue-600 mt-0.5 dark:text-blue-400" />
                     <div>
                       <h4 className="font-medium text-blue-900 mb-1">Geo-Fencing Setup</h4>
-                      <p className="text-sm text-blue-700">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
                         Click on the map or drag the marker to set your office location. 
                         Employees will only be able to mark attendance when within the specified radius.
                       </p>
@@ -563,7 +563,7 @@ export default function RegisterPage() {
                 {/* Manual Coordinate Inputs */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Office Latitude *
                     </label>
                     <Input
@@ -573,7 +573,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Office Longitude *
                     </label>
                     <Input
@@ -585,7 +585,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Office Address *
                   </label>
                   <textarea
@@ -593,7 +593,7 @@ export default function RegisterPage() {
                     onChange={(e) => handleInputChange('officeAddress', e.target.value)}
                     placeholder="Complete office address for attendance location"
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:border-slate-600"
                   />
                 </div>
 
@@ -603,17 +603,17 @@ export default function RegisterPage() {
                       type="checkbox"
                       checked={data.enableGeoFencing}
                       onChange={(e) => handleInputChange('enableGeoFencing', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:text-blue-400 dark:border-slate-600"
                     />
-                    <span className="text-sm font-medium text-gray-700">Enable Geo-Fencing</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Enable Geo-Fencing</span>
                   </label>
                 </div>
 
                 {data.enableGeoFencing && data.officeLatitude && data.officeLongitude && (
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <p className="text-sm text-gray-600">
+                  <div className="bg-gray-100 rounded-lg p-4 dark:bg-slate-800">
+                    <p className="text-sm text-gray-600 dark:text-slate-400">
                       <strong>Preview:</strong> Attendance will be allowed within{" "}
-                      <span className="font-semibold text-blue-600">{data.geoFenceRadius} meters</span>{" "}
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">{data.geoFenceRadius} meters</span>{" "}
                       of the marked location on the map.
                     </p>
                   </div>
@@ -624,12 +624,12 @@ export default function RegisterPage() {
             {/* Step 4: Admin Account */}
             {currentStep === 3 && (
               <div className="space-y-6">
-                <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
+                <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4 dark:bg-yellow-500/10">
                   <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <User className="h-5 w-5 text-yellow-600 mt-0.5 dark:text-yellow-400" />
                     <div>
                       <h4 className="font-medium text-yellow-900 mb-1">Create Admin Account</h4>
-                      <p className="text-sm text-yellow-700">
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
                         This will be the primary administrator account for your company with full access to all features.
                       </p>
                     </div>
@@ -637,7 +637,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Full Name *
                   </label>
                   <Input
@@ -648,7 +648,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Admin Email Address *
                   </label>
                   <div className="relative">
@@ -664,7 +664,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Password *
                   </label>
                   <div className="relative">
@@ -687,7 +687,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Confirm Password *
                   </label>
                   <div className="relative">
@@ -755,9 +755,9 @@ export default function RegisterPage() {
         </div>
 
         {/* Login Link */}
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm text-gray-600 mt-6 dark:text-slate-400">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium dark:text-blue-400">
             Sign in
           </Link>
         </p>

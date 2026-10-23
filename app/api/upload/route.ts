@@ -1,8 +1,33 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
+import { getAuthInfo } from '@/lib/auth-util';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB — checked via file.size BEFORE buffering
+
+// Server-side folder allowlist: client sends a key, server maps it to a path.
+const FOLDER_ALLOWLIST: Record<string, string> = {
+  avatar: 'hrm/avatars',
+  resume: 'hrm/resumes',
+  bill: 'hrm/bills',
+  document: 'hrm/documents',
+};
+
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv', 'text/plain',
+  'application/zip',
+]);
 
 export async function POST(req: Request) {
   try {
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
     // Configure Cloudinary inside the handler to ensure env vars are loaded
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'dhgqr0et2';
     const apiKey = process.env.CLOUDINARY_API_KEY || '146475928654719';
@@ -22,10 +47,24 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const folder = formData.get('folder') as string || 'hrm';
+    const folderKey = formData.get('folder') as string || 'document';
 
     if (!file) {
       return NextResponse.json({ message: 'No file provided' }, { status: 400 });
+    }
+
+    // Size cap BEFORE buffering into memory
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ message: 'File exceeds the 10MB limit' }, { status: 413 });
+    }
+
+    if (!file.type || !ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({ message: 'File type not allowed' }, { status: 415 });
+    }
+
+    const folder = FOLDER_ALLOWLIST[folderKey];
+    if (!folder) {
+      return NextResponse.json({ message: 'Invalid folder' }, { status: 400 });
     }
 
     // Convert file to buffer

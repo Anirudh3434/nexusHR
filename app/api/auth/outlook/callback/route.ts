@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import EmailConfig from '@/models/EmailConfig';
+import { getAuthInfo } from '@/lib/auth-util';
+import { verifyState } from '@/lib/oauth-state';
+import { encryptToken } from '@/lib/email-token';
 
 const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || '';
 const MICROSOFT_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET || '';
@@ -27,6 +30,18 @@ export async function GET(req: Request) {
 
     if (!code || !state) {
       return NextResponse.redirect(`${baseUrl}/email-settings?error=missing_code_or_state`);
+    }
+
+    // Verify signed state (sig + 10-min exp); companyId comes from verified state only.
+    const verified = verifyState(state);
+    if (!verified) {
+      return NextResponse.redirect(`${baseUrl}/email-settings?error=invalid_state`);
+    }
+
+    // Require the session user to match the user who started the flow.
+    const auth = await getAuthInfo();
+    if (!auth || auth.userId !== verified.userId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     if (!MICROSOFT_CLIENT_ID || !MICROSOFT_CLIENT_SECRET) {
@@ -60,10 +75,10 @@ export async function GET(req: Request) {
 
     const userInfo = await userInfoResponse.json();
 
-    // Save tokens to database
+    // Save tokens to database (encrypted at rest)
     await connectDB();
 
-    const companyId = state;
+    const companyId = verified.companyId;
     const email = userInfo.mail || userInfo.userPrincipalName;
 
     // Update or create email config
@@ -73,8 +88,8 @@ export async function GET(req: Request) {
         companyId,
         provider: 'outlook',
         careerEmail: email,
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
+        accessToken: tokenData.access_token ? encryptToken(tokenData.access_token) : undefined,
+        refreshToken: tokenData.refresh_token ? encryptToken(tokenData.refresh_token) : undefined,
         tokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
         isActive: true,
       },

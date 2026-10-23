@@ -1,29 +1,30 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import EmailConfig from '@/models/EmailConfig';
+import { getAuthInfo } from '@/lib/auth-util';
+import { encryptToken } from '@/lib/email-token';
 
-// GET email config
+// GET email config (session-company scoped)
 export async function GET(req: Request) {
   try {
     await connectDB();
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
-
-    if (!companyId) {
-      return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const companyId = auth.companyId;
 
     // Get config with accessToken to check connection status (explicitly select it)
     const config = await EmailConfig.findOne({ companyId, isActive: true })
       .select('+accessToken');
-    
+
     if (!config) {
       return NextResponse.json({ message: 'No email config found' }, { status: 404 });
     }
 
     // Check if connected (has access token)
     const isConnected = !!config.accessToken;
-    
+
     // Create response object without sensitive fields
     const configObj = config.toObject();
     delete configObj.accessToken;
@@ -39,24 +40,35 @@ export async function GET(req: Request) {
   }
 }
 
-// POST create/update email config
+// POST create/update email config (session-company scoped)
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const data = await req.json();
-
-    if (!data.companyId || !data.provider || !data.careerEmail) {
-      return NextResponse.json({ message: 'Company ID, provider, and career email required' }, { status: 400 });
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const data = await req.json();
+    const companyId = auth.companyId;
+
+    if (!data.provider || !data.careerEmail) {
+      return NextResponse.json({ message: 'Provider and career email required' }, { status: 400 });
+    }
+
+    const toSave: any = {
+      ...data,
+      companyId,
+      isActive: true,
+      updatedAt: new Date()
+    };
+    // Encrypt tokens at rest.
+    if (toSave.accessToken) toSave.accessToken = encryptToken(toSave.accessToken);
+    if (toSave.refreshToken) toSave.refreshToken = encryptToken(toSave.refreshToken);
 
     // Upsert config
     const config = await EmailConfig.findOneAndUpdate(
-      { companyId: data.companyId },
-      { 
-        ...data, 
-        isActive: true,
-        updatedAt: new Date()
-      },
+      { companyId },
+      toSave,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
@@ -66,19 +78,25 @@ export async function POST(req: Request) {
   }
 }
 
-// PATCH update specific fields
+// PATCH update specific fields (session-company scoped)
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    const { companyId, ...updateData } = await req.json();
-
-    if (!companyId) {
-      return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const { companyId: _ignored, ...updateData } = await req.json();
+    const companyId = auth.companyId;
+
+    const toUpdate: any = { ...updateData, updatedAt: new Date() };
+    // Encrypt tokens at rest.
+    if (toUpdate.accessToken) toUpdate.accessToken = encryptToken(toUpdate.accessToken);
+    if (toUpdate.refreshToken) toUpdate.refreshToken = encryptToken(toUpdate.refreshToken);
 
     const config = await EmailConfig.findOneAndUpdate(
       { companyId },
-      { ...updateData, updatedAt: new Date() },
+      toUpdate,
       { new: true }
     ).select('-accessToken -refreshToken');
 
@@ -92,16 +110,15 @@ export async function PATCH(req: Request) {
   }
 }
 
-// DELETE (deactivate) config
+// DELETE (deactivate) config (session-company scoped)
 export async function DELETE(req: Request) {
   try {
     await connectDB();
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
-
-    if (!companyId) {
-      return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const companyId = auth.companyId;
 
     const config = await EmailConfig.findOneAndUpdate(
       { companyId },

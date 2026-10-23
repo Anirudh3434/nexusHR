@@ -139,7 +139,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-slate-500">Loading onboarding guide...</div>
+        <div className="text-slate-500 dark:text-slate-400">Loading onboarding guide...</div>
       </div>
     );
   }
@@ -149,7 +149,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
       <Card>
         <CardContent className="p-12 text-center">
           <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500">No onboarding guide created yet</p>
+          <p className="text-slate-500 dark:text-slate-400">No onboarding guide created yet</p>
           <Button onClick={() => setEditing(true)} className="mt-4">
             Create Onboarding Guide
           </Button>
@@ -162,8 +162,8 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Project Onboarding Guide</h2>
-          <p className="text-sm text-slate-500">Complete guide for new team members</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Project Onboarding Guide</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Complete guide for new team members</p>
         </div>
         <div className="flex items-center gap-2">
           {editing ? (
@@ -188,7 +188,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
       {/* Project Overview */}
       <Card>
         <CardHeader 
-          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          className="cursor-pointer hover:bg-slate-50 transition-colors dark:hover:bg-slate-800"
           onClick={() => toggleSection('projectOverview')}
         >
           <CardTitle className="flex items-center justify-between">
@@ -199,37 +199,37 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
         {expandedSections.projectOverview && (
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Business Purpose</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Business Purpose</label>
               {editing ? (
                 <textarea
                   value={onboarding.projectOverview.businessPurpose}
                   onChange={(e) => updateField('projectOverview', 'businessPurpose', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.projectOverview.businessPurpose || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.projectOverview.businessPurpose || 'Not specified'}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Architecture Overview</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Architecture Overview</label>
               {editing ? (
                 <textarea
                   value={onboarding.projectOverview.architectureOverview}
                   onChange={(e) => updateField('projectOverview', 'architectureOverview', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.projectOverview.architectureOverview || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.projectOverview.architectureOverview || 'Not specified'}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tech Stack</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Tech Stack</label>
               {editing ? (
                 <div className="flex flex-wrap gap-2">
                   {onboarding.projectOverview.techStack.map((tech, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm flex items-center gap-2">
+                    <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm flex items-center gap-2 dark:bg-indigo-500/15 dark:text-indigo-300">
                       {tech}
                       <button onClick={() => {
                         const newStack = [...onboarding.projectOverview.techStack];
@@ -240,7 +240,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
                       </button>
                     </span>
                   ))}
-                  <button className="px-3 py-1 border border-dashed border-slate-300 text-slate-500 rounded-full text-sm flex items-center gap-1 hover:border-indigo-500 hover:text-indigo-500">
+                  <button className="px-3 py-1 border border-dashed border-slate-300 text-slate-500 rounded-full text-sm flex items-center gap-1 hover:border-indigo-500 hover:text-indigo-500 dark:border-slate-600 dark:text-slate-400">
                     <Plus className="w-3 h-3" />
                     Add
                   </button>
@@ -248,7 +248,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {onboarding.projectOverview.techStack.map((tech, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm">
+                    <span key={idx} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm dark:bg-slate-800 dark:text-slate-300">
                       {tech}
                     </span>
                   ))}
@@ -262,7 +262,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
       {/* Development */}
       <Card>
         <CardHeader 
-          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          className="cursor-pointer hover:bg-slate-50 transition-colors dark:hover:bg-slate-800"
           onClick={() => toggleSection('development')}
         >
           <CardTitle className="flex items-center justify-between">
@@ -273,31 +273,31 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
         {expandedSections.development && (
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Folder Structure</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Folder Structure</label>
               {editing ? (
                 <textarea
                   value={onboarding.development.folderStructure}
                   onChange={(e) => updateField('development', 'folderStructure', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <pre className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg overflow-x-auto">
+                <pre className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg overflow-x-auto dark:text-slate-400 dark:bg-slate-800/50">
                   {onboarding.development.folderStructure || 'Not specified'}
                 </pre>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Development Workflow</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Development Workflow</label>
               {editing ? (
                 <textarea
                   value={onboarding.development.developmentWorkflow}
                   onChange={(e) => updateField('development', 'developmentWorkflow', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.development.developmentWorkflow || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.development.developmentWorkflow || 'Not specified'}</p>
               )}
             </div>
           </CardContent>
@@ -307,7 +307,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
       {/* Git */}
       <Card>
         <CardHeader 
-          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          className="cursor-pointer hover:bg-slate-50 transition-colors dark:hover:bg-slate-800"
           onClick={() => toggleSection('git')}
         >
           <CardTitle className="flex items-center justify-between">
@@ -318,29 +318,29 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
         {expandedSections.git && (
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Branch Strategy</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Branch Strategy</label>
               {editing ? (
                 <textarea
                   value={onboarding.git.branchStrategy}
                   onChange={(e) => updateField('git', 'branchStrategy', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.git.branchStrategy || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.git.branchStrategy || 'Not specified'}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Pull Request Process</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Pull Request Process</label>
               {editing ? (
                 <textarea
                   value={onboarding.git.pullRequestProcess}
                   onChange={(e) => updateField('git', 'pullRequestProcess', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.git.pullRequestProcess || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.git.pullRequestProcess || 'Not specified'}</p>
               )}
             </div>
           </CardContent>
@@ -350,7 +350,7 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
       {/* Deployment */}
       <Card>
         <CardHeader 
-          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          className="cursor-pointer hover:bg-slate-50 transition-colors dark:hover:bg-slate-800"
           onClick={() => toggleSection('deployment')}
         >
           <CardTitle className="flex items-center justify-between">
@@ -361,42 +361,42 @@ export default function OnboardingSection({ projectId }: OnboardingSectionProps)
         {expandedSections.deployment && (
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Deployment Process</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Deployment Process</label>
               {editing ? (
                 <textarea
                   value={onboarding.deployment.deploymentProcess}
                   onChange={(e) => updateField('deployment', 'deploymentProcess', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.deployment.deploymentProcess || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.deployment.deploymentProcess || 'Not specified'}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Testing Process</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Testing Process</label>
               {editing ? (
                 <textarea
                   value={onboarding.deployment.testingProcess}
                   onChange={(e) => updateField('deployment', 'testingProcess', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.deployment.testingProcess || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.deployment.testingProcess || 'Not specified'}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Release Process</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Release Process</label>
               {editing ? (
                 <textarea
                   value={onboarding.deployment.releaseProcess}
                   onChange={(e) => updateField('deployment', 'releaseProcess', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={4}
                 />
               ) : (
-                <p className="text-sm text-slate-600">{onboarding.deployment.releaseProcess || 'Not specified'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{onboarding.deployment.releaseProcess || 'Not specified'}</p>
               )}
             </div>
           </CardContent>

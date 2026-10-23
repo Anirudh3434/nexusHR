@@ -5,7 +5,7 @@ import KnowledgeBaseAdmin from '../../../components/ai/KnowledgeBaseAdmin';
 
 export default function HRKnowledgeBasePage() {
   return (
-    <div className="container mx-auto p-6">
+    <div className="space-y-6">
       <KnowledgeBaseAdmin />
     </div>
   );

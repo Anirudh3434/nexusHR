@@ -224,8 +224,8 @@ export default function StatusTransitionFlow({ columns, onTransitionChange }: St
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-800">Status Transition Rules</h3>
-        <div className="text-sm text-slate-500">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Status Transition Rules</h3>
+        <div className="text-sm text-slate-500 dark:text-slate-400">
           Drag cards to reposition • Drag connector to create transitions
         </div>
       </div>
@@ -233,7 +233,7 @@ export default function StatusTransitionFlow({ columns, onTransitionChange }: St
       {/* Canvas */}
       <div 
         ref={containerRef}
-        className="relative bg-white border border-slate-200 rounded-xl"
+        className="relative bg-white border border-slate-200 rounded-xl dark:bg-slate-900 dark:border-slate-700"
         style={{ height: '800px', minHeight: '800px', width: '100%' }}
       >
         {/* SVG for connections */}
@@ -376,7 +376,7 @@ export default function StatusTransitionFlow({ columns, onTransitionChange }: St
 
                 {/* Connector handle */}
                 <div
-                  className="connector-handle absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center cursor-crosshair hover:scale-125 transition-transform z-10 shadow-sm"
+                  className="connector-handle absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center cursor-crosshair hover:scale-125 transition-transform z-10 shadow-sm dark:bg-slate-900"
                   style={{ borderColor: getStatusColor(column.status) }}
                   onMouseDown={(e) => handleConnectorMouseDown(e, column.id)}
                 >
@@ -389,9 +389,9 @@ export default function StatusTransitionFlow({ columns, onTransitionChange }: St
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 text-sm text-slate-600">
+      <div className="flex items-center gap-6 text-sm text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center dark:bg-slate-900">
             <Plus size={10} className="text-indigo-500" />
           </div>
           <span>Drag connector to create transition</span>
@@ -403,8 +403,8 @@ export default function StatusTransitionFlow({ columns, onTransitionChange }: St
           <span>Click red dot to delete connection</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-            <GripVertical size={10} className="text-slate-500" />
+          <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center dark:bg-slate-700">
+            <GripVertical size={10} className="text-slate-500 dark:text-slate-400" />
           </div>
           <span>Drag card to reposition</span>
         </div>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { 
   Plus, Search, Briefcase, MapPin, Clock, DollarSign, Users,
   Edit2, Trash2, ExternalLink, Loader2, X, CheckCircle,
@@ -32,6 +33,81 @@ interface JobPosition {
   postedAt: string;
   applicationCount?: number;
 }
+
+type PostBlock =
+  | { kind: "header"; text: string }
+  | { kind: "field"; label: string; value: string }
+  | { kind: "section"; label: string; lines: string[] }
+  | { kind: "tags"; text: string };
+
+const stripEmoji = (s: string) =>
+  s.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u2B50]/gu, "").replace(/^[\s:*#]+/, "").trim();
+
+// Turns the generated share text into structured rows for preview.
+// The raw text is untouched — this only affects how the modal displays it.
+const parsePostRows = (content: string): PostBlock[] => {
+  const blocks: PostBlock[] = [];
+  let currentSection: { kind: "section"; label: string; lines: string[] } | null = null;
+
+  const flushSection = () => {
+    if (currentSection && currentSection.lines.length > 0) blocks.push(currentSection);
+    currentSection = null;
+  };
+
+  for (const raw of content.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+
+    if (/^#[\w]+(\s+#[\w]+)*$/.test(line)) {
+      flushSection();
+      blocks.push({ kind: "tags", text: line });
+      continue;
+    }
+
+    if (/^[•\-\*]\s+/.test(line)) {
+      const text = line.replace(/^[•\-\*]\s+/, "").trim();
+      if (!currentSection) {
+        currentSection = { kind: "section", label: "Details", lines: [] };
+      }
+      currentSection.lines.push(text);
+      continue;
+    }
+
+    const labelMatch = line.match(/^(.{1,40}?):\s+(.+)$/);
+    if (labelMatch) {
+      const label = stripEmoji(labelMatch[1]);
+      const value = labelMatch[2].trim();
+      // A label with nothing useful after it starts a section (e.g. "Job Description:")
+      if (!value || value.length < 2) {
+        flushSection();
+        currentSection = { kind: "section", label: label || "Details", lines: [] };
+      } else {
+        flushSection();
+        blocks.push({ kind: "field", label, value });
+      }
+      continue;
+    }
+
+    if (/:\s*$/.test(line)) {
+      flushSection();
+      currentSection = { kind: "section", label: stripEmoji(line) || "Details", lines: [] };
+      continue;
+    }
+
+    // Standalone opening line ("We're Hiring!") becomes the header
+    if (blocks.length === 0 && !currentSection && line.length < 60) {
+      blocks.push({ kind: "header", text: stripEmoji(line) || line });
+      continue;
+    }
+
+    if (!currentSection) {
+      currentSection = { kind: "section", label: "About", lines: [] };
+    }
+    currentSection.lines.push(line);
+  }
+  flushSection();
+  return blocks;
+};
 
 export default function JobPositionsPage() {
   const router = useRouter();
@@ -263,11 +339,23 @@ ${requirements}
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-700';
-      case 'Closed': return 'bg-red-100 text-red-700';
-      case 'On Hold': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'Active': return 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300';
+      case 'Closed': return 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300';
+      case 'On Hold': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300';
     }
+  };
+
+  const postFieldIcon = (label: string) => {
+    const l = label.toLowerCase();
+    const cls = "h-4 w-4 shrink-0 text-muted-foreground";
+    if (l.includes("position") || l.includes("title")) return <Briefcase className={cls} />;
+    if (l.includes("department")) return <Building2 className={cls} />;
+    if (l.includes("location")) return <MapPin className={cls} />;
+    if (l.includes("experience")) return <Clock className={cls} />;
+    if (l.includes("salary")) return <DollarSign className={cls} />;
+    if (l.includes("apply") || l.includes("link") || l.includes("url")) return <ExternalLink className={cls} />;
+    return <CheckCircle className={cls} />;
   };
 
   const filteredPositions = positions.filter(p => 
@@ -291,8 +379,8 @@ ${requirements}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Job Positions</h1>
-          <p className="text-sm text-gray-500">Manage job openings and recruitment</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Job Positions</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Manage job openings and recruitment</p>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -301,7 +389,7 @@ ${requirements}
             onClick={() => navigator.clipboard.writeText(careersUrl).then(() => 
               addToast({ type: "success", title: "Copied", description: "Careers page URL copied to clipboard" })
             )}
-            className="text-gray-600 border-gray-300 hover:bg-gray-50"
+            className="text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-slate-400 dark:border-slate-600 dark:hover:bg-slate-800"
           >
             <ExternalLink className="h-4 w-4 mr-1.5" />
             Copy URL
@@ -324,14 +412,14 @@ ${requirements}
           { label: 'On Hold', value: positions.filter(p => p.status === 'On Hold').length, icon: Clock, color: 'yellow' },
           { label: 'Closed', value: positions.filter(p => p.status === 'Closed').length, icon: X, color: 'red' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label} className="border-gray-200">
+          <Card key={label} className="border-gray-200 dark:border-slate-700">
             <CardContent className="p-4 flex items-center gap-3">
               <div className={`p-2 rounded-md bg-${color}-50`}>
                 <Icon className={`h-4 w-4 text-${color}-600`} />
               </div>
               <div>
-                <p className="text-xl font-semibold text-gray-900">{value}</p>
-                <p className="text-xs text-gray-500">{label}</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-slate-100">{value}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -345,7 +433,7 @@ ${requirements}
           placeholder="Search by title, department, or designation..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-9 text-sm border-gray-200"
+          className="pl-10 h-9 text-sm border-gray-200 dark:border-slate-700"
         />
       </div>
 
@@ -353,34 +441,34 @@ ${requirements}
       <div className="space-y-3">
         {filteredPositions.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No job positions</h3>
-              <p className="text-gray-500">Create your first job posting to start recruiting</p>
-            </CardContent>
+            <EmptyState
+              icon={<Briefcase size={18} />}
+              title="No job positions"
+              description="Create your first job posting to start recruiting"
+            />
           </Card>
         ) : (
           filteredPositions.map((position) => (
-            <Card key={position._id} className="hover:shadow-sm transition-all duration-200 border-gray-200">
+            <Card key={position._id} className="hover:shadow-sm transition-all duration-200 border-gray-200 dark:border-slate-700">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Header: Title + Badges */}
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <h3 className="text-lg font-semibold text-gray-900">{position.title}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{position.title}</h3>
                       <Badge className={`${getStatusColor(position.status)} text-xs font-medium px-2 py-0.5`}>
                         {position.status}
                       </Badge>
-                      <span className="text-xs text-gray-500">{position.employmentType}</span>
+                      <span className="text-xs text-gray-500 dark:text-slate-400">{position.employmentType}</span>
                       {position.jobId && (
-                        <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+                        <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono dark:bg-slate-800 dark:text-slate-400">
                           {position.jobId}
                         </code>
                       )}
                     </div>
                     
                     {/* Metadata Row */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-3 dark:text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <Building2 className="h-3.5 w-3.5" />
                         {position.department}
@@ -410,13 +498,13 @@ ${requirements}
                     </div>
                     
                     {/* Description */}
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">{position.description}</p>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed dark:text-slate-400">{position.description}</p>
                     
                     {/* Requirements Tags */}
                     {position.requirements.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {position.requirements.slice(0, 4).map((req, i) => (
-                          <span key={i} className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded border border-gray-100">
+                          <span key={i} className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded border border-gray-100 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-800">
                             {req}
                           </span>
                         ))}
@@ -437,7 +525,7 @@ ${requirements}
                         size="sm"
                         onClick={() => router.push(`/applicants?jobId=${position.jobId}`)}
                         title="View Applications"
-                        className="text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 h-8 px-2"
+                        className="text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 h-8 px-2 dark:text-slate-400 dark:hover:bg-blue-500/10"
                       >
                         <Briefcase className="h-4 w-4 mr-1.5" />
                         <span className="text-xs">{position.applicationCount || 0} applicants</span>
@@ -448,7 +536,7 @@ ${requirements}
                       size="icon"
                       onClick={() => generateLinkedInPost(position)}
                       title={position.jobId ? "Generate LinkedIn Post" : "Job ID required"}
-                      className="text-gray-400 hover:text-blue-600 hover:bg-blue-50/50 h-8 w-8"
+                      className="text-gray-400 hover:text-blue-600 hover:bg-blue-50/50 h-8 w-8 dark:hover:bg-blue-500/10"
                       disabled={!position.jobId}
                     >
                       <Share2 className="h-4 w-4" />
@@ -458,7 +546,7 @@ ${requirements}
                       size="icon"
                       onClick={() => handleEdit(position)}
                       title="Edit"
-                      className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 h-8 w-8"
+                      className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 h-8 w-8 dark:hover:bg-slate-700"
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -467,7 +555,7 @@ ${requirements}
                       size="icon"
                       onClick={() => handleDelete(position._id)}
                       title="Delete"
-                      className="text-gray-400 hover:text-red-600 hover:bg-red-50/50 h-8 w-8"
+                      className="text-gray-400 hover:text-red-600 hover:bg-red-50/50 h-8 w-8 dark:hover:bg-red-500/10"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -495,7 +583,7 @@ ${requirements}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Job Title *</label>
                     <Input
                       required
                       value={formData.title}
@@ -505,7 +593,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Department *</label>
                     <Input
                       required
                       value={formData.department}
@@ -515,7 +603,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Designation *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Designation *</label>
                     <Input
                       required
                       value={formData.designation}
@@ -525,7 +613,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Location *</label>
                     <Input
                       required
                       value={formData.location}
@@ -535,7 +623,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Experience Required *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Experience Required *</label>
                     <Input
                       required
                       value={formData.experienceRequired}
@@ -545,7 +633,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Salary Range</label>
                     <Input
                       value={formData.salaryRange}
                       onChange={(e) => setFormData({ ...formData, salaryRange: e.target.value })}
@@ -554,7 +642,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Employment Type</label>
                     <select
                       className="w-full px-3 py-2 border rounded-md"
                       value={formData.employmentType}
@@ -568,7 +656,7 @@ ${requirements}
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Number of Openings</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Number of Openings</label>
                     <Input
                       type="number"
                       min={1}
@@ -579,7 +667,7 @@ ${requirements}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Job Description *</label>
                   <textarea
                     required
                     className="w-full px-3 py-2 border rounded-md min-h-[100px]"
@@ -590,7 +678,7 @@ ${requirements}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Requirements (one per line)
                   </label>
                   <textarea
@@ -602,7 +690,7 @@ ${requirements}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Responsibilities (one per line)
                   </label>
                   <textarea
@@ -614,7 +702,7 @@ ${requirements}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Status</label>
                   <select
                     className="w-full px-3 py-2 border rounded-md"
                     value={formData.status}
@@ -646,10 +734,10 @@ ${requirements}
           <Card className="w-full max-w-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Share2 className="h-5 w-5 text-blue-600" />
+                <Share2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 LinkedIn Post - {selectedPosition.jobId}
                 {linkedInLoading && (
-                  <span className="text-xs font-normal text-gray-500 ml-2 flex items-center gap-1">
+                  <span className="text-xs font-normal text-gray-500 ml-2 flex items-center gap-1 dark:text-slate-400">
                     <span className="animate-spin inline-block h-3 w-3 border-2 border-blue-500 border-t-transparent rounded-full" />
                     AI Generating...
                   </span>
@@ -658,20 +746,71 @@ ${requirements}
             </CardHeader>
             <CardContent className="space-y-4">
               {linkedInLoading ? (
-                <div className="bg-gray-50 p-8 rounded-lg flex flex-col items-center justify-center">
+                <div className="bg-gray-50 p-8 rounded-lg flex flex-col items-center justify-center dark:bg-slate-800/50">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
-                  <p className="text-sm text-gray-600">Generating LinkedIn post with AI...</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400">Generating LinkedIn post with AI...</p>
                   <p className="text-xs text-gray-400 mt-1">Powered by NVIDIA AI (Gemma 4-31b)</p>
                 </div>
               ) : (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
-                    {linkedInContent}
-                  </pre>
+                <div className="rounded-xl border border-border overflow-hidden">
+                  <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border bg-muted/40">
+                    Preview — copying keeps the original formatted post.
+                  </p>
+                  <dl className="divide-y divide-border">
+                    {parsePostRows(linkedInContent).map((block, i) => {
+                      if (block.kind === "header") {
+                        return (
+                          <div key={i} className="px-4 py-3 bg-muted/30">
+                            <dt className="sr-only">Announcement</dt>
+                            <dd className="font-display text-lg font-medium tracking-tight text-foreground">
+                              {block.text}
+                            </dd>
+                          </div>
+                        );
+                      }
+                      if (block.kind === "field") {
+                        return (
+                          <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                            {postFieldIcon(block.label)}
+                            <dt className="w-28 shrink-0 text-[13px] text-muted-foreground">
+                              {block.label}
+                            </dt>
+                            <dd className="min-w-0 flex-1 text-sm font-medium text-foreground break-words">
+                              {block.value}
+                            </dd>
+                          </div>
+                        );
+                      }
+                      if (block.kind === "section") {
+                        return (
+                          <div key={i} className="px-4 py-3">
+                            <dt className="text-[13px] font-semibold text-foreground mb-1.5">
+                              {block.label}
+                            </dt>
+                            <dd className="space-y-1">
+                              {block.lines.map((ln, j) => (
+                                <p key={j} className="text-sm text-muted-foreground leading-relaxed">
+                                  {ln}
+                                </p>
+                              ))}
+                            </dd>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={i} className="px-4 py-2.5 bg-muted/30">
+                          <dt className="sr-only">Tags</dt>
+                          <dd className="text-[13px] font-medium text-primary break-words">
+                            {block.text}
+                          </dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
                 </div>
               )}
               
-              <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+              <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 dark:bg-blue-500/10 dark:text-blue-300">
                 <p className="font-semibold mb-1">📧 Application Tracking:</p>
                 <p>Candidates should include <strong>Job ID: {selectedPosition.jobId}</strong> in their email subject line when applying.</p>
               </div>

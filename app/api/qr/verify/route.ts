@@ -3,18 +3,16 @@ import connectDB from '@/lib/mongodb';
 import KRAuthToken from '@/models/QRAuthToken';
 import User from '@/models/User';
 import LinkedDevice from '@/models/LinkedDevice';
-import jwt from 'jsonwebtoken';
+import { signSession } from '@/lib/auth';
 import { emitToRoom } from '@/lib/socketEmit';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-123';
 
 export async function POST(req: Request) {
   try {
     await connectDB();
     const { token, deviceInfo } = await req.json();
 
-    if (!token) {
-      return NextResponse.json({ message: 'Token is required' }, { status: 400 });
+    if (typeof token !== 'string' || token.length !== 36) {
+      return NextResponse.json({ message: 'Invalid token format' }, { status: 400 });
     }
 
     // Find and validate the token
@@ -38,11 +36,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    // Generate JWT for the mobile session
-    const jwtToken = jwt.sign(
-      { id: user._id, role: user.role, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '30d' }
+    // Generate JWT for the mobile session (tenant-bound via companyId).
+    // Effective permissions (role + individual overrides) and plan features
+    // are snapshotted so the token carries the same authorization the web
+    // session does.
+    const { getEffectiveUserMap } = await import('@/lib/permission-overrides');
+    const { resolveSubscription } = await import('@/lib/subscription');
+    const subscription = user.companyId ? await resolveSubscription(user.companyId.toString()) : null;
+    const jwtToken = signSession(
+      {
+        id: user._id.toString(),
+        role: user.role,
+        email: user.email,
+        companyId: user.companyId?.toString(),
+        name: user.name,
+        tv: user.tokenVersion ?? 0,
+        perms: user.companyId
+          ? (await getEffectiveUserMap(user.companyId.toString(), user._id.toString(), user.role) as Record<string, string[]>)
+          : undefined,
+        plan: subscription?.plan ?? undefined,
+        features: subscription?.features,
+      },
+      '30d'
     );
 
     // Pair device (Side-effect)

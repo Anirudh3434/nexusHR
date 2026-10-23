@@ -136,7 +136,7 @@ const FeatureCard = ({ icon, bg, title, badge, description, index }: {
     variants={itemVariants}
     whileHover={{ y: -6, scale: 1.02 }}
     style={{ transformStyle: "preserve-3d", perspective: 800 }}
-    className="bg-white/70 border border-slate-200/80 hover:border-indigo-400/50 p-6 rounded-3xl space-y-4 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 group backdrop-blur-sm"
+    className="bg-white/70 border border-slate-200/80 hover:border-indigo-400/50 p-6 rounded-3xl space-y-4 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 group backdrop-blur-sm dark:bg-slate-900 dark:border-slate-700"
   >
     <div className="flex items-center justify-between">
       <motion.div
@@ -146,12 +146,12 @@ const FeatureCard = ({ icon, bg, title, badge, description, index }: {
       >
         {icon}
       </motion.div>
-      <span className="text-[10px] font-bold bg-slate-100/80 border border-slate-200/80 text-slate-600 px-2.5 py-1 rounded-full uppercase backdrop-blur-sm">
+      <span className="text-[10px] font-bold bg-slate-100/80 border border-slate-200/80 text-slate-600 px-2.5 py-1 rounded-full uppercase backdrop-blur-sm dark:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400">
         {badge}
       </span>
     </div>
-    <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">{title}</h3>
-    <p className="text-xs text-slate-600 leading-relaxed">{description}</p>
+    <h3 className="text-lg font-extrabold text-slate-900 tracking-tight dark:text-slate-100">{title}</h3>
+    <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-400">{description}</p>
   </motion.div>
 );
 
@@ -168,7 +168,7 @@ const StepCard = ({ number, title, description, index }: {
     variants={itemVariants}
     whileHover={{ y: -6, scale: 1.02 }}
     style={{ transformStyle: "preserve-3d", perspective: 800 }}
-    className="bg-white/70 border border-slate-200/80 p-6 rounded-3xl space-y-4 shadow-sm backdrop-blur-sm relative overflow-hidden group"
+    className="bg-white/70 border border-slate-200/80 p-6 rounded-3xl space-y-4 shadow-sm backdrop-blur-sm relative overflow-hidden group dark:bg-slate-900 dark:border-slate-700"
   >
     <motion.span
       className="text-4xl font-black text-indigo-200/80 block"
@@ -177,8 +177,8 @@ const StepCard = ({ number, title, description, index }: {
     >
       {number}
     </motion.span>
-    <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-    <p className="text-xs text-slate-600 leading-relaxed">{description}</p>
+    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+    <p className="text-xs text-slate-600 leading-relaxed dark:text-slate-400">{description}</p>
     <motion.div
       className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500"
       initial={{ scaleX: 0 }}
@@ -207,36 +207,36 @@ export default function LandingPage() {
 
   const coreFeatures = [
     {
-      icon: <Kanban className="h-6 w-6 text-indigo-600" />,
-      bg: "bg-indigo-50 border-indigo-100",
+      icon: <Kanban className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />,
+      bg: "bg-indigo-50 border-indigo-100 dark:bg-indigo-500/10",
       title: "PMS & Sprint Kanban Board",
       badge: "Project Management",
       description: "Sprint board with ambient column tints, top accent borders, backlog filters, and integrated assignee clusters."
     },
     {
-      icon: <GitBranch className="h-6 w-6 text-purple-600" />,
-      bg: "bg-purple-50 border-purple-100",
+      icon: <GitBranch className="h-6 w-6 text-purple-600 dark:text-purple-400" />,
+      bg: "bg-purple-50 border-purple-100 dark:bg-purple-500/10",
       title: "GitHub PMS Automation",
       badge: "Developer Sync",
       description: "Automated webhook sync. Pushing branch names with ticket IDs (e.g., TSK26070010) auto-shifts status to In Progress."
     },
     {
-      icon: <CheckSquare className="h-6 w-6 text-emerald-600" />,
-      bg: "bg-emerald-50 border-emerald-100",
+      icon: <CheckSquare className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />,
+      bg: "bg-emerald-50 border-emerald-100 dark:bg-emerald-500/10",
       title: "Today's Task & EOD Reports",
       badge: "Employee Productivity",
       description: "Daily ticket picking, 15m–8h estimation, 30-min shift unlock timers, and read-only manager review dashboards."
     },
     {
-      icon: <MapPin className="h-6 w-6 text-rose-600" />,
-      bg: "bg-rose-50 border-rose-100",
+      icon: <MapPin className="h-6 w-6 text-rose-600 dark:text-rose-400" />,
+      bg: "bg-rose-50 border-rose-100 dark:bg-rose-500/10",
       title: "Geo-Fenced GPS Attendance",
       badge: "Location Intelligence",
       description: "Real-time GPS radius verification, live office boundary maps, WFH/Office mode toggles, and shift log tracking."
     },
     {
-      icon: <Mic className="h-6 w-6 text-amber-600" />,
-      bg: "bg-amber-50 border-amber-100",
+      icon: <Mic className="h-6 w-6 text-amber-600 dark:text-amber-400" />,
+      bg: "bg-amber-50 border-amber-100 dark:bg-amber-500/10",
       title: "AI Voice Executive Briefings",
       badge: "Smart AI Voice",
       description: "Interactive voice summaries with natural deep-baritone and Indian female voices, plus an ambient Web Audio synth background."
@@ -249,22 +249,22 @@ export default function LandingPage() {
       description: "End-to-end recruitment pipelines, job postings, candidate evaluation inboxes, and applicant tracking."
     },
     {
-      icon: <CreditCard className="h-6 w-6 text-blue-600" />,
-      bg: "bg-blue-50 border-blue-100",
+      icon: <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
+      bg: "bg-blue-50 border-blue-100 dark:bg-blue-500/10",
       title: "Automated Payroll & Expenses",
       badge: "Financial Operations",
       description: "Automated salary calculation, payslip generation, tax deductions, and employee expense claim reimbursements."
     },
     {
-      icon: <Calendar className="h-6 w-6 text-teal-600" />,
-      bg: "bg-teal-50 border-teal-100",
+      icon: <Calendar className="h-6 w-6 text-teal-600 dark:text-teal-400" />,
+      bg: "bg-teal-50 border-teal-100 dark:bg-teal-500/10",
       title: "Leaves & Overtime Tracking",
       badge: "Time Off",
       description: "Real-time leave balance tracking, multi-level approval workflows, and automated shift overtime tracking."
     },
     {
-      icon: <Users className="h-6 w-6 text-indigo-600" />,
-      bg: "bg-indigo-50 border-indigo-100",
+      icon: <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />,
+      bg: "bg-indigo-50 border-indigo-100 dark:bg-indigo-500/10",
       title: "Employee Directory & Resignations",
       badge: "HR Operations",
       description: "Complete lifecycle management, department structures, designation hierarchies, and offboarding workflows."
@@ -279,7 +279,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-600 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-600 selection:text-white overflow-x-hidden dark:bg-slate-900 dark:text-slate-100">
       <FloatingParticles />
 
       {/* 3D Floating Shapes */}
@@ -292,7 +292,7 @@ export default function LandingPage() {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 transition-all"
+        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 transition-all dark:bg-slate-900 dark:border-slate-700"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
@@ -306,15 +306,15 @@ export default function LandingPage() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-black tracking-tight text-slate-900">
-                  Nexus<span className="text-indigo-600">HR</span>
+                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+                  Nexus<span className="text-indigo-600 dark:text-indigo-400">HR</span>
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium">Enterprise HR & PMS Suite</span>
+                <span className="text-[10px] text-slate-500 font-medium dark:text-slate-400">Enterprise HR & PMS Suite</span>
               </div>
             </Link>
             
             {/* Desktop Links */}
-            <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-400">
               <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
               <a href="#github-integration" className="hover:text-indigo-600 transition-colors">GitHub Sync</a>
               <a href="#how-it-works" className="hover:text-indigo-600 transition-colors">Workflow</a>
@@ -323,7 +323,7 @@ export default function LandingPage() {
             {/* CTA Buttons */}
             <div className="hidden md:flex items-center gap-3">
               <Link href="/login">
-                <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl px-5 text-xs font-bold">
+                <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl px-5 text-xs font-bold dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">
                   Sign In
                 </Button>
               </Link>
@@ -337,7 +337,7 @@ export default function LandingPage() {
 
             {/* Mobile Menu Button */}
             <button 
-              className="md:hidden p-2 text-slate-600 hover:text-slate-900"
+              className="md:hidden p-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -352,14 +352,14 @@ export default function LandingPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4 overflow-hidden"
+            className="md:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4 overflow-hidden dark:bg-slate-900 dark:border-slate-700"
           >
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">Features</a>
-            <a href="#github-integration" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">GitHub Sync</a>
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium">Workflow</a>
-            <div className="pt-4 border-t border-slate-200 space-y-2">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium dark:text-slate-400 dark:hover:text-slate-100">Features</a>
+            <a href="#github-integration" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium dark:text-slate-400 dark:hover:text-slate-100">GitHub Sync</a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block text-slate-600 hover:text-slate-900 font-medium dark:text-slate-400 dark:hover:text-slate-100">Workflow</a>
+            <div className="pt-4 border-t border-slate-200 space-y-2 dark:border-slate-700">
               <Link href="/login" className="block w-full">
-                <Button variant="outline" className="w-full border-slate-300 text-slate-700">Sign In</Button>
+                <Button variant="outline" className="w-full border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300">Sign In</Button>
               </Link>
               <Link href="/register" className="block w-full">
                 <Button className="w-full bg-indigo-600 text-white">Register Company</Button>
@@ -384,9 +384,9 @@ export default function LandingPage() {
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200/80 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200/80 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"
               >
-                <Sparkles className="h-4 w-4 text-indigo-600" />
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 Enterprise HR & Project Management Platform
               </motion.div>
 
@@ -394,16 +394,16 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
-                className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]"
+                className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1] dark:text-slate-100"
               >
-                Unified Platform for <span className="text-indigo-600">HR & Projects</span>
+                Unified Platform for <span className="text-indigo-600 dark:text-indigo-400">HR & Projects</span>
               </motion.h1>
 
               <motion.p
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
-                className="text-lg text-slate-600 max-w-2xl leading-relaxed"
+                className="text-lg text-slate-600 max-w-2xl leading-relaxed dark:text-slate-400"
               >
                 NexusHR is a modern HR management system that unifies attendance tracking, leave management,
                 payroll processing, expense tracking, and AI-powered project management into a single platform.  Connect your organization with geo-fenced GPS attendance, GitHub-integrated PMS sprint boards,
@@ -417,7 +417,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
                 onSubmit={handleCompanyLogin}
-                className="flex flex-col sm:flex-row gap-3 max-w-lg bg-white border border-slate-200 p-2.5 rounded-2xl shadow-xl shadow-slate-200/60"
+                className="flex flex-col sm:flex-row gap-3 max-w-lg bg-white border border-slate-200 p-2.5 rounded-2xl shadow-xl shadow-slate-200/60 dark:bg-slate-900 dark:border-slate-700"
               >
                 <div className="relative flex-1">
                   <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -426,7 +426,7 @@ export default function LandingPage() {
                     value={companyCode}
                     onChange={(e) => setCompanyCode(e.target.value)}
                     placeholder="Company Code (e.g. ACME)"
-                    className="w-full pl-10 pr-4 py-3 bg-transparent text-slate-900 placeholder-slate-400 text-xs font-bold uppercase tracking-wider focus:outline-none"
+                    className="w-full pl-10 pr-4 py-3 bg-transparent text-slate-900 placeholder-slate-400 text-xs font-bold uppercase tracking-wider focus:outline-none dark:text-slate-100"
                   />
                 </div>
                 <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl px-6 py-3 shadow-md shadow-indigo-600/20">
@@ -439,11 +439,11 @@ export default function LandingPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-600 pt-2"
+                className="flex flex-wrap items-center gap-6 text-xs font-bold text-slate-600 pt-2 dark:text-slate-400"
               >
-                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Geo-Fence Attendance</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> GitHub Webhook Sync</span>
-                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Today Task EOD Reports</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Geo-Fence Attendance</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> GitHub Webhook Sync</span>
+                <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Today Task EOD Reports</span>
               </motion.div>
             </motion.div>
 
@@ -458,10 +458,10 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/20 via-purple-400/10 to-pink-400/20 rounded-3xl blur-3xl opacity-50 group-hover:opacity-80 transition-opacity duration-700" />
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl blur-2xl group-hover:scale-105 transition-transform duration-700" />
               
-              <TiltCard className="relative bg-white/90 border border-slate-200/80 rounded-3xl p-6 shadow-2xl shadow-slate-200/80 space-y-5 backdrop-blur-sm group-hover:shadow-indigo-500/20 transition-shadow duration-500" style={{ transformStyle: "preserve-3d" }}>
+              <TiltCard className="relative bg-white/90 border border-slate-200/80 rounded-3xl p-6 shadow-2xl shadow-slate-200/80 space-y-5 backdrop-blur-sm group-hover:shadow-indigo-500/20 transition-shadow duration-500 dark:bg-slate-900 dark:border-slate-700" style={{ transformStyle: "preserve-3d" }}>
                 <motion.div
                   style={{ transform: "translateZ(40px)" }}
-                  className="flex items-center justify-between border-b border-slate-100 pb-4"
+                  className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800"
                 >
                   <div className="flex items-center gap-3">
                     <motion.div
@@ -472,11 +472,11 @@ export default function LandingPage() {
                       NX
                     </motion.div>
                     <div>
-                      <h4 className="font-bold text-slate-900 text-sm">NexusHR Enterprise</h4>
+                      <h4 className="font-bold text-slate-900 text-sm dark:text-slate-100">NexusHR Enterprise</h4>
                       <p className="text-[10px] text-slate-400">Live Operations Portal</p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-[10px] font-bold uppercase">
+                  <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-[10px] font-bold uppercase dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-300">
                     Active System
                   </span>
                 </motion.div>
@@ -487,29 +487,29 @@ export default function LandingPage() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.03, y: -2 }}
-                    className="bg-white border border-slate-200/80 p-3.5 rounded-2xl space-y-1 shadow-sm"
+                    className="bg-white border border-slate-200/80 p-3.5 rounded-2xl space-y-1 shadow-sm dark:bg-slate-900 dark:border-slate-700"
                   >
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Present Today</span>
                     <motion.p
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
-                      className="text-2xl font-black text-slate-900"
+                      className="text-2xl font-black text-slate-900 dark:text-slate-100"
                     >
                       148 / 152
                     </motion.p>
-                    <span className="text-[9px] text-emerald-600 font-semibold">97.3% Geo-Verified</span>
+                    <span className="text-[9px] text-emerald-600 font-semibold dark:text-emerald-400">97.3% Geo-Verified</span>
                   </motion.div>
                   <motion.div
                     whileHover={{ scale: 1.03, y: -2 }}
-                    className="bg-white border border-slate-200/80 p-3.5 rounded-2xl space-y-1 shadow-sm"
+                    className="bg-white border border-slate-200/80 p-3.5 rounded-2xl space-y-1 shadow-sm dark:bg-slate-900 dark:border-slate-700"
                   >
                     <span className="text-[10px] text-slate-400 font-bold uppercase">EOD Reports</span>
                     <motion.p
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.9, type: "spring", stiffness: 200 }}
-                      className="text-2xl font-black text-indigo-600"
+                      className="text-2xl font-black text-indigo-600 dark:text-indigo-400"
                     >
                       42 Submitted
                     </motion.p>
@@ -520,18 +520,18 @@ export default function LandingPage() {
                 <motion.div
                   style={{ transform: "translateZ(80px)" }}
                   whileHover={{ y: -2 }}
-                  className="bg-white border border-slate-200 p-4 rounded-2xl space-y-2.5 shadow-sm"
+                  className="bg-white border border-slate-200 p-4 rounded-2xl space-y-2.5 shadow-sm dark:bg-slate-900 dark:border-slate-700"
                 >
                   <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-700 flex items-center gap-1.5">
-                      <GitBranch className="h-3.5 w-3.5 text-purple-600" />
+                    <span className="text-slate-700 flex items-center gap-1.5 dark:text-slate-300">
+                      <GitBranch className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                       GitHub Webhook Sync
                     </span>
-                    <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-mono">TSK26070010</span>
+                    <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-mono dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/30">TSK26070010</span>
                   </div>
                   <div className="p-3 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border border-indigo-100/50 rounded-xl space-y-1">
-                    <span className="text-[10px] font-mono text-indigo-600 font-bold">feature/TSK26070010-auth</span>
-                    <p className="text-xs font-bold text-slate-800">Implement OAuth Backend Flows</p>
+                    <span className="text-[10px] font-mono text-indigo-600 font-bold dark:text-indigo-400">feature/TSK26070010-auth</span>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Implement OAuth Backend Flows</p>
                   </div>
                 </motion.div>
               </TiltCard>
@@ -542,7 +542,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Grid */}
-      <section id="features" className="relative z-10 py-24 bg-slate-50/70 border-t border-b border-slate-200">
+      <section id="features" className="relative z-10 py-24 bg-slate-50/70 border-t border-b border-slate-200 dark:bg-slate-800/70 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -551,11 +551,11 @@ export default function LandingPage() {
             variants={containerVariants}
             className="text-center max-w-3xl mx-auto space-y-4 mb-16"
           >
-            <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-indigo-600">Complete Feature Suite</motion.span>
-            <motion.h2 variants={itemVariants} className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+            <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Complete Feature Suite</motion.span>
+            <motion.h2 variants={itemVariants} className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight dark:text-slate-100">
               Engineered for Modern Enterprise Teams
             </motion.h2>
-            <motion.p variants={itemVariants} className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            <motion.p variants={itemVariants} className="text-slate-600 text-sm sm:text-base leading-relaxed dark:text-slate-400">
               Explore all features implemented inside NexusHR — built to integrate project management, 
               developer GitHub automation, attendance tracking, payroll, and HR operations into one portal.
             </motion.p>
@@ -588,41 +588,41 @@ export default function LandingPage() {
             className="bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/80 border border-indigo-100/80 rounded-3xl p-8 sm:p-12 shadow-sm grid lg:grid-cols-2 gap-12 items-center"
           >
             <motion.div variants={itemVariants} className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 border border-purple-200 text-purple-800 rounded-full text-xs font-bold uppercase">
-                <GitBranch className="h-3.5 w-3.5 text-purple-600" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 border border-purple-200 text-purple-800 rounded-full text-xs font-bold uppercase dark:bg-purple-500/15 dark:border-purple-500/30 dark:text-purple-300">
+                <GitBranch className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                 Developer Webhook Sync
               </div>
-              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight dark:text-slate-100">
                 Automatic GitHub Branch to PMS Ticket Update
               </h2>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <p className="text-slate-600 text-sm leading-relaxed dark:text-slate-400">
                 Connect PMS projects to GitHub repositories. Pushing a branch containing a ticket number 
-                (e.g., <code className="text-purple-700 bg-purple-100/80 px-1.5 py-0.5 rounded font-mono">feature/TSK26070010-auth</code>) 
-                automatically shifts ticket status on your sprint board to <strong className="text-amber-700">In Progress</strong>.
+                (e.g., <code className="text-purple-700 bg-purple-100/80 px-1.5 py-0.5 rounded font-mono dark:text-purple-300 dark:bg-purple-500/15">feature/TSK26070010-auth</code>) 
+                automatically shifts ticket status on your sprint board to <strong className="text-amber-700 dark:text-amber-300">In Progress</strong>.
               </p>
             </motion.div>
 
             <motion.div
               variants={itemVariants}
               whileHover={{ y: -4 }}
-              className="bg-white/90 border border-slate-200/80 rounded-2xl p-5 font-mono text-xs text-slate-700 space-y-3 shadow-sm backdrop-blur-sm"
+              className="bg-white/90 border border-slate-200/80 rounded-2xl p-5 font-mono text-xs text-slate-700 space-y-3 shadow-sm backdrop-blur-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-slate-400 text-[11px]">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-slate-400 text-[11px] dark:border-slate-800">
                 <span>github-webhook.json</span>
                 <motion.span
                   animate={{ opacity: [1, 0.5, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="text-emerald-600 font-bold"
+                  className="text-emerald-600 font-bold dark:text-emerald-400"
                 >
                   200 OK
                 </motion.span>
               </div>
               <div className="space-y-1.5 text-[11px]">
-                <p><span className="text-purple-600 font-bold">"ref"</span>: <span className="text-emerald-700 font-semibold">"refs/heads/feature/TSK26070010-auth"</span>,</p>
+                <p><span className="text-purple-600 font-bold dark:text-purple-400">"ref"</span>: <span className="text-emerald-700 font-semibold dark:text-emerald-300">"refs/heads/feature/TSK26070010-auth"</span>,</p>
                 <motion.p
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-amber-700 font-bold pt-2 border-t border-slate-100"
+                  className="text-amber-700 font-bold pt-2 border-t border-slate-100 dark:text-amber-300 dark:border-slate-800"
                 >
                   ⚡ Auto-shifted TSK26070010 status → "IN_PROGRESS"
                 </motion.p>
@@ -633,7 +633,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className="relative z-10 py-24 bg-slate-50/70 border-t border-slate-200">
+      <section id="how-it-works" className="relative z-10 py-24 bg-slate-50/70 border-t border-slate-200 dark:bg-slate-800/70 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -642,8 +642,8 @@ export default function LandingPage() {
             variants={containerVariants}
             className="text-center max-w-2xl mx-auto space-y-4 mb-16"
           >
-            <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-indigo-600">Simple Onboarding</motion.span>
-            <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Get Started in 4 Steps</motion.h2>
+            <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Simple Onboarding</motion.span>
+            <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight dark:text-slate-100">Get Started in 4 Steps</motion.h2>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -670,10 +670,10 @@ export default function LandingPage() {
             variants={containerVariants}
             className="space-y-6"
           >
-            <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+            <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight dark:text-slate-100">
               Why Choose NexusHR as Your HR Management System?
             </motion.h2>
-            <motion.p variants={itemVariants} className="text-slate-600 text-base leading-relaxed">
+            <motion.p variants={itemVariants} className="text-slate-600 text-base leading-relaxed dark:text-slate-400">
               Managing human resources across distributed teams requires more than spreadsheets and scattered tools.
               NexusHR is an all-in-one HR management system built for modern organizations that need real-time visibility
               into attendance, leave balances, payroll, and project delivery. Unlike traditional HR software, NexusHR
@@ -685,10 +685,10 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-8">
             <motion.div
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
-              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 dark:bg-slate-900 dark:border-slate-700"
             >
-              <h3 className="text-lg font-bold text-slate-900">Geo-Fenced Attendance You Can Trust</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Geo-Fenced Attendance You Can Trust</h3>
+              <p className="text-sm text-slate-600 leading-relaxed dark:text-slate-400">
                 Traditional attendance systems rely on manual clock-ins that are easy to fake. NexusHR uses real-time
                 GPS verification to confirm every employee check-in happens within your defined office radius. Managers
                 can see live attendance dashboards, office boundary maps, and work-from-home vs office mode toggles — all
@@ -698,12 +698,12 @@ export default function LandingPage() {
             </motion.div>
             <motion.div
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
-              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 dark:bg-slate-900 dark:border-slate-700"
             >
-              <h3 className="text-lg font-bold text-slate-900">GitHub-Integrated Project Management</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">GitHub-Integrated Project Management</h3>
+              <p className="text-sm text-slate-600 leading-relaxed dark:text-slate-400">
                 NexusHR bridges the gap between engineering and HR with its GitHub-integrated project management system.
-                When a developer pushes a branch containing a ticket ID — for example <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono">feature/TSK26070010-auth</code> —
+                When a developer pushes a branch containing a ticket ID — for example <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded font-mono dark:bg-slate-800">feature/TSK26070010-auth</code> —
                 the sprint board automatically updates the task status to In Progress. This eliminates manual status
                 updates, keeps sprint boards accurate, and gives project managers real-time visibility into development
                 progress without interrupting the engineering workflow.
@@ -711,10 +711,10 @@ export default function LandingPage() {
             </motion.div>
             <motion.div
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
-              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 dark:bg-slate-900 dark:border-slate-700"
             >
-              <h3 className="text-lg font-bold text-slate-900">Automated Payroll and Expense Tracking</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Automated Payroll and Expense Tracking</h3>
+              <p className="text-sm text-slate-600 leading-relaxed dark:text-slate-400">
                 Processing payroll manually is time-consuming and error-prone. NexusHR automates salary calculations
                 based on attendance data, overtime hours, and leave records. The system generates payslips with tax
                 deductions, tracks employee expense claims, and maintains a complete financial audit trail. HR teams
@@ -724,10 +724,10 @@ export default function LandingPage() {
             </motion.div>
             <motion.div
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
-              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+              className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 dark:bg-slate-900 dark:border-slate-700"
             >
-              <h3 className="text-lg font-bold text-slate-900">AI-Powered Insights and Voice Briefings</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">AI-Powered Insights and Voice Briefings</h3>
+              <p className="text-sm text-slate-600 leading-relaxed dark:text-slate-400">
                 NexusHR goes beyond traditional HR software with its built-in AI assistant. Managers can request
                 voice-executive briefings that summarize team attendance, pending leave requests, active projects, and
                 budget utilization — all delivered through natural language voice synthesis. The AI project management
@@ -740,10 +740,10 @@ export default function LandingPage() {
 
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={itemVariants}
-            className="bg-slate-50 border border-slate-200 rounded-2xl p-8 space-y-4"
+            className="bg-slate-50 border border-slate-200 rounded-2xl p-8 space-y-4 dark:bg-slate-800/50 dark:border-slate-700"
           >
-            <h3 className="text-lg font-bold text-slate-900">Built for Security and Compliance</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Built for Security and Compliance</h3>
+            <p className="text-sm text-slate-600 leading-relaxed dark:text-slate-400">
               Enterprise HR systems handle sensitive employee data including salary information, personal identification,
               and location history. NexusHR is built with security-first principles: JWT-based authentication, role-based
               access control for admins, managers, and employees, encrypted data at rest, and QR-code device linking that
@@ -759,7 +759,7 @@ export default function LandingPage() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="relative z-10 border-t border-slate-200 py-16 bg-white text-slate-600"
+        className="relative z-10 border-t border-slate-200 py-16 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
@@ -772,14 +772,14 @@ export default function LandingPage() {
                     className="h-full w-full object-contain scale-110" 
                   />
                 </div>
-                <span className="text-sm font-bold text-slate-900">NexusHR</span>
+                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">NexusHR</span>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">
                 Modern HR management system for enterprise teams. Attendance, payroll, projects, and AI — unified.
               </p>
             </div>
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Product</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Product</h4>
               <ul className="space-y-2 text-xs">
                 <li><a href="#features" className="hover:text-indigo-600 transition-colors">Features</a></li>
                 <li><a href="#github-integration" className="hover:text-indigo-600 transition-colors">GitHub Integration</a></li>
@@ -789,7 +789,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Resources</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Resources</h4>
               <ul className="space-y-2 text-xs">
                 <li><a href="https://github.com/Anirudh3434" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">GitHub Repository</a></li>
                 <li><a href="https://github.com/Anirudh3434/nexus-hr-websocket" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">WebSocket Server</a></li>
@@ -797,7 +797,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Legal</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Legal</h4>
               <ul className="space-y-2 text-xs">
                 <li><span className="text-slate-400">Privacy Policy</span></li>
                 <li><span className="text-slate-400">Terms of Service</span></li>
@@ -805,12 +805,12 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-500">© 2026 NexusHR. All rights reserved. Built by Anirudh Bhardwaj.</p>
-            <div className="flex gap-4 text-xs font-semibold text-slate-600">
-              <Link href="/login" className="hover:text-slate-900">Sign In</Link>
-              <Link href="/register" className="hover:text-slate-900">Register</Link>
-              <a href="https://github.com/Anirudh3434" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900">GitHub</a>
+          <div className="border-t border-slate-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 dark:border-slate-700">
+            <p className="text-xs text-slate-500 dark:text-slate-400">© 2026 NexusHR. All rights reserved. Built by Anirudh Bhardwaj.</p>
+            <div className="flex gap-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <Link href="/login" className="hover:text-slate-900 dark:hover:text-slate-100">Sign In</Link>
+              <Link href="/register" className="hover:text-slate-900 dark:hover:text-slate-100">Register</Link>
+              <a href="https://github.com/Anirudh3434" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-slate-100">GitHub</a>
             </div>
           </div>
         </div>

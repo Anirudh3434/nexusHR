@@ -4,13 +4,38 @@ import Project from '@/models/Project';
 import Task from '@/models/Task';
 import ActivityLog from '@/models/ActivityLog';
 import mongoose from 'mongoose';
+import crypto from 'crypto';
+import { escapeRegExp } from '@/lib/mongo';
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
+    // Verify HMAC-SHA256 signature when a secret is configured.
+    // Uses the raw body so the digest matches GitHub's.
+    const rawBody = await req.text();
+    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const signature = req.headers.get('x-hub-signature-256') || '';
+      const expected =
+        'sha256=' + crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
+      const a = Buffer.from(signature);
+      const b = Buffer.from(expected);
+      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+        return NextResponse.json({ message: 'Invalid webhook signature' }, { status: 401 });
+      }
+    } else {
+      console.warn('GITHUB_WEBHOOK_SECRET unset — skipping webhook signature verification');
+    }
+
+    let body: any;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ message: 'Invalid JSON payload' }, { status: 400 });
+    }
+
     const event = req.headers.get('x-github-event') || 'push';
-    const body = await req.json();
 
     const repoFullName = body.repository?.full_name || '';
     if (!repoFullName) {
@@ -24,7 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     const projectDoc = await rawDb.collection('projects').findOne({
-      githubRepo: { $regex: new RegExp(`^${repoFullName}$`, 'i') }
+      githubRepo: { $regex: new RegExp(`^${escapeRegExp(repoFullName, 128)}$`, 'i') }
     });
 
     if (!projectDoc) {

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/context/ToastContext";
+import { EmptyState } from "@/components/ui/EmptyState";
 import NoteCreationModal from "@/components/projects/docs/modals/NoteCreationModal";
 import { 
   BookOpen, 
@@ -79,17 +80,17 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      'Deployment': 'bg-blue-100 text-blue-700',
-      'Coding': 'bg-emerald-100 text-emerald-700',
-      'Issues': 'bg-red-100 text-red-700',
-      'Guidelines': 'bg-purple-100 text-purple-700',
-      'Decisions': 'bg-amber-100 text-amber-700',
-      'Meeting': 'bg-pink-100 text-pink-700',
-      'Release': 'bg-cyan-100 text-cyan-700',
-      'Sprint': 'bg-orange-100 text-orange-700',
-      'TODO': 'bg-lime-100 text-lime-700',
-      'FAQ': 'bg-teal-100 text-teal-700',
-      'Other': 'bg-slate-100 text-slate-700'
+      'Deployment': 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+      'Coding': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+      'Issues': 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
+      'Guidelines': 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+      'Decisions': 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+      'Meeting': 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300',
+      'Release': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300',
+      'Sprint': 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+      'TODO': 'bg-lime-100 text-lime-700 dark:bg-lime-500/15 dark:text-lime-300',
+      'FAQ': 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300',
+      'Other': 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
     };
     return colors[category] || colors['Other'];
   };
@@ -102,7 +103,7 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-slate-500">Loading notes...</div>
+        <div className="text-slate-500 dark:text-slate-400">Loading notes...</div>
       </div>
     );
   }
@@ -115,7 +116,7 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
@@ -125,8 +126,8 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${
               showFavoritesOnly 
-                ? 'bg-amber-100 text-amber-700 border border-amber-300' 
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-500/15 dark:text-amber-300' 
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
             }`}
           >
             <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-amber-500' : ''}`} />
@@ -136,8 +137,8 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
             onClick={() => setShowPinnedOnly(!showPinnedOnly)}
             className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${
               showPinnedOnly 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300 dark:bg-indigo-500/15 dark:text-indigo-300' 
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
             }`}
           >
             <Pin className={`w-4 h-4 ${showPinnedOnly ? 'fill-indigo-500' : ''}`} />
@@ -148,7 +149,7 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
           <button
             onClick={() => onViewModeChange('grid')}
             className={`p-2 rounded-lg transition-colors ${
-              viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:bg-slate-100'
+              viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
           >
             <Grid3x3 className="w-5 h-5" />
@@ -156,7 +157,7 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
           <button
             onClick={() => onViewModeChange('list')}
             className={`p-2 rounded-lg transition-colors ${
-              viewMode === 'list' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:bg-slate-100'
+              viewMode === 'list' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
           >
             <List className="w-5 h-5" />
@@ -171,10 +172,7 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
       {/* Notes Grid/List */}
       {filteredNotes.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center">
-            <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">No notes found</p>
-          </CardContent>
+          <EmptyState icon={<BookOpen size={18} />} title="No notes found" />
         </Card>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -185,7 +183,7 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {note.isPinned && <Pin className="w-3 h-3 text-indigo-500 fill-indigo-500" />}
-                      <h3 className="font-semibold text-slate-900 line-clamp-1">{note.title}</h3>
+                      <h3 className="font-semibold text-slate-900 line-clamp-1 dark:text-slate-100">{note.title}</h3>
                     </div>
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(note.category)}`}>
                       {note.category}
@@ -195,15 +193,15 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
                     <Star className={`w-4 h-4 ${note.isFavorite ? 'fill-amber-500 text-amber-500' : ''}`} />
                   </button>
                 </div>
-                <p className="text-sm text-slate-600 mb-3 line-clamp-3">{truncateContent(note.content)}</p>
+                <p className="text-sm text-slate-600 mb-3 line-clamp-3 dark:text-slate-400">{truncateContent(note.content)}</p>
                 <div className="flex flex-wrap gap-1 mb-3">
                   {note.tags.slice(0, 3).map((tag, idx) => (
-                    <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                    <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs dark:bg-slate-800 dark:text-slate-400">
                       {tag}
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100 dark:text-slate-400 dark:border-slate-800">
                   <span>Updated {new Date(note.updatedAt).toLocaleDateString()}</span>
                   <span>{note.lastEditedBy.name}</span>
                 </div>
@@ -215,29 +213,29 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
         <Card>
           <CardContent className="p-0">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-slate-50 border-b border-slate-200 dark:bg-slate-800/50 dark:border-slate-700">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Note</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Category</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Tags</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Updated</th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-400">Note</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-400">Category</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-400">Tags</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-400">Updated</th>
+                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-400">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {filteredNotes.map((note) => (
-                  <tr key={note._id} className="hover:bg-slate-50">
+                  <tr key={note._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-100 rounded-lg">
-                          <BookOpen className="w-5 h-5 text-emerald-600" />
+                        <div className="p-2 bg-emerald-100 rounded-lg dark:bg-emerald-500/15">
+                          <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
                             {note.isPinned && <Pin className="w-3 h-3 text-indigo-500 fill-indigo-500" />}
-                            <p className="font-medium text-slate-900">{note.title}</p>
+                            <p className="font-medium text-slate-900 dark:text-slate-100">{note.title}</p>
                           </div>
-                          <p className="text-sm text-slate-500 line-clamp-1">{truncateContent(note.content, 50)}</p>
+                          <p className="text-sm text-slate-500 line-clamp-1 dark:text-slate-400">{truncateContent(note.content, 50)}</p>
                         </div>
                       </div>
                     </td>
@@ -249,18 +247,18 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {note.tags.slice(0, 2).map((tag, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                          <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs dark:bg-slate-800 dark:text-slate-400">
                             {tag}
                           </span>
                         ))}
                         {note.tags.length > 2 && (
-                          <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs dark:bg-slate-800 dark:text-slate-400">
                             +{note.tags.length - 2}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
+                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-2">
                         <Clock className="w-3 h-3" />
                         {new Date(note.updatedAt).toLocaleDateString()}
@@ -268,13 +266,13 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                          <Edit className="w-4 h-4 text-slate-600" />
+                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors dark:hover:bg-slate-700">
+                          <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                         </button>
-                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors dark:hover:bg-slate-700">
                           <Star className={`w-4 h-4 ${note.isFavorite ? 'fill-amber-500 text-amber-500' : 'text-slate-600'}`} />
                         </button>
-                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-red-600">
+                        <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-red-600 dark:hover:bg-slate-700 dark:text-red-400">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

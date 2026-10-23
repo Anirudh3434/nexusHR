@@ -21,7 +21,7 @@ import { useSocket } from "../../../hooks/useSocket";
 
 const LiveLocationMap = dynamic(() => import("../../../components/dashboard/LiveLocationMap"), { 
   ssr: false,
-  loading: () => <div className="h-48 w-full bg-gray-100 animate-pulse rounded-xl" />
+  loading: () => <div className="h-48 w-full bg-gray-100 animate-pulse rounded-xl dark:bg-slate-800" />
 });
  
  // Helper to format 24h time to 12h time
@@ -550,7 +550,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="space-y-5">
       {/* Top Worksuite Header Bar & Action Controls */}
       <WorksuiteHeader
         userName={dashboardData?.employee?.name || user?.name || "Employee"}
@@ -617,93 +617,91 @@ export default function DashboardPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setErrorModal(null)} />
           
-          <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-5 duration-300 border border-white/20">
-            {/* Header with Background Pattern */}
-            <div className={`relative h-32 flex items-center justify-center ${
-              errorModal.type === 'radius' ? 'bg-amber-500' : 'bg-rose-500'
+          <div className="relative bg-card rounded-[14px] shadow-xl w-full max-w-md overflow-hidden border border-border">
+            {/* Header */}
+            <div className={`relative h-24 flex items-center justify-center ${
+              errorModal.type === 'radius' ? 'bg-[#b45309]' : 'bg-destructive'
             }`}>
-              <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-              <div className="relative bg-white/20 backdrop-blur-md rounded-full p-4 ring-8 ring-white/10">
-                {errorModal.type === 'location' ? <MapPinOff size={48} className="text-white" /> :
-                 errorModal.type === 'radius' ? <MapPin size={48} className="text-white" /> :
-                 <XCircle size={48} className="text-white" />}
+              <div className="relative bg-white/15 rounded-full p-3.5 ring-8 ring-white/10">
+                {errorModal.type === 'location' ? <MapPinOff size={36} className="text-white" /> :
+                 errorModal.type === 'radius' ? <MapPin size={36} className="text-white" /> :
+                 <XCircle size={36} className="text-white" />}
               </div>
               <button 
                 onClick={() => setErrorModal(null)}
+                aria-label="Dismiss error"
                 className="absolute top-4 right-4 p-2 bg-black/10 hover:bg-black/20 rounded-full text-white transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="p-8">
-              <div className="text-center space-y-2 mb-8">
-                <h3 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white uppercase">
+            <div className="p-6 sm:p-8">
+              <div className="text-center space-y-1.5 mb-6">
+                <h3 className="font-display text-[22px] font-medium tracking-tight text-foreground">
                   {errorModal.title}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">
+                <p className="text-sm text-muted-foreground">
                   {errorModal.message}
                 </p>
               </div>
 
               {/* Troubleshooting Guide */}
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 mb-8 border border-gray-100 dark:border-gray-800">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <div className="bg-muted/50 rounded-xl p-5 mb-6 border border-border">
+                <h4 className="text-[13px] font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Info size={14} />
-                  How to Fix
+                  How to fix
                 </h4>
-                <ul className="space-y-3">
+                <ul className="space-y-2.5">
                   {errorModal.type === 'location' ? (
                     <>
-                      <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-900/30 text-[10px] font-bold text-rose-600">1</span>
-                        <span>Click the <span className="font-bold underline">Lock / Settings</span> icon in your address bar.</span>
+                      <li className="flex gap-3 text-sm text-muted-foreground">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">1</span>
+                        <span>Select the lock icon in the address bar.</span>
                       </li>
-                      <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-900/30 text-[10px] font-bold text-rose-600">2</span>
-                        <span>Set <span className="font-bold underline">Location</span> to <span className="font-bold text-green-600">"Allow"</span>.</span>
+                      <li className="flex gap-3 text-sm text-muted-foreground">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">2</span>
+                        <span>Set location access to Allow, then try again.</span>
                       </li>
                     </>
                   ) : errorModal.type === 'radius' ? (
                     <>
-                      <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 text-[10px] font-bold text-amber-600">1</span>
-                        <span>Ensure you are physically present at the office premises.</span>
+                      <li className="flex gap-3 text-sm text-muted-foreground">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">1</span>
+                        <span>Confirm you are on the office premises.</span>
                       </li>
-                      <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 text-[10px] font-bold text-amber-600">2</span>
-                        <span>If you are working remotely, switch to <span className="font-bold underline">WFH mode</span>.</span>
+                      <li className="flex gap-3 text-sm text-muted-foreground">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">2</span>
+                        <span>Working remotely instead? Switch to remote mode.</span>
                       </li>
                     </>
                   ) : (
-                    <li className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 text-[10px] font-bold text-blue-600">!</span>
-                       <span>Please check your connection and try again later.</span>
+                    <li className="flex gap-3 text-sm text-muted-foreground">
+                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">!</span>
+                       <span>Check your connection and try again.</span>
                     </li>
                   )}
                 </ul>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {workMode === 'office' && (
                   <Button 
                     variant="outline" 
-                    className="w-full h-12 rounded-2xl font-bold border-2"
+                    className="w-full h-11 rounded-lg font-semibold"
                     onClick={() => {
                       setWorkMode('wfh');
                       setErrorModal(null);
                     }}
                   >
-                    Switch to WFH Mode
+                    Switch to remote mode
                   </Button>
                 )}
                 <Button 
-                  className={`w-full h-12 rounded-2xl font-bold shadow-lg transform active:scale-95 transition-all ${
-                    errorModal.type === 'radius' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-rose-600 hover:bg-rose-700'
-                  }`}
+                  className="w-full h-11 rounded-lg font-semibold"
                   onClick={() => setErrorModal(null)}
                 >
-                  Got it, thanks!
+                  Done
                 </Button>
               </div>
             </div>

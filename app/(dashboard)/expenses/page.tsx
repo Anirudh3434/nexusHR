@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   Receipt, DollarSign, CheckCircle, XCircle, Clock, 
   ChevronDown, ChevronUp, Calendar, User, Building, 
@@ -282,11 +284,11 @@ export default function ExpensesManagementPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
-      case 'submitted': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'under_review': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'approved': return 'bg-green-100 text-green-700 border-green-200';
-      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
-      case 'reimbursed': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'submitted': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30';
+      case 'under_review': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30';
+      case 'approved': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30';
+      case 'reimbursed': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30';
       default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
     }
   };
@@ -316,24 +318,23 @@ export default function ExpensesManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Expense Management</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Review, approve, and reimburse employee expenses</p>
-        </div>
-        <Button variant="outline" onClick={exportCSV}>
-          <Download className="h-4 w-4 mr-1.5" />
-          Export CSV
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Expense Management"
+        description="Review, approve, and reimburse employee expenses"
+        actions={
+          <Button variant="outline" onClick={exportCSV}>
+            <Download className="h-4 w-4 mr-1.5" />
+            Export CSV
+          </Button>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -427,22 +428,24 @@ export default function ExpensesManagementPage() {
             <tbody className="divide-y divide-gray-100">
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
-                    <Receipt className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No expenses found</p>
-                    <p className="text-sm">No expense claims match your filters</p>
+                  <td colSpan={7} className="p-0">
+                    <EmptyState
+                      icon={<Receipt size={18} />}
+                      title="No expenses found"
+                      description="No expense claims match your filters"
+                    />
                   </td>
                 </tr>
               ) : (
                 filteredExpenses.map((expense) => (
                   <React.Fragment key={expense._id}>
-                    <tr className="hover:bg-gray-50 dark:bg-slate-950">
+                    <tr className="hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-800">
                       <td className="px-4 py-3">
                         <code className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded font-mono">
                           {expense.expenseNumber}
                         </code>
                         {expense.billable && (
-                          <Badge variant="outline" className="ml-2 text-xs text-blue-600 border-blue-200">
+                          <Badge variant="outline" className="ml-2 text-xs text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-500/30">
                             Billable
                           </Badge>
                         )}
@@ -481,7 +484,7 @@ export default function ExpensesManagementPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedExpense(expense)}
-                                className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2 text-xs"
+                                className="border-red-200 text-red-600 hover:bg-red-50 h-7 px-2 text-xs dark:border-red-500/30 dark:text-red-400"
                               >
                                 <XCircle className="h-3.5 w-3.5 mr-1" />
                                 Reject
@@ -574,7 +577,7 @@ export default function ExpensesManagementPage() {
                                   href={expense.receiptUrl} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:text-blue-700 underline"
+                                  className="text-sm text-blue-600 hover:text-blue-700 underline dark:text-blue-400"
                                 >
                                   View Receipt
                                 </a>
@@ -585,7 +588,7 @@ export default function ExpensesManagementPage() {
                             {expense.rejectionReason && (
                               <div className="space-y-1 md:col-span-2 lg:col-span-3">
                                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rejection Reason</p>
-                                <p className="text-sm text-red-600">{expense.rejectionReason}</p>
+                                <p className="text-sm text-red-600 dark:text-red-400">{expense.rejectionReason}</p>
                               </div>
                             )}
                             
@@ -666,11 +669,11 @@ export default function ExpensesManagementPage() {
               <CardTitle className="text-lg">Reject Expense {selectedExpense.expenseNumber}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-red-50 p-3 rounded-lg">
-                <p className="text-sm text-red-800">
+              <div className="bg-red-50 p-3 rounded-lg dark:bg-red-500/10">
+                <p className="text-sm text-red-800 dark:text-red-300">
                   <strong>{selectedExpense.employeeId.name}</strong> - {formatCurrency(selectedExpense.amount, selectedExpense.currency)}
                 </p>
-                <p className="text-sm text-red-600 mt-1">{selectedExpense.description}</p>
+                <p className="text-sm text-red-600 mt-1 dark:text-red-400">{selectedExpense.description}</p>
               </div>
               
               <div>
@@ -719,14 +722,14 @@ export default function ExpensesManagementPage() {
               <CardTitle className="text-lg">Reimburse Expense {selectedExpense.expenseNumber}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-purple-50 p-3 rounded-lg">
-                <p className="text-sm text-purple-800">
+              <div className="bg-purple-50 p-3 rounded-lg dark:bg-purple-500/10">
+                <p className="text-sm text-purple-800 dark:text-purple-300">
                   <strong>{selectedExpense.employeeId.name}</strong>
                 </p>
                 <p className="text-lg font-semibold text-purple-900">
                   {formatCurrency(selectedExpense.amount, selectedExpense.currency)}
                 </p>
-                <p className="text-sm text-purple-600">{selectedExpense.description}</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400">{selectedExpense.description}</p>
               </div>
               
               <div>

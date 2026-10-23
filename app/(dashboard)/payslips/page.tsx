@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '../../../components/ui/PageHeader';
 
 export default function PayslipsPage() {
   const { user } = useAuth();
@@ -48,10 +49,10 @@ export default function PayslipsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">My Payslips</h1>
-        <p className="text-gray-500 dark:text-gray-400">View and download your monthly salary statements.</p>
-      </div>
+      <PageHeader
+        title="My Payslips"
+        description="View and download your monthly salary statements."
+      />
 
       <div className="grid gap-6">
         {loading ? (
@@ -60,7 +61,7 @@ export default function PayslipsPage() {
           </div>
         ) : payrolls.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-gray-500">
+            <CardContent className="py-12 text-center text-gray-500 dark:text-slate-400">
               <FileText className="h-12 w-12 mx-auto text-gray-300 mb-4" />
               <p>No payslips have been generated for you yet.</p>
             </CardContent>
@@ -82,13 +83,13 @@ export default function PayslipsPage() {
                       <div className="flex items-center gap-3 mt-1">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           payroll.status === 'Paid' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' 
+                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300'
                         }`}>
                           {payroll.status}
                         </span>
                         {payroll.paymentDate && (
-                          <span className="text-[10px] text-gray-500 italic">
+                          <span className="text-[10px] text-gray-500 italic dark:text-slate-400">
                             Paid on {new Date(payroll.paymentDate).toLocaleDateString()}
                           </span>
                         )}
@@ -98,22 +99,22 @@ export default function PayslipsPage() {
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:text-right">
                     <div className="space-y-1">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Earnings</p>
-                      <div className="text-sm font-semibold flex items-center md:justify-end text-green-600">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider dark:text-slate-400">Earnings</p>
+                      <div className="text-sm font-semibold flex items-center md:justify-end text-green-600 dark:text-green-400">
                         <TrendingUp size={14} className="mr-1" />
                         ₹{(payroll.baseSalary + payroll.overtimePay).toLocaleString()}
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Deductions</p>
-                      <div className="text-sm font-semibold flex items-center md:justify-end text-red-600">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider dark:text-slate-400">Deductions</p>
+                      <div className="text-sm font-semibold flex items-center md:justify-end text-red-600 dark:text-red-400">
                         <TrendingDown size={14} className="mr-1" />
                         ₹{(payroll.lateDeduction + payroll.leaveDeduction).toLocaleString()}
                       </div>
                     </div>
                     <div className="space-y-1 col-span-2 md:col-span-1">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Net Amount</p>
-                      <div className="text-xl font-black text-blue-600 flex items-center md:justify-end">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider dark:text-slate-400">Net Amount</p>
+                      <div className="text-xl font-black text-blue-600 flex items-center md:justify-end dark:text-blue-400">
                         <IndianRupee size={18} className="mr-1" />
                         {payroll.netSalary.toLocaleString()}
                       </div>
@@ -131,7 +132,7 @@ export default function PayslipsPage() {
                 </div>
                 
                 {/* Expandable details area could go here */}
-                <div className="bg-gray-50/50 dark:bg-gray-900/20 px-6 py-3 border-t flex flex-wrap gap-4 text-[10px] text-gray-500 tracking-tight">
+                <div className="bg-gray-50/50 dark:bg-gray-900/20 px-6 py-3 border-t flex flex-wrap gap-4 text-[10px] text-gray-500 tracking-tight dark:text-slate-400">
                   <div className="flex items-center gap-1">
                     <Clock size={12} /> Overtime: {payroll.overtimeHours} hrs (₹{payroll.overtimePay})
                   </div>

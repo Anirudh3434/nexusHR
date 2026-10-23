@@ -90,6 +90,10 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+
+    if (!companyId) {
+      return NextResponse.json({ message: 'Forbidden: no company context' }, { status: 403 });
+    }
     
     // Only admin/HR/manager can create projects
     if (!['admin', 'hr', 'manager'].includes(userRole)) {
@@ -120,10 +124,14 @@ export async function POST(req: Request) {
 
     // Validation
     if (!name) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'Missing required fields',
         required: ['name']
       }, { status: 400 });
+    }
+
+    if (body.companyId && body.companyId !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     const projectNumber = await generateProjectNumber();
@@ -144,7 +152,7 @@ export async function POST(req: Request) {
       clientName,
       clientContact,
       milestones: milestones || [],
-      companyId: companyId || body.companyId,
+      companyId,
       createdBy: userId,
       progressPercentage: 0,
       board: board || null,
@@ -174,16 +182,21 @@ export async function PATCH(req: Request) {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const userRole = headersList.get('x-user-role') || 'employee';
-    
+    const companyId = headersList.get('x-company-id');
+
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const body = await req.json();
-    const { projectId, ...updateData } = body;
+    const { projectId, ...rest } = body;
+
+    if (Object.keys(rest).some((k) => k.startsWith('$'))) {
+      return NextResponse.json({ message: 'Invalid field names' }, { status: 400 });
+    }
 
     console.log('PATCH project - body:', JSON.stringify(body, null, 2));
-    console.log('PATCH project - updateData:', JSON.stringify(updateData, null, 2));
+    console.log('PATCH project - updateData:', JSON.stringify(rest, null, 2));
 
     if (!projectId) {
       return NextResponse.json({ message: 'Project ID is required' }, { status: 400 });
@@ -196,14 +209,22 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: 'Project not found' }, { status: 404 });
     }
 
+    // Company scope: session company is authoritative.
+    if (!companyId || project.companyId.toString() !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: Access to another company\'s project is not allowed' }, { status: 403 });
+    }
+
     // Check permissions
     if (userRole === 'employee') {
       return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
     }
 
+    // companyId/projectNumber are server-owned — never client-writable.
+    const { companyId: _ignoredCompanyId, projectNumber: _ignoredNumber, createdBy: _ignoredCreator, ...updateData } = rest;
+
     // Update project
-    const updatedProject = await Project.findByIdAndUpdate(
-      projectId,
+    const updatedProject = await Project.findOneAndUpdate(
+      { _id: projectId, companyId },
       { $set: updateData },
       { new: true }
     )
@@ -231,16 +252,17 @@ export async function DELETE(req: Request) {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const userRole = headersList.get('x-user-role') || 'employee';
-    
+    const companyId = headersList.get('x-company-id');
+
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+
     // Only admin/HR can delete projects
     if (!['admin', 'hr'].includes(userRole)) {
       return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
     }
-    
+
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get('projectId');
 
@@ -248,13 +270,13 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'Project ID is required' }, { status: 400 });
     }
 
-    const project = await Project.findById(projectId);
+    const project = await Project.findOne({ _id: projectId, companyId });
 
     if (!project) {
       return NextResponse.json({ message: 'Project not found' }, { status: 404 });
     }
 
-    await Project.findByIdAndDelete(projectId);
+    await Project.findOneAndDelete({ _id: projectId, companyId });
 
     return NextResponse.json({ message: 'Project deleted successfully' });
   } catch (error: any) {

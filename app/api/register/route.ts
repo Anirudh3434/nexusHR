@@ -57,6 +57,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(adminPassword)) {
+      return NextResponse.json(
+        { message: 'Admin password must be at least 8 characters with at least one letter and one number' },
+        { status: 400 }
+      );
+    }
+
     // Function to generate a clean 6-character alphanumeric ID
     const generate6CharID = () => {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -115,7 +122,9 @@ export async function POST(req: Request) {
       }
     }
     
-    // Create the company
+    // Create the company (1-month free trial starts at creation)
+    const trialStartsAt = new Date();
+    const trialEndsAt = new Date(trialStartsAt.getTime() + 30 * 24 * 60 * 60 * 1000);
     const company = await Company.create({
       name,
       code: finalCode,
@@ -142,10 +151,13 @@ export async function POST(req: Request) {
       onboardingComplete: true,
       registrationStep: 4,
       isActive: true,
+      trialStartsAt,
+      trialEndsAt,
+      subscriptionStatus: 'trial',
     });
     
     // Hash admin password
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    const hashedPassword = await bcrypt.hash(adminPassword, 12);
     
     // Create the admin user
     const adminUser = await User.create({

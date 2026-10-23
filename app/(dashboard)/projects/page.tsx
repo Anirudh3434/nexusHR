@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   FolderKanban, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
@@ -88,18 +89,18 @@ const priorityLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  planning: 'bg-blue-50 text-blue-700 border border-blue-200',
-  active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  on_hold: 'bg-amber-50 text-amber-700 border border-amber-200',
-  completed: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
-  cancelled: 'bg-rose-50 text-rose-700 border border-rose-200',
+  planning: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30',
+  active: 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
+  on_hold: 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
+  completed: 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30',
+  cancelled: 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
 };
 
 const priorityColors: Record<string, string> = {
-  low: 'bg-slate-50 text-slate-700 border border-slate-200',
+  low: 'bg-slate-50 text-slate-700 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700',
   medium: 'bg-sky-50 text-sky-700 border border-sky-200',
-  high: 'bg-orange-50 text-orange-700 border border-orange-200',
-  critical: 'bg-rose-50 text-rose-700 border border-rose-200',
+  high: 'bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/30',
+  critical: 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
 };
 
 export default function ProjectsManagementPage() {
@@ -291,11 +292,11 @@ export default function ProjectsManagementPage() {
   
     const getAvatarBg = (name: string) => {
       const colors = [
-        'bg-indigo-50 text-indigo-700 border-indigo-200',
-        'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30',
+        'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
         'bg-sky-50 text-sky-700 border-sky-200',
-        'bg-amber-50 text-amber-700 border-amber-200',
-        'bg-rose-50 text-rose-700 border-rose-200',
+        'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
+        'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
         'bg-violet-50 text-violet-700 border-violet-200',
       ];
       let hash = 0;
@@ -327,7 +328,7 @@ export default function ProjectsManagementPage() {
         })}
         {remainingCount > 0 && (
           <div
-            className="inline-flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-white ring-1 ring-black/5 shadow-sm"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border-2 border-white ring-1 ring-black/5 shadow-sm dark:bg-slate-800 dark:text-slate-400"
             title={`${remainingCount} more members`}
           >
             +{remainingCount}
@@ -346,7 +347,7 @@ export default function ProjectsManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
@@ -354,66 +355,66 @@ export default function ProjectsManagementPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Projects</h1>
-          <p className="text-sm text-slate-500">Manage and track your company projects</p>
-        </div>
-        {user?.role !== 'employee' && (
-          <Button onClick={() => window.location.href = '/projects/create'} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Project
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Projects"
+        description="Manage and track your company projects"
+        actions={
+          user?.role !== 'employee' && (
+            <Button onClick={() => window.location.href = '/projects/create'} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Project
+            </Button>
+          )
+        }
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white dark:border-slate-800 dark:bg-slate-900">
           <CardContent className="p-5 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Projects</p>
-              <h3 className="text-2xl font-bold text-slate-800 tracking-tight">{totalProjects}</h3>
+              <h3 className="text-2xl font-bold text-slate-800 tracking-tight dark:text-slate-200">{totalProjects}</h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 flex items-center justify-center text-indigo-600 border border-indigo-100/30">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 flex items-center justify-center text-indigo-600 border border-indigo-100/30 dark:bg-indigo-500/10 dark:text-indigo-400">
               <FolderKanban className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white dark:border-slate-800 dark:bg-slate-900">
           <CardContent className="p-5 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active</p>
-              <h3 className="text-2xl font-bold text-slate-800 tracking-tight">{activeProjects}</h3>
+              <h3 className="text-2xl font-bold text-slate-800 tracking-tight dark:text-slate-200">{activeProjects}</h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-50/80 flex items-center justify-center text-emerald-600 border border-emerald-100/30">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50/80 flex items-center justify-center text-emerald-600 border border-emerald-100/30 dark:bg-emerald-500/10 dark:text-emerald-400">
               <TrendingUp className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white dark:border-slate-800 dark:bg-slate-900">
           <CardContent className="p-5 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Completed</p>
-              <h3 className="text-2xl font-bold text-slate-800 tracking-tight">{completedProjects}</h3>
+              <h3 className="text-2xl font-bold text-slate-800 tracking-tight dark:text-slate-200">{completedProjects}</h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 flex items-center justify-center text-indigo-600 border border-indigo-100/30">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 flex items-center justify-center text-indigo-600 border border-indigo-100/30 dark:bg-indigo-500/10 dark:text-indigo-400">
               <CheckCircle className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.035)] transition-all duration-300 rounded-2xl overflow-hidden bg-white dark:border-slate-800 dark:bg-slate-900">
           <CardContent className="p-5 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Spent / Budget</p>
-              <h3 className="text-lg font-bold text-slate-800 tracking-tight truncate max-w-[150px]">
+              <h3 className="text-lg font-bold text-slate-800 tracking-tight truncate max-w-[150px] dark:text-slate-200">
                 ${totalSpent.toLocaleString()} <span className="text-[10px] font-medium text-slate-400">/ ${totalBudget.toLocaleString()}</span>
               </h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-amber-50/80 flex items-center justify-center text-amber-600 border border-amber-100/30">
+            <div className="w-12 h-12 rounded-xl bg-amber-50/80 flex items-center justify-center text-amber-600 border border-amber-100/30 dark:bg-amber-500/10 dark:text-amber-400">
               <DollarSign className="w-5 h-5" />
             </div>
           </CardContent>
@@ -421,7 +422,7 @@ export default function ProjectsManagementPage() {
       </div>
 
       {/* Filters and View Toggle */}
-      <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] rounded-2xl overflow-hidden bg-white">
+      <Card className="border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.015)] rounded-2xl overflow-hidden bg-white dark:border-slate-800 dark:bg-slate-900">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex-1 flex flex-col sm:flex-row gap-3">
@@ -432,13 +433,13 @@ export default function ProjectsManagementPage() {
                   placeholder="Search by project name, code or description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm cursor-pointer text-slate-600 font-medium"
+                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm cursor-pointer text-slate-600 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400"
               >
                 <option value="">All Statuses</option>
                 {Object.entries(statusLabels).map(([value, label]) => (
@@ -448,7 +449,7 @@ export default function ProjectsManagementPage() {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm cursor-pointer text-slate-600 font-medium"
+                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm cursor-pointer text-slate-600 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400"
               >
                 <option value="">All Priorities</option>
                 {Object.entries(priorityLabels).map(([value, label]) => (
@@ -457,17 +458,17 @@ export default function ProjectsManagementPage() {
               </select>
             </div>
             
-            <div className="flex items-center gap-1.5 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
+            <div className="flex items-center gap-1.5 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4 dark:border-slate-800">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100/40' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 shadow-sm border border-indigo-100/40 dark:border-indigo-500/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 title="Grid View"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100/40' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 shadow-sm border border-indigo-100/40 dark:border-indigo-500/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 title="List View"
               >
                 <List className="w-4 h-4" />
@@ -479,11 +480,11 @@ export default function ProjectsManagementPage() {
 
       {/* Projects Container */}
       {filteredProjects.length === 0 ? (
-        <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl">
+        <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl dark:border-slate-800">
           <CardContent className="p-12 text-center">
             <div className="max-w-xs mx-auto space-y-3">
               <FolderKanban className="w-12 h-12 text-slate-300 mx-auto" />
-              <h3 className="text-base font-semibold text-slate-700">No Projects Found</h3>
+              <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300">No Projects Found</h3>
               <p className="text-xs text-slate-400">We couldn't find any projects matching your search criteria or filters.</p>
             </div>
           </CardContent>
@@ -503,12 +504,12 @@ export default function ProjectsManagementPage() {
             return (
               <Card 
                 key={project._id} 
-                className={`border border-slate-100 hover:border-slate-200/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.045)] transition-all duration-300 hover:-translate-y-1 overflow-hidden border-t-4 ${priorityAccent[project.priority] || 'border-t-slate-300'} rounded-2xl bg-white`}
+                className={`border border-slate-100 hover:border-slate-200/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.045)] transition-all duration-300 hover:-translate-y-1 overflow-hidden border-t-4 ${priorityAccent[project.priority] || 'border-t-slate-300'} rounded-2xl bg-white dark:border-slate-800 dark:bg-slate-900`}
               >
                 <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
                   {/* Top: Badges and Actions */}
                   <div className="flex items-start justify-between">
-                    <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                    <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 dark:bg-slate-800/50 dark:border-slate-800">
                       {project.projectNumber}
                     </span>
                     {user?.role !== 'employee' && (
@@ -517,7 +518,7 @@ export default function ProjectsManagementPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => window.location.href = `/projects/create?id=${project._id}`}
-                          className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+                          className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 dark:hover:bg-slate-700"
                           title="Edit Project"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -559,7 +560,7 @@ export default function ProjectsManagementPage() {
                   {/* Title and Badges */}
                   <div>
                     <h3 
-                      className="font-bold text-slate-800 text-base mb-2 hover:text-indigo-600 transition-colors cursor-pointer" 
+                      className="font-bold text-slate-800 text-base mb-2 hover:text-indigo-600 transition-colors cursor-pointer dark:text-slate-200" 
                       onClick={() => { 
                         if (user?.role === 'employee') {
                           window.location.href = `/projects/${project._id}/board`;
@@ -579,7 +580,7 @@ export default function ProjectsManagementPage() {
                         {priorityLabels[project.priority]}
                       </Badge>
                       {project.department && (
-                        <Badge variant="outline" className="text-[10px] text-slate-500 border-slate-200 px-2.5 py-0.5 rounded-full">
+                        <Badge variant="outline" className="text-[10px] text-slate-500 border-slate-200 px-2.5 py-0.5 rounded-full dark:text-slate-400 dark:border-slate-700">
                           {project.department}
                         </Badge>
                       )}
@@ -587,35 +588,35 @@ export default function ProjectsManagementPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 min-h-8">
+                  <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 min-h-8 dark:text-slate-400">
                     {project.description || 'No description provided.'}
                   </p>
 
                   {/* Metadata Grid */}
-                  <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs border-t border-slate-100 pt-3.5">
-                    <div className="flex items-center gap-1.5 text-slate-500">
+                  <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs border-t border-slate-100 pt-3.5 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                       <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate" title={project.managerId?.name || 'Not assigned'}>
-                        PM: <strong className="text-slate-700 font-semibold">{project.managerId?.name || 'Unassigned'}</strong>
+                        PM: <strong className="text-slate-700 font-semibold dark:text-slate-300">{project.managerId?.name || 'Unassigned'}</strong>
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-slate-500 justify-end">
+                    <div className="flex items-center gap-1.5 text-slate-500 justify-end dark:text-slate-400">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate font-medium text-slate-600">
+                      <span className="truncate font-medium text-slate-600 dark:text-slate-400">
                         {project.endDate ? new Date(project.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' }) : 'No date'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-slate-500">
+                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                       <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="shrink-0 mr-1">Team:</span>
                       {renderMemberAvatars(project.members)}
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-slate-500 justify-end">
+                    <div className="flex items-center gap-1.5 text-slate-500 justify-end dark:text-slate-400">
                       {project.board && (
-                        <span className="text-[10px] px-2 py-0.5 bg-slate-100 rounded-md font-semibold text-slate-600 capitalize">
+                        <span className="text-[10px] px-2 py-0.5 bg-slate-100 rounded-md font-semibold text-slate-600 capitalize dark:bg-slate-800 dark:text-slate-400">
                           {project.board.type}
                         </span>
                       )}
@@ -625,11 +626,11 @@ export default function ProjectsManagementPage() {
                   {/* Budget Meter (if applicable) */}
                   {project.budget !== undefined && project.budget > 0 && (
                     <div className="space-y-1 pt-1 border-t border-slate-50">
-                      <div className="flex justify-between text-[10px] text-slate-500 font-medium">
+                      <div className="flex justify-between text-[10px] text-slate-500 font-medium dark:text-slate-400">
                         <span>Spent: ${project.spent?.toLocaleString() || 0}</span>
                         <span>Budget: ${project.budget.toLocaleString()}</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                      <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden dark:bg-slate-800">
                         <div
                           className={`h-1.5 rounded-full transition-all duration-500 ${
                             (project.spent || 0) / project.budget > 0.9 ? 'bg-rose-500' : (project.spent || 0) / project.budget > 0.7 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -643,10 +644,10 @@ export default function ProjectsManagementPage() {
                   {/* Progress Section */}
                   <div className="space-y-1.5 pt-1">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500 font-semibold">Task Progress</span>
-                      <span className="font-bold text-slate-800">{project.progressPercentage}%</span>
+                      <span className="text-slate-500 font-semibold dark:text-slate-400">Task Progress</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{project.progressPercentage}%</span>
                     </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
+                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner dark:bg-slate-800">
                       <div
                         className={`h-2 rounded-full transition-all duration-500 bg-gradient-to-r ${
                           project.status === 'completed' ? 'from-emerald-400 to-teal-500' : 'from-indigo-500 to-indigo-600'
@@ -659,7 +660,7 @@ export default function ProjectsManagementPage() {
                   {/* Footer / Expand Button */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : project._id)}
-                    className="w-full py-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-xl transition-all flex items-center justify-center gap-1 border border-indigo-100/20"
+                    className="w-full py-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-xl transition-all flex items-center justify-center gap-1 border border-indigo-100/20 dark:text-indigo-400 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/10"
                   >
                     {isExpanded ? (
                       <>
@@ -676,18 +677,18 @@ export default function ProjectsManagementPage() {
 
                   {/* Expanded Content */}
                   {isExpanded && (
-                    <div className="pt-3.5 border-t border-slate-100 space-y-3.5 text-xs animate-in fade-in duration-200">
+                    <div className="pt-3.5 border-t border-slate-100 space-y-3.5 text-xs animate-in fade-in duration-200 dark:border-slate-800">
                       <div>
-                        <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-1">
+                        <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-1 dark:text-slate-300">
                           <Users className="w-3.5 h-3.5 text-slate-400" />
                           Members Assignments
                         </h4>
                         <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1">
                           {project.members && project.members.length > 0 ? (
                             project.members.map((member, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100/60 rounded-xl border border-slate-100/80 transition-colors">
-                                <span className="font-semibold text-slate-700 truncate max-w-[120px]">{member.employeeId?.name || 'Unknown'}</span>
-                                <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 truncate capitalize font-medium">{member.role.replace('_', ' ')}</span>
+                              <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100/60 rounded-xl border border-slate-100/80 transition-colors dark:bg-slate-800/50">
+                                <span className="font-semibold text-slate-700 truncate max-w-[120px] dark:text-slate-300">{member.employeeId?.name || 'Unknown'}</span>
+                                <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 truncate capitalize font-medium dark:bg-slate-800 dark:text-slate-400">{member.role.replace('_', ' ')}</span>
                               </div>
                             ))
                           ) : (
@@ -697,20 +698,20 @@ export default function ProjectsManagementPage() {
                       </div>
 
                       <div>
-                        <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-1">
+                        <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-1 dark:text-slate-300">
                           <CheckCircle className="w-3.5 h-3.5 text-slate-400" />
                           Key Milestones
                         </h4>
                         <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1">
                           {project.milestones && project.milestones.length > 0 ? (
                             project.milestones.map((milestone) => (
-                              <div key={milestone.id} className="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100/60 rounded-xl border border-slate-100/80 transition-colors">
-                                <span className="font-semibold text-slate-700 truncate max-w-[120px]" title={milestone.name}>{milestone.name}</span>
+                              <div key={milestone.id} className="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100/60 rounded-xl border border-slate-100/80 transition-colors dark:bg-slate-800/50">
+                                <span className="font-semibold text-slate-700 truncate max-w-[120px] dark:text-slate-300" title={milestone.name}>{milestone.name}</span>
                                 <Badge variant="outline" className={`text-[9px] px-2 py-0 capitalize font-medium ${
-                                  milestone.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                  milestone.status === 'overdue' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                                  milestone.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                  'bg-slate-50 text-slate-500 border-slate-200'
+                                  milestone.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30' :
+                                  milestone.status === 'overdue' ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30' :
+                                  milestone.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30' :
+                                  'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700'
                                 }`}>
                                   {milestone.status.replace('_', ' ')}
                                 </Badge>
@@ -730,12 +731,12 @@ export default function ProjectsManagementPage() {
         </div>
       ) : (
         /* Compact List View */
-        <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl overflow-hidden bg-white">
+        <Card className="border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] rounded-2xl overflow-hidden bg-white dark:border-slate-800 dark:bg-slate-900">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 font-bold text-xs uppercase tracking-wider">
+                  <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 font-bold text-xs uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/70">
                     <th className="p-4">Project</th>
                     <th className="p-4">Manager</th>
                     <th className="p-4">Timeline</th>
@@ -747,10 +748,10 @@ export default function ProjectsManagementPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredProjects.map((project) => (
-                    <tr key={project._id} className="hover:bg-slate-50/40 transition-colors">
+                    <tr key={project._id} className="hover:bg-slate-50/40 transition-colors dark:hover:bg-slate-800/70">
                       <td className="p-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-slate-800 hover:text-indigo-600 cursor-pointer transition-colors" onClick={() => { setSelectedProject(project); setShowViewModal(true); }}>
+                          <span className="font-bold text-slate-800 hover:text-indigo-600 cursor-pointer transition-colors dark:text-slate-200" onClick={() => { setSelectedProject(project); setShowViewModal(true); }}>
                             {project.name}
                           </span>
                           <span className="text-[10px] text-slate-400 tracking-wider uppercase mt-0.5">
@@ -758,10 +759,10 @@ export default function ProjectsManagementPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="p-4 text-slate-600 font-medium">
+                      <td className="p-4 text-slate-600 font-medium dark:text-slate-400">
                         {project.managerId?.name || 'Unassigned'}
                       </td>
-                      <td className="p-4 text-slate-500 text-xs font-medium">
+                      <td className="p-4 text-slate-500 text-xs font-medium dark:text-slate-400">
                         {project.startDate && project.endDate ? (
                           <span>{new Date(project.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(project.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         ) : (
@@ -773,13 +774,13 @@ export default function ProjectsManagementPage() {
                       </td>
                       <td className="p-4 w-44">
                         <div className="flex items-center gap-3">
-                          <div className="w-24 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-24 bg-slate-100 rounded-full h-1.5 overflow-hidden dark:bg-slate-800">
                             <div
                               className="h-1.5 rounded-full bg-indigo-600 transition-all duration-500"
                               style={{ width: `${project.progressPercentage}%` }}
                             />
                           </div>
-                          <span className="text-xs font-bold text-slate-700">{project.progressPercentage}%</span>
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.progressPercentage}%</span>
                         </div>
                       </td>
                       <td className="p-4">
@@ -793,7 +794,7 @@ export default function ProjectsManagementPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => window.location.href = `/projects/create?id=${project._id}`}
-                            className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+                            className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 dark:hover:bg-slate-700"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </Button>
@@ -819,7 +820,7 @@ export default function ProjectsManagementPage() {
       {/* Create Project Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:bg-slate-900">
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold">Create New Project</h2>
             </div>
@@ -921,7 +922,7 @@ export default function ProjectsManagementPage() {
                 <select
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 bg-white"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 bg-white dark:text-slate-300 dark:bg-slate-900"
                 >
                   <option value="">Select Department...</option>
                   {departments.map((dept) => (
@@ -1053,19 +1054,19 @@ export default function ProjectsManagementPage() {
       {/* View/Edit Project Modal */}
       {showViewModal && selectedProject && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:bg-slate-900">
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold">Project Details</h2>
-              <p className="text-sm text-gray-600">{selectedProject.name}</p>
+              <p className="text-sm text-gray-600 dark:text-slate-400">{selectedProject.name}</p>
             </div>
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Project Number</label>
-                <p className="text-gray-700">{selectedProject.projectNumber}</p>
+                <p className="text-gray-700 dark:text-slate-300">{selectedProject.projectNumber}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
-                <p className="text-gray-700">{selectedProject.description}</p>
+                <p className="text-gray-700 dark:text-slate-300">{selectedProject.description}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1084,38 +1085,38 @@ export default function ProjectsManagementPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Start Date</label>
-                  <p className="text-gray-700">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
+                  <p className="text-gray-700 dark:text-slate-300">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">End Date</label>
-                  <p className="text-gray-700">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
+                  <p className="text-gray-700 dark:text-slate-300">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
                 </div>
               </div>
               {selectedProject.budget && (
                 <div>
                   <label className="block text-sm font-medium mb-1">Budget</label>
-                  <p className="text-gray-700">{selectedProject.currency || 'USD'} {selectedProject.budget.toLocaleString()}</p>
+                  <p className="text-gray-700 dark:text-slate-300">{selectedProject.currency || 'USD'} {selectedProject.budget.toLocaleString()}</p>
                 </div>
               )}
               <div>
                 <label className="block text-sm font-medium mb-1">Progress</label>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
                   <div
                     className="bg-blue-500 h-2 rounded-full"
                     style={{ width: `${selectedProject.progressPercentage}%` }}
                   />
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{selectedProject.progressPercentage}%</p>
+                <p className="text-sm text-gray-600 mt-1 dark:text-slate-400">{selectedProject.progressPercentage}%</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Project Manager</label>
-                <p className="text-gray-700">{selectedProject.managerId.name}</p>
+                <p className="text-gray-700 dark:text-slate-300">{selectedProject.managerId.name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Team Members ({selectedProject.members.length})</label>
                 <div className="space-y-2 mt-2">
                   {selectedProject.members.map((member, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
+                    <div key={idx} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded dark:bg-slate-800/50">
                       <span>{member.employeeId.name}</span>
                       <Badge variant="outline">{member.role}</Badge>
                     </div>
@@ -1127,7 +1128,7 @@ export default function ProjectsManagementPage() {
                   <label className="block text-sm font-medium mb-1">Milestones ({selectedProject.milestones.length})</label>
                   <div className="space-y-2 mt-2">
                     {selectedProject.milestones.map((milestone) => (
-                      <div key={milestone.id} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
+                      <div key={milestone.id} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded dark:bg-slate-800/50">
                         <span>{milestone.name}</span>
                         <Badge variant="outline">{milestone.status}</Badge>
                       </div>

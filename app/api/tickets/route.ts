@@ -35,7 +35,10 @@ export async function GET(req: Request) {
     }
     
     const { searchParams } = new URL(req.url);
-    const urlCompanyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
+    if (queryCompanyId && queryCompanyId !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const priority = searchParams.get('priority');
@@ -45,11 +48,13 @@ export async function GET(req: Request) {
 
     const query: any = {};
 
-    // Role-based filtering
+    // Role-based filtering — company always from the session.
     if (userRole === 'employee') {
       query.reportedBy = userId;
-    } else if (urlCompanyId || companyId) {
-      query.companyId = urlCompanyId || companyId;
+      if (companyId) query.companyId = companyId;
+    } else {
+      if (!companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = companyId;
     }
 
     if (status) query.status = status;
@@ -64,9 +69,19 @@ export async function GET(req: Request) {
       .populate('employeeId', 'firstName lastName employeeId department')
       .populate('assignedTo', 'name email')
       .populate('resolvedBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return NextResponse.json({ tickets });
+    // Strip internal comments for non-staff readers.
+    const isStaff = ['admin', 'hr', 'manager', 'super_admin'].includes(userRole);
+    const visibleTickets = isStaff
+      ? tickets
+      : tickets.map((t: any) => ({
+          ...t,
+          comments: Array.isArray(t.comments) ? t.comments.filter((c: any) => !c.internal) : t.comments,
+        }));
+
+    return NextResponse.json({ tickets: visibleTickets });
   } catch (error: any) {
     console.error('Error fetching tickets:', error);
     return NextResponse.json({ message: 'Error fetching tickets', error: error.message }, { status: 500 });
@@ -89,6 +104,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { title, description, category, priority, department, employeeId, attachments } = body;
 
+    if (body.companyId && body.companyId !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+
     // Validation
     if (!title || !description || !category) {
       return NextResponse.json({ 
@@ -108,7 +127,7 @@ export async function POST(req: Request) {
       status: 'open',
       reportedBy: userId,
       employeeId: employeeId || null,
-      companyId: companyId || body.companyId,
+      companyId,
       department: department || '',
       attachments: attachments || [],
       comments: [],

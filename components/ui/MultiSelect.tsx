@@ -101,7 +101,7 @@ export function MultiSelect({
               {selectedOptions.slice(0, 3).map((option) => (
                 <span
                   key={option.value}
-                  className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md text-[10px] font-medium"
+                  className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md text-[10px] font-medium dark:bg-indigo-500/10 dark:text-indigo-300"
                 >
                   {option.icon ? (
                     <span className="shrink-0">{option.icon}</span>
@@ -114,7 +114,7 @@ export function MultiSelect({
                 </span>
               ))}
               {selectedOptions.length > 3 && (
-                <span className="text-[10px] text-slate-500">+{selectedOptions.length - 3}</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">+{selectedOptions.length - 3}</span>
               )}
             </div>
           )}

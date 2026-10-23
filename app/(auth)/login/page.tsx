@@ -264,12 +264,12 @@ export default function CompanyPortalLogin() {
 
   if (isCheckingSaved) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 dark:bg-slate-800/50">
         <div className="h-16 w-16 rounded-full bg-[#03081c] p-2 shadow-2xl ring-4 ring-white border border-[#03081c] mb-4 flex items-center justify-center animate-pulse">
           <img src="/logo.png" alt="NexusHR" className="h-full w-full object-contain scale-110" />
         </div>
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
-          <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+        <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400" />
           <span>Verifying Workspace Session...</span>
         </div>
       </div>
@@ -277,11 +277,11 @@ export default function CompanyPortalLogin() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-50/90 p-4 overflow-hidden select-none">
+    <div className="relative min-h-screen flex items-center justify-center bg-slate-50/90 p-4 overflow-hidden select-none dark:bg-slate-800/70">
       {/* Vibrant Light-Mode Ambient Glow Auroras */}
       <div className="absolute -top-[15%] -left-[10%] w-[520px] h-[520px] rounded-full bg-gradient-to-br from-indigo-300/40 via-purple-200/35 to-blue-200/25 blur-[100px] pointer-events-none animate-pulse duration-1000" />
       <div className="absolute -bottom-[15%] -right-[10%] w-[580px] h-[580px] rounded-full bg-gradient-to-tl from-teal-200/40 via-sky-200/30 to-indigo-200/35 blur-[110px] pointer-events-none animate-pulse duration-700" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-indigo-100/30 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-indigo-100/30 blur-[120px] pointer-events-none dark:bg-indigo-500/15" />
 
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e125_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e125_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
@@ -292,7 +292,7 @@ export default function CompanyPortalLogin() {
           <div className="relative mb-6 group animate-in fade-in zoom-in-95 duration-500">
             <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-indigo-300/50 via-purple-300/40 to-teal-300/50 opacity-90 blur-md animate-pulse" />
             
-            <Card className="relative shadow-2xl shadow-indigo-900/15 border-white/90 bg-white/95 backdrop-blur-2xl rounded-3xl overflow-hidden p-6 sm:p-8 text-center">
+            <Card className="relative shadow-2xl shadow-indigo-900/15 border-white/90 bg-white/95 backdrop-blur-2xl rounded-3xl overflow-hidden p-6 sm:p-8 text-center dark:bg-slate-900">
               <div className="space-y-6">
                 
                 {/* Visual Two-Circle Handshake Stage */}
@@ -311,8 +311,8 @@ export default function CompanyPortalLogin() {
                         />
                       </div>
                     </div>
-                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-800">
-                      Nexus<span className="text-indigo-600">HR</span>
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                      Nexus<span className="text-indigo-600 dark:text-indigo-400">HR</span>
                     </span>
                   </div>
 
@@ -320,7 +320,7 @@ export default function CompanyPortalLogin() {
                   <div className="flex-1 max-w-[170px] sm:max-w-[210px] flex flex-col items-center gap-2.5 relative">
                     
                     {/* Track Container */}
-                    <div className="w-full h-3.5 bg-slate-100/90 rounded-full relative overflow-hidden shadow-inner border border-slate-200/90">
+                    <div className="w-full h-3.5 bg-slate-100/90 rounded-full relative overflow-hidden shadow-inner border border-slate-200/90 dark:bg-slate-800/70 dark:border-slate-700">
                       {/* Laser Progress Beam with 2-Second Easing Duration */}
                       <div 
                         className={`h-full rounded-full transition-all ease-out ${
@@ -354,7 +354,7 @@ export default function CompanyPortalLogin() {
                     </div>
 
                     {/* Stage Label */}
-                    <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-slate-500">
+                    <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
                       <Zap className={`h-3 w-3 ${lookupState === 'failed' ? 'text-rose-500' : 'text-indigo-600 animate-pulse'}`} />
                       <span>
                         {lookupState === "connecting" && (connectionProgress >= 100 ? "Syncing..." : `${Math.round(connectionProgress)}%`)}
@@ -372,7 +372,7 @@ export default function CompanyPortalLogin() {
                       {lookupState === "connecting" && (
                         <>
                           <div className="absolute -inset-3 rounded-full border-2 border-dashed border-indigo-400/80 animate-spin [animation-duration:5s]" />
-                          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-br from-indigo-50/80 to-purple-50/80 p-2 shadow-xl ring-4 ring-white border border-indigo-200 flex items-center justify-center animate-pulse">
+                          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-br from-indigo-50/80 to-purple-50/80 p-2 shadow-xl ring-4 ring-white border border-indigo-200 flex items-center justify-center animate-pulse dark:border-indigo-500/30">
                             <Building2 className="h-9 w-9 text-indigo-500 animate-bounce [animation-duration:2s]" />
                           </div>
                         </>
@@ -403,14 +403,14 @@ export default function CompanyPortalLogin() {
                       {lookupState === "failed" && (
                         <div className="animate-in zoom-in-75 duration-300 relative">
                           <div className="absolute -inset-2 rounded-full bg-rose-500/15 blur-md" />
-                          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-rose-50 p-2 shadow-xl ring-4 ring-rose-100 border border-rose-200 flex items-center justify-center">
+                          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-rose-50 p-2 shadow-xl ring-4 ring-rose-100 border border-rose-200 flex items-center justify-center dark:bg-rose-500/10 dark:border-rose-500/30">
                             <X className="h-10 w-10 text-rose-500 stroke-[2.5]" />
                           </div>
                         </div>
                       )}
                     </div>
 
-                    <span className="text-[11px] font-bold text-slate-800 max-w-[90px] sm:max-w-[110px] truncate">
+                    <span className="text-[11px] font-bold text-slate-800 max-w-[90px] sm:max-w-[110px] truncate dark:text-slate-200">
                       {lookupState === "connecting" && "Target Workspace"}
                       {lookupState === "success" && (targetCompany?.name || targetCompany?.code)}
                       {lookupState === "failed" && "Not Reached"}
@@ -420,23 +420,23 @@ export default function CompanyPortalLogin() {
                 </div>
 
                 {/* Status Message & Action Area */}
-                <div className="pt-3 border-t border-slate-100">
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
                   {lookupState === "connecting" && (
-                    <p className="text-xs text-slate-500 font-medium">
-                      Connecting to <span className="font-mono font-bold text-indigo-600">{companyCode}</span>...
+                    <p className="text-xs text-slate-500 font-medium dark:text-slate-400">
+                      Connecting to <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{companyCode}</span>...
                     </p>
                   )}
 
                   {lookupState === "success" && (
-                    <p className="text-sm font-bold text-emerald-600 animate-in fade-in duration-300">
+                    <p className="text-sm font-bold text-emerald-600 animate-in fade-in duration-300 dark:text-emerald-400">
                       Connected to {targetCompany?.name}
                     </p>
                   )}
 
                   {lookupState === "failed" && (
                     <div className="space-y-3 animate-in fade-in duration-200">
-                      <p className="text-xs text-slate-500 font-medium">
-                        Not reached with ID <span className="font-mono font-bold text-slate-700">{companyCode}</span>
+                      <p className="text-xs text-slate-500 font-medium dark:text-slate-400">
+                        Not reached with ID <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{companyCode}</span>
                       </p>
                       <Button 
                         type="button" 
@@ -469,7 +469,7 @@ export default function CompanyPortalLogin() {
                   />
                 </div>
               </div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
                 Nexus<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-600">HR</span>
               </h1>
             </div>
@@ -478,9 +478,9 @@ export default function CompanyPortalLogin() {
             <div className="relative group">
               <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-b from-indigo-200/60 via-purple-100/40 to-teal-200/50 opacity-80 blur-sm" />
               
-              <Card className="relative shadow-2xl shadow-indigo-900/5 border-white/80 bg-white/90 backdrop-blur-2xl rounded-3xl overflow-hidden p-6 sm:p-7">
+              <Card className="relative shadow-2xl shadow-indigo-900/5 border-white/80 bg-white/90 backdrop-blur-2xl rounded-3xl overflow-hidden p-6 sm:p-7 dark:bg-slate-900">
                 <div className="mb-4 text-center">
-                  <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
+                  <h2 className="text-base font-extrabold text-slate-900 tracking-tight dark:text-slate-100">
                     Enter Company ID
                   </h2>
                 </div>
@@ -496,7 +496,7 @@ export default function CompanyPortalLogin() {
                       }}
                       placeholder="e.g. NX8K2P"
                       maxLength={12}
-                      className="pl-10 h-12 uppercase font-mono tracking-widest font-black text-sm rounded-xl bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 placeholder:normal-case placeholder:tracking-normal placeholder:font-medium focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 transition-all shadow-inner"
+                      className="pl-10 h-12 uppercase font-mono tracking-widest font-black text-sm rounded-xl bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 placeholder:normal-case placeholder:tracking-normal placeholder:font-medium focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 transition-all shadow-inner dark:bg-slate-800/70 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-900"
                       required
                       autoFocus
                     />
@@ -513,7 +513,7 @@ export default function CompanyPortalLogin() {
 
                 {/* Recent / Previously Added Workplaces */}
                 {recentCompanies.length > 0 && (
-                  <div className="mt-5 pt-4 border-t border-slate-100 space-y-2">
+                  <div className="mt-5 pt-4 border-t border-slate-100 space-y-2 dark:border-slate-800">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Recent Workplaces
                     </p>
@@ -522,7 +522,7 @@ export default function CompanyPortalLogin() {
                         <div
                           key={recent.code}
                           onClick={() => executeLookup(recent.code)}
-                          className="group/recent w-full p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-indigo-50/70 hover:border-indigo-200 flex items-center justify-between cursor-pointer transition-all active:scale-[0.99]"
+                          className="group/recent w-full p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-indigo-50/70 hover:border-indigo-200 flex items-center justify-between cursor-pointer transition-all active:scale-[0.99] dark:border-slate-700 dark:bg-slate-800/70 dark:hover:bg-indigo-500/10"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="h-8 w-8 rounded-full bg-[#03081c] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
@@ -533,17 +533,17 @@ export default function CompanyPortalLogin() {
                               )}
                             </div>
                             <div className="min-w-0 text-left">
-                              <p className="text-xs font-bold text-slate-800 group-hover/recent:text-indigo-900 truncate">
+                              <p className="text-xs font-bold text-slate-800 group-hover/recent:text-indigo-900 truncate dark:text-slate-200">
                                 {recent.name}
                               </p>
-                              <span className="font-mono text-[10px] font-bold text-slate-500 bg-white px-1.5 py-0.2 rounded border border-slate-200">
+                              <span className="font-mono text-[10px] font-bold text-slate-500 bg-white px-1.5 py-0.2 rounded border border-slate-200 dark:text-slate-400 dark:bg-slate-900 dark:border-slate-700">
                                 {recent.code}
                               </span>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="text-[11px] font-semibold text-indigo-600 group-hover/recent:translate-x-0.5 transition-transform flex items-center gap-1">
+                            <span className="text-[11px] font-semibold text-indigo-600 group-hover/recent:translate-x-0.5 transition-transform flex items-center gap-1 dark:text-indigo-400">
                               Open <ArrowRight className="h-3 w-3" />
                             </span>
                             <button
@@ -562,11 +562,11 @@ export default function CompanyPortalLogin() {
                 )}
 
                 {/* Minimal Footer Links */}
-                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
-                  <Link href="/candidate-login" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors">
+                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold dark:border-slate-800">
+                  <Link href="/candidate-login" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400">
                     <ArrowLeft className="h-3 w-3" /> Candidate Portal
                   </Link>
-                  <Link href="/register" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 hover:underline transition-colors">
+                  <Link href="/register" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 hover:underline transition-colors dark:text-indigo-400">
                     Register Company <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>

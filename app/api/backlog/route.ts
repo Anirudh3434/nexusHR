@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Task from '@/models/Task';
 import { headers } from 'next/headers';
 import mongoose from 'mongoose';
+import { escapeRegExp } from '@/lib/mongo';
 
 // GET - Fetch backlog tasks
 export async function GET(req: Request) {
@@ -65,11 +66,12 @@ export async function GET(req: Request) {
     const storyPoints = searchParams.get('storyPoints');
 
     if (searchQuery) {
+      const safeSearch = escapeRegExp(searchQuery, 128);
       query.$and.push({
         $or: [
-          { title: { $regex: searchQuery, $options: 'i' } },
-          { description: { $regex: searchQuery, $options: 'i' } },
-          { taskNumber: { $regex: searchQuery, $options: 'i' } }
+          { title: { $regex: safeSearch, $options: 'i' } },
+          { description: { $regex: safeSearch, $options: 'i' } },
+          { taskNumber: { $regex: safeSearch, $options: 'i' } }
         ]
       });
     }
@@ -137,7 +139,8 @@ export async function GET(req: Request) {
       .populate('dependsOn', 'taskNumber title status')
       .populate('blocks', 'taskNumber title status')
       .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(50);
 
     return NextResponse.json({ tasks });
   } catch (error: any) {

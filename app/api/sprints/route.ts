@@ -3,14 +3,30 @@ import mongoose from 'mongoose';
 import Sprint from '@/models/Sprint';
 import Project from '@/models/Project';
 import User from '@/models/User';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
+const WRITE_ROLES = ['super_admin', 'admin', 'hr'];
+
+function hasMaliciousKeys(obj: Record<string, any>): boolean {
+  return Object.keys(obj).some((k) => k.startsWith('$') || k.includes('.'));
+}
 
 // GET /api/sprints - Fetch sprints with filters
 export async function GET(request: NextRequest) {
   try {
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const isSuperAdmin = auth.role === 'super_admin';
     const searchParams = request.nextUrl.searchParams;
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
     const projectId = searchParams.get('projectId');
     const status = searchParams.get('status');
+
+    if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ error: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = isSuperAdmin ? (queryCompanyId || auth.companyId) : auth.companyId;
 
     if (!companyId) {
       return NextResponse.json({ error: 'Company ID is required' }, { status: 400 });
@@ -35,17 +51,27 @@ export async function GET(request: NextRequest) {
 // POST /api/sprints - Create a new sprint
 export async function POST(request: NextRequest) {
   try {
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, WRITE_ROLES)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const isSuperAdmin = auth.role === 'super_admin';
     const body = await request.json();
+    if (hasMaliciousKeys(body)) return NextResponse.json({ error: 'Invalid keys' }, { status: 400 });
     const {
       name,
       description,
       projectId,
-      companyId,
+      companyId: bodyCompanyId,
       startDate,
       endDate,
       goals,
-      createdBy,
     } = body;
+
+    if (bodyCompanyId && !isSuperAdmin && bodyCompanyId !== auth.companyId) {
+      return NextResponse.json({ error: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = isSuperAdmin ? (bodyCompanyId || auth.companyId) : auth.companyId;
+    const createdBy = auth.userId;
 
     // Validation
     if (!name || !projectId || !companyId || !startDate || !endDate || !createdBy) {
@@ -103,11 +129,21 @@ export async function POST(request: NextRequest) {
 // PATCH /api/sprints - Update sprint
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, WRITE_ROLES)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const body = await request.json();
+    if (hasMaliciousKeys(body)) return NextResponse.json({ error: 'Invalid keys' }, { status: 400 });
     const { sprintId, name, status, actualStartDate, actualEndDate, goals } = body;
 
     if (!sprintId) {
       return NextResponse.json({ error: 'Sprint ID is required' }, { status: 400 });
+    }
+
+    const existing = await Sprint.findById(sprintId);
+    if (!existing) return NextResponse.json({ error: 'Sprint not found' }, { status: 404 });
+    if (auth.role !== 'super_admin' && existing.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ error: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     const updateData: any = {};
@@ -137,11 +173,20 @@ export async function PATCH(request: NextRequest) {
 // DELETE /api/sprints - Delete sprint
 export async function DELETE(request: NextRequest) {
   try {
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, WRITE_ROLES)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const searchParams = request.nextUrl.searchParams;
     const sprintId = searchParams.get('sprintId');
 
     if (!sprintId) {
       return NextResponse.json({ error: 'Sprint ID is required' }, { status: 400 });
+    }
+
+    const existing = await Sprint.findById(sprintId);
+    if (!existing) return NextResponse.json({ error: 'Sprint not found' }, { status: 404 });
+    if (auth.role !== 'super_admin' && existing.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ error: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     const sprint = await Sprint.findByIdAndDelete(sprintId);

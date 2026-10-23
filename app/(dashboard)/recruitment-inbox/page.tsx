@@ -29,6 +29,8 @@ import {
   ThumbsDown, Eye, Calendar, DollarSign, Briefcase as BriefcaseIcon,
   MapPin, FileText, User, Phone, X
 } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 const statusOptions = [
   { value: 'new', label: 'New', icon: Mail },
@@ -295,42 +297,46 @@ export default function RecruitmentInboxPage() {
   if (!user || !canManage) return null;
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-500 h-[calc(100vh-6rem)]">
+    <div className="space-y-6 animate-in fade-in duration-500 h-[calc(100vh-6rem)]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Briefcase className="h-6 w-6 text-blue-600" />
-          <h1 className="text-2xl font-bold">Recruitment Inbox</h1>
-          {!hasEmailConfig && (
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-              Not Configured
-            </Badge>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {lastSyncAt && (
-            <span className="text-xs text-gray-500 hidden sm:inline">
-              Last sync: {lastSyncAt.toLocaleTimeString()}
-            </span>
-          )}
-          <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
-            {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            <span className="ml-2 hidden sm:inline">Sync</span>
-          </Button>
-          <Button variant="destructive" size="sm" onClick={clearMockData} title="Clear test data">
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button size="sm" onClick={() => window.location.href = '/email-settings'}>
-            <Mail className="h-4 w-4 mr-2" />
-            Email Settings
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            Recruitment Inbox
+            {!hasEmailConfig && (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300">
+                Not Configured
+              </Badge>
+            )}
+          </span>
+        }
+        actions={
+          <>
+            {lastSyncAt && (
+              <span className="text-xs text-gray-500 hidden sm:inline dark:text-slate-400">
+                Last sync: {lastSyncAt.toLocaleTimeString()}
+              </span>
+            )}
+            <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
+              {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              <span className="ml-2 hidden sm:inline">Sync</span>
+            </Button>
+            <Button variant="destructive" size="sm" onClick={clearMockData} title="Clear test data">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button size="sm" onClick={() => window.location.href = '/email-settings'}>
+              <Mail className="h-4 w-4 mr-2" />
+              Email Settings
+            </Button>
+          </>
+        }
+      />
 
       {/* Job ID Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-300">
         <p className="font-medium">📧 Job ID Auto-Detection</p>
-        <p className="text-blue-600 mt-1">
+        <p className="text-blue-600 mt-1 dark:text-blue-400">
           Emails with Job ID (e.g., JB0001) in the subject line will be automatically linked to the corresponding job position.
         </p>
       </div>
@@ -349,8 +355,8 @@ export default function RecruitmentInboxPage() {
             onClick={() => setFilter(key as any)}
             className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
               filter === key 
-                ? 'bg-blue-50 border-blue-200' 
-                : 'bg-white hover:bg-gray-50'
+                ? 'bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30' 
+                : 'bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -388,21 +394,19 @@ export default function RecruitmentInboxPage() {
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
               ) : filteredApps.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500 p-8">
-                  <Inbox className="h-12 w-12 mb-2 text-gray-300" />
-                  <p>No emails found</p>
-                  {!hasEmailConfig && (
-                    <p className="text-sm mt-2">Configure email settings to start receiving emails</p>
-                  )}
-                </div>
+                <EmptyState
+                  icon={<Inbox size={18} />}
+                  title="No emails found"
+                  description={!hasEmailConfig ? "Configure email settings to start receiving emails" : undefined}
+                />
               ) : (
                 <div className="divide-y">
                   {filteredApps.map((app) => (
                     <div 
                       key={app._id}
-                      className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b ${
-                        selectedApp?._id === app._id ? 'bg-blue-50' : ''
-                      } ${!app.isRead ? 'bg-white font-semibold' : 'bg-gray-50/50'}`}
+                      className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer border-b ${
+                        selectedApp?._id === app._id ? 'bg-blue-50 dark:bg-blue-500/10' : ''
+                      } ${!app.isRead ? 'bg-white font-semibold dark:bg-slate-900' : 'bg-gray-50/50 dark:bg-slate-800/70'}`}
                       onClick={() => handleSelect(app)}
                     >
                       {/* Star Button */}
@@ -417,7 +421,7 @@ export default function RecruitmentInboxPage() {
                       
                       {/* Sender */}
                       <div className="w-48 shrink-0">
-                        <p className={`truncate ${!app.isRead ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                        <p className={`truncate ${!app.isRead ? 'font-semibold text-gray-900 dark:text-slate-100' : 'text-gray-700 dark:text-slate-300'}`}>
                           {app.fromName || app.fromEmail}
                         </p>
                       </div>
@@ -425,20 +429,20 @@ export default function RecruitmentInboxPage() {
                       {/* Subject & Preview */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`truncate ${!app.isRead ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                          <span className={`truncate ${!app.isRead ? 'font-semibold text-gray-900 dark:text-slate-100' : 'text-gray-700 dark:text-slate-300'}`}>
                             {app.subject}
                           </span>
                           {app.hasAttachments && (
                             <Paperclip className="h-4 w-4 text-gray-400 shrink-0" />
                           )}
-                          <span className="text-gray-500 truncate text-sm">
+                          <span className="text-gray-500 truncate text-sm dark:text-slate-400">
                             - {app.bodyText?.substring(0, 60).replace(/\n/g, ' ') || 'No preview'}...
                           </span>
                         </div>
                       </div>
                       
                       {/* Date */}
-                      <div className="text-sm text-gray-500 shrink-0">
+                      <div className="text-sm text-gray-500 shrink-0 dark:text-slate-400">
                         {new Date(app.receivedAt).toLocaleDateString('en-US', { 
                           month: 'short', 
                           day: 'numeric' 
@@ -447,7 +451,7 @@ export default function RecruitmentInboxPage() {
                       
                       {/* Job ID Badge (if available) */}
                       {app.jobId && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs shrink-0">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs shrink-0 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
                           {app.jobId}
                         </Badge>
                       )}
@@ -485,12 +489,12 @@ export default function RecruitmentInboxPage() {
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">{selectedApp.subject}</h3>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold dark:bg-blue-500/15 dark:text-blue-400">
                     {(selectedApp.fromName || 'U').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">{selectedApp.fromName || 'Unknown'}</p>
-                    <p className="text-sm text-gray-500">{selectedApp.fromEmail}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{selectedApp.fromEmail}</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(selectedApp.receivedAt).toLocaleString()}
                     </p>
@@ -498,7 +502,7 @@ export default function RecruitmentInboxPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {selectedApp.jobId && (
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
                       Job ID: {selectedApp.jobId}
                     </Badge>
                   )}
@@ -519,11 +523,11 @@ export default function RecruitmentInboxPage() {
               </div>
 
               {/* Pipeline Actions */}
-              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 p-3">
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 p-3 dark:bg-slate-800/50">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-green-700 border-green-200 hover:bg-green-50"
+                  className="text-green-700 border-green-200 hover:bg-green-50 dark:text-green-300 dark:border-green-500/30"
                   onClick={(e) => handleConsider(e, selectedApp)}
                 >
                   <ThumbsUp className="h-3.5 w-3.5 mr-1.5" /> Consider
@@ -531,13 +535,13 @@ export default function RecruitmentInboxPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-red-700 border-red-200 hover:bg-red-50"
+                  className="text-red-700 border-red-200 hover:bg-red-50 dark:text-red-300 dark:border-red-500/30"
                   onClick={(e) => handleReject(e, selectedApp)}
                 >
                   <ThumbsDown className="h-3.5 w-3.5 mr-1.5" /> Reject
                 </Button>
                 <select
-                  className="rounded-md border bg-white px-2 py-1.5 text-sm"
+                  className="rounded-md border bg-white px-2 py-1.5 text-sm dark:bg-slate-900"
                   value={selectedApp.status}
                   onChange={(e) => handleStatusChange(e.target.value as any)}
                 >
@@ -549,8 +553,8 @@ export default function RecruitmentInboxPage() {
 
               {/* Attachments */}
               {selectedApp.hasAttachments && selectedApp.attachments.length > 0 && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500">Attachments:</span>
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg dark:bg-slate-800/50">
+                  <span className="text-sm text-gray-500 dark:text-slate-400">Attachments:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedApp.attachments.map((att, i) => (
                       <a
@@ -558,7 +562,7 @@ export default function RecruitmentInboxPage() {
                         href={att.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg text-sm hover:bg-gray-100 border"
+                        className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg text-sm hover:bg-gray-100 border dark:bg-slate-900 dark:hover:bg-slate-700"
                       >
                         <Paperclip className="h-4 w-4" />
                         {att.filename}
@@ -572,11 +576,11 @@ export default function RecruitmentInboxPage() {
               {/* Email Body */}
               <div className="border-t pt-4">
                 <div 
-                  className="prose prose-sm max-w-none text-gray-700"
+                  className="prose prose-sm max-w-none text-gray-700 dark:text-slate-300"
                   dangerouslySetInnerHTML={{ __html: selectedApp.body }}
                 />
                 {!selectedApp.body && (
-                  <p className="text-gray-500 italic">{selectedApp.bodyText || 'No message body'}</p>
+                  <p className="text-gray-500 italic dark:text-slate-400">{selectedApp.bodyText || 'No message body'}</p>
                 )}
               </div>
             </CardContent>
@@ -599,17 +603,17 @@ export default function RecruitmentInboxPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-slate-400">
                 Share these credentials with <strong>{credentialsResult.email}</strong>. They log in at the company login page with their email + this password.
               </p>
               {credentialsResult.password ? (
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:bg-blue-500/10">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-blue-700 uppercase">Temporary Password</p>
+                    <p className="text-xs font-medium text-blue-700 uppercase dark:text-blue-300">Temporary Password</p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100"
+                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100 dark:text-blue-300"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(credentialsResult.password || '');
@@ -622,11 +626,11 @@ export default function RecruitmentInboxPage() {
                       Copy
                     </Button>
                   </div>
-                  <p className="mt-1 select-all font-mono text-lg font-semibold text-gray-900">{credentialsResult.password}</p>
-                  <p className="mt-1 text-xs text-gray-500">Save this now — it is only shown once.</p>
+                  <p className="mt-1 select-all font-mono text-lg font-semibold text-gray-900 dark:text-slate-100">{credentialsResult.password}</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Save this now — it is only shown once.</p>
                 </div>
               ) : (
-                <p className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+                <p className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300">
                   The candidate already had an account, so no new password was generated.
                 </p>
               )}

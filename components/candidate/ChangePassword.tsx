@@ -66,13 +66,13 @@ export default function ChangePassword() {
     <div className="flex min-h-[70vh] items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
             <ShieldCheck size={28} />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             {forced ? "Set your password" : "Change Password"}
           </CardTitle>
-          <CardDescription className="text-gray-500">
+          <CardDescription className="text-gray-500 dark:text-slate-400">
             {forced
               ? "Your account uses a temporary password. Please set a new password before continuing."
               : "Enter your current password and choose a new one."}
@@ -81,7 +81,7 @@ export default function ChangePassword() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Current Password</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Current Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -104,7 +104,7 @@ export default function ChangePassword() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">New Password</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-slate-300">New Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -126,7 +126,7 @@ export default function ChangePassword() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Confirm New Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input

@@ -132,8 +132,11 @@ function applyParameters(filters: Record<string, any>, parameters: Record<string
   const result = { ...filters };
   
   for (const [key, value] of Object.entries(parameters)) {
+    if (key === 'companyId' || key.startsWith('$') || key.includes('.')) continue;
     if (result[key] !== undefined) {
-      result[key] = value;
+      if (typeof value === 'string' || typeof value === 'number') {
+        result[key] = value;
+      }
     }
   }
   

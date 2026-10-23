@@ -62,7 +62,7 @@ export default function LiveLocationMap({ location, deviceName }: LiveLocationMa
             <div className="text-xs font-bold">
               {deviceName || 'Device'} Location
               <br />
-              <span className="font-normal text-gray-500">
+              <span className="font-normal text-gray-500 dark:text-slate-400">
                 Accurate within {Math.round(location.accuracy || 0)}m
               </span>
             </div>

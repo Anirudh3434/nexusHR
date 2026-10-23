@@ -5,26 +5,36 @@ import Project from '@/models/Project';
 import ActivityLog from '@/models/ActivityLog';
 import mongoose from 'mongoose';
 import { headers } from 'next/headers';
+import { getAuthInfo } from '@/lib/auth-util';
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
     const headersList = await headers();
     const body = await req.json().catch(() => ({}));
 
-    const userId = headersList.get('x-user-id') || body.userId || body.user?.id || 'current-user';
-    const userName = headersList.get('x-user-name') || body.userName || body.user?.name || 'User';
+    // Identity comes from the session ONLY — no body fallbacks.
+    const userId = auth.userId;
+    const userName = headersList.get('x-user-name') || 'User';
     const { projectId, prompt } = body;
 
     if (!projectId || !prompt) {
       return NextResponse.json({ message: 'Project ID and prompt are required' }, { status: 400 });
     }
 
-    // 1. Fetch project members context
-    const project = await Project.findById(projectId)
+    // 1. Fetch project members context (project must belong to the session company)
+    const project = await Project.findOne({ _id: projectId, companyId: auth.companyId })
       .populate('managerId', 'name email')
       .populate('members.employeeId', 'name email');
+
+    if (!project) {
+      return NextResponse.json({ message: 'Forbidden: project not found in your company' }, { status: 403 });
+    }
 
     const membersContext: any[] = [];
     if (project) {
@@ -128,20 +138,26 @@ Output raw JSON only.`;
     }
 
     query.projectId = projectId;
+    // Tenant lock: the LLM-generated query can never escape the session company.
+    // Strip dangerous operators the model must not use.
+    for (const key of Object.keys(query)) {
+      if (key === '$where' || key === '$function' || key === '$accumulator') delete query[key];
+    }
+    query.companyId = auth.companyId;
 
     let finalTasks: any[] = [];
     if (target === 'ActivityLog') {
-      const logs = await ActivityLog.find(query).select('taskId').lean();
+      const logs = await ActivityLog.find({ ...query, companyId: auth.companyId }).select('taskId').lean();
       const taskIds = logs.map(l => l.taskId).filter(Boolean) as mongoose.Types.ObjectId[];
-      
-      finalTasks = await Task.find({ _id: { $in: taskIds } })
+
+      finalTasks = await Task.find({ _id: { $in: taskIds }, companyId: auth.companyId })
         .populate('projectId', 'name projectNumber')
         .populate('assignedTo', 'name email department')
         .populate('assignedBy', 'name email')
         .populate('createdBy', 'name email')
         .lean();
     } else {
-      finalTasks = await Task.find(query)
+      finalTasks = await Task.find({ ...query, companyId: auth.companyId })
         .populate('projectId', 'name projectNumber')
         .populate('assignedTo', 'name email department')
         .populate('assignedBy', 'name email')

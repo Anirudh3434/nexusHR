@@ -4,26 +4,63 @@ import ProjectDocument from '@/models/ProjectDocument';
 import ProjectNote from '@/models/ProjectNote';
 import ProjectCredential from '@/models/ProjectCredential';
 import ProjectResource from '@/models/ProjectResource';
+import Project from '@/models/Project';
+import { getAuthInfo } from '@/lib/auth-util';
+
+interface AuthCtx { userId: string; role: string; companyId?: string; email?: string; name?: string }
+
+async function requireProjectAccess(projectId: string, auth: AuthCtx) {
+  const project = await Project.findById(projectId).select('companyId managerId members');
+  if (!project) return { error: 'Project not found', status: 404 as const };
+  if (!auth.companyId || project.companyId.toString() !== auth.companyId) {
+    return { error: "Forbidden: Access to another company's project is not allowed", status: 403 as const };
+  }
+  const userRole = auth.role || 'employee';
+  if (userRole === 'employee') {
+    const isMember = project.members.some(
+      (m: any) => m.employeeId && (m.employeeId._id || m.employeeId).toString() === auth.userId
+    );
+    if (!isMember) return { error: 'Forbidden: You are not a member of this project', status: 403 as const };
+  } else if (userRole === 'manager') {
+    const isManager = project.managerId && project.managerId.toString() === auth.userId;
+    const isMember = project.members.some(
+      (m: any) => m.employeeId && (m.employeeId._id || m.employeeId).toString() === auth.userId
+    );
+    if (!isManager && !isMember) {
+      return { error: 'Forbidden: You do not manage or belong to this project', status: 403 as const };
+    }
+  }
+  return { project };
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 // GET - Global search across all project docs
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
     const searchParams = req.nextUrl.searchParams;
     const projectId = searchParams.get('projectId');
-    const query = searchParams.get('q');
+    const query = (searchParams.get('q') || '').slice(0, 128);
     const type = searchParams.get('type'); // 'all', 'documents', 'notes', 'credentials', 'resources'
-    
+
     if (!projectId) {
       return NextResponse.json({ message: 'Project ID is required' }, { status: 400 });
     }
-    
+
     if (!query) {
       return NextResponse.json({ message: 'Search query is required' }, { status: 400 });
     }
 
-    const searchRegex = new RegExp(query, 'i');
+    const access = await requireProjectAccess(projectId, auth);
+    if ('error' in access) return NextResponse.json({ message: access.error }, { status: access.status });
+
+    const searchRegex = new RegExp(escapeRegExp(query), 'i');
     const results: any = {
       documents: [],
       notes: [],
@@ -32,7 +69,7 @@ export async function GET(req: NextRequest) {
     };
 
     // Search documents
-    if (type === 'all' || type === 'documents') {
+    if (!type || type === 'all' || type === 'documents') {
       results.documents = await ProjectDocument.find({
         projectId,
         isDeleted: false,
@@ -46,7 +83,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Search notes
-    if (type === 'all' || type === 'notes') {
+    if (!type || type === 'all' || type === 'notes') {
       results.notes = await ProjectNote.find({
         projectId,
         $or: [
@@ -58,7 +95,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Search credentials (excluding sensitive data)
-    if (type === 'all' || type === 'credentials') {
+    if (!type || type === 'all' || type === 'credentials') {
       const credentials = await ProjectCredential.find({
         projectId,
         $or: [
@@ -68,13 +105,13 @@ export async function GET(req: NextRequest) {
           { tags: searchRegex }
         ]
       }).select('service environment category loginUrl username email isFavorite expiryDate').limit(20);
-      
+
       // Mask sensitive fields
       results.credentials = credentials.map(cred => cred.toObject());
     }
 
     // Search resources
-    if (type === 'all' || type === 'resources') {
+    if (!type || type === 'all' || type === 'resources') {
       results.resources = await ProjectResource.find({
         projectId,
         $or: [

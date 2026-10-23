@@ -30,8 +30,8 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                   className={cn(
                     "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300",
                     isCompleted && "bg-blue-600 border-blue-600 text-white",
-                    isCurrent && "border-blue-600 text-blue-600 bg-white ring-4 ring-blue-100",
-                    isPending && "border-gray-300 text-gray-400 bg-gray-50"
+                    isCurrent && "border-blue-600 text-blue-600 bg-white ring-4 ring-blue-100 dark:text-blue-400 dark:bg-slate-900",
+                    isPending && "border-gray-300 text-gray-400 bg-gray-50 dark:border-slate-600 dark:bg-slate-800/50"
                   )}
                 >
                   {isCompleted ? (
@@ -44,15 +44,15 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                   <p
                     className={cn(
                       "text-sm font-medium",
-                      isCompleted && "text-blue-600",
-                      isCurrent && "text-gray-900",
+                      isCompleted && "text-blue-600 dark:text-blue-400",
+                      isCurrent && "text-gray-900 dark:text-slate-100",
                       isPending && "text-gray-400"
                     )}
                   >
                     {step.title}
                   </p>
                   {step.description && (
-                    <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">
+                    <p className="text-xs text-gray-500 mt-0.5 hidden sm:block dark:text-slate-400">
                       {step.description}
                     </p>
                   )}
@@ -65,7 +65,7 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                   <div
                     className={cn(
                       "h-0.5 transition-all duration-300",
-                      isCompleted ? "bg-blue-600" : "bg-gray-200"
+                      isCompleted ? "bg-blue-600" : "bg-gray-200 dark:bg-slate-700"
                     )}
                   />
                 </div>

@@ -8,6 +8,7 @@ import { getShifts, WorkShift } from "../../../services/shiftService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Loader2, Users, Clock, DollarSign, ArrowRightLeft, UserCheck, Sun, Moon } from "lucide-react";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 export default function EmployeeShiftsPage() {
   const { user, hasRole } = useAuth();
@@ -102,39 +103,39 @@ export default function EmployeeShiftsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Users className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Employee Shift Assignment
-          </h1>
-          <p className="text-gray-500">Manage employee work schedules and view salary information</p>
-        </div>
-        
-        {/* Filter */}
-        <select
-          value={selectedShift}
-          onChange={(e) => setSelectedShift(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-white"
-        >
-          <option value="all">All Employees</option>
-          <option value="unassigned">Unassigned</option>
-          {shifts.map(shift => (
-            <option key={shift._id} value={shift._id}>{shift.name}</option>
-          ))}
-        </select>
-      </div>
+          </span>
+        }
+        description="Manage employee work schedules and view salary information"
+        actions={
+          <select
+            value={selectedShift}
+            onChange={(e) => setSelectedShift(e.target.value)}
+            className="px-3 py-2 border rounded-lg bg-white dark:bg-slate-900"
+          >
+            <option value="all">All Employees</option>
+            <option value="unassigned">Unassigned</option>
+            {shifts.map(shift => (
+              <option key={shift._id} value={shift._id}>{shift.name}</option>
+            ))}
+          </select>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 rounded-lg dark:bg-blue-500/15">
+                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Employees</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Employees</p>
                 <p className="text-2xl font-bold">{employees.length}</p>
               </div>
             </div>
@@ -143,11 +144,11 @@ export default function EmployeeShiftsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-amber-100 rounded-lg">
-                <UserCheck className="h-6 w-6 text-amber-600" />
+              <div className="p-3 bg-amber-100 rounded-lg dark:bg-amber-500/15">
+                <UserCheck className="h-6 w-6 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Assigned</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Assigned</p>
                 <p className="text-2xl font-bold">{employees.filter(e => e.workShiftId).length}</p>
               </div>
             </div>
@@ -156,11 +157,11 @@ export default function EmployeeShiftsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-100 rounded-lg">
-                <Clock className="h-6 w-6 text-red-600" />
+              <div className="p-3 bg-red-100 rounded-lg dark:bg-red-500/15">
+                <Clock className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Unassigned</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Unassigned</p>
                 <p className="text-2xl font-bold">{unassignedEmployees.length}</p>
               </div>
             </div>
@@ -169,11 +170,11 @@ export default function EmployeeShiftsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-green-100 rounded-lg dark:bg-green-500/15">
+                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Salary</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Salary</p>
                 <p className="text-2xl font-bold">
                   {formatCurrency(employees.reduce((sum, e) => sum + (e.salary || 0), 0))}
                 </p>
@@ -185,42 +186,42 @@ export default function EmployeeShiftsPage() {
 
       {/* Unassigned Section */}
       {(selectedShift === 'all' || selectedShift === 'unassigned') && unassignedEmployees.length > 0 && (
-        <Card className="border-red-200">
-          <CardHeader className="bg-red-50">
-            <CardTitle className="flex items-center gap-2 text-red-700">
+        <Card className="border-red-200 dark:border-red-500/30">
+          <CardHeader className="bg-red-50 dark:bg-red-500/10">
+            <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
               <Clock className="h-5 w-5" />
               Unassigned Employees ({unassignedEmployees.length})
             </CardTitle>
-            <CardDescription className="text-red-600">
+            <CardDescription className="text-red-600 dark:text-red-400">
               These employees don't have a shift assigned
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
               {unassignedEmployees.map(emp => (
-                <div key={emp._id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                <div key={emp._id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center dark:bg-slate-700">
                       <span className="text-sm font-medium">
                         {emp.firstName[0]}{emp.lastName[0]}
                       </span>
                     </div>
                     <div>
                       <p className="font-medium">{emp.firstName} {emp.lastName}</p>
-                      <p className="text-sm text-gray-500">{emp.employeeId} • {emp.department}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{emp.employeeId} • {emp.department}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-sm font-medium">{formatCurrency(emp.salary)}</p>
-                      <p className="text-xs text-gray-500">{emp.designation}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{emp.designation}</p>
                     </div>
                     {canManage && (
                       <select
                         value=""
                         onChange={(e) => handleAssignShift(emp._id, e.target.value)}
                         disabled={isAssigning}
-                        className="px-3 py-1.5 border rounded-lg text-sm bg-white"
+                        className="px-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-slate-900"
                       >
                         <option value="">Assign Shift...</option>
                         {shifts.map(shift => (
@@ -244,12 +245,12 @@ export default function EmployeeShiftsPage() {
         const isNightShift = shift.name.toLowerCase().includes('night');
         
         return (
-          <Card key={shift._id} className={isNightShift ? 'border-indigo-200' : ''}>
-            <CardHeader className={isNightShift ? 'bg-indigo-50' : 'bg-blue-50'}>
+          <Card key={shift._id} className={isNightShift ? 'border-indigo-200 dark:border-indigo-500/30' : ''}>
+            <CardHeader className={isNightShift ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'bg-blue-50 dark:bg-blue-500/10'}>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    {isNightShift ? <Moon className="h-5 w-5 text-indigo-600" /> : <Sun className="h-5 w-5 text-amber-600" />}
+                    {isNightShift ? <Moon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" /> : <Sun className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
                     {shift.name}
                   </CardTitle>
                   <CardDescription>
@@ -258,7 +259,7 @@ export default function EmployeeShiftsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">{shiftEmployees.length}</p>
-                  <p className="text-sm text-gray-500">employees</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">employees</p>
                 </div>
               </div>
             </CardHeader>
@@ -266,7 +267,7 @@ export default function EmployeeShiftsPage() {
               {shiftEmployees.length > 0 ? (
                 <div className="divide-y">
                   {shiftEmployees.map(emp => (
-                    <div key={emp._id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                    <div key={emp._id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800">
                       <div className="flex items-center gap-3">
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isNightShift ? 'bg-indigo-100' : 'bg-blue-100'}`}>
                           <span className="text-sm font-medium">
@@ -275,20 +276,20 @@ export default function EmployeeShiftsPage() {
                         </div>
                         <div>
                           <p className="font-medium">{emp.firstName} {emp.lastName}</p>
-                          <p className="text-sm text-gray-500">{emp.employeeId} • {emp.department}</p>
+                          <p className="text-sm text-gray-500 dark:text-slate-400">{emp.employeeId} • {emp.department}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-sm font-medium text-green-600">{formatCurrency(emp.salary)}</p>
-                          <p className="text-xs text-gray-500">{emp.designation}</p>
+                          <p className="text-sm font-medium text-green-600 dark:text-green-400">{formatCurrency(emp.salary)}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{emp.designation}</p>
                         </div>
                         {canManage && (
                           <select
                             value={shift._id}
                             onChange={(e) => handleAssignShift(emp._id, e.target.value || null)}
                             disabled={isAssigning}
-                            className="px-3 py-1.5 border rounded-lg text-sm bg-white"
+                            className="px-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-slate-900"
                           >
                             <option value="">Remove</option>
                             {shifts.map(s => (
@@ -301,7 +302,7 @@ export default function EmployeeShiftsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-gray-500 dark:text-slate-400">
                   <Users className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                   <p>No employees assigned to this shift</p>
                 </div>

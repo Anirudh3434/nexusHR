@@ -159,32 +159,32 @@ export default function MyResignationPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'under_review': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'approved': return 'bg-green-100 text-green-700 border-green-200';
-      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
-      case 'withdrawn': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30';
+      case 'under_review': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30';
+      case 'approved': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30';
+      case 'withdrawn': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
   const getStatusBgColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100';
-      case 'rejected': return 'bg-red-100';
-      case 'pending': return 'bg-yellow-100';
-      case 'under_review': return 'bg-blue-100';
-      default: return 'bg-gray-100';
+      case 'approved': return 'bg-green-100 dark:bg-green-500/15';
+      case 'rejected': return 'bg-red-100 dark:bg-red-500/15';
+      case 'pending': return 'bg-yellow-100 dark:bg-yellow-500/15';
+      case 'under_review': return 'bg-blue-100 dark:bg-blue-500/15';
+      default: return 'bg-gray-100 dark:bg-slate-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case 'rejected': return <XCircle className="h-5 w-5 text-red-600" />;
-      case 'pending': return <Clock className="h-5 w-5 text-yellow-600" />;
-      case 'under_review': return <Info className="h-5 w-5 text-blue-600" />;
-      default: return <Info className="h-5 w-5 text-gray-600" />;
+      case 'approved': return <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />;
+      case 'rejected': return <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />;
+      case 'pending': return <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
+      case 'under_review': return <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
+      default: return <Info className="h-5 w-5 text-gray-600 dark:text-slate-400" />;
     }
   };
 
@@ -209,23 +209,23 @@ export default function MyResignationPage() {
     <div className="p-5 space-y-5 max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-xl font-semibold text-gray-900">Resignation Portal</h1>
-        <p className="text-sm text-gray-500">Submit or manage your resignation request</p>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Resignation Portal</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400">Submit or manage your resignation request</p>
       </div>
 
       {/* No Active Resignation - Show Submit Form */}
       {!myResignation || (myResignation.status !== 'pending' && myResignation.status !== 'under_review' && myResignation.status !== 'approved') ? (
-        <Card className="border-gray-200">
+        <Card className="border-gray-200 dark:border-slate-700">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <LogOut className="h-5 w-5 text-gray-600" />
+              <LogOut className="h-5 w-5 text-gray-600 dark:text-slate-400" />
               Submit Resignation
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!showForm ? (
               <div className="text-center py-6">
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 mb-4 dark:text-slate-400">
                   You don't have any active resignation request.
                 </p>
                 <Button onClick={() => setShowForm(true)}>
@@ -237,7 +237,7 @@ export default function MyResignationPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Last Working Date *
                     </label>
                     <input
@@ -246,11 +246,11 @@ export default function MyResignationPage() {
                       min={new Date().toISOString().split('T')[0]}
                       value={lastWorkingDate}
                       onChange={(e) => setLastWorkingDate(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                       Notice Period (Days) *
                     </label>
                     <input
@@ -260,20 +260,20 @@ export default function MyResignationPage() {
                       max={180}
                       value={noticePeriodDays}
                       onChange={(e) => setNoticePeriodDays(parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Reason for Resignation *
                   </label>
                   <select
                     required
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   >
                     <option value="">Select a reason</option>
                     {reasonOptions.map((opt) => (
@@ -283,7 +283,7 @@ export default function MyResignationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Detailed Reason (Optional)
                   </label>
                   <textarea
@@ -292,14 +292,14 @@ export default function MyResignationPage() {
                     placeholder="Provide additional details about your resignation..."
                     maxLength={1000}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:border-slate-700"
                   />
                   <p className="text-xs text-gray-400 mt-1">{detailedReason.length}/1000 characters</p>
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-yellow-700">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex items-start gap-2 dark:bg-yellow-500/10 dark:border-yellow-500/30">
+                  <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0 dark:text-yellow-400" />
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
                     Please ensure you have discussed your decision with your manager before submitting. 
                     This action will notify HR and initiate the exit process.
                   </p>
@@ -328,7 +328,7 @@ export default function MyResignationPage() {
         </Card>
       ) : (
         /* Active Resignation - Show Status */
-        <Card className="border-gray-200 overflow-hidden">
+        <Card className="border-gray-200 overflow-hidden dark:border-slate-700">
           <div className="p-5">
             {/* Status Header */}
             <div className="flex items-center justify-between mb-4">
@@ -337,7 +337,7 @@ export default function MyResignationPage() {
                   {getStatusIcon(myResignation.status)}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Resignation Status</h3>
+                  <h3 className="font-medium text-gray-900 dark:text-slate-100">Resignation Status</h3>
                   <Badge className={`${getStatusColor(myResignation.status)} text-xs mt-1`}>
                     {myResignation.status.replace('_', ' ')}
                   </Badge>
@@ -349,7 +349,7 @@ export default function MyResignationPage() {
                   variant="outline"
                   size="sm"
                   onClick={handleWithdraw}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
                 >
                   <XCircle className="h-4 w-4 mr-1" />
                   Withdraw
@@ -358,28 +358,28 @@ export default function MyResignationPage() {
             </div>
 
             {/* Key Info */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-b border-gray-100">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-b border-gray-100 dark:border-slate-800">
               <div>
-                <p className="text-xs text-gray-500 mb-1">Submitted On</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">Submitted On</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                   {new Date(myResignation.createdAt).toLocaleDateString('en-GB')}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 mb-1">Last Working Day</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">Last Working Day</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                   {new Date(myResignation.lastWorkingDate).toLocaleDateString('en-GB')}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 mb-1">Days Remaining</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">Days Remaining</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                   {getDaysUntilLastDay()} days
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 mb-1">Notice Period</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">Notice Period</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                   {myResignation.noticePeriodDays} days
                 </p>
               </div>
@@ -387,8 +387,8 @@ export default function MyResignationPage() {
 
             {/* Reason */}
             <div className="pt-4">
-              <p className="text-sm text-gray-500 mb-1">Reason</p>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm text-gray-500 mb-1 dark:text-slate-400">Reason</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                 {reasonLabels[myResignation.reason] || myResignation.reason}
               </p>
             </div>
@@ -396,7 +396,7 @@ export default function MyResignationPage() {
             {/* Expandable Details */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-4"
+              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-4 dark:text-blue-400"
             >
               {expanded ? (
                 <><ChevronUp className="h-4 w-4" /> Hide Details</>
@@ -406,11 +406,11 @@ export default function MyResignationPage() {
             </button>
 
             {expanded && (
-              <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 dark:border-slate-800">
                 {myResignation.detailedReason && (
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">Detailed Reason</p>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                    <p className="text-sm text-gray-500 mb-1 dark:text-slate-400">Detailed Reason</p>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded dark:text-slate-300 dark:bg-slate-800/50">
                       {myResignation.detailedReason}
                     </p>
                   </div>
@@ -418,15 +418,15 @@ export default function MyResignationPage() {
 
                 {myResignation.hrRemarks && (
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">HR Remarks</p>
-                    <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded">
+                    <p className="text-sm text-gray-500 mb-1 dark:text-slate-400">HR Remarks</p>
+                    <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded dark:text-slate-300 dark:bg-blue-500/10">
                       {myResignation.hrRemarks}
                     </p>
                   </div>
                 )}
 
                 {myResignation.approvedAt && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
                     Approved on {new Date(myResignation.approvedAt).toLocaleDateString('en-GB')}
                   </p>
                 )}
@@ -438,13 +438,13 @@ export default function MyResignationPage() {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-gray-200">
+        <Card className="border-gray-200 dark:border-slate-700">
           <CardContent className="p-4">
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-500" />
+            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 dark:text-slate-100">
+              <FileText className="h-4 w-4 text-gray-500 dark:text-slate-400" />
               Exit Process
             </h4>
-            <ul className="text-sm text-gray-600 space-y-1.5">
+            <ul className="text-sm text-gray-600 space-y-1.5 dark:text-slate-400">
               <li>1. Submit resignation with notice period</li>
               <li>2. HR reviews and approves/rejects</li>
               <li>3. Complete knowledge transfer</li>
@@ -455,16 +455,16 @@ export default function MyResignationPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-gray-200">
+        <Card className="border-gray-200 dark:border-slate-700">
           <CardContent className="p-4">
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-500" />
+            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 dark:text-slate-100">
+              <Calendar className="h-4 w-4 text-gray-500 dark:text-slate-400" />
               Notice Period Policy
             </h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-slate-400">
               Standard notice period is 30 days. During this period, you are expected to:
             </p>
-            <ul className="text-sm text-gray-600 space-y-1 mt-2">
+            <ul className="text-sm text-gray-600 space-y-1 mt-2 dark:text-slate-400">
               <li>• Complete ongoing tasks</li>
               <li>• Document your work</li>
               <li>• Train your replacement</li>

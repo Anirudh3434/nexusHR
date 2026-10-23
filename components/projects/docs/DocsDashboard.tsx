@@ -175,7 +175,7 @@ export default function DocsDashboard({
     if (lower.includes('jira') || lower.includes('linear.app') || lower.includes('trello.com')) {
       return <Code className="w-5 h-5 text-indigo-500" />;
     }
-    return <Globe className="w-5 h-5 text-slate-500" />;
+    return <Globe className="w-5 h-5 text-slate-500 dark:text-slate-400" />;
   };
 
   const getDisplayDomain = (url: string) => {
@@ -237,32 +237,32 @@ export default function DocsDashboard({
       value: stats.documents, 
       icon: FileText, 
       color: 'bg-blue-500',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600'
+      bgColor: 'bg-blue-50 dark:bg-blue-500/10',
+      textColor: 'text-blue-600 dark:text-blue-400'
     },
     { 
       title: 'Notes', 
       value: stats.notes, 
       icon: BookOpen, 
       color: 'bg-emerald-500',
-      bgColor: 'bg-emerald-50',
-      textColor: 'text-emerald-600'
+      bgColor: 'bg-emerald-50 dark:bg-emerald-500/10',
+      textColor: 'text-emerald-600 dark:text-emerald-400'
     },
     { 
       title: 'Credentials', 
       value: stats.credentials, 
       icon: Key, 
       color: 'bg-amber-500',
-      bgColor: 'bg-amber-50',
-      textColor: 'text-amber-600'
+      bgColor: 'bg-amber-50 dark:bg-amber-500/10',
+      textColor: 'text-amber-600 dark:text-amber-400'
     },
     { 
       title: 'Resources', 
       value: stats.resources, 
       icon: Link, 
       color: 'bg-purple-500',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600'
+      bgColor: 'bg-purple-50 dark:bg-purple-500/10',
+      textColor: 'text-purple-600 dark:text-purple-400'
     },
   ];
 
@@ -277,8 +277,8 @@ export default function DocsDashboard({
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">{stat.title}</p>
-                    <p className="text-3xl font-bold text-slate-900 mt-2">{stat.value}</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{stat.title}</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-2 dark:text-slate-100">{stat.value}</p>
                   </div>
                   <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                     <Icon className={`w-6 h-6 ${stat.textColor}`} />
@@ -297,20 +297,20 @@ export default function DocsDashboard({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Button onClick={onAddDocument} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors">
-              <FileText className="w-4 h-4 text-blue-600" />
+            <Button onClick={onAddDocument} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors dark:hover:bg-slate-800">
+              <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Upload Document
             </Button>
-            <Button onClick={onAddNote} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors">
-              <BookOpen className="w-4 h-4 text-emerald-600" />
+            <Button onClick={onAddNote} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors dark:hover:bg-slate-800">
+              <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               Create Note
             </Button>
-            <Button onClick={onAddCredential} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors">
-              <Key className="w-4 h-4 text-amber-600" />
+            <Button onClick={onAddCredential} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors dark:hover:bg-slate-800">
+              <Key className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               Add Credential
             </Button>
-            <Button onClick={onAddResource} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors">
-              <Link className="w-4 h-4 text-purple-600" />
+            <Button onClick={onAddResource} variant="outline" className="flex items-center gap-2 justify-center hover:bg-slate-50 transition-colors dark:hover:bg-slate-800">
+              <Link className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               Add Resource
             </Button>
           </div>
@@ -320,7 +320,7 @@ export default function DocsDashboard({
       {/* Quick Access Card */}
       <Card className="hover:shadow-md transition-shadow relative overflow-hidden group">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2 dark:text-slate-100">
             <Link className="w-5 h-5 text-indigo-500" />
             Quick Access
           </CardTitle>
@@ -332,7 +332,7 @@ export default function DocsDashboard({
               setEditingItemId(null);
               setQuickAccessForm({ title: '', url: '' });
             }}
-            className="text-xs text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50 font-semibold"
+            className="text-xs text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50 font-semibold dark:text-slate-400 dark:hover:bg-indigo-500/10"
           >
             {isManagingQuickAccess ? 'Back to View' : 'Manage Links'}
           </Button>
@@ -341,8 +341,8 @@ export default function DocsDashboard({
           {isManagingQuickAccess ? (
             <div className="space-y-4">
               {/* Form */}
-              <form onSubmit={handleSaveQuickAccess} className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 space-y-3">
-                <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <form onSubmit={handleSaveQuickAccess} className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 space-y-3 dark:bg-slate-800/50 dark:border-slate-700">
+                <div className="text-xs font-bold text-slate-600 uppercase tracking-wider dark:text-slate-400">
                   {editingItemId ? 'Edit Link' : 'Add New Quick Link'}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -351,7 +351,7 @@ export default function DocsDashboard({
                     placeholder="Link Name (e.g. GitHub Repo)"
                     value={quickAccessForm.title}
                     onChange={(e) => setQuickAccessForm({ ...quickAccessForm, title: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:bg-slate-900 dark:border-slate-700"
                     required
                   />
                   <input
@@ -359,7 +359,7 @@ export default function DocsDashboard({
                     placeholder="URL (e.g. github.com/user/repo)"
                     value={quickAccessForm.url}
                     onChange={(e) => setQuickAccessForm({ ...quickAccessForm, url: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:bg-slate-900 dark:border-slate-700"
                     required
                   />
                 </div>
@@ -397,13 +397,13 @@ export default function DocsDashboard({
               ) : (
                 <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                   {quickAccessItems.map((item) => (
-                    <div key={item._id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-200/80 hover:border-slate-300 transition-colors">
+                    <div key={item._id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-200/80 hover:border-slate-300 transition-colors dark:bg-slate-900 dark:border-slate-700">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-1.5 bg-slate-50 rounded">
+                        <div className="p-1.5 bg-slate-50 rounded dark:bg-slate-800/50">
                           {getUrlIcon(item.url)}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{item.title}</p>
+                          <p className="text-sm font-semibold text-slate-900 truncate dark:text-slate-100">{item.title}</p>
                           <p className="text-xs text-slate-400 truncate">{getDisplayDomain(item.url)}</p>
                         </div>
                       </div>
@@ -413,7 +413,7 @@ export default function DocsDashboard({
                             setEditingItemId(item._id);
                             setQuickAccessForm({ title: item.title, url: item.url });
                           }}
-                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded transition-colors dark:hover:bg-slate-800"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
@@ -436,9 +436,9 @@ export default function DocsDashboard({
             quickAccessLoading ? (
               <div className="text-center py-8 text-slate-550">Loading links...</div>
             ) : quickAccessItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+              <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/70">
                 <Link className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-sm font-semibold text-slate-600">No quick access links yet</p>
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">No quick access links yet</p>
                 <p className="text-xs text-slate-400 mt-1 max-w-[260px]">Add links to repositories, Figma boards, design assets, or external platforms.</p>
                 <Button
                   size="sm"
@@ -458,14 +458,14 @@ export default function DocsDashboard({
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-3 bg-white hover:bg-slate-50/60 rounded-xl border border-slate-200/80 hover:border-indigo-100 hover:shadow-[0_2px_8px_-3px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 group/link"
+                    className="flex items-center justify-between p-3 bg-white hover:bg-slate-50/60 rounded-xl border border-slate-200/80 hover:border-indigo-100 hover:shadow-[0_2px_8px_-3px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200 group/link dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:border-slate-700"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 bg-indigo-50/50 rounded-lg group-hover/link:bg-indigo-50 transition-colors">
+                      <div className="p-2 bg-indigo-50/50 rounded-lg group-hover/link:bg-indigo-50 transition-colors dark:bg-indigo-500/10">
                         {getUrlIcon(item.url)}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-800 group-hover/link:text-indigo-600 transition-colors truncate">{item.title}</p>
+                        <p className="text-sm font-bold text-slate-800 group-hover/link:text-indigo-600 transition-colors truncate dark:text-slate-200">{item.title}</p>
                         <p className="text-xs text-slate-400 truncate">{getDisplayDomain(item.url)}</p>
                       </div>
                     </div>
@@ -488,26 +488,26 @@ export default function DocsDashboard({
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-slate-500">Loading alerts...</div>
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">Loading alerts...</div>
           ) : pendingAlerts.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">No pending alerts</div>
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">No pending alerts</div>
           ) : (
             <div className="space-y-2">
               {pendingAlerts.map((alert) => (
                 <div key={alert.id} className={`flex items-center gap-3 p-3 rounded-lg border ${
                   alert.type === 'expired' 
-                    ? 'bg-red-50 border-red-200' 
-                    : 'bg-amber-50 border-amber-200'
+                    ? 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/30' 
+                    : 'bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/30'
                 }`}>
                   <AlertTriangle className={`w-4 h-4 ${
-                    alert.type === 'expired' ? 'text-red-600' : 'text-amber-600'
+                    alert.type === 'expired' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
                   }`} />
                   <div className="flex-1">
                     <p className={`text-sm font-medium ${
                       alert.type === 'expired' ? 'text-red-900' : 'text-amber-900'
                     }`}>{alert.message}</p>
                     <p className={`text-xs ${
-                      alert.type === 'expired' ? 'text-red-700' : 'text-amber-700'
+                      alert.type === 'expired' ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'
                     }`}>{alert.details}</p>
                   </div>
                   <Button 

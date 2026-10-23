@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { 
   Plus, Receipt, Calendar, DollarSign, FileText, 
   CheckCircle, Clock, XCircle, ChevronDown, ChevronUp,
@@ -252,13 +253,13 @@ export default function MyExpensesPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-700 border-gray-200';
-      case 'submitted': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'under_review': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'approved': return 'bg-green-100 text-green-700 border-green-200';
-      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
-      case 'reimbursed': return 'bg-purple-100 text-purple-700 border-purple-200';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'draft': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+      case 'submitted': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30';
+      case 'under_review': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30';
+      case 'approved': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30';
+      case 'reimbursed': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
@@ -304,8 +305,8 @@ export default function MyExpensesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">My Expenses</h1>
-          <p className="text-sm text-gray-500">Submit and track your expense claims</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">My Expenses</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Submit and track your expense claims</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
           <Plus className="h-4 w-4 mr-1.5" />
@@ -321,10 +322,10 @@ export default function MyExpensesPage() {
           { label: 'Reimbursed', value: formatCurrency(totalReimbursed, 'INR'), color: 'purple' },
           { label: 'Drafts', value: expenses.filter(e => e.status === 'draft').length, color: 'gray', isCount: true },
         ].map(({ label, value, color, isCount }) => (
-          <Card key={label} className="border-gray-200">
+          <Card key={label} className="border-gray-200 dark:border-slate-700">
             <CardContent className="p-3">
-              <p className={`text-lg font-semibold ${isCount ? 'text-gray-900' : `text-${color}-600`}`}>{value}</p>
-              <p className="text-xs text-gray-500">{label}</p>
+              <p className={`text-lg font-semibold ${isCount ? 'text-gray-900 dark:text-slate-100' : `text-${color}-600`}`}>{value}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
             </CardContent>
           </Card>
         ))}
@@ -332,10 +333,10 @@ export default function MyExpensesPage() {
 
       {/* Create Form */}
       {showForm && (
-        <Card className="border-gray-200">
+        <Card className="border-gray-200 dark:border-slate-700">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Receipt className="h-5 w-5 text-blue-600" />
+              <Receipt className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               Add New Expense
             </CardTitle>
           </CardHeader>
@@ -343,14 +344,14 @@ export default function MyExpensesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Category *
                   </label>
                   <select
                     required
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   >
                     <option value="">Select category</option>
                     {categoryOptions.map((opt) => (
@@ -361,14 +362,14 @@ export default function MyExpensesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Amount *
                   </label>
                   <div className="flex gap-2">
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="w-28 px-2 py-2 border border-gray-200 rounded-md text-sm bg-gray-50"
+                      className="w-28 px-2 py-2 border border-gray-200 rounded-md text-sm bg-gray-50 dark:border-slate-700 dark:bg-slate-800/50"
                     >
                       {currencyOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.value}</option>
@@ -382,7 +383,7 @@ export default function MyExpensesPage() {
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       placeholder="0.00"
-                      className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                     />
                   </div>
                 </div>
@@ -390,7 +391,7 @@ export default function MyExpensesPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Expense Date *
                   </label>
                   <input
@@ -399,11 +400,11 @@ export default function MyExpensesPage() {
                     value={expenseDate}
                     onChange={(e) => setExpenseDate(e.target.value)}
                     max={new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Vendor/Store
                   </label>
                   <input
@@ -411,13 +412,13 @@ export default function MyExpensesPage() {
                     value={vendor}
                     onChange={(e) => setVendor(e.target.value)}
                     placeholder="e.g., Uber, Marriott, Amazon"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Description *
                 </label>
                 <textarea
@@ -427,14 +428,14 @@ export default function MyExpensesPage() {
                   placeholder="Describe the expense (e.g., Client dinner at restaurant, Flight to Mumbai for meeting)"
                   maxLength={500}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:border-slate-700"
                 />
                 <p className="text-xs text-gray-400 mt-1">{description.length}/500 characters</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Project Name (Optional)
                   </label>
                   <input
@@ -442,7 +443,7 @@ export default function MyExpensesPage() {
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     placeholder="e.g., ABC Client Project"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
                 <div className="flex items-center gap-4 pt-6">
@@ -451,15 +452,15 @@ export default function MyExpensesPage() {
                       type="checkbox"
                       checked={billable}
                       onChange={(e) => setBillable(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:text-blue-400"
                     />
-                    <span className="text-sm text-gray-700">Billable to client</span>
+                    <span className="text-sm text-gray-700 dark:text-slate-300">Billable to client</span>
                   </label>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Receipt URL (Optional)
                 </label>
                 <div className="relative">
@@ -469,7 +470,7 @@ export default function MyExpensesPage() {
                     value={receiptUrl}
                     onChange={(e) => setReceiptUrl(e.target.value)}
                     placeholder="https://cloudinary.com/receipt.jpg or upload link"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Paste receipt image URL or Cloudinary upload link</p>
@@ -481,9 +482,9 @@ export default function MyExpensesPage() {
                     type="checkbox"
                     checked={submitNow}
                     onChange={(e) => setSubmitNow(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:text-blue-400"
                   />
-                  <span className="text-sm text-gray-700">Submit for approval immediately</span>
+                  <span className="text-sm text-gray-700 dark:text-slate-300">Submit for approval immediately</span>
                 </label>
               </div>
 
@@ -514,7 +515,7 @@ export default function MyExpensesPage() {
         <select
           value={filterYear}
           onChange={(e) => setFilterYear(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white dark:border-slate-700 dark:bg-slate-900"
         >
           <option value="2026">2026</option>
           <option value="2025">2025</option>
@@ -522,7 +523,7 @@ export default function MyExpensesPage() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white dark:border-slate-700 dark:bg-slate-900"
         >
           <option value="">All Status</option>
           <option value="draft">Draft</option>
@@ -535,7 +536,7 @@ export default function MyExpensesPage() {
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white dark:border-slate-700 dark:bg-slate-900"
         >
           <option value="">All Categories</option>
           {categoryOptions.map((opt) => (
@@ -547,46 +548,46 @@ export default function MyExpensesPage() {
       {/* Expenses List */}
       <div className="space-y-3">
         {expenses.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="py-12 text-center">
-              <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No expenses</h3>
-              <p className="text-gray-500 text-sm">You haven't submitted any expenses yet</p>
-            </CardContent>
+          <Card className="border-gray-200 dark:border-slate-700">
+            <EmptyState
+              icon={<Receipt size={18} />}
+              title="No expenses"
+              description="You haven't submitted any expenses yet"
+            />
           </Card>
         ) : (
           expenses.map((expense) => (
-            <Card key={expense._id} className="border-gray-200 overflow-hidden">
+            <Card key={expense._id} className="border-gray-200 overflow-hidden dark:border-slate-700">
               <div className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   {/* Left: Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+                      <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono dark:bg-slate-800 dark:text-slate-400">
                         {expense.expenseNumber}
                       </code>
                       <Badge className={`${getStatusColor(expense.status)} text-xs px-2 py-0.5`}>
                         {expense.status.replace('_', ' ')}
                       </Badge>
                       {expense.billable && (
-                        <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">
+                        <Badge variant="outline" className="text-xs text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-500/30">
                           Billable
                         </Badge>
                       )}
                     </div>
                     
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 dark:text-slate-100">
                         {getCategoryLabel(expense.category)}
                       </span>
-                      <span className="text-lg font-semibold text-gray-900">
+                      <span className="text-lg font-semibold text-gray-900 dark:text-slate-100">
                         {formatCurrency(expense.amount, expense.currency)}
                       </span>
                     </div>
                     
-                    <p className="text-sm text-gray-600 line-clamp-1">{expense.description}</p>
+                    <p className="text-sm text-gray-600 line-clamp-1 dark:text-slate-400">{expense.description}</p>
                     
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-2 dark:text-slate-400">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
                         {new Date(expense.expenseDate).toLocaleDateString('en-GB')}
@@ -614,7 +615,7 @@ export default function MyExpensesPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleSubmitDraft(expense._id)}
-                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2 dark:text-blue-400"
                           title="Submit for approval"
                         >
                           <CheckCircle className="h-4 w-4" />
@@ -623,7 +624,7 @@ export default function MyExpensesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(expense._id, expense.status)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2 dark:text-red-400"
                           title="Delete"
                         >
                           <XCircle className="h-4 w-4" />
@@ -647,7 +648,7 @@ export default function MyExpensesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleExpand(expense._id)}
-                      className="text-gray-500 h-8 px-2"
+                      className="text-gray-500 h-8 px-2 dark:text-slate-400"
                     >
                       {expandedId === expense._id ? (
                         <ChevronUp className="h-4 w-4" />
@@ -660,20 +661,20 @@ export default function MyExpensesPage() {
 
                 {/* Expanded Details */}
                 {expandedId === expense._id && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 dark:border-slate-800">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-500">Created:</span>{' '}
+                        <span className="text-gray-500 dark:text-slate-400">Created:</span>{' '}
                         <span>{new Date(expense.createdAt).toLocaleDateString('en-GB')}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Category:</span>{' '}
+                        <span className="text-gray-500 dark:text-slate-400">Category:</span>{' '}
                         <span className="capitalize">{expense.category.replace('_', ' ')}</span>
                       </div>
                       {expense.billable && (
                         <div>
-                          <span className="text-gray-500">Client Billable:</span>{' '}
-                          <span className="text-blue-600">Yes</span>
+                          <span className="text-gray-500 dark:text-slate-400">Client Billable:</span>{' '}
+                          <span className="text-blue-600 dark:text-blue-400">Yes</span>
                         </div>
                       )}
                     </div>
@@ -681,20 +682,20 @@ export default function MyExpensesPage() {
                     {/* Comments */}
                     {expense.comments && expense.comments.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Comments</h4>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Comments</h4>
                         <div className="space-y-2">
                           {expense.comments.map((comment, idx) => (
-                            <div key={idx} className="bg-gray-50 p-3 rounded text-sm">
+                            <div key={idx} className="bg-gray-50 p-3 rounded text-sm dark:bg-slate-800/50">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-gray-900">
+                                <span className="font-medium text-gray-900 dark:text-slate-100">
                                   {comment.authorName}
-                                  <span className="text-xs text-gray-500 ml-2">({comment.role})</span>
+                                  <span className="text-xs text-gray-500 ml-2 dark:text-slate-400">({comment.role})</span>
                                 </span>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-slate-400">
                                   {new Date(comment.createdAt).toLocaleDateString('en-GB')}
                                 </span>
                               </div>
-                              <p className="text-gray-600">{comment.message}</p>
+                              <p className="text-gray-600 dark:text-slate-400">{comment.message}</p>
                             </div>
                           ))}
                         </div>
@@ -703,14 +704,14 @@ export default function MyExpensesPage() {
 
                     {/* Add Comment */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Add Comment</h4>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Add Comment</h4>
                       <div className="flex gap-2">
                         <textarea
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
                           placeholder="Add a note or question..."
                           rows={2}
-                          className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:border-slate-700"
                         />
                         <Button
                           onClick={() => handleAddComment(expense._id)}

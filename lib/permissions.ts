@@ -37,7 +37,9 @@ export type Module =
   | "onboarding";
 
 // Permission matrix: role -> module -> permissions
-const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
+// These are the DEFAULTS. Per-company overrides (Permission Manager) are
+// stored in the RolePermission collection and merged at runtime.
+export const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
   super_admin: {
     dashboard: ["view", "manage"],
     company: ["view", "create", "edit", "delete", "manage"],
@@ -205,6 +207,53 @@ const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Per-company overrides (managed via the Permission Manager UI + /api/permissions).
+// The matrix above is the DEFAULT. An override replaces the whole permission
+// list for one (role, module) cell; cells without overrides use the default.
+// `super_admin` is platform-level and can never be overridden.
+// ---------------------------------------------------------------------------
+
+/** One stored override cell: role + module + replacement permission list. */
+export interface PermissionOverride {
+  role: string;
+  module: string;
+  permissions: Permission[];
+}
+
+/** Effective permission map for a single role (module -> permissions). */
+export type RolePermissionMap = Partial<Record<Module, Permission[]>>;
+
+/** Merge stored override cells over the hardcoded defaults for one role. */
+export function applyOverrides(
+  role: Role,
+  overrides: PermissionOverride[]
+): RolePermissionMap {
+  const base = PERMISSION_MATRIX[role] || {};
+  const effective: RolePermissionMap = { ...(base as RolePermissionMap) };
+  for (const o of overrides) {
+    if (o.role !== role) continue;
+    if (role === "super_admin") continue;
+    effective[o.module as Module] = [...o.permissions];
+  }
+  return effective;
+}
+
+/** Permission check against an explicit (possibly overridden) map. */
+export function hasPermissionIn(
+  matrix: RolePermissionMap,
+  module: Module,
+  permission: Permission
+): boolean {
+  const permissions = matrix[module] || [];
+  return permissions.includes(permission) || permissions.includes("manage");
+}
+
+/** View check against an explicit (possibly overridden) map. */
+export function canViewIn(matrix: RolePermissionMap, module: Module): boolean {
+  return hasPermissionIn(matrix, module, "view");
+}
+
 // Check if user has specific permission
 export function hasPermission(
   role: Role,
@@ -249,8 +298,21 @@ export function getAccessibleModules(role: Role): Module[] {
 
 // Check if route is accessible by role
 export function isRouteAccessible(role: Role, route: string): boolean {
+  return isRouteAccessibleWith(role, route, (module) => canView(role, module));
+}
+
+/**
+ * Route check against an explicit permission lookup (override-aware).
+ * Pass a lookup built from an effective matrix to honor company overrides.
+ */
+export function isRouteAccessibleWith(
+  role: Role,
+  route: string,
+  canViewModule: (module: Module) => boolean
+): boolean {
   const routeModuleMap: Record<string, Module> = {
     "/dashboard": "dashboard",
+    "/billing": "dashboard",
     "/applicants": "recruitment",
     "/recruitment-inbox": "recruitment",
     "/job-positions": "recruitment",
@@ -272,6 +334,7 @@ export function isRouteAccessible(role: Role, route: string): boolean {
     "/holidays": "holidays",
     "/reports": "reports",
     "/settings": "settings",
+    "/permissions": "settings",
     "/company": "company",
     "/users": "users",
     // Survey routes
@@ -316,7 +379,7 @@ export function isRouteAccessible(role: Role, route: string): boolean {
   // Find matching module
   for (const [routePattern, module] of Object.entries(routeModuleMap)) {
     if (route.startsWith(routePattern)) {
-      return canView(role, module);
+      return canViewModule(module);
     }
   }
 

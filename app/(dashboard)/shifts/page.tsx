@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Loader2, Plus, Clock, Trash2, Edit2, Save, X, Sun, Moon } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -157,21 +159,23 @@ export default function ShiftsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Clock className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Work Shifts
-          </h1>
-          <p className="text-gray-500">Manage employee work schedules and shifts</p>
-        </div>
-        {canManage && (
-          <Button onClick={() => handleOpenModal()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Shift
-          </Button>
-        )}
-      </div>
+          </span>
+        }
+        description="Manage employee work schedules and shifts"
+        actions={
+          canManage && (
+            <Button onClick={() => handleOpenModal()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Shift
+            </Button>
+          )
+        }
+      />
 
       {/* Shifts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -199,7 +203,7 @@ export default function ShiftsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-600"
+                      className="text-red-600 dark:text-red-400"
                       onClick={() => handleDelete(shift._id)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -213,23 +217,23 @@ export default function ShiftsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Duration</span>
+                <span className="text-gray-500 dark:text-slate-400">Duration</span>
                 <span className="font-medium">{getDuration(shift.startTime, shift.endTime)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Late Threshold</span>
+                <span className="text-gray-500 dark:text-slate-400">Late Threshold</span>
                 <span className="font-medium">{shift.lateThreshold} mins</span>
               </div>
               <div className="pt-2 border-t">
-                <p className="text-xs text-gray-500 mb-2">Working Days</p>
+                <p className="text-xs text-gray-500 mb-2 dark:text-slate-400">Working Days</p>
                 <div className="flex flex-wrap gap-1">
                   {daysOfWeek.map(day => (
                     <span
                       key={day}
                       className={`text-xs px-2 py-1 rounded ${
                         shift.workingDays.includes(day)
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-400'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300'
+                          : 'bg-gray-100 text-gray-400 dark:bg-slate-800'
                       }`}
                     >
                       {day.slice(0, 3)}
@@ -243,17 +247,17 @@ export default function ShiftsPage() {
       </div>
 
       {shifts.length === 0 && (
-        <Card className="py-12">
-          <CardContent className="text-center">
-            <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No shifts configured yet</p>
-            {canManage && (
-              <Button onClick={() => handleOpenModal()} className="mt-4">
+        <Card>
+          <EmptyState
+            icon={<Clock size={18} />}
+            title="No shifts configured yet"
+            action={canManage ? (
+              <Button onClick={() => handleOpenModal()}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create First Shift
               </Button>
-            )}
-          </CardContent>
+            ) : undefined}
+          />
         </Card>
       )}
 
@@ -270,7 +274,7 @@ export default function ShiftsPage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Shift Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Shift Name</label>
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -281,7 +285,7 @@ export default function ShiftsPage() {
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Start Time</label>
                     <Input
                       type="time"
                       value={formData.startTime}
@@ -290,7 +294,7 @@ export default function ShiftsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">End Time</label>
                     <Input
                       type="time"
                       value={formData.endTime}
@@ -301,7 +305,7 @@ export default function ShiftsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Working Days</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Working Days</label>
                   <div className="flex flex-wrap gap-2">
                     {daysOfWeek.map(day => (
                       <button
@@ -311,7 +315,7 @@ export default function ShiftsPage() {
                         className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
                           formData.workingDays.includes(day)
                             ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-400'
                         }`}
                       >
                         {day.slice(0, 3)}
@@ -321,7 +325,7 @@ export default function ShiftsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Late Threshold (minutes)
                   </label>
                   <Input
@@ -332,7 +336,7 @@ export default function ShiftsPage() {
                     onChange={(e) => setFormData({...formData, lateThreshold: parseInt(e.target.value)})}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">
                     Minutes after start time to mark as late
                   </p>
                 </div>

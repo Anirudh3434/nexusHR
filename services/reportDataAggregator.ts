@@ -34,6 +34,12 @@ export const aggregateAttendanceData = async (
   if (config.filters) {
     Object.assign(query, config.filters);
   }
+
+  // NoSQL-injection defense: enforce tenant boundary, strip operators.
+  query.companyId = companyId;
+  for (const k of Object.keys(query)) {
+    if (k.startsWith('$')) delete query[k];
+  }
   
   if (config.dateRange) {
     query.date = {
@@ -149,6 +155,12 @@ export const aggregatePerformanceData = async (
   if (config.filters) {
     Object.assign(query, config.filters);
   }
+
+  // NoSQL-injection defense: enforce tenant boundary, strip operators.
+  query.companyId = companyId;
+  for (const k of Object.keys(query)) {
+    if (k.startsWith('$')) delete query[k];
+  }
   
   if (config.dateRange) {
     query.date = {
@@ -252,6 +264,12 @@ export const aggregateLeaveData = async (
   if (config.filters) {
     Object.assign(query, config.filters);
   }
+
+  // NoSQL-injection defense: enforce tenant boundary, strip operators.
+  query.companyId = companyId;
+  for (const k of Object.keys(query)) {
+    if (k.startsWith('$')) delete query[k];
+  }
   
   if (config.dateRange) {
     query.startDate = {
@@ -313,6 +331,12 @@ export const aggregatePayrollData = async (
   
   if (config.filters) {
     Object.assign(query, config.filters);
+  }
+
+  // NoSQL-injection defense: enforce tenant boundary, strip operators.
+  query.companyId = companyId;
+  for (const k of Object.keys(query)) {
+    if (k.startsWith('$')) delete query[k];
   }
   
   if (config.dateRange) {

@@ -85,10 +85,12 @@ export async function GET(req: Request) {
     }
 
     if (searchQuery) {
+      const cappedQuery = searchQuery.slice(0, 128);
+      const escapedQuery = cappedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const searchOr = [
-        { title: { $regex: searchQuery, $options: 'i' } },
-        { description: { $regex: searchQuery, $options: 'i' } },
-        { taskNumber: { $regex: searchQuery, $options: 'i' } }
+        { title: { $regex: escapedQuery, $options: 'i' } },
+        { description: { $regex: escapedQuery, $options: 'i' } },
+        { taskNumber: { $regex: escapedQuery, $options: 'i' } }
       ];
       if (query.$or) {
         query.$and = [
@@ -186,7 +188,8 @@ export async function GET(req: Request) {
       .populate('blocks', 'taskNumber title status')
       .populate('parentId', 'taskNumber title status')
       .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(50);
 
     console.log('GET tasks - sample task with customStatus:', tasks[0] ? JSON.stringify(tasks[0].customStatus, null, 2) : 'No tasks');
 
@@ -210,6 +213,10 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+
+    if (!companyId) {
+      return NextResponse.json({ message: 'Forbidden: no company context' }, { status: 403 });
+    }
     
     // Only admin/HR/manager can create tasks
     if (!['admin', 'hr', 'manager'].includes(userRole)) {
@@ -218,6 +225,10 @@ export async function POST(req: Request) {
     
     const body = await req.json();
     console.log('Task creation request body:', body);
+
+    if (body.companyId && body.companyId !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
     
     const {
       title,
@@ -276,7 +287,7 @@ export async function POST(req: Request) {
       storyPoints: storyPoints || undefined,
       dependsOn: dependsOn || [],
       tags: tags || [],
-      companyId: companyId || body.companyId,
+      companyId,
       createdBy: userId,
       progressPercentage: 0,
       parentId: parentId || undefined,
@@ -290,7 +301,7 @@ export async function POST(req: Request) {
     await ActivityLog.create({
       taskId: task._id,
       projectId,
-      companyId: companyId || body.companyId,
+      companyId,
       userId,
       userName: headersList.get('x-user-name') || 'Unknown User',
       actionType: 'created',
@@ -335,7 +346,23 @@ export async function PATCH(req: Request) {
     }
     
     const body = await req.json();
-    const { taskId, attachments, ...updateData } = body;
+    const { taskId, attachments, ...rest } = body;
+
+    if (Object.keys(rest).some((k) => k.startsWith('$'))) {
+      return NextResponse.json({ message: 'Invalid field names' }, { status: 400 });
+    }
+
+    // Shared allowlist for staff updates — nothing outside this list is writable.
+    const STAFF_PATCH_ALLOWLIST = [
+      'title', 'description', 'status', 'priority', 'taskType', 'assignedTo',
+      'startDate', 'dueDate', 'estimatedHours', 'actualHours', 'storyPoints',
+      'dependsOn', 'blocks', 'tags', 'labels', 'sprintId', 'customStatus',
+      'progressPercentage', 'parentId', 'comments', 'completedAt',
+    ];
+    const updateData: any = {};
+    for (const key of STAFF_PATCH_ALLOWLIST) {
+      if (rest[key] !== undefined) updateData[key] = rest[key];
+    }
 
     console.log('PATCH task - body:', JSON.stringify(body, null, 2));
     console.log('PATCH task - updateData:', JSON.stringify(updateData, null, 2));
@@ -556,7 +583,7 @@ export async function PATCH(req: Request) {
       }
       // Employees can only update status, progress, and comments
       const allowedFields = ['status', 'progressPercentage', 'customStatus', 'comment', 'comments'];
-      const invalidFields = Object.keys(updateData).filter(key => !allowedFields.includes(key));
+      const invalidFields = Object.keys(rest).filter(key => !allowedFields.includes(key));
       if (invalidFields.length > 0) {
         return NextResponse.json({
           message: 'Employees can only update status and progress'

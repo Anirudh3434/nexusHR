@@ -1,18 +1,28 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Notice from '@/models/Notice';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
-// GET notices (all users can view)
+const WRITE_ROLES = ['super_admin', 'admin', 'hr'];
+
+// GET notices (public; scoped when a session exists)
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
     const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
     const category = searchParams.get('category');
     const limit = searchParams.get('limit') || '10';
 
+    if (auth && auth.role !== 'super_admin' && queryCompanyId && auth.companyId && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+
     let query: any = { isActive: true };
-    if (companyId) query.companyId = companyId;
+    if (queryCompanyId) query.companyId = queryCompanyId;
+    else if (auth && auth.role !== 'super_admin' && auth.companyId) query.companyId = auth.companyId;
     if (category) query.category = category;
 
     // Only show non-expired notices or notices without expiry
@@ -48,9 +58,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, WRITE_ROLES)) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    const isSuperAdmin = auth.role === 'super_admin';
     const data = await req.json();
 
-    const { companyId, title, content, category, priority, postedBy, expiryDate } = data;
+    if (data.companyId && !isSuperAdmin && data.companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = isSuperAdmin ? (data.companyId || auth.companyId) : auth.companyId;
+    const { title, content, category, priority, expiryDate } = data;
+    const postedBy = auth.userId;
 
     if (!companyId || !title || !content || !postedBy) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
@@ -82,11 +101,20 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, WRITE_ROLES)) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
     if (!id) {
       return NextResponse.json({ message: 'Notice ID required' }, { status: 400 });
+    }
+
+    const existing = await Notice.findById(id);
+    if (!existing) return NextResponse.json({ message: 'Notice not found' }, { status: 404 });
+    if (auth.role !== 'super_admin' && existing.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     const notice = await Notice.findByIdAndUpdate(id, { isActive: false }, { new: true });
