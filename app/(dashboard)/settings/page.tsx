@@ -146,15 +146,15 @@ function SettingsContent() {
   if (!user || !canManage) return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
        <ShieldCheck className="h-8 w-8 text-red-500 mb-4" />
-       <h1 className="text-lg font-semibold text-gray-900">Access Restricted</h1>
-       <p className="text-gray-500 text-sm mt-2">Administrator privileges required.</p>
+       <h1 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Access Restricted</h1>
+       <p className="text-gray-500 text-sm mt-2 dark:text-slate-400">Administrator privileges required.</p>
     </div>
   );
 
   if (isLoading || isCompanyLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
     );
   }
@@ -170,11 +170,11 @@ function SettingsContent() {
   return (
     <div className="space-y-6">
       {/* Breadcrumb navigation */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-lg border border-gray-200 px-4 py-3">
-        <nav className="flex items-center gap-1.5 text-sm text-gray-500 flex-wrap">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-lg border border-gray-200 px-4 py-3 dark:bg-slate-900 dark:border-slate-700">
+        <nav className="flex items-center gap-1.5 text-sm text-gray-500 flex-wrap dark:text-slate-400">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-1.5 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-slate-100 transition-colors"
           >
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Home</span>
@@ -182,7 +182,7 @@ function SettingsContent() {
           <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
           <button
             onClick={() => router.push('/settings')}
-            className="flex items-center gap-1.5 hover:text-gray-900 transition-colors font-medium text-gray-900"
+            className="flex items-center gap-1.5 hover:text-gray-900 transition-colors font-medium text-gray-900 dark:text-slate-100"
           >
             <SettingsIcon className="h-4 w-4" />
             Settings
@@ -190,7 +190,7 @@ function SettingsContent() {
           {tab !== 'branding' && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-              <span className="text-gray-700">
+              <span className="text-gray-700 dark:text-slate-300">
                 {menuItems.find(m => m.id === tab)?.label}
               </span>
             </>
@@ -198,7 +198,7 @@ function SettingsContent() {
         </nav>
 
         {/* Tab switcher */}
-        <div className="flex flex-wrap items-center gap-1 bg-gray-100 rounded-xl p-1">
+        <div className="flex flex-wrap items-center gap-1 bg-gray-100 rounded-xl p-1 dark:bg-slate-800">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = tab === item.id;
@@ -208,8 +208,8 @@ function SettingsContent() {
                 onClick={() => setTab(item.id as TabType)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors ${
                   isActive 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-800'
+                  ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100' 
+                  : 'text-gray-500 hover:text-gray-800 dark:text-slate-400'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -221,7 +221,7 @@ function SettingsContent() {
       </div>
 
       {/* Main Content */}
-      <main className="bg-white rounded-lg border border-gray-200 p-4 min-h-[500px]">
+      <main className="bg-white rounded-lg border border-gray-200 p-4 min-h-[500px] dark:bg-slate-900 dark:border-slate-700">
           {tab === 'branding' && (
             <BrandingSection 
               settings={settings} 
@@ -269,7 +269,7 @@ export default function SettingsHub() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
     }>
       <SettingsContent />

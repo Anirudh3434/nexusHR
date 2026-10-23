@@ -26,7 +26,7 @@ export default function ReportsAnalyticsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="space-y-6">
       {view === 'templates' ? (
         <ReportTemplates 
           onSelectTemplate={handleSelectTemplate}
@@ -43,7 +43,7 @@ export default function ReportsAnalyticsPage() {
               Back to Templates
             </Button>
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {selectedTemplate?.name}
               </h1>

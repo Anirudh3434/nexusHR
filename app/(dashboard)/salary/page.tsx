@@ -6,6 +6,8 @@ import { useToast } from "../../../context/ToastContext";
 import { getSalaries, createSalary, updateSalary, deleteSalary, SalaryStructure, CreateSalaryInput } from "../../../services/salaryService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { Input } from "../../../components/ui/Input";
 import { Loader2, Plus, Trash2, Edit2, Save, X, DollarSign, Calculator, TrendingUp, TrendingDown } from "lucide-react";
 
@@ -191,32 +193,34 @@ export default function SalaryPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <DollarSign className="h-8 w-8 text-green-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
             Salary Structures
-          </h1>
-          <p className="text-gray-500">Manage employee salary components and calculations</p>
-        </div>
-        {canManage && (
-          <Button onClick={() => handleOpenModal()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Salary
-          </Button>
-        )}
-      </div>
+          </span>
+        }
+        description="Manage employee salary components and calculations"
+        actions={
+          canManage && (
+            <Button onClick={() => handleOpenModal()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Salary
+            </Button>
+          )
+        }
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 rounded-lg dark:bg-blue-500/15">
+                <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Gross</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Gross</p>
                 <p className="text-2xl font-bold">
                   {formatCurrency(salaries.reduce((sum, s) => sum + s.grossSalary, 0))}
                 </p>
@@ -227,11 +231,11 @@ export default function SalaryPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-green-100 rounded-lg dark:bg-green-500/15">
+                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Net</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Net</p>
                 <p className="text-2xl font-bold">
                   {formatCurrency(salaries.reduce((sum, s) => sum + s.netSalary, 0))}
                 </p>
@@ -242,11 +246,11 @@ export default function SalaryPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Calculator className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-purple-100 rounded-lg dark:bg-purple-500/15">
+                <Calculator className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total CTC</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total CTC</p>
                 <p className="text-2xl font-bold">
                   {formatCurrency(salaries.reduce((sum, s) => sum + s.ctc, 0))}
                 </p>
@@ -257,11 +261,11 @@ export default function SalaryPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-100 rounded-lg">
-                <TrendingDown className="h-6 w-6 text-red-600" />
+              <div className="p-3 bg-red-100 rounded-lg dark:bg-red-500/15">
+                <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Deductions</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Deductions</p>
                 <p className="text-2xl font-bold">
                   {formatCurrency(salaries.reduce((sum, s) => sum + s.totalDeductions, 0))}
                 </p>
@@ -280,38 +284,38 @@ export default function SalaryPage() {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-700">Employee</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">Basic</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">HRA</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">Gross</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">Deductions</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">Net Salary</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-700">CTC</th>
-                  {canManage && <th className="text-center px-4 py-3 font-medium text-gray-700">Actions</th>}
+                  <th className="text-left px-4 py-3 font-medium text-gray-700 dark:text-slate-300">Employee</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700 dark:text-slate-300">Basic</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700 dark:text-slate-300">HRA</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700 dark:text-slate-300">Gross</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700 dark:text-slate-300">Deductions</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700 dark:text-slate-300">Net Salary</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-700 dark:text-slate-300">CTC</th>
+                  {canManage && <th className="text-center px-4 py-3 font-medium text-gray-700 dark:text-slate-300">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {salaries.map((salary) => (
-                  <tr key={salary._id} className="hover:bg-gray-50">
+                  <tr key={salary._id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
                     <td className="px-4 py-3">
                       <div className="font-medium">{salary.employeeId?.name || 'N/A'}</div>
-                      <div className="text-xs text-gray-500">{salary.employeeId?.designation}</div>
+                      <div className="text-xs text-gray-500 dark:text-slate-400">{salary.employeeId?.designation}</div>
                     </td>
                     <td className="text-right px-4 py-3">{formatCurrency(salary.basicSalary)}</td>
                     <td className="text-right px-4 py-3">{formatCurrency(salary.hra)}</td>
-                    <td className="text-right px-4 py-3 font-medium text-blue-600">{formatCurrency(salary.grossSalary)}</td>
-                    <td className="text-right px-4 py-3 text-red-600">{formatCurrency(salary.totalDeductions)}</td>
-                    <td className="text-right px-4 py-3 font-medium text-green-600">{formatCurrency(salary.netSalary)}</td>
-                    <td className="text-right px-4 py-3 font-medium text-purple-600">{formatCurrency(salary.ctc)}</td>
+                    <td className="text-right px-4 py-3 font-medium text-blue-600 dark:text-blue-400">{formatCurrency(salary.grossSalary)}</td>
+                    <td className="text-right px-4 py-3 text-red-600 dark:text-red-400">{formatCurrency(salary.totalDeductions)}</td>
+                    <td className="text-right px-4 py-3 font-medium text-green-600 dark:text-green-400">{formatCurrency(salary.netSalary)}</td>
+                    <td className="text-right px-4 py-3 font-medium text-purple-600 dark:text-purple-400">{formatCurrency(salary.ctc)}</td>
                     {canManage && (
                       <td className="text-center px-4 py-3">
                         <div className="flex justify-center gap-1">
                           <Button variant="ghost" size="sm" onClick={() => handleOpenModal(salary)}>
                             <Edit2 className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(salary._id)}>
+                          <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400" onClick={() => handleDelete(salary._id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -324,16 +328,18 @@ export default function SalaryPage() {
           </div>
           
           {salaries.length === 0 && (
-            <div className="text-center py-12">
-              <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No salary records found</p>
-              {canManage && (
-                <Button onClick={() => handleOpenModal()} className="mt-4">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Record
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              title="No salary records found"
+              icon={<DollarSign size={18} />}
+              action={
+                canManage ? (
+                  <Button onClick={() => handleOpenModal()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create First Record
+                  </Button>
+                ) : undefined
+              }
+            />
           )}
         </CardContent>
       </Card>
@@ -352,7 +358,7 @@ export default function SalaryPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Salary */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Basic Salary</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Basic Salary</label>
                   <Input
                     type="number"
                     value={formData.basicSalary || ''}
@@ -365,7 +371,7 @@ export default function SalaryPage() {
                 {/* Allowances Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">HRA (Auto: 40%)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">HRA (Auto: 40%)</label>
                     <Input
                       type="number"
                       value={formData.hra || totals.hra}
@@ -373,7 +379,7 @@ export default function SalaryPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">DA</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">DA</label>
                     <Input
                       type="number"
                       value={formData.da || ''}
@@ -381,7 +387,7 @@ export default function SalaryPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Conveyance</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Conveyance</label>
                     <Input
                       type="number"
                       value={formData.conveyance || ''}
@@ -389,7 +395,7 @@ export default function SalaryPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Medical</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Medical</label>
                     <Input
                       type="number"
                       value={formData.medical || ''}
@@ -401,7 +407,7 @@ export default function SalaryPage() {
                 {/* Deductions */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">PF (Auto: 12%)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">PF (Auto: 12%)</label>
                     <Input
                       type="number"
                       value={formData.pf || totals.pf}
@@ -409,7 +415,7 @@ export default function SalaryPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ESI (Auto)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">ESI (Auto)</label>
                     <Input
                       type="number"
                       value={formData.esi || totals.esi}
@@ -417,7 +423,7 @@ export default function SalaryPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">TDS</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">TDS</label>
                     <Input
                       type="number"
                       value={formData.tds || ''}
@@ -425,7 +431,7 @@ export default function SalaryPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Professional Tax</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Professional Tax</label>
                     <Input
                       type="number"
                       value={formData.professionalTax || ''}
@@ -435,28 +441,28 @@ export default function SalaryPage() {
                 </div>
 
                 {/* Calculated Totals */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2 dark:bg-slate-800/50">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Gross Salary:</span>
-                    <span className="font-medium text-blue-600">{formatCurrency(totals.gross)}</span>
+                    <span className="text-gray-600 dark:text-slate-400">Gross Salary:</span>
+                    <span className="font-medium text-blue-600 dark:text-blue-400">{formatCurrency(totals.gross)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Deductions:</span>
-                    <span className="font-medium text-red-600">{formatCurrency(totals.deductions)}</span>
+                    <span className="text-gray-600 dark:text-slate-400">Total Deductions:</span>
+                    <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(totals.deductions)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Net Salary:</span>
-                    <span className="font-medium text-green-600">{formatCurrency(totals.net)}</span>
+                    <span className="text-gray-600 dark:text-slate-400">Net Salary:</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">{formatCurrency(totals.net)}</span>
                   </div>
                   <div className="flex justify-between text-sm pt-2 border-t">
-                    <span className="text-gray-600">CTC:</span>
-                    <span className="font-medium text-purple-600">{formatCurrency(totals.ctc)}</span>
+                    <span className="text-gray-600 dark:text-slate-400">CTC:</span>
+                    <span className="font-medium text-purple-600 dark:text-purple-400">{formatCurrency(totals.ctc)}</span>
                   </div>
                 </div>
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Notes</label>
                   <Input
                     value={formData.notes || ''}
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}

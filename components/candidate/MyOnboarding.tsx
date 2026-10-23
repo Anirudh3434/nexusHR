@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/Badge";
 import { UserRoundPlus, ClipboardList, FolderOpen, FileText, ArrowRight } from "lucide-react";
 
 const statusMeta: Record<string, { label: string; classes: string }> = {
-  draft: { label: "Draft", classes: "bg-gray-100 text-gray-700 border-gray-200" },
-  offer_sent: { label: "Offer Sent", classes: "bg-blue-100 text-blue-700 border-blue-200" },
-  offer_accepted: { label: "Offer Accepted", classes: "bg-indigo-100 text-indigo-700 border-indigo-200" },
-  in_progress: { label: "In Progress", classes: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  completed: { label: "Completed", classes: "bg-green-100 text-green-700 border-green-200" },
-  offer_declined: { label: "Offer Declined", classes: "bg-red-100 text-red-700 border-red-200" },
-  cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200" },
+  draft: { label: "Draft", classes: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
+  offer_sent: { label: "Offer Sent", classes: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30" },
+  offer_accepted: { label: "Offer Accepted", classes: "bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/30" },
+  in_progress: { label: "In Progress", classes: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30" },
+  completed: { label: "Completed", classes: "bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30" },
+  offer_declined: { label: "Offer Declined", classes: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30" },
+  cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" },
 };
 
 export default function MyOnboarding() {
@@ -53,14 +53,14 @@ export default function MyOnboarding() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">My Onboarding</h1>
-        <p className="text-sm text-gray-500">Complete your onboarding: accept the offer, upload documents and finish your tasks.</p>
+        <p className="text-sm text-gray-500 dark:text-slate-400">Complete your onboarding: accept the offer, upload documents and finish your tasks.</p>
       </div>
 
       {records.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <UserRoundPlus className="mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-gray-500">No onboarding record assigned to you yet.</p>
+            <p className="text-gray-500 dark:text-slate-400">No onboarding record assigned to you yet.</p>
           </CardContent>
         </Card>
       ) : (
@@ -76,10 +76,10 @@ export default function MyOnboarding() {
               <CardContent className="space-y-4 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-blue-600"><UserRoundPlus size={22} /></div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400"><UserRoundPlus size={22} /></div>
                     <div>
-                      <p className="font-semibold text-gray-900">{r.candidate.position || 'New Joiner'}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-semibold text-gray-900 dark:text-slate-100">{r.candidate.position || 'New Joiner'}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">
                         Joining {r.candidate.joiningDate ? new Date(r.candidate.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBD'}
                       </p>
                     </div>
@@ -89,33 +89,33 @@ export default function MyOnboarding() {
 
                 {/* Progress */}
                 <div>
-                  <div className="mb-1 flex justify-between text-xs text-gray-500">
+                  <div className="mb-1 flex justify-between text-xs text-gray-500 dark:text-slate-400">
                     <span>Onboarding progress</span>
                     <span>{r.progress}%</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700">
                     <div className="h-full rounded-full bg-blue-600" style={{ width: `${r.progress}%` }} />
                   </div>
                 </div>
 
                 {/* Quick stats */}
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-lg bg-gray-50 p-3 text-center">
-                    <p className="flex items-center justify-center gap-1 text-xl font-bold text-gray-800"><ClipboardList size={16} className="text-blue-500" />{doneTasks}/{totalTasks}</p>
-                    <p className="text-xs text-gray-500">Tasks done</p>
+                  <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-slate-800/50">
+                    <p className="flex items-center justify-center gap-1 text-xl font-bold text-gray-800 dark:text-slate-200"><ClipboardList size={16} className="text-blue-500" />{doneTasks}/{totalTasks}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Tasks done</p>
                   </div>
-                  <div className="rounded-lg bg-gray-50 p-3 text-center">
-                    <p className="flex items-center justify-center gap-1 text-xl font-bold text-gray-800"><FolderOpen size={16} className="text-yellow-500" />{pendingDocs}</p>
-                    <p className="text-xs text-gray-500">Docs pending</p>
+                  <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-slate-800/50">
+                    <p className="flex items-center justify-center gap-1 text-xl font-bold text-gray-800 dark:text-slate-200"><FolderOpen size={16} className="text-yellow-500" />{pendingDocs}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Docs pending</p>
                   </div>
-                  <div className="rounded-lg bg-gray-50 p-3 text-center">
-                    <p className="flex items-center justify-center gap-1 text-xl font-bold text-gray-800"><FileText size={16} className="text-purple-500" />{r.offerLetter?.status || 'draft'}</p>
-                    <p className="text-xs text-gray-500">Offer status</p>
+                  <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-slate-800/50">
+                    <p className="flex items-center justify-center gap-1 text-xl font-bold text-gray-800 dark:text-slate-200"><FileText size={16} className="text-purple-500" />{r.offerLetter?.status || 'draft'}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Offer status</p>
                   </div>
                 </div>
 
                 {myTasks > 0 && (
-                  <p className="rounded-md bg-blue-50 p-2 text-sm text-blue-700">You have {myTasks} task{myTasks === 1 ? '' : 's'} waiting on you in the checklist.</p>
+                  <p className="rounded-md bg-blue-50 p-2 text-sm text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">You have {myTasks} task{myTasks === 1 ? '' : 's'} waiting on you in the checklist.</p>
                 )}
 
                 <div className="flex justify-end">

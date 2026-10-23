@@ -12,9 +12,11 @@ export const useSocket = (userId?: string) => {
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
 
+    const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const newSocket = io(socketUrl, {
       transports: ["polling", "websocket"],
       reconnectionAttempts: 10,
+      auth: storedToken ? { token: storedToken } : {},
     });
     
     newSocket.on("connect", () => {

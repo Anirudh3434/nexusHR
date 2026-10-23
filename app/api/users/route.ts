@@ -1,33 +1,33 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { headers } from 'next/headers';
+import { getAuthInfo } from '@/lib/auth-util';
 
 // GET - Fetch users
 export async function GET(req: Request) {
   try {
     await connectDB();
-    
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    const companyId = headersList.get('x-company-id');
-    
-    if (!userId) {
+
+    const auth = await getAuthInfo();
+    if (!auth) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+    const isSuperAdmin = auth.role === 'super_admin';
+
     const { searchParams } = new URL(req.url);
     const queryCompanyId = searchParams.get('companyId');
-    
+
     const query: any = {};
-    
-    if (queryCompanyId) {
-      query.companyId = queryCompanyId;
-    } else if (companyId) {
-      query.companyId = companyId;
+
+    if (isSuperAdmin) {
+      if (queryCompanyId) query.companyId = queryCompanyId;
+      else if (auth.companyId) query.companyId = auth.companyId;
+    } else {
+      // Non-admin: ignore ?companyId= override, default to session company
+      if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = auth.companyId;
     }
-    
+
     const users = await User.find(query)
       .select('name email department role companyId')
       .sort({ name: 1 });

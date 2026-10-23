@@ -1,26 +1,75 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import SuperAdmin from '@/models/SuperAdmin';
 import Company from '@/models/Company';
 import Settings from '@/models/Settings';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-123';
+import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS, getSessionCookieDomain, type SessionPayload } from '@/lib/auth';
+import { loginRateLimitHit, loginRateLimitClear } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
   try {
     await connectDB();
     const { email, password } = await req.json();
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || !email || !password) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
+    }
+
+    // Lightweight sliding-window rate limit: 10 attempts / 10 min per IP+email.
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateKey = `${ip}:${email.toLowerCase()}`;
+    const rl = loginRateLimitHit(rateKey);
+    if (!rl.allowed) {
+      return NextResponse.json({ message: 'Too many login attempts. Try again later.' }, { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } });
     }
 
     // Find user and select password
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
+      // Platform administrators live in a separate collection.
+      const platform = await SuperAdmin.findOne({ email: email.toLowerCase() }).select('+password');
+      if (!platform || !platform.isActive) {
+        return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+      }
+      const platformMatch = await bcrypt.compare(password, platform.password);
+      if (!platformMatch) {
+        return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+      }
+      const platformSession: SessionPayload = {
+        id: platform._id.toString(),
+        role: 'super_admin',
+        email: platform.email,
+        name: platform.name,
+        mustChangePassword: !!platform.mustChangePassword,
+        tv: platform.tokenVersion ?? 0,
+      };
+      const platformToken = signSession(platformSession, '1d');
+      loginRateLimitClear(rateKey);
+
+      const platformRes = NextResponse.json({
+        message: 'Login successful',
+        user: {
+          id: platform._id,
+          name: platform.name,
+          email: platform.email,
+          role: 'super_admin',
+          mustChangePassword: !!platform.mustChangePassword,
+        },
+        token: platformToken,
+      }, { status: 200 });
+
+      const platformCookieDomain = getSessionCookieDomain(req.headers.get('host'));
+      platformRes.cookies.set(SESSION_COOKIE, platformToken, {
+        ...SESSION_COOKIE_OPTIONS,
+        ...(platformCookieDomain ? { domain: platformCookieDomain } : {}),
+      });
+      return platformRes;
+    }
+
+    if (!user.isActive) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -31,12 +80,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user._id, role: user.role, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+    // Generate session JWT — companyId is embedded so tenant scope
+    // comes from the signed token, never from client input.
+    // Effective permissions (role defaults + role overrides + this user's
+    // individual overrides) are snapshotted too so middleware can enforce
+    // them without a DB read (edge-safe).
+    const { getEffectiveUserMap } = await import('@/lib/permission-overrides');
+    const { resolveSubscription } = await import('@/lib/subscription');
+    const subscription = user.companyId ? await resolveSubscription(user.companyId.toString()) : null;
+    const session: SessionPayload = {
+      id: user._id.toString(),
+      role: user.role,
+      email: user.email,
+      companyId: user.companyId?.toString(),
+      name: user.name,
+      isCandidate: !!user.isCandidate,
+      mustChangePassword: !!user.mustChangePassword,
+      tv: (user as any).tokenVersion ?? 0,
+      perms: user.companyId
+        ? (await getEffectiveUserMap(user.companyId.toString(), user._id.toString(), user.role) as Record<string, string[]>)
+        : undefined,
+      plan: subscription?.plan ?? undefined,
+      features: subscription?.features,
+    };
+    const token = signSession(session, '1d');
+    loginRateLimitClear(rateKey);
 
     // Filter out password from response
     const company = user.companyId ? await Company.findById(user.companyId).select('name logo').lean() : null;
@@ -62,11 +130,22 @@ export async function POST(req: Request) {
       isCandidate: !!user.isCandidate,
     };
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       message: 'Login successful',
       user: userResponse,
       token,
     }, { status: 200 });
+
+    // HttpOnly session cookie for the web app (JS cannot read it).
+    // Domain-scoped where possible so one sign-in works across the root
+    // domain and company subdomains. The token stays in the JSON body
+    // for the mobile app (Bearer flow).
+    const cookieDomain = getSessionCookieDomain(req.headers.get('host'));
+    res.cookies.set(SESSION_COOKIE, token, {
+      ...SESSION_COOKIE_OPTIONS,
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
+    });
+    return res;
 
   } catch (error: any) {
     console.error('Login error:', error);

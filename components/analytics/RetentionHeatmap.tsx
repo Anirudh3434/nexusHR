@@ -48,7 +48,7 @@ const getRiskTextColor = (level: string | null) => {
     case 'medium': return 'text-yellow-700 dark:text-yellow-400';
     case 'high': return 'text-orange-700 dark:text-orange-400';
     case 'critical': return 'text-red-700 dark:text-red-400';
-    default: return 'text-gray-500';
+    default: return 'text-gray-500 dark:text-slate-400';
   }
 };
 
@@ -67,7 +67,7 @@ export default function RetentionHeatmap({ team, statistics }: RetentionHeatmapP
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-600" />
+              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Total Employees</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -81,7 +81,7 @@ export default function RetentionHeatmap({ team, statistics }: RetentionHeatmapP
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-green-600" />
+              <Activity className="w-5 h-5 text-green-600 dark:text-green-400" />
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Assessed</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -106,10 +106,10 @@ export default function RetentionHeatmap({ team, statistics }: RetentionHeatmapP
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Critical Risk</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {statistics.riskDistribution.critical}
                 </p>
               </div>
@@ -128,22 +128,22 @@ export default function RetentionHeatmap({ team, statistics }: RetentionHeatmapP
             <div className="text-center">
               <div className="w-full h-3 bg-green-500 rounded-full mb-2" />
               <p className="text-sm font-medium text-gray-900 dark:text-white">Low</p>
-              <p className="text-2xl font-bold text-green-600">{statistics.riskDistribution.low}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{statistics.riskDistribution.low}</p>
             </div>
             <div className="text-center">
               <div className="w-full h-3 bg-yellow-500 rounded-full mb-2" />
               <p className="text-sm font-medium text-gray-900 dark:text-white">Medium</p>
-              <p className="text-2xl font-bold text-yellow-600">{statistics.riskDistribution.medium}</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{statistics.riskDistribution.medium}</p>
             </div>
             <div className="text-center">
               <div className="w-full h-3 bg-orange-500 rounded-full mb-2" />
               <p className="text-sm font-medium text-gray-900 dark:text-white">High</p>
-              <p className="text-2xl font-bold text-orange-600">{statistics.riskDistribution.high}</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{statistics.riskDistribution.high}</p>
             </div>
             <div className="text-center">
               <div className="w-full h-3 bg-red-500 rounded-full mb-2" />
               <p className="text-sm font-medium text-gray-900 dark:text-white">Critical</p>
-              <p className="text-2xl font-bold text-red-600">{statistics.riskDistribution.critical}</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{statistics.riskDistribution.critical}</p>
             </div>
           </div>
         </CardContent>
@@ -173,7 +173,7 @@ export default function RetentionHeatmap({ team, statistics }: RetentionHeatmapP
                         <p className={`text-lg font-bold ${getRiskTextColor(member.riskLevel)}`}>
                           {member.riskScore}
                         </p>
-                        <p className="text-xs text-gray-500">/ 100</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">/ 100</p>
                       </div>
                       <Badge
                         variant="outline"
@@ -183,7 +183,7 @@ export default function RetentionHeatmap({ team, statistics }: RetentionHeatmapP
                       </Badge>
                     </>
                   ) : (
-                    <Badge variant="secondary" className="text-gray-500">
+                    <Badge variant="secondary" className="text-gray-500 dark:text-slate-400">
                       Not Assessed
                     </Badge>
                   )}

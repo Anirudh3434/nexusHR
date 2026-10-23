@@ -1,11 +1,25 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Company from '@/models/Company';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
+const ADMIN_ROLES = ['super_admin', 'admin'];
 
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    const { companyId, payrollCycleDate, overtimeRate } = await req.json();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ADMIN_ROLES)) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    const isSuperAdmin = auth.role === 'super_admin';
+    const body = await req.json();
+    const { companyId: bodyCompanyId, payrollCycleDate, overtimeRate } = body;
+
+    if (bodyCompanyId && !isSuperAdmin && bodyCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = isSuperAdmin ? (bodyCompanyId || auth.companyId) : auth.companyId;
 
     if (!companyId) {
       return NextResponse.json({ message: 'Missing companyId' }, { status: 400 });
@@ -41,8 +55,16 @@ export async function PATCH(req: Request) {
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const isSuperAdmin = auth.role === 'super_admin';
     const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
+
+    if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = isSuperAdmin ? (queryCompanyId || auth.companyId) : auth.companyId;
 
     if (!companyId) {
       return NextResponse.json({ message: 'Missing companyId' }, { status: 400 });

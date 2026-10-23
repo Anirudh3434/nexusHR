@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Company from '@/models/Company';
+import { escapeRegExp } from '@/lib/mongo';
 
 export async function GET(
   req: Request,
@@ -14,13 +15,14 @@ export async function GET(
     // Find company by code OR name / slug (case-insensitive & hyphen-friendly)
     const decodedSlug = decodeURIComponent(slug).trim();
     const searchCode = decodedSlug.toUpperCase();
-    const nameRegexPattern = decodedSlug.replace(/[-_]/g, '[\\s-_]?');
+    const safeSlug = escapeRegExp(decodedSlug, 128);
+    const nameRegexPattern = safeSlug.replace(/[-_]/g, '[\\s-_]?');
 
     const company = await Company.findOne({
       $or: [
         { code: searchCode },
         { name: { $regex: new RegExp(`^${nameRegexPattern}$`, 'i') } },
-        { name: { $regex: new RegExp(`^${decodedSlug}$`, 'i') } }
+        { name: { $regex: new RegExp(`^${safeSlug}$`, 'i') } }
       ],
       isActive: true,
       onboardingComplete: true

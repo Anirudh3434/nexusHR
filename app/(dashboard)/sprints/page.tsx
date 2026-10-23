@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   Calendar, Users, Target, TrendingUp, Plus, Edit, Trash2, 
   CheckCircle, Play, Pause, Clock
@@ -40,10 +42,10 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  planning: 'bg-blue-100 text-blue-700',
-  active: 'bg-green-100 text-green-700',
-  completed: 'bg-gray-100 text-gray-700',
-  cancelled: 'bg-red-100 text-red-700',
+  planning: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  active: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  completed: 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 export default function SprintsManagementPage() {
@@ -168,16 +170,16 @@ export default function SprintsManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Sprints</h1>
-          <p className="text-gray-600">Manage agile sprints for your projects</p>
-        </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Sprint
-        </Button>
-      </div>
+      <PageHeader
+        title="Sprints"
+        description="Manage agile sprints for your projects"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Sprint
+          </Button>
+        }
+      />
 
       {/* Filters */}
       <Card>
@@ -199,9 +201,11 @@ export default function SprintsManagementPage() {
       <div className="space-y-4">
         {sprints.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-center text-gray-500">
-              No sprints found. Create your first sprint to get started.
-            </CardContent>
+            <EmptyState
+              title="No sprints found"
+              description="Create your first sprint to get started."
+              icon={<Target size={18} />}
+            />
           </Card>
         ) : (
           sprints.map((sprint) => (
@@ -216,9 +220,9 @@ export default function SprintsManagementPage() {
                       </Badge>
                       <Badge variant="outline">{sprint.sprintNumber}</Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{sprint.description}</p>
+                    <p className="text-sm text-gray-600 mb-3 dark:text-slate-400">{sprint.description}</p>
                     
-                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4 dark:text-slate-400">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <span>{new Date(sprint.startDate).toLocaleDateString()} - {new Date(sprint.endDate).toLocaleDateString()}</span>
@@ -238,12 +242,12 @@ export default function SprintsManagementPage() {
                     {/* Progress */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-600 dark:text-slate-400">Progress</span>
                         <span className="font-medium">
                           {sprint.totalTasks > 0 ? Math.round((sprint.completedTasks / sprint.totalTasks) * 100) : 0}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className="bg-blue-500 h-2 rounded-full transition-all"
                           style={{ width: `${sprint.totalTasks > 0 ? (sprint.completedTasks / sprint.totalTasks) * 100 : 0}%` }}
@@ -255,7 +259,7 @@ export default function SprintsManagementPage() {
                     {sprint.goals && sprint.goals.length > 0 && (
                       <div>
                         <h4 className="text-sm font-medium mb-2">Sprint Goals</h4>
-                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 dark:text-slate-400">
                           {sprint.goals.map((goal, idx) => (
                             <li key={idx}>{goal}</li>
                           ))}
@@ -270,7 +274,7 @@ export default function SprintsManagementPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStatusUpdate(sprint._id, 'active')}
-                        className="text-green-600 hover:text-green-700"
+                        className="text-green-600 hover:text-green-700 dark:text-green-400"
                       >
                         <Play className="w-4 h-4 mr-1" />
                         Start
@@ -281,7 +285,7 @@ export default function SprintsManagementPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStatusUpdate(sprint._id, 'completed')}
-                        className="text-blue-600 hover:text-blue-700"
+                        className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Complete
@@ -305,7 +309,7 @@ export default function SprintsManagementPage() {
       {/* Create Sprint Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:bg-slate-900">
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold">Create New Sprint</h2>
             </div>

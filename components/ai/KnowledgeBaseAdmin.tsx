@@ -9,6 +9,7 @@ import {
   Plus, Search, Edit, Trash2, Eye, EyeOff, 
   Save, X, FileText, TrendingUp, ThumbsUp, ThumbsDown 
 } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 
 interface KnowledgeArticle {
   _id: string;
@@ -391,13 +392,15 @@ export default function KnowledgeBaseAdmin() {
       {/* Articles List */}
       {isLoading ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">Loading articles...</CardContent>
+          <CardContent className="p-8 text-center text-gray-500 dark:text-slate-400">Loading articles...</CardContent>
         </Card>
       ) : filteredArticles.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">
-            No articles found. Create your first article to get started.
-          </CardContent>
+          <EmptyState
+            icon={<FileText size={18} />}
+            title="No articles found."
+            description="Create your first article to get started."
+          />
         </Card>
       ) : (
         <div className="grid gap-4">
@@ -437,21 +440,21 @@ export default function KnowledgeBaseAdmin() {
                           </span>
                         ))}
                         {article.keywords.length > 3 && (
-                          <span className="text-xs text-gray-500">+{article.keywords.length - 3} more</span>
+                          <span className="text-xs text-gray-500 dark:text-slate-400">+{article.keywords.length - 3} more</span>
                         )}
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
                         <Eye className="w-3 h-3" />
                         {article.viewCount} views
                       </span>
-                      <span className="flex items-center gap-1 text-green-600">
+                      <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
                         <ThumbsUp className="w-3 h-3" />
                         {article.helpfulCount}
                       </span>
-                      <span className="flex items-center gap-1 text-red-600">
+                      <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
                         <ThumbsDown className="w-3 h-3" />
                         {article.notHelpfulCount}
                       </span>
@@ -481,7 +484,7 @@ export default function KnowledgeBaseAdmin() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(article._id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

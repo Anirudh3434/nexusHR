@@ -129,12 +129,12 @@ export async function POST(req: Request) {
     let employeeUser = await User.findOne({ email: email.toLowerCase() }).select('-password');
     let accountCreated = false;
     if (!employeeUser) {
-      if (!password || password.length < 6) {
+      if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
         return NextResponse.json({
-          message: 'Password is required (min 6 characters) to create the employee account',
+          message: 'Password is required (min 8 characters with at least one letter and one number) to create the employee account',
         }, { status: 400 });
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 12);
       const newUser = await User.create({
         name: fullName,
         email: email.toLowerCase(),

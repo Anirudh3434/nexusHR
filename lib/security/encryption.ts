@@ -1,9 +1,34 @@
 import crypto from 'crypto';
 
-// Master Encryption Key - Derives a 32-byte (256-bit) buffer key
-const RAW_KEY = process.env.APP_ENCRYPTION_KEY || process.env.CREDENTIAL_ENCRYPTION_KEY || 'nexushr-enterprise-master-sec-key-32b';
-const MASTER_KEY = crypto.createHash('sha256').update(String(RAW_KEY)).digest();
-const BLIND_INDEX_SALT = crypto.createHash('sha256').update(String(RAW_KEY) + '-blind-index-salt').digest();
+// Master Encryption Key - Derives a 32-byte (256-bit) buffer key.
+// Fail closed: no fallback key. Lazy so a missing key throws at first
+// use (request time), never silently, and never during builds.
+let cachedMasterKey: Buffer | null = null;
+let cachedBlindIndexSalt: Buffer | null = null;
+
+const getRawKey = (): string => {
+  const key = process.env.APP_ENCRYPTION_KEY || process.env.CREDENTIAL_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error(
+      'APP_ENCRYPTION_KEY is not set. Refusing to encrypt or decrypt PII. Set APP_ENCRYPTION_KEY in .env.local (generate with: openssl rand -hex 32).'
+    );
+  }
+  return key;
+};
+
+const getMasterKey = (): Buffer => {
+  if (!cachedMasterKey) {
+    cachedMasterKey = crypto.createHash('sha256').update(String(getRawKey())).digest();
+  }
+  return cachedMasterKey;
+};
+
+const getBlindIndexSalt = (): Buffer => {
+  if (!cachedBlindIndexSalt) {
+    cachedBlindIndexSalt = crypto.createHash('sha256').update(String(getRawKey()) + '-blind-index-salt').digest();
+  }
+  return cachedBlindIndexSalt;
+};
 
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
@@ -18,7 +43,7 @@ export const encrypt = (text: string | null | undefined): string => {
   if (!text || typeof text !== 'string') return '';
 
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, MASTER_KEY, iv);
+  const cipher = crypto.createCipheriv(ALGORITHM, getMasterKey(), iv);
   
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -43,7 +68,7 @@ export const decrypt = (encryptedPayload: string | null | undefined): string => 
       const authTag = Buffer.from(parts[1], 'hex');
       const encryptedHex = parts[2];
 
-      const decipher = crypto.createDecipheriv(ALGORITHM, MASTER_KEY, iv);
+      const decipher = crypto.createDecipheriv(ALGORITHM, getMasterKey(), iv);
       decipher.setAuthTag(authTag);
       
       let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
@@ -56,7 +81,7 @@ export const decrypt = (encryptedPayload: string | null | undefined): string => 
       const iv = Buffer.from(parts[0], 'hex');
       const encryptedHex = parts[1];
 
-      const decipher = crypto.createDecipheriv(LEGACY_ALGORITHM, MASTER_KEY, iv);
+      const decipher = crypto.createDecipheriv(LEGACY_ALGORITHM, getMasterKey(), iv);
       let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return decrypted;
@@ -101,7 +126,7 @@ export const decryptObject = <T>(encryptedPayload: string | null | undefined): T
 export const generateBlindIndex = (value: string | null | undefined): string => {
   if (!value) return '';
   const normalized = value.trim().toLowerCase().replace(/[\s-]/g, '');
-  return crypto.createHmac('sha256', BLIND_INDEX_SALT).update(normalized).digest('hex');
+  return crypto.createHmac('sha256', getBlindIndexSalt()).update(normalized).digest('hex');
 };
 
 // ==========================================

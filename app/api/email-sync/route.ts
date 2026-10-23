@@ -4,6 +4,8 @@ import EmailConfig from '@/models/EmailConfig';
 import JobApplication from '@/models/JobApplication';
 import JobPosition from '@/models/JobPosition';
 import { v2 as cloudinary } from 'cloudinary';
+import { getAuthInfo } from '@/lib/auth-util';
+import { encryptToken, decryptToken } from '@/lib/email-token';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -101,7 +103,8 @@ async function processOutlookAttachment(
 // Helper function to refresh Gmail access token
 async function refreshGmailToken(config: any) {
   try {
-    if (!config.refreshToken) {
+    const rawRefresh = config.refreshToken ? decryptToken(config.refreshToken) : null;
+    if (!rawRefresh) {
       console.log('No refresh token available');
       return null;
     }
@@ -119,7 +122,7 @@ async function refreshGmailToken(config: any) {
       body: new URLSearchParams({
         client_id: process.env.GMAIL_CLIENT_ID!,
         client_secret: process.env.GMAIL_CLIENT_SECRET!,
-        refresh_token: config.refreshToken,
+        refresh_token: rawRefresh,
         grant_type: 'refresh_token',
       }),
     });
@@ -136,11 +139,11 @@ async function refreshGmailToken(config: any) {
     const expiresIn = tokenData.expires_in || 3600;
     const tokenExpiry = new Date(Date.now() + expiresIn * 1000);
     
-    // Update the database with new token
+    // Update the database with new token (encrypted at rest)
     await EmailConfig.findOneAndUpdate(
       { companyId: config.companyId },
       {
-        accessToken: tokenData.access_token,
+        accessToken: encryptToken(tokenData.access_token),
         tokenExpiry: tokenExpiry,
       },
       { new: true }
@@ -157,7 +160,8 @@ async function refreshGmailToken(config: any) {
 // Helper function to refresh Outlook access token
 async function refreshOutlookToken(config: any) {
   try {
-    if (!config.refreshToken) {
+    const rawRefresh = config.refreshToken ? decryptToken(config.refreshToken) : null;
+    if (!rawRefresh) {
       console.log('No refresh token available');
       return null;
     }
@@ -175,7 +179,7 @@ async function refreshOutlookToken(config: any) {
       body: new URLSearchParams({
         client_id: process.env.MICROSOFT_CLIENT_ID!,
         client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
-        refresh_token: config.refreshToken,
+        refresh_token: rawRefresh,
         grant_type: 'refresh_token',
       }),
     });
@@ -192,11 +196,11 @@ async function refreshOutlookToken(config: any) {
     const expiresIn = tokenData.expires_in || 3600;
     const tokenExpiry = new Date(Date.now() + expiresIn * 1000);
     
-    // Update the database with new token
+    // Update the database with new token (encrypted at rest)
     await EmailConfig.findOneAndUpdate(
       { companyId: config.companyId },
       {
-        accessToken: tokenData.access_token,
+        accessToken: encryptToken(tokenData.access_token),
         tokenExpiry: tokenExpiry,
       },
       { new: true }
@@ -214,15 +218,23 @@ async function refreshOutlookToken(config: any) {
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { companyId } = await req.json();
-
-    if (!companyId) {
-      return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    // Session-company enforcement: client-supplied companyId is ignored.
+    await req.json().catch(() => ({}));
+    const companyId = auth.companyId;
 
     // Get config with tokens (need to explicitly select due to select: false)
     const config = await EmailConfig.findOne({ companyId, isActive: true })
       .select('+accessToken +refreshToken +tokenExpiry provider careerEmail lastSyncAt autoReplyEnabled');
+
+    if (config) {
+      // Tokens are encrypted at rest; decrypt on read (migration-tolerant).
+      if (config.accessToken) config.accessToken = decryptToken(config.accessToken);
+      if (config.refreshToken) config.refreshToken = decryptToken(config.refreshToken);
+    }
     
     if (!config) {
       return NextResponse.json({ message: 'Email config not found' }, { status: 404 });
@@ -783,12 +795,12 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     await connectDB();
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
-
-    if (!companyId) {
-      return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
+    const auth = await getAuthInfo();
+    if (!auth || !auth.companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    // Session-company enforcement: query param ignored.
+    const companyId = auth.companyId;
 
     const config = await EmailConfig.findOne({ companyId, isActive: true })
       .select('-accessToken -refreshToken');

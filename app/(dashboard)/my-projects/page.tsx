@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   FolderKanban, Search, Calendar, User, Users, DollarSign, 
   TrendingUp, Clock, CheckCircle, Loader2
@@ -68,18 +70,18 @@ const priorityLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  planning: 'bg-blue-100 text-blue-700',
-  active: 'bg-green-100 text-green-700',
-  on_hold: 'bg-yellow-100 text-yellow-700',
+  planning: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  active: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  on_hold: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
   completed: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-  cancelled: 'bg-red-100 text-red-700',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 const priorityColors: Record<string, string> = {
   low: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-  medium: 'bg-blue-100 text-blue-700',
-  high: 'bg-orange-100 text-orange-700',
-  critical: 'bg-red-100 text-red-700',
+  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  high: 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+  critical: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 export default function MyProjectsPage() {
@@ -125,17 +127,17 @@ export default function MyProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Projects</h1>
-        <p className="text-gray-600 dark:text-gray-400">View your assigned projects</p>
-      </div>
+      <PageHeader
+        title="My Projects"
+        description="View your assigned projects"
+      />
 
       {/* Filters */}
       <Card>
@@ -169,9 +171,7 @@ export default function MyProjectsPage() {
       <div className="space-y-4">
         {filteredProjects.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-center text-gray-500 dark:text-gray-400">
-              No projects found
-            </CardContent>
+            <EmptyState icon={<FolderKanban size={18} />} title="No projects found" />
           </Card>
         ) : (
           filteredProjects.map((project) => (
@@ -218,7 +218,7 @@ export default function MyProjectsPage() {
                         <span className="text-gray-600 dark:text-gray-400">Progress</span>
                         <span className="font-medium">{project.progressPercentage || 0}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className="bg-blue-500 h-2 rounded-full transition-all"
                           style={{ width: `${project.progressPercentage || 0}%` }}
@@ -242,7 +242,7 @@ export default function MyProjectsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => window.location.href = `/projects/${project._id}/board`}
-                      className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-semibold rounded-xl"
+                      className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-semibold rounded-xl dark:border-indigo-500/30 dark:text-indigo-400"
                     >
                       <FolderKanban className="w-4 h-4 mr-2" />
                       View Board

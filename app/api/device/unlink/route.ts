@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import LinkedDevice from '@/models/LinkedDevice';
+import User from '@/models/User';
 import { getAuthInfo } from '@/lib/auth-util';
 
 export async function POST(req: Request) {
@@ -21,6 +22,9 @@ export async function POST(req: Request) {
     if (result.deletedCount === 0) {
       return NextResponse.json({ message: 'No linked device found' }, { status: 404 });
     }
+
+    // Revoke existing mobile sessions for this user.
+    await User.updateOne({ _id: finalUserId }, { $inc: { tokenVersion: 1 } });
 
     return NextResponse.json({ message: 'Device unlinked successfully' });
   } catch (error: any) {

@@ -156,7 +156,7 @@ export default function PerformanceInsight({ companyId }: { companyId: string })
                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{topPerformer.employeeId.designation}</div>
                   </div>
                 </div>
-                <div className="text-xl font-black text-indigo-600">{topPerformer.rating.toFixed(1)}</div>
+                <div className="text-xl font-black text-indigo-600 dark:text-indigo-400">{topPerformer.rating.toFixed(1)}</div>
               </div>
             </div>
           </div>
@@ -174,16 +174,16 @@ export default function PerformanceInsight({ companyId }: { companyId: string })
                     <span className="text-sm font-bold text-gray-600 dark:text-gray-300">{report.employeeId.name}</span>
                   </div>
                   <div className={`text-xs font-black px-2 py-0.5 rounded-lg ${
-                    report.rating >= 8 ? 'bg-green-50 text-green-600' :
-                    report.rating >= 6 ? 'bg-yellow-50 text-yellow-600' :
-                    'bg-red-50 text-red-600'
+                    report.rating >= 8 ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400' :
+                    report.rating >= 6 ? 'bg-yellow-50 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400' :
+                    'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'
                   }`}>
                     {report.rating}
                   </div>
                 </div>
               ))}
             </div>
-            <Button variant="ghost" className="w-full mt-4 text-indigo-600 font-bold text-xs uppercase tracking-widest hover:bg-indigo-50 rounded-xl group/btn">
+            <Button variant="ghost" className="w-full mt-4 text-indigo-600 font-bold text-xs uppercase tracking-widest hover:bg-indigo-50 rounded-xl group/btn dark:text-indigo-400">
               See Full Performance Report <ChevronRight size={14} className="ml-1 group-hover/btn:translate-x-1 transition-transform" />
             </Button>
           </div>

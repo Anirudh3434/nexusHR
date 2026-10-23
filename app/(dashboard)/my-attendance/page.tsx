@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
 import { History, Calendar, FileDown, Loader2 } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 interface AttendanceLog {
   id: string;
@@ -89,28 +91,28 @@ export default function MyAttendancePage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Attendance History</h1>
-          <p className="text-gray-500">View and download your historical work session records.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Calendar size={16} />
-            Filter Date
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <FileDown size={16} />
-            Download CSV
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Attendance History"
+        description="View and download your historical work session records."
+        actions={
+          <>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Calendar size={16} />
+              Filter Date
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2">
+              <FileDown size={16} />
+              Download CSV
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Stats Summary - Real Data */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Work Days</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Work Days</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -121,10 +123,10 @@ export default function MyAttendancePage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Late arrivals</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Late arrivals</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
               {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.lateArrivals}
             </div>
             <p className="text-xs text-gray-400 mt-1">Check-in after 09:00 AM</p>
@@ -132,10 +134,10 @@ export default function MyAttendancePage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Average Daily Shift</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Average Daily Shift</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats.avgHours}h`}
             </div>
             <p className="text-xs text-gray-400 mt-1">Consistent performance</p>
@@ -174,27 +176,31 @@ export default function MyAttendancePage() {
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                    No attendance records found. Start checking in!
+                  <TableCell colSpan={5} className="p-0">
+                    <EmptyState
+                      title="No attendance records found."
+                      description="Start checking in!"
+                      icon={<Calendar size={18} />}
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
                 logs.map((log) => (
                   <TableRow key={log.id} className="group">
-                    <TableCell className="font-medium text-gray-900">{log.date}</TableCell>
+                    <TableCell className="font-medium text-gray-900 dark:text-slate-100">{log.date}</TableCell>
                     <TableCell>
                       <span 
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium 
-                        ${log.status === 'Present' ? 'bg-green-100 text-green-800' 
-                        : log.status === 'Late' ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-red-100 text-red-800'}`}
+                        ${log.status === 'Present' ? 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300' 
+                        : log.status === 'Late' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300'}`}
                       >
                         {log.status}
                       </span>
                     </TableCell>
-                    <TableCell className="text-gray-600">{log.checkIn}</TableCell>
-                    <TableCell className="text-gray-600">{log.checkOut}</TableCell>
-                    <TableCell className="text-right font-bold text-blue-600">
+                    <TableCell className="text-gray-600 dark:text-slate-400">{log.checkIn}</TableCell>
+                    <TableCell className="text-gray-600 dark:text-slate-400">{log.checkOut}</TableCell>
+                    <TableCell className="text-right font-bold text-blue-600 dark:text-blue-400">
                       {log.totalHours}
                     </TableCell>
                   </TableRow>

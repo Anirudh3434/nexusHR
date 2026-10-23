@@ -10,6 +10,7 @@ import { useParams } from "next/navigation";
 import { Settings, Plus, Trash2, X, Save, ArrowLeft, Link, Unlink, GitBranch } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatusTransitionFlow from "@/components/projects/StatusTransitionFlow";
+import { PageHeader } from "../../../../../components/ui/PageHeader";
 
 interface BoardColumn {
   id: string;
@@ -265,37 +266,40 @@ export default function ProjectSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-slate-500">Loading...</div>
+        <div className="text-slate-500 dark:text-slate-400">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="space-y-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 rounded-lg hover:bg-slate-200 transition-colors"
+        <PageHeader
+          className="mb-8"
+          title={
+            <span className="flex items-center gap-4">
+              <button
+                onClick={() => router.back()}
+                className="p-2 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+              Project Settings
+            </span>
+          }
+          description={<>{project?.name} ({project?.projectNumber})</>}
+          actions={
+            <Button
+              onClick={handleSaveSettings}
+              disabled={saving}
+              className="flex items-center gap-2"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Project Settings</h1>
-              <p className="text-sm text-slate-500">{project?.name} ({project?.projectNumber})</p>
-            </div>
-          </div>
-          <Button
-            onClick={handleSaveSettings}
-            disabled={saving}
-            className="flex items-center gap-2"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
+              <Save className="w-4 h-4" />
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          }
+        />
 
         {/* Status Transition Rules */}
         <Card className="mb-6">
@@ -321,14 +325,14 @@ export default function ProjectSettingsPage() {
           <CardContent>
             {project?.githubRepo ? (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg dark:bg-green-500/10 dark:border-green-500/30">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Link className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center dark:bg-green-500/15">
+                      <Link className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="font-semibold text-green-800">Repository Connected</p>
-                      <p className="text-sm text-green-600">{project.githubRepo}</p>
+                      <p className="font-semibold text-green-800 dark:text-green-300">Repository Connected</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">{project.githubRepo}</p>
                     </div>
                   </div>
                   <Button
@@ -341,8 +345,8 @@ export default function ProjectSettingsPage() {
                     Disconnect
                   </Button>
                 </div>
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-500/10 dark:border-blue-500/30">
+                  <p className="text-sm text-blue-800 dark:text-blue-300">
                     <strong>Automatic Status Updates:</strong> When a branch is created with a ticket number (e.g., TASK-123, #123), 
                     the corresponding task will automatically move to "in progress" status.
                   </p>
@@ -350,14 +354,14 @@ export default function ProjectSettingsPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg dark:bg-slate-800/50 dark:border-slate-700">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                      <GitBranch className="w-5 h-5 text-slate-600" />
+                    <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center dark:bg-slate-800">
+                      <GitBranch className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-800">No Repository Connected</p>
-                      <p className="text-sm text-slate-600">Connect a GitHub repository to enable automatic task status updates</p>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">No Repository Connected</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Connect a GitHub repository to enable automatic task status updates</p>
                     </div>
                   </div>
                 </div>
@@ -406,14 +410,14 @@ export default function ProjectSettingsPage() {
           <CardContent>
             <div className="space-y-6">
               {columns.map((column) => (
-                <div key={column.id} className="border border-slate-200 rounded-lg p-4">
+                <div key={column.id} className="border border-slate-200 rounded-lg p-4 dark:border-slate-700">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: column.color }}
                       />
-                      <h3 className="font-semibold text-slate-800">{column.name}</h3>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200">{column.name}</h3>
                       <Badge variant="outline" className="text-xs">
                         {column.status}
                       </Badge>
@@ -423,10 +427,10 @@ export default function ProjectSettingsPage() {
                   {/* Custom Statuses */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-slate-700">Custom Statuses for {column.name}</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Custom Statuses for {column.name}</label>
                       <button
                         onClick={() => handleAddCustomStatus(column)}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1 dark:text-indigo-400"
                       >
                         <Plus className="w-3 h-3" />
                         Add Status
@@ -436,7 +440,7 @@ export default function ProjectSettingsPage() {
                     {column.customStatuses && column.customStatuses.length > 0 ? (
                       <div className="space-y-2">
                         {column.customStatuses.map((status) => (
-                          <div key={status.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                          <div key={status.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200 dark:bg-slate-800/50 dark:border-slate-700">
                             <input
                               type="color"
                               value={status.color}
@@ -447,7 +451,7 @@ export default function ProjectSettingsPage() {
                               type="text"
                               value={status.name}
                               onChange={(e) => handleUpdateCustomStatus(column.id, status.id, 'name', e.target.value)}
-                              className="flex-1 px-2 py-1 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                              className="flex-1 px-2 py-1 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                               placeholder="Enter status name"
                             />
                             <button
@@ -472,10 +476,10 @@ export default function ProjectSettingsPage() {
         {/* GitHub Repository Selection Modal */}
         {showGithubModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-              <div className="p-6 border-b border-slate-200">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden dark:bg-slate-900">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">Select GitHub Repository</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Select GitHub Repository</h3>
                   <button
                     onClick={() => setShowGithubModal(false)}
                     className="text-slate-400 hover:text-slate-600 transition-colors"
@@ -492,14 +496,14 @@ export default function ProjectSettingsPage() {
                       onClick={() => setSelectedRepo(repo.full_name)}
                       className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                         selectedRepo === repo.full_name
-                          ? 'border-indigo-500 bg-indigo-50'
-                          : 'border-slate-200 hover:border-slate-300'
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                          : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-semibold text-slate-800">{repo.full_name}</p>
-                          <p className="text-sm text-slate-500">{repo.private ? 'Private' : 'Public'}</p>
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">{repo.full_name}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{repo.private ? 'Private' : 'Public'}</p>
                         </div>
                         {selectedRepo === repo.full_name && (
                           <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
@@ -513,7 +517,7 @@ export default function ProjectSettingsPage() {
                   ))}
                 </div>
               </div>
-              <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
+              <div className="p-6 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-700">
                 <Button
                   onClick={() => setShowGithubModal(false)}
                   variant="outline"

@@ -187,10 +187,10 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Globe className="h-6 w-6 text-blue-600" />
+            <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             Careers Page
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             Customize the public careers page shown to job seekers.
           </p>
         </div>
@@ -212,18 +212,18 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Editor */}
-        <Card className="border-gray-100 shadow-sm">
-          <CardHeader className="bg-gray-50/50 pb-4">
+        <Card className="border-gray-100 shadow-sm dark:border-slate-800">
+          <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                 <Globe className="h-4 w-4" />
                 Page Content
               </CardTitle>
-              <div className="flex items-center gap-1 bg-gray-200/70 rounded-lg p-0.5">
+              <div className="flex items-center gap-1 bg-gray-200/70 rounded-lg p-0.5 dark:bg-slate-800/70">
                 <button
                   onClick={() => setMode("simple")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                    mode === "simple" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                    mode === "simple" ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400" : "text-gray-500 hover:text-gray-800 dark:text-slate-400"
                   }`}
                 >
                   <LayoutTemplate className="h-3.5 w-3.5" />
@@ -232,7 +232,7 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
                 <button
                   onClick={() => setMode("html")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                    mode === "html" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                    mode === "html" ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400" : "text-gray-500 hover:text-gray-800 dark:text-slate-400"
                   }`}
                 >
                   <Code2 className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
             {mode === "html" ? (
               <>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                     Custom Page HTML
                   </label>
                   <textarea
@@ -262,7 +262,7 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                     Custom CSS <span className="normal-case font-normal text-gray-400">(optional)</span>
                   </label>
                   <textarea
@@ -275,13 +275,13 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
                   />
                 </div>
 
-                <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3">
+                <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3 dark:bg-blue-500/10">
                   <AlertCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
-                  <div className="text-[11px] text-blue-700 leading-relaxed">
+                  <div className="text-[11px] text-blue-700 leading-relaxed dark:text-blue-300">
                     <p className="font-semibold mb-1">Where will the lists &amp; form appear?</p>
                     <p>
-                      Place <code className="bg-blue-100 px-1 rounded">{'{jobListings}'}</code> where the live job listings should render and{" "}
-                      <code className="bg-blue-100 px-1 rounded">{'{applyForm}'}</code> where the application form should render.
+                      Place <code className="bg-blue-100 px-1 rounded dark:bg-blue-500/15">{'{jobListings}'}</code> where the live job listings should render and{" "}
+                      <code className="bg-blue-100 px-1 rounded dark:bg-blue-500/15">{'{applyForm}'}</code> where the application form should render.
                     </p>
                     <p className="mt-1">
                       If you don't use the placeholders, the listings and form are automatically appended at the bottom of your page. Custom HTML overrides the color palette &amp; simple-editor content.
@@ -293,21 +293,21 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
               <>
             {FIELD_LABELS.map((field) => (
               <div key={field.key}>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                   {field.label}
                 </label>
                 <Input
                   value={mergedCareers[field.key] || ""}
                   onChange={(e) => updateField(field.key, e.target.value)}
                   placeholder={field.placeholder}
-                  className="h-10 border-gray-100 font-medium"
+                  className="h-10 border-gray-100 font-medium dark:border-slate-800"
                 />
               </div>
             ))}
 
             {/* Color Palette */}
-            <div className="pt-2 border-t border-gray-100">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-1">
+            <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-1 dark:text-slate-400">
                 Color Palette
               </label>
               <div className="flex flex-wrap gap-2 mb-4">
@@ -321,7 +321,7 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
                       });
                       setCareers(next);
                     }}
-                    className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-[11px] font-bold text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-all"
+                    className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-[11px] font-bold text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
                   >
                     {preset.name}
                   </button>
@@ -329,15 +329,15 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {CAREER_COLOR_FIELDS.map((field) => (
-                  <div key={field} className="flex items-center gap-2 bg-slate-50 border border-gray-100 rounded-xl px-3 py-2">
+                  <div key={field} className="flex items-center gap-2 bg-slate-50 border border-gray-100 rounded-xl px-3 py-2 dark:bg-slate-800/50 dark:border-slate-800">
                     <input
                       type="color"
                       value={mergedCareers[field] || DEFAULT_CAREERS[field] || "#000000"}
                       onChange={(e) => updateField(field, e.target.value)}
-                      className="w-8 h-8 rounded-lg border border-gray-200 cursor-pointer bg-white"
+                      className="w-8 h-8 rounded-lg border border-gray-200 cursor-pointer bg-white dark:border-slate-700 dark:bg-slate-900"
                     />
                     <div className="min-w-0">
-                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider dark:text-slate-400">
                         {COLOR_LABELS[field] || field}
                       </label>
                       <span className="text-[10px] font-mono text-gray-400">
@@ -349,9 +349,9 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
               </div>
             </div>
 
-            <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3">
+            <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3 dark:bg-blue-500/10">
               <AlertCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
-              <p className="text-[11px] text-blue-700 leading-relaxed">
+              <p className="text-[11px] text-blue-700 leading-relaxed dark:text-blue-300">
                 Use {"{careerEmail}"} in the email description to show the configured recruitment email. Leave a field
                 empty to keep the default text.
               </p>
@@ -363,12 +363,12 @@ export function CareersSection({ companyId, companyName }: CareersSectionProps) 
 
         {/* Preview */}
         {showPreview && (
-          <div className="rounded-2xl border border-gray-200 bg-slate-50 p-6">
+          <div className="rounded-2xl border border-gray-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800/50">
             <div className="flex items-center gap-2 mb-4">
               <Eye className="h-4 w-4 text-gray-400" />
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Live Preview</span>
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest dark:text-slate-400">Live Preview</span>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm dark:bg-slate-900 dark:border-slate-700">
               <div dangerouslySetInnerHTML={{ __html: preview }} />
             </div>
           </div>

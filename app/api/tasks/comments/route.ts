@@ -1,8 +1,35 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Task from '@/models/Task';
+import Project from '@/models/Project';
 import { headers } from 'next/headers';
 import mongoose from 'mongoose';
+
+// Verify the caller may write to this task: same-company + project membership
+// (same pattern as projects/[id] GET).
+async function requireTaskProjectAccess(task: any, userId: string, userRole: string, companyId: string | null): Promise<string | null> {
+  if (!companyId || task.companyId?.toString() !== companyId) {
+    return "Forbidden: task belongs to another company";
+  }
+  const project = await Project.findById(task.projectId).select('companyId managerId members');
+  if (!project) return 'Project not found';
+  if (project.companyId.toString() !== companyId) {
+    return "Forbidden: Access to another company's project is not allowed";
+  }
+  if (userRole === 'employee') {
+    const isMember = project.members.some(
+      (m: any) => m.employeeId && (m.employeeId._id || m.employeeId).toString() === userId
+    );
+    if (!isMember) return 'Forbidden: You are not a member of this project';
+  } else if (userRole === 'manager') {
+    const isManager = project.managerId && project.managerId.toString() === userId;
+    const isMember = project.members.some(
+      (m: any) => m.employeeId && (m.employeeId._id || m.employeeId).toString() === userId
+    );
+    if (!isManager && !isMember) return 'Forbidden: You do not manage or belong to this project';
+  }
+  return null;
+}
 
 // POST - Add a comment to a task
 export async function POST(req: Request) {
@@ -12,17 +39,19 @@ export async function POST(req: Request) {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const userName = headersList.get('x-user-name') || 'Unknown';
-    
+    const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
+
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const body = await req.json();
     const { taskId, text, attachments } = body;
 
     if (!taskId || !text) {
-      return NextResponse.json({ 
-        message: 'Task ID and comment text are required' 
+      return NextResponse.json({
+        message: 'Task ID and comment text are required'
       }, { status: 400 });
     }
 
@@ -30,6 +59,9 @@ export async function POST(req: Request) {
     if (!task) {
       return NextResponse.json({ message: 'Task not found' }, { status: 404 });
     }
+
+    const accessError = await requireTaskProjectAccess(task, userId, userRole, companyId);
+    if (accessError) return NextResponse.json({ message: accessError }, { status: 403 });
 
     // Add comment
     const comment = {
@@ -84,6 +116,9 @@ export async function DELETE(req: Request) {
     if (!task) {
       return NextResponse.json({ message: 'Task not found' }, { status: 404 });
     }
+
+    const writeAccessError = await requireTaskProjectAccess(task, userId, userRole, headersList.get('x-company-id'));
+    if (writeAccessError) return NextResponse.json({ message: writeAccessError }, { status: 403 });
 
     // Find comment
     const commentIndex = task.comments?.findIndex(c => (c as any)._id.toString() === commentId);

@@ -1,6 +1,68 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { isRouteAccessible } from './lib/permissions'
+import { jwtVerify } from 'jose'
+import { isRouteAccessible, isRouteAccessibleWith, canViewIn, type Role, type Module, type Permission } from './lib/permissions'
+import { featureForPath, hasFeature, coerceFeatures, FEATURE_LABELS } from './lib/entitlements'
+
+export const SESSION_COOKIE = 'nexushr_session'
+
+// Client-asserted identity headers. These are NEVER trusted from the
+// client: they are stripped below unless this middleware verified a
+// session and set them itself.
+const IDENTITY_HEADERS = ['x-user-id', 'x-user-role', 'x-user-name', 'x-user-email', 'x-company-id', 'x-user-perms', 'x-user-plan', 'x-user-features'] as const
+
+interface VerifiedSession {
+  id: string
+  role: string
+  companyId?: string
+  email?: string
+  name?: string
+  isCandidate?: boolean
+  mustChangePassword?: boolean
+  /** Effective role permission map snapshotted at sign-in (see lib/auth.ts). */
+  perms?: Record<string, string[]>
+  /** Subscription plan id and unlocked features snapshotted at sign-in. */
+  plan?: string
+  features?: string[]
+}
+
+/** Validate the untrusted perms claim shape before honoring it. */
+function sanitizePermsClaim(value: unknown): Record<string, string[]> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const out: Record<string, string[]> = {}
+  for (const [module, perms] of Object.entries(value as Record<string, unknown>)) {
+    if (!Array.isArray(perms)) return undefined
+    if (!perms.every((p) => typeof p === 'string')) return undefined
+    out[module] = perms as string[]
+  }
+  return out
+}
+
+// Edge-safe (jose) session verification. Needs the same JWT_SECRET the
+// API routes sign with. No secret or no cookie => no session, never an error.
+async function getVerifiedSession(request: NextRequest): Promise<VerifiedSession | null> {
+  const token = request.cookies.get(SESSION_COOKIE)?.value
+  const secret = process.env.JWT_SECRET
+  if (!token || !secret) return null
+  try {
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret))
+    if (!payload || typeof payload.id !== 'string' || !payload.id) return null
+    return {
+      id: payload.id,
+      role: typeof payload.role === 'string' ? payload.role : 'employee',
+      companyId: typeof payload.companyId === 'string' ? payload.companyId : undefined,
+      email: typeof payload.email === 'string' ? payload.email : undefined,
+      name: typeof payload.name === 'string' ? payload.name : undefined,
+      isCandidate: payload.isCandidate === true,
+      mustChangePassword: payload.mustChangePassword === true,
+      perms: sanitizePermsClaim((payload as Record<string, unknown>).perms),
+      plan: typeof payload.plan === 'string' ? payload.plan : undefined,
+      features: coerceFeatures((payload as Record<string, unknown>).features),
+    }
+  } catch {
+    return null
+  }
+}
 
 // Helper to extract company subdomain (e.g. webatlas.localhost:3000 -> webatlas)
 function getSubdomain(host: string): string | null {
@@ -29,11 +91,10 @@ function getSubdomain(host: string): string | null {
   return null
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || ''
   const subdomain = getSubdomain(host)
   const pathname = request.nextUrl.pathname
-  const userCookie = request.cookies.get('user')?.value
 
   const companyCodeCookie = request.cookies.get('nexushr_company_code')?.value
 
@@ -60,76 +121,131 @@ export function middleware(request: NextRequest) {
   const isApi = pathname.startsWith('/api')
   const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers')
 
-  // Public routes that don't need protection
-  if (isPublic || isApi) {
-    if (userCookie && isApi) {
-      try {
-        const user = JSON.parse(userCookie)
-        // Add user info to headers for API routes
-        const requestHeaders = new Headers(request.headers)
-        requestHeaders.set('x-user-id', user.id || '')
-        requestHeaders.set('x-user-role', user.role || 'employee')
-        requestHeaders.set('x-user-name', user.name || '')
-        requestHeaders.set('x-user-email', user.email || '')
-        requestHeaders.set('x-company-id', user.companyId || '')
+  // Verified session (signature-checked). This is the only identity
+  // the server trusts; the old unsigned `user` cookie is ignored.
+  const session = await getVerifiedSession(request)
 
-        return NextResponse.next({
-          request: { headers: requestHeaders },
-        })
-      } catch (e) {
-        return NextResponse.next()
+  // API routes: forward ONLY verified identity. Forged client headers
+  // are stripped so downstream getAuthInfo() can trust what it sees.
+  if (isApi) {
+    const requestHeaders = new Headers(request.headers)
+    for (const h of IDENTITY_HEADERS) requestHeaders.delete(h)
+    if (session) {
+      // Plan gating: a verified session whose plan lacks the feature that
+      // owns this API surface is rejected before the route runs. Absent
+      // features claim (legacy token) stays fail-open until next sign-in.
+      const feature = featureForPath(pathname)
+      if (session.features && feature && !hasFeature(session.features, feature)) {
+        return NextResponse.json(
+          {
+            error: `Your plan doesn't include ${FEATURE_LABELS[feature]}.`,
+            code: 'plan_upgrade_required',
+            feature,
+          },
+          { status: 402 }
+        )
       }
+      requestHeaders.set('x-user-id', session.id)
+      requestHeaders.set('x-user-role', session.role || 'employee')
+      requestHeaders.set('x-user-name', session.name || '')
+      requestHeaders.set('x-user-email', session.email || '')
+      requestHeaders.set('x-company-id', session.companyId || '')
+      requestHeaders.set('x-user-plan', session.plan || '')
+      // Forward the verified effective permission map so API routes can
+      // enforce company overrides without a DB read (see lib/api-guard.ts).
+      if (session.perms) {
+        requestHeaders.set('x-user-perms', JSON.stringify(session.perms))
+      }
+      if (session.features) {
+        requestHeaders.set('x-user-features', JSON.stringify(session.features))
+      }
+    }
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    })
+  }
+
+  if (isPublic) {
+    // Already signed in? Skip the company-code gateway bounce and go home.
+    // (switch=true is honored so "Switch Organization" keeps working.)
+    if (session && pathname.startsWith('/login') && request.nextUrl.searchParams.get('switch') !== 'true') {
+      return NextResponse.redirect(new URL(session.isCandidate ? '/candidate/dashboard' : '/dashboard', request.url))
     }
     return NextResponse.next()
   }
 
   // Check if user is logged in for protected routes
-  if (!userCookie && (pathname.startsWith('/dashboard') || pathname.startsWith('/employees') || pathname.startsWith('/candidate'))) {
-    const loginPath = pathname.startsWith('/candidate') ? '/candidate-login' : '/login'
+  const needsSession =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/employees') ||
+    pathname.startsWith('/candidate') ||
+    (pathname.startsWith('/super-admin') && pathname !== '/super-admin/login');
+  if (!session && needsSession) {
+    const loginPath = pathname.startsWith('/candidate')
+      ? '/candidate-login'
+      : pathname.startsWith('/super-admin')
+        ? '/super-admin/login'
+        : '/login'
     return NextResponse.redirect(new URL(loginPath, request.url))
   }
 
-  if (userCookie) {
-    try {
-      const user = JSON.parse(userCookie)
-      const role = user.role || 'employee'
-      const isCandidate = !!user.isCandidate
+  if (session) {
+    const validRoles: Role[] = ["super_admin", "admin", "hr", "manager", "employee"]
+    const role: Role = validRoles.includes(session.role as Role) ? (session.role as Role) : "employee"
+    const isCandidate = !!session.isCandidate
 
-      // Candidate portal users can ONLY access /candidate/* pages (and APIs above)
-      if (isCandidate) {
-        if (pathname.startsWith('/candidate')) {
-          // Temporary portal accounts must set their own password before using the portal
-          if (user.mustChangePassword && pathname !== '/candidate/change-password') {
-            return NextResponse.redirect(new URL('/candidate/change-password', request.url))
-          }
-          return NextResponse.next()
-        }
-        // Candidate trying to reach the employee dashboard / other pages -> candidate portal
-        return NextResponse.redirect(new URL('/candidate/dashboard', request.url))
-      }
-
-      // Non-candidate users cannot enter the candidate portal
+    // Candidate portal users can ONLY access /candidate/* pages (and APIs above)
+    if (isCandidate) {
       if (pathname.startsWith('/candidate')) {
+        // Temporary portal accounts must set their own password before using the portal
+        if (session.mustChangePassword && pathname !== '/candidate/change-password') {
+          return NextResponse.redirect(new URL('/candidate/change-password', request.url))
+        }
+        return NextResponse.next()
+      }
+      // Candidate trying to reach the employee dashboard / other pages -> candidate portal
+      return NextResponse.redirect(new URL('/candidate/dashboard', request.url))
+    }
+
+    // Non-candidate users cannot enter the candidate portal
+    if (pathname.startsWith('/candidate')) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
+    // Platform super-admin area — role gate (not in the module map on purpose).
+    // The platform sign-in itself stays public; the page admits super_admins.
+    // Evaluated before the workspace password-rotation redirect: platform
+    // admins rotate via the platform dashboard banner, not /change-password.
+    if (pathname.startsWith('/super-admin') && pathname !== '/super-admin/login') {
+      if (role !== 'super_admin') {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
+      return NextResponse.next()
+    }
 
-      // Temporary portal accounts must set their own password before using the app
-      if (user.mustChangePassword && pathname !== '/change-password') {
-        return NextResponse.redirect(new URL('/change-password', request.url))
-      }
+    // Temporary portal accounts must set their own password before using the app
+    if (session.mustChangePassword && pathname !== '/change-password') {
+      return NextResponse.redirect(new URL('/change-password', request.url))
+    }
 
-      // Check route access permissions
-      if (!isRouteAccessible(role, pathname)) {
-        // Redirect to dashboard if not authorized
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-      }
+    // Check route access permissions (company overrides honored when
+    // the session carries an effective permission map).
+    const routeAllowed = session.perms
+      ? isRouteAccessibleWith(role, pathname, (module: Module) =>
+          canViewIn(session.perms as Record<Module, Permission[]>, module)
+        )
+      : isRouteAccessible(role, pathname)
+    if (!routeAllowed) {
+      // Redirect to dashboard if not authorized
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
 
-    } catch (e) {
-      // Invalid cookie, redirect to login for protected routes
-      if (pathname.startsWith('/dashboard') || pathname.startsWith('/employees') || pathname.startsWith('/candidate')) {
-        const loginPath = pathname.startsWith('/candidate') ? '/candidate-login' : '/login'
-        return NextResponse.redirect(new URL(loginPath, request.url))
-      }
+    // Plan gating: send users to billing when a page belongs to a feature
+    // their plan doesn't include. Absent features claim (legacy token) is
+    // fail-open until the next sign-in.
+    const feature = featureForPath(pathname)
+    if (session.features && feature && !hasFeature(session.features, feature)) {
+      return NextResponse.redirect(new URL(`/billing?upgrade=${feature}`, request.url))
     }
   }
 

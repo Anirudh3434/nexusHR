@@ -1,15 +1,25 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Company from '@/models/Company';
+import { getAuthInfo } from '@/lib/auth-util';
 
 export async function GET() {
   try {
     await connectDB();
-    
-    const companies = await Company.find({})
-      .select('name code email phone gstNumber panNumber onboardingComplete isActive createdAt')
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const isSuperAdmin = auth.role === 'super_admin';
+
+    const query: any = {};
+    if (!isSuperAdmin) {
+      if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query._id = auth.companyId;
+    }
+
+    const companies = await Company.find(query)
+      .select('name code email phone onboardingComplete isActive createdAt')
       .sort({ createdAt: -1 });
-    
+
     return NextResponse.json({
       count: companies.length,
       companies: companies.map(c => ({
@@ -18,14 +28,12 @@ export async function GET() {
         code: c.code,
         email: c.email,
         phone: c.phone,
-        gstNumber: c.gstNumber,
-        panNumber: c.panNumber,
         onboardingComplete: c.onboardingComplete,
         isActive: c.isActive,
         createdAt: c.createdAt,
       }))
     });
-    
+
   } catch (error: any) {
     console.error('Error fetching companies:', error);
     return NextResponse.json(

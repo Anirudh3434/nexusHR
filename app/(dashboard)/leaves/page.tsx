@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
 import { Loader2 } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 export default function LeaveManagementPage() {
   const { user, loading, hasRole } = useAuth();
@@ -71,17 +73,15 @@ export default function LeaveManagementPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Leave Management</h1>
-          <p className="text-gray-500">Review and approve employee leave requests.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Leave Management"
+        description="Review and approve employee leave requests."
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Pending Requests</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-500">{dataLoading ? '-' : pendingCount}</div>
@@ -89,7 +89,7 @@ export default function LeaveManagementPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Approved Today</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Approved Today</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600 dark:text-green-500">{dataLoading ? '-' : approvedTodayCount}</div>
@@ -97,7 +97,7 @@ export default function LeaveManagementPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">On Leave Now</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">On Leave Now</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">{dataLoading ? '-' : onLeaveNowCount}</div>
@@ -127,14 +127,14 @@ export default function LeaveManagementPage() {
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     <div className="flex justify-center items-center">
-                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
                     </div>
                   </TableCell>
                 </TableRow>
               ) : leaves.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                    No leave requests found.
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState title="No leave requests found." />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -142,7 +142,7 @@ export default function LeaveManagementPage() {
                   <TableRow key={request.id}>
                     <TableCell>
                       <div className="font-medium">{request.employeeName || request.employeeId}</div>
-                      <div className="text-xs text-gray-500">{request.department || 'Unknown Department'}</div>
+                      <div className="text-xs text-gray-500 dark:text-slate-400">{request.department || 'Unknown Department'}</div>
                     </TableCell>
                     <TableCell>{request.type} Leave</TableCell>
                     <TableCell>{new Date(request.startDate).toLocaleDateString()}</TableCell>
@@ -158,8 +158,8 @@ export default function LeaveManagementPage() {
                     <TableCell className="text-right flex justify-end gap-2">
                       {request.status === "Pending" && (
                         <>
-                          <Button variant="outline" size="sm" className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200" onClick={() => handleApprove(request.id)}>Approve</Button>
-                          <Button variant="outline" size="sm" className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" onClick={() => handleReject(request.id)}>Reject</Button>
+                          <Button variant="outline" size="sm" className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:text-green-400 dark:border-green-500/30" onClick={() => handleApprove(request.id)}>Approve</Button>
+                          <Button variant="outline" size="sm" className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:border-red-500/30" onClick={() => handleReject(request.id)}>Reject</Button>
                         </>
                       )}
                       {request.status !== "Pending" && <span className="text-gray-400 text-sm">Processed</span>}

@@ -5,22 +5,35 @@ import Attendance from '@/models/Attendance';
 import Leave from '@/models/Leave';
 import Payroll from '@/models/Payroll';
 import Company from '@/models/Company';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
 // GET payroll records
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const { searchParams } = new URL(req.url);
     const month = parseInt(searchParams.get('month') || '-1');
     const year = parseInt(searchParams.get('year') || '-1');
     const employeeId = searchParams.get('employeeId');
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
 
-    let query: any = {};
+    if (queryCompanyId && auth.role !== 'super_admin' && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    // companyId ALWAYS from session (super_admin may pass explicit filter)
+    const companyId = auth.role === 'super_admin' ? (queryCompanyId || auth.companyId) : auth.companyId;
+    if (!companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
+    let query: any = { companyId };
     if (month !== -1) query.month = month;
     if (year !== -1) query.year = year;
     if (employeeId) query.employeeId = employeeId;
-    if (companyId) query.companyId = companyId;
 
     // --- AUTO-GENERATION TRIGGER (Lazy Cron) ---
     const today = new Date();
@@ -130,9 +143,20 @@ async function generatePayrollThunk(month: number, year: number, companyId: stri
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { month, year, companyId, employeeId } = await req.json();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+    const body = await req.json();
+    if (body.companyId && auth.role !== 'super_admin' && body.companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = auth.role === 'super_admin' ? (body.companyId || auth.companyId) : auth.companyId;
+    if (!companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+    const { month, year, employeeId } = body;
 
-    if (month === undefined || year === undefined || !companyId) {
+    if (month === undefined || year === undefined) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -238,36 +262,46 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    const { id, status, paymentDate, paymentMethod, paymentDetails, transactionReference, accountNumber, note, ...manualFields } = await req.json();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+    const body = await req.json();
+    const { id, status, paymentDate, paymentMethod, note, baseSalary, netSalary } = body;
 
     if (!id) {
       return NextResponse.json({ message: 'Missing payroll ID' }, { status: 400 });
     }
 
-    const updateData: any = { note };
-    if (status) updateData.status = status;
+    // Same-company check
+    const existingRecord = await Payroll.findById(id).select('companyId');
+    if (!existingRecord) return NextResponse.json({ message: 'Payroll not found' }, { status: 404 });
+    if (auth.role !== 'super_admin' && existingRecord.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+
+    // Strict allowlist: ONLY status, paymentDate, paymentMethod, note + numeric baseSalary/netSalary. All other keys dropped.
+    const updateData: any = {};
+    if (status !== undefined) updateData.status = status;
     if (paymentDate) updateData.paymentDate = new Date(paymentDate);
     if (paymentMethod) updateData.paymentMethod = paymentMethod;
+    if (note !== undefined) updateData.note = note;
 
-    // Encrypt sensitive payment payload if provided
-    if (paymentDetails || transactionReference || accountNumber) {
-      const { encryptObject, maskAccountNumber, maskGeneric } = await import('@/lib/security/encryption');
-      const payload = {
-        ...(paymentDetails || {}),
-        accountNumber: accountNumber || paymentDetails?.accountNumber,
-        transactionReference: transactionReference || paymentDetails?.transactionReference,
-        paymentMethod: paymentMethod || 'bank_transfer',
-        paidAt: paymentDate || new Date(),
-      };
-      updateData.encryptedPaymentDetails = encryptObject(payload);
-      if (payload.accountNumber) updateData.accountNumberMasked = maskAccountNumber(payload.accountNumber);
-      if (payload.transactionReference) updateData.transactionReferenceMasked = maskGeneric(payload.transactionReference, 4);
+    let hasNumericOverride = false;
+    if (baseSalary !== undefined) {
+      const n = Number(baseSalary);
+      if (Number.isNaN(n)) return NextResponse.json({ message: 'Invalid baseSalary' }, { status: 400 });
+      updateData.baseSalary = n;
+      hasNumericOverride = true;
     }
-
-    if (Object.keys(manualFields).length > 0) {
-      Object.assign(updateData, manualFields);
-      updateData.isManualEdit = true;
+    if (netSalary !== undefined) {
+      const n = Number(netSalary);
+      if (Number.isNaN(n)) return NextResponse.json({ message: 'Invalid netSalary' }, { status: 400 });
+      updateData.netSalary = n;
+      hasNumericOverride = true;
     }
+    if (hasNumericOverride) updateData.isManualEdit = true;
 
     // --- REFRESH ACTION ---
     if (status === 'refresh') {

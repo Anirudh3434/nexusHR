@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Settings from '@/models/Settings';
 import Company from '@/models/Company';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
+const ADMIN_ROLES = ['super_admin', 'admin'];
 
 // GET settings for a company
 export async function GET(req: Request) {
@@ -55,13 +59,24 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ADMIN_ROLES)) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    const isSuperAdmin = auth.role === 'super_admin';
     const data = await req.json();
 
-    const { companyId, logo, loginBackground, loginBackgroundColor, primaryColor, loginTitle, loginSubtitle, updatedBy } = data;
+    if (data.companyId && !isSuperAdmin && data.companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    // Never trust body companyId: always from session (super_admin may pass any)
+    const companyId = isSuperAdmin ? (data.companyId || auth.companyId) : auth.companyId;
 
     if (!companyId) {
       return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
     }
+
+    const { logo, loginBackground, loginBackgroundColor, primaryColor, loginTitle, loginSubtitle } = data;
+    const updatedBy = auth.userId;
 
     // Find and update or create new
     const settings = await Settings.findOneAndUpdate(

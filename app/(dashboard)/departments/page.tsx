@@ -9,6 +9,8 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Building2, Plus, Pencil, Trash2, Loader2, X } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 export default function DepartmentsPage() {
   const { user, hasRole } = useAuth();
@@ -91,21 +93,23 @@ export default function DepartmentsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Building2 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Departments
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">Manage organization departments for employee onboarding.</p>
-        </div>
-        {canManage && (
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Department
-          </Button>
-        )}
-      </div>
+          </span>
+        }
+        description="Manage organization departments for employee onboarding."
+        actions={
+          canManage && (
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Department
+            </Button>
+          )
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -118,10 +122,11 @@ export default function DepartmentsPage() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : departments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Building2 className="h-12 w-12 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-              <p>No departments found. Create one to use in employee onboarding.</p>
-            </div>
+            <EmptyState
+              icon={<Building2 size={18} />}
+              title="No departments found."
+              description="Create one to use in employee onboarding."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -146,7 +151,7 @@ export default function DepartmentsPage() {
                           <Button variant="ghost" size="sm" onClick={() => openEditModal(dept)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(dept._id)} className="text-red-600 hover:text-red-700">
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(dept._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

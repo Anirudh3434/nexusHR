@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import SuperAdmin from '@/models/SuperAdmin';
 import bcrypt from 'bcryptjs';
 
 // POST /api/auth/change-password
@@ -20,11 +21,16 @@ export async function POST(req: Request) {
     if (!currentPassword || !newPassword) {
       return NextResponse.json({ message: 'Current and new passwords are required' }, { status: 400 });
     }
-    if (newPassword.length < 6) {
-      return NextResponse.json({ message: 'New password must be at least 6 characters' }, { status: 400 });
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPassword)) {
+      return NextResponse.json({ message: 'New password must be at least 8 characters with at least one letter and one number' }, { status: 400 });
     }
 
-    const user = await User.findById(userId).select('+password');
+    let user = await User.findById(userId).select('+password');
+    let isPlatform = false;
+    if (!user) {
+      user = await SuperAdmin.findById(userId).select('+password') as any;
+      isPlatform = !!user;
+    }
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
@@ -38,9 +44,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'New password must be different from the current one' }, { status: 400 });
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = await bcrypt.hash(newPassword, 12);
     user.mustChangePassword = false;
     await user.save();
+    // Revoke existing mobile sessions by bumping the token version.
+    const Model = isPlatform ? SuperAdmin : User;
+    await Model.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
+
+    if (isPlatform) {
+      return NextResponse.json({
+        message: 'Password updated successfully',
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: 'super_admin',
+          mustChangePassword: false,
+        },
+      });
+    }
 
     return NextResponse.json({
       message: 'Password updated successfully',

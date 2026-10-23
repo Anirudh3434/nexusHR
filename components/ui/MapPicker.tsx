@@ -197,7 +197,7 @@ export function MapPicker({ latitude, longitude, onLocationChange, radius = 100 
     return (
       <div className="space-y-3">
         <LeafletCSS />
-        <div className="h-[400px] w-full rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center">
+        <div className="h-[400px] w-full rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center dark:border-slate-700 dark:bg-slate-800/50">
           <div className="text-gray-400">Loading map...</div>
         </div>
       </div>
@@ -209,11 +209,11 @@ export function MapPicker({ latitude, longitude, onLocationChange, radius = 100 
       <LeafletCSS />
       {/* Error Alert */}
       {locationError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-500/10 dark:border-red-500/30">
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0 dark:text-red-400" />
             <div className="flex-1">
-              <p className="text-sm text-red-700">{locationError}</p>
+              <p className="text-sm text-red-700 dark:text-red-300">{locationError}</p>
               {permissionState === 'denied' && (
                 <Button
                   type="button"
@@ -242,13 +242,13 @@ export function MapPicker({ latitude, longitude, onLocationChange, radius = 100 
           <Navigation className="h-4 w-4" />
           Use My Location
         </Button>
-        <div className="flex-1 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
-          <MapPin className="h-4 w-4 text-blue-600" />
+        <div className="flex-1 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md dark:text-slate-400 dark:bg-slate-800/50">
+          <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <span>Click anywhere on map to set location</span>
         </div>
       </div>
 
-      <div className="h-[400px] w-full rounded-lg border border-gray-200 overflow-hidden">
+      <div className="h-[400px] w-full rounded-lg border border-gray-200 overflow-hidden dark:border-slate-700">
         <MapInner 
           position={position}
           onLocationSelect={handleLocationSelect}
@@ -257,19 +257,19 @@ export function MapPicker({ latitude, longitude, onLocationChange, radius = 100 
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="bg-blue-50 border border-blue-100 rounded-md px-3 py-2">
-          <span className="text-blue-700 font-medium">Latitude: </span>
+        <div className="bg-blue-50 border border-blue-100 rounded-md px-3 py-2 dark:bg-blue-500/10">
+          <span className="text-blue-700 font-medium dark:text-blue-300">Latitude: </span>
           <span className="text-blue-900">{latitude || 'Not set'}</span>
         </div>
-        <div className="bg-blue-50 border border-blue-100 rounded-md px-3 py-2">
-          <span className="text-blue-700 font-medium">Longitude: </span>
+        <div className="bg-blue-50 border border-blue-100 rounded-md px-3 py-2 dark:bg-blue-500/10">
+          <span className="text-blue-700 font-medium dark:text-blue-300">Longitude: </span>
           <span className="text-blue-900">{longitude || 'Not set'}</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-gray-600">
+      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
         <div 
-          className="h-3 w-3 rounded-full border-2 border-blue-600 bg-blue-100" 
+          className="h-3 w-3 rounded-full border-2 border-blue-600 bg-blue-100 dark:bg-blue-500/15" 
           style={{ 
             borderStyle: 'dashed',
           }}

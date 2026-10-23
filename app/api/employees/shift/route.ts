@@ -1,16 +1,25 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Employee from '@/models/Employee';
+import { getAuthInfo } from '@/lib/auth-util';
 
 // PATCH - Update employee shift assignment
 export async function PATCH(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { employeeId, workShiftId } = body;
 
     if (!employeeId) {
       return NextResponse.json({ message: 'Employee ID required' }, { status: 400 });
+    }
+
+    const existing = await Employee.findById(employeeId).select('companyId');
+    if (!existing) return NextResponse.json({ message: 'Employee not found' }, { status: 404 });
+    if (auth.role !== 'super_admin' && existing.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     const employee = await Employee.findByIdAndUpdate(

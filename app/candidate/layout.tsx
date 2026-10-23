@@ -61,7 +61,7 @@ export default function CandidatePortalLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-indigo-100 bg-white transition-all duration-300 ease-in-out md:relative",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-indigo-100 bg-white transition-all duration-300 ease-in-out md:relative dark:bg-slate-900",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
@@ -75,14 +75,14 @@ export default function CandidatePortalLayout({
               />
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-extrabold tracking-tight text-slate-900 truncate">
+              <h1 className="text-sm font-extrabold tracking-tight text-slate-900 truncate dark:text-slate-100">
                 {user.companyName || 'NexusHR'}
               </h1>
               <p className="text-[10px] font-semibold text-gray-400">Candidate Portal</p>
             </div>
           </div>
           <button
-            className="p-2 text-gray-500 hover:text-gray-700 md:hidden"
+            className="p-2 text-gray-500 hover:text-gray-700 md:hidden dark:text-slate-400"
             onClick={() => setIsSidebarOpen(false)}
           >
             <X size={20} />
@@ -97,8 +97,8 @@ export default function CandidatePortalLayout({
               className={cn(
                 "flex items-center gap-3 rounded-lg p-2 text-sm font-medium transition-colors hover:bg-indigo-50",
                 isActive(item.href)
-                  ? "bg-indigo-50 text-indigo-700"
-                  : "text-gray-700"
+                  ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                  : "text-gray-700 dark:text-slate-300"
               )}
             >
               <div className="flex-shrink-0">{item.icon}</div>
@@ -110,7 +110,7 @@ export default function CandidatePortalLayout({
         <div className="border-t border-indigo-100 p-3">
           <button
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-md p-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+            className="flex w-full items-center gap-3 rounded-md p-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400"
           >
             <LogOut size={20} />
             <span>Logout</span>
@@ -120,11 +120,11 @@ export default function CandidatePortalLayout({
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center justify-between border-b border-indigo-100 bg-white px-4 md:px-6">
+        <header className="flex h-16 items-center justify-between border-b border-indigo-100 bg-white px-4 md:px-6 dark:bg-slate-900">
           <div className="flex items-center gap-2 md:gap-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 text-gray-500 hover:text-gray-700 md:hidden"
+              className="p-2 text-gray-500 hover:text-gray-700 md:hidden dark:text-slate-400"
               aria-label="Open sidebar"
             >
               <Menu size={20} />
@@ -133,27 +133,27 @@ export default function CandidatePortalLayout({
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
                 <Briefcase size={15} />
               </div>
-              <span className="font-bold text-indigo-600">NexusHR</span>
+              <span className="font-bold text-indigo-600 dark:text-indigo-400">NexusHR</span>
             </div>
-            <h2 className="hidden text-base font-semibold text-gray-700 md:block">
+            <h2 className="hidden text-base font-semibold text-gray-700 md:block dark:text-slate-300">
               Candidate Portal
             </h2>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
             <div className="hidden sm:flex flex-col text-right">
-              <span className="text-sm font-medium text-gray-900 truncate max-w-[160px]">{user.name}</span>
+              <span className="text-sm font-medium text-gray-900 truncate max-w-[160px] dark:text-slate-100">{user.name}</span>
               <span className="text-xs text-gray-400">Job Applicant</span>
             </div>
             {user.avatar ? (
-              <img src={user.avatar} alt="Avatar" className="h-8 w-8 rounded-full border border-gray-200 object-cover" />
+              <img src={user.avatar} alt="Avatar" className="h-8 w-8 rounded-full border border-gray-200 object-cover dark:border-slate-700" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs dark:bg-indigo-500/15 dark:text-indigo-400">
                 {user.name?.charAt(0) || "C"}
               </div>
             )}
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50/50">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50/50 dark:bg-slate-800/70">{children}</main>
       </div>
     </div>
   );

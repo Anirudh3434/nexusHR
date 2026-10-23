@@ -9,6 +9,8 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Palmtree, Plus, Pencil, Trash2, Loader2, X, DollarSign, Gift, Heart } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 const defaultColors = [
   { name: 'Blue', value: '#3B82F6' },
@@ -136,25 +138,27 @@ export default function LeaveTypesPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Palmtree className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Palmtree className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Leave Types
-          </h1>
-          <p className="text-gray-500">Define leave categories and default allocations for employees.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowPresetModal(true)}>
-            <Gift className="mr-2 h-4 w-4" />
-            Add Presets
-          </Button>
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Custom
-          </Button>
-        </div>
-      </div>
+          </span>
+        }
+        description="Define leave categories and default allocations for employees."
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setShowPresetModal(true)}>
+              <Gift className="mr-2 h-4 w-4" />
+              Add Presets
+            </Button>
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Custom
+            </Button>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -167,10 +171,11 @@ export default function LeaveTypesPage() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : leaveTypes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Palmtree className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-              <p>No leave types found. Create some or add presets.</p>
-            </div>
+            <EmptyState
+              title="No leave types found."
+              description="Create some or add presets."
+              icon={<Palmtree size={18} />}
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -196,20 +201,20 @@ export default function LeaveTypesPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                      <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded dark:bg-slate-800">
                         {type.code}
                       </span>
                     </TableCell>
-                    <TableCell className="text-gray-500">{type.description || '-'}</TableCell>
+                    <TableCell className="text-gray-500 dark:text-slate-400">{type.description || '-'}</TableCell>
                     <TableCell>{type.defaultDays} days/year</TableCell>
                     <TableCell>
                       {type.isPaid ? (
-                        <span className="inline-flex items-center gap-1 text-green-600 text-sm">
+                        <span className="inline-flex items-center gap-1 text-green-600 text-sm dark:text-green-400">
                           <DollarSign className="h-3 w-3" />
                           Paid
                         </span>
                       ) : (
-                        <span className="text-gray-500 text-sm">Unpaid</span>
+                        <span className="text-gray-500 text-sm dark:text-slate-400">Unpaid</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -217,7 +222,7 @@ export default function LeaveTypesPage() {
                         <Button variant="ghost" size="sm" onClick={() => openEditModal(type)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(type._id)} className="text-red-600 hover:text-red-700">
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(type._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -233,7 +238,7 @@ export default function LeaveTypesPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md dark:bg-slate-900">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">
                 {editingType ? "Edit Leave Type" : "Add Leave Type"}
@@ -244,7 +249,7 @@ export default function LeaveTypesPage() {
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Name *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -254,7 +259,7 @@ export default function LeaveTypesPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Code *</label>
                   <Input
                     value={formData.code}
                     onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})}
@@ -264,7 +269,7 @@ export default function LeaveTypesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Default Days *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Default Days *</label>
                   <Input
                     type="number"
                     value={formData.defaultDays}
@@ -275,7 +280,7 @@ export default function LeaveTypesPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Description</label>
                 <Input
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -283,7 +288,7 @@ export default function LeaveTypesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Color</label>
                 <div className="flex gap-2 flex-wrap">
                   {defaultColors.map((color) => (
                     <button
@@ -307,7 +312,7 @@ export default function LeaveTypesPage() {
                   onChange={(e) => setFormData({...formData, isPaid: e.target.checked})}
                   className="rounded"
                 />
-                <label htmlFor="isPaid" className="text-sm text-gray-700">Paid Leave</label>
+                <label htmlFor="isPaid" className="text-sm text-gray-700 dark:text-slate-300">Paid Leave</label>
               </div>
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={resetForm} disabled={isSubmitting}>
@@ -325,7 +330,7 @@ export default function LeaveTypesPage() {
       {/* Preset Modal */}
       {showPresetModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg dark:bg-slate-900">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Gift className="h-5 w-5" />
@@ -347,7 +352,7 @@ export default function LeaveTypesPage() {
                       />
                       <div>
                         <p className="font-medium">{preset.name} ({preset.code})</p>
-                        <p className="text-xs text-gray-500">{preset.description} • {preset.defaultDays} days • {preset.isPaid ? 'Paid' : 'Unpaid'}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">{preset.description} • {preset.defaultDays} days • {preset.isPaid ? 'Paid' : 'Unpaid'}</p>
                       </div>
                     </div>
                     <Button 

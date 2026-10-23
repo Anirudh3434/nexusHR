@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Loader2, Plus, X, Calendar, Trash2, Sun, Building2, Flag, Sparkles, Upload } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -188,20 +190,20 @@ export default function HolidaysPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'National': return <Flag className="h-4 w-4 text-red-600" />;
-      case 'Company': return <Building2 className="h-4 w-4 text-blue-600" />;
-      case 'Optional': return <Sparkles className="h-4 w-4 text-purple-600" />;
-      case 'Weekend': return <Sun className="h-4 w-4 text-yellow-600" />;
+      case 'National': return <Flag className="h-4 w-4 text-red-600 dark:text-red-400" />;
+      case 'Company': return <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+      case 'Optional': return <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+      case 'Weekend': return <Sun className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
       default: return <Calendar className="h-4 w-4" />;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'National': return 'bg-red-50 text-red-700 border-red-200';
-      case 'Company': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'Optional': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'Weekend': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'National': return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/30';
+      case 'Company': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30';
+      case 'Optional': return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/30';
+      case 'Weekend': return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-300 dark:border-yellow-500/30';
       default: return 'bg-gray-50 dark:bg-slate-950 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
@@ -230,45 +232,47 @@ export default function HolidaysPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Calendar className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Holiday Calendar
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">View company holidays and plan your year</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={currentYear}
-            onChange={(e) => setCurrentYear(Number(e.target.value))}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            {[2024, 2025, 2026, 2027].map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-          {canManage && (
-            <>
-              <Button variant="outline" onClick={() => document.getElementById('csvInput')?.click()} disabled={isImporting}>
-                <Upload className="h-4 w-4 mr-2" />
-                {isImporting ? 'Importing...' : 'Import CSV'}
-              </Button>
-              <input
-                id="csvInput"
-                type="file"
-                accept=".csv"
-                className="hidden"
-                onChange={handleCSVImport}
-              />
-              <Button onClick={() => setShowModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Holiday
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+          </span>
+        }
+        description="View company holidays and plan your year"
+        actions={
+          <>
+            <select
+              value={currentYear}
+              onChange={(e) => setCurrentYear(Number(e.target.value))}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              {[2024, 2025, 2026, 2027].map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+            {canManage && (
+              <>
+                <Button variant="outline" onClick={() => document.getElementById('csvInput')?.click()} disabled={isImporting}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  {isImporting ? 'Importing...' : 'Import CSV'}
+                </Button>
+                <input
+                  id="csvInput"
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleCSVImport}
+                />
+                <Button onClick={() => setShowModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Holiday
+                </Button>
+              </>
+            )}
+          </>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -280,13 +284,13 @@ export default function HolidaysPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-red-600">{nationalHolidays}</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{nationalHolidays}</div>
             <p className="text-sm text-gray-500 dark:text-gray-400">National Holidays</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">{companyHolidays}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{companyHolidays}</div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Company Holidays</p>
           </CardContent>
         </Card>
@@ -294,10 +298,10 @@ export default function HolidaysPage() {
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-sm">
-        <span className="flex items-center gap-1 px-2 py-1 rounded bg-red-50 text-red-700"><Flag className="h-3 w-3" /> National</span>
-        <span className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 text-blue-700"><Building2 className="h-3 w-3" /> Company</span>
-        <span className="flex items-center gap-1 px-2 py-1 rounded bg-purple-50 text-purple-700"><Sparkles className="h-3 w-3" /> Optional</span>
-        <span className="flex items-center gap-1 px-2 py-1 rounded bg-yellow-50 text-yellow-700"><Sun className="h-3 w-3" /> Weekend</span>
+        <span className="flex items-center gap-1 px-2 py-1 rounded bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"><Flag className="h-3 w-3" /> National</span>
+        <span className="flex items-center gap-1 px-2 py-1 rounded bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"><Building2 className="h-3 w-3" /> Company</span>
+        <span className="flex items-center gap-1 px-2 py-1 rounded bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300"><Sparkles className="h-3 w-3" /> Optional</span>
+        <span className="flex items-center gap-1 px-2 py-1 rounded bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-300"><Sun className="h-3 w-3" /> Weekend</span>
       </div>
 
       {/* Holidays List by Month */}
@@ -312,13 +316,11 @@ export default function HolidaysPage() {
               <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
           ) : totalHolidays === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No holidays found for {currentYear}</p>
-              {canManage && (
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Click "Add Holiday" to create one</p>
-              )}
-            </div>
+            <EmptyState
+              title={`No holidays found for ${currentYear}`}
+              description={canManage ? 'Click "Add Holiday" to create one' : undefined}
+              icon={<Calendar size={18} />}
+            />
           ) : (
             <div className="space-y-6">
               {MONTHS.map(month => {

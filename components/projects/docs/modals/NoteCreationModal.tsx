@@ -111,13 +111,13 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <Card className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-5xl w-full animate-in scale-in-95 duration-200">
+      <Card className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-5xl w-full animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-slate-900">Create Note</CardTitle>
+            <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">Create Note</CardTitle>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
             >
               <X className="w-5 h-5" />
             </button>
@@ -127,22 +127,22 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Title *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Title *</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="Note title"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Category</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -152,7 +152,7 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Content *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Content *</label>
               <MentionInput
                 value={formData.content}
                 onChange={(value) => setFormData({ ...formData, content: value })}
@@ -164,7 +164,7 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
 
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Assignee</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Assignee</label>
                 <input
                   type="text"
                   value={formData.assignee}
@@ -174,11 +174,11 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
                     setShowAssigneeSuggestions(e.target.value.length > 0);
                   }}
                   onFocus={() => setShowAssigneeSuggestions(formData.assignee.length > 0)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="Search team members..."
                 />
                 {showAssigneeSuggestions && projectUsers.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-slate-900 dark:border-slate-700">
                     {/* Show current user at top with "me" label */}
                     {user && (
                       <button
@@ -188,14 +188,14 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
                           setFormData({ ...formData, assignee: user.name });
                           setShowAssigneeSuggestions(false);
                         }}
-                        className="w-full px-3 py-2 flex items-center gap-3 hover:bg-indigo-50 transition-colors text-left bg-indigo-50/50 border-b border-slate-100"
+                        className="w-full px-3 py-2 flex items-center gap-3 hover:bg-indigo-50 transition-colors text-left bg-indigo-50/50 border-b border-slate-100 dark:bg-indigo-500/10 dark:border-slate-800"
                       >
                         <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
                           <User className="w-4 h-4 text-white" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-900">{user.name} <span className="text-indigo-600 font-normal">(me)</span></p>
-                          <p className="text-xs text-slate-500">{user.email}</p>
+                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.name} <span className="text-indigo-600 font-normal dark:text-indigo-400">(me)</span></p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
                         </div>
                       </button>
                     )}
@@ -213,14 +213,14 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
                             setFormData({ ...formData, assignee: user.name });
                             setShowAssigneeSuggestions(false);
                           }}
-                          className="w-full px-3 py-2 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left"
+                          className="w-full px-3 py-2 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left dark:hover:bg-slate-800"
                         >
-                          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-indigo-600" />
+                          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center dark:bg-indigo-500/15">
+                            <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-slate-900">{user.name}</p>
-                            <p className="text-xs text-slate-500">{user.email}</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
                           </div>
                         </button>
                       ))}
@@ -228,12 +228,12 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Tags</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Tags</label>
                 <input
                   type="text"
                   value={formData.tags}
                   onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="Comma-separated tags"
                 />
               </div>
@@ -246,9 +246,9 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
                   id="isPinned"
                   checked={formData.isPinned}
                   onChange={(e) => setFormData({ ...formData, isPinned: e.target.checked })}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 dark:text-indigo-400 dark:border-slate-600"
                 />
-                <label htmlFor="isPinned" className="text-sm text-slate-700 flex items-center gap-1">
+                <label htmlFor="isPinned" className="text-sm text-slate-700 flex items-center gap-1 dark:text-slate-300">
                   <Pin className="w-3 h-3" />
                   Pin
                 </label>
@@ -259,9 +259,9 @@ export default function NoteCreationModal({ projectId, isOpen, onClose, onSucces
                   id="isFavorite"
                   checked={formData.isFavorite}
                   onChange={(e) => setFormData({ ...formData, isFavorite: e.target.checked })}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 dark:text-indigo-400 dark:border-slate-600"
                 />
-                <label htmlFor="isFavorite" className="text-sm text-slate-700 flex items-center gap-1">
+                <label htmlFor="isFavorite" className="text-sm text-slate-700 flex items-center gap-1 dark:text-slate-300">
                   <Star className="w-3 h-3" />
                   Favorite
                 </label>

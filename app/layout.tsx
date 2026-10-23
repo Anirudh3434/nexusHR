@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Source_Sans_3 } from "next/font/google";
+import { Source_Sans_3, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../context/ThemeContext";
 import { AuthProvider } from "../context/AuthContext";
@@ -10,6 +10,13 @@ const sourceSans3 = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "500", "600"],
 });
 
 const siteUrl = "https://nexus-hr-udh9.vercel.app";
@@ -121,8 +128,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={sourceSans3.variable} suppressHydrationWarning>
+    <html lang="en" className={`${sourceSans3.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <head>
+        {/* Set .dark + color-scheme before first paint to avoid a light flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='hrm-theme';var s=localStorage.getItem(k);var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d){r.classList.add('dark')}else{r.classList.remove('dark')}r.style.colorScheme=d?'dark':'light';}catch(e){}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -132,7 +145,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
       </head>
-      <body className={`${sourceSans3.className} bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-50 min-h-screen transition-colors`}>
+      <body className={`${sourceSans3.className} bg-background text-foreground min-h-screen transition-colors`}>
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

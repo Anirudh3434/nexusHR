@@ -59,7 +59,7 @@ export function CustomSelect({
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-xs font-semibold text-slate-800 hover:border-indigo-300 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+          "w-full flex items-center gap-2 px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-xs font-semibold text-slate-800 hover:border-indigo-300 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800",
           buttonClassName
         )}
       >
@@ -78,7 +78,7 @@ export function CustomSelect({
 
       {isOpen && !disabled && (
         <div className={cn(
-          "absolute left-0 mt-1 w-full z-50 rounded-lg bg-white border border-slate-200 shadow-xl max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-1 duration-100",
+          "absolute left-0 mt-1 w-full z-50 rounded-lg bg-white border border-slate-200 shadow-xl max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-1 duration-100 dark:bg-slate-900 dark:border-slate-700",
           dropdownClassName
         )}>
           {options.length > 0 ? (
@@ -91,8 +91,8 @@ export function CustomSelect({
                   disabled={option.disabled}
                   onClick={() => { onChange(option.value); setIsOpen(false); }}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2 font-medium disabled:opacity-50 disabled:pointer-events-none",
-                    isSelected && "bg-indigo-100 text-indigo-700 font-semibold"
+                    "w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2 font-medium disabled:opacity-50 disabled:pointer-events-none dark:text-slate-300",
+                    isSelected && "bg-indigo-100 text-indigo-700 font-semibold dark:bg-indigo-500/15 dark:text-indigo-300"
                   )}
                 >
                   {option.icon && <span className="shrink-0">{option.icon}</span>}
@@ -102,7 +102,7 @@ export function CustomSelect({
                       {option.datePeriod}
                     </span>
                   )}
-                  {isSelected && <Check className="h-3 w-3 text-indigo-600 shrink-0 ml-1" />}
+                  {isSelected && <Check className="h-3 w-3 text-indigo-600 shrink-0 ml-1 dark:text-indigo-400" />}
                 </button>
               );
             })

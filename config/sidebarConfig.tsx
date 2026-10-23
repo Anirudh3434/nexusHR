@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Building, Users, ShieldAlert, FileBarChart2, Settings,
   UserSquare2, CalendarClock, CircleDollarSign, ActivitySquare, ShieldCheck, 
-  UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare, CheckSquare, Brain, TrendingUp, BarChart
+  UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare, CheckSquare, Brain, TrendingUp, BarChart, CreditCard, Crown
 } from "lucide-react";
 import React from "react";
 
@@ -21,12 +21,14 @@ export interface SidebarGroup {
 
 export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
   super_admin: [
+    { name: "Platform", href: "/super-admin", icon: <Crown size={20} /> },
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { name: "Company Mgmt", href: "/commands", icon: <Building size={20} /> },
     { name: "User Mgmt", href: "/users", icon: <Users size={20} /> },
     { name: "Roles & Perms", href: "/permissions", icon: <ShieldAlert size={20} /> },
     { name: "All Reports", href: "/reports", icon: <FileBarChart2 size={20} /> },
     { name: "System Settings", href: "/settings", icon: <Settings size={20} /> },
+    { name: "Billing", href: "/billing", icon: <CreditCard size={20} /> },
   ],
   admin: [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
@@ -96,7 +98,9 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
       items: [
         { name: "Performance AI", href: "/reports/performance", icon: <Sparkles size={20} /> },
         { name: "Reports", href: "/reports", icon: <FileBarChart2 size={20} /> },
+        { name: "Roles & Permissions", href: "/permissions", icon: <ShieldAlert size={20} /> },
         { name: "Settings", href: "/settings", icon: <Settings size={20} /> },
+        { name: "Billing", href: "/billing", icon: <CreditCard size={20} /> },
       ]
     },
     {

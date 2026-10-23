@@ -52,8 +52,8 @@ const getRiskBgColor = (level: string) => {
 
 const getTrendIcon = (trend: string) => {
   switch (trend) {
-    case 'improving': return <TrendingUp className="w-4 h-4 text-green-600" />;
-    case 'declining': return <TrendingDown className="w-4 h-4 text-red-600" />;
+    case 'improving': return <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />;
+    case 'declining': return <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />;
     default: return <Minus className="w-4 h-4 text-gray-400" />;
   }
 };
@@ -83,12 +83,12 @@ export default function RetentionRiskCard({ data }: { data: RetentionData }) {
             <p className="text-sm text-gray-600 dark:text-gray-400">Risk Score</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {data.riskScore}
-              <span className="text-lg text-gray-500">/100</span>
+              <span className="text-lg text-gray-500 dark:text-slate-400">/100</span>
             </p>
           </div>
           {riskChange !== null && (
             <div className={`flex items-center gap-1 text-sm font-medium ${
-              riskChange > 0 ? 'text-red-600' : riskChange < 0 ? 'text-green-600' : 'text-gray-500'
+              riskChange > 0 ? 'text-red-600 dark:text-red-400' : riskChange < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-slate-400'
             }`}>
               {riskChange > 0 ? <TrendingUp className="w-4 h-4" /> : riskChange < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
               {riskChange > 0 ? '+' : ''}{riskChange}

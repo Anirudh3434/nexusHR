@@ -13,6 +13,8 @@ import {
   Eye, X, Loader2, Filter, UserCheck, ExternalLink,
   Paperclip, Trash2, UserPlus2, PartyPopper, ListChecks, Send, KeyRound, CalendarDays
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 interface InterviewRound {
   _id: string;
@@ -72,10 +74,10 @@ interface CredentialsResult {
 const ROUND_TYPES = ['telephonic', 'technical', 'managerial', 'hr', 'assignment', 'other'];
 
 const roundResultBadge: Record<string, { label: string; classes: string }> = {
-  pending: { label: 'Pending', classes: 'bg-gray-100 text-gray-600 border-gray-200' },
-  cleared: { label: 'Cleared', classes: 'bg-green-100 text-green-700 border-green-200' },
-  failed: { label: 'Not Selected', classes: 'bg-red-100 text-red-700 border-red-200' },
-  on_hold: { label: 'On Hold', classes: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  pending: { label: 'Pending', classes: 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' },
+  cleared: { label: 'Cleared', classes: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30' },
+  failed: { label: 'Not Selected', classes: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30' },
+  on_hold: { label: 'On Hold', classes: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30' },
 };
 
 export default function ApplicantsPage() {
@@ -405,15 +407,15 @@ export default function ApplicantsPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      new: 'bg-blue-100 text-blue-700',
-      under_review: 'bg-yellow-100 text-yellow-700',
-      considered: 'bg-indigo-100 text-indigo-700',
-      rejected: 'bg-red-100 text-red-700',
-      shortlisted: 'bg-green-100 text-green-700',
-      interview: 'bg-purple-100 text-purple-700',
-      hired: 'bg-emerald-100 text-emerald-700',
+      new: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+      under_review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
+      considered: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+      rejected: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
+      shortlisted: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+      interview: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+      hired: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
     };
-    return colors[status] || 'bg-gray-100 text-gray-700';
+    return colors[status] || 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300';
   };
 
   const getStatusLabel = (status: string) => {
@@ -431,8 +433,8 @@ export default function ApplicantsPage() {
 
   const getSourceColor = (source: string) => {
     return source === 'website' 
-      ? 'bg-green-100 text-green-700' 
-      : 'bg-orange-100 text-orange-700';
+      ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' 
+      : 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300';
   };
 
   const getSourceLabel = (source: string) => {
@@ -477,44 +479,43 @@ export default function ApplicantsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Applicants</h1>
-          <p className="text-gray-600">Candidates who applied through careers page</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {lastSyncAt && (
-            <span className="text-xs text-gray-500 hidden sm:inline">
-              Last sync: {lastSyncAt.toLocaleTimeString()}
-            </span>
-          )}
-          <Button variant="outline" onClick={fetchApplicants}>
-            <Loader2 className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Applicants"
+        description="Candidates who applied through careers page"
+        actions={
+          <>
+            {lastSyncAt && (
+              <span className="text-xs text-gray-500 hidden sm:inline dark:text-slate-400">
+                Last sync: {lastSyncAt.toLocaleTimeString()}
+              </span>
+            )}
+            <Button variant="outline" onClick={fetchApplicants}>
+              <Loader2 className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* Job ID Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-300">
         <p className="font-medium">📌 Job ID Tracking</p>
-        <p className="text-blue-600 mt-1">
+        <p className="text-blue-600 mt-1 dark:text-blue-400">
           Shows all applicants (both online and email) linked to a Job ID. Use filters to view by source or job position.
         </p>
       </div>
 
       {/* Active Job ID Filter Banner */}
       {filterJobId && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center justify-between dark:bg-indigo-500/10 dark:border-indigo-500/30">
           <div className="flex items-center gap-3">
-            <Briefcase className="h-5 w-5 text-indigo-600" />
+            <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             <div>
               <p className="font-medium text-indigo-900">
-                Filtered by Job ID: <span className="font-mono bg-indigo-100 px-2 py-1 rounded">{filterJobId}</span>
+                Filtered by Job ID: <span className="font-mono bg-indigo-100 px-2 py-1 rounded dark:bg-indigo-500/15">{filterJobId}</span>
               </p>
-              <p className="text-sm text-indigo-700">
+              <p className="text-sm text-indigo-700 dark:text-indigo-300">
                 Showing {filteredApplicants.length} applicant{filteredApplicants.length !== 1 ? 's' : ''} for this position
               </p>
             </div>
@@ -526,7 +527,7 @@ export default function ApplicantsPage() {
               setFilterJobId('');
               window.history.replaceState({}, '', window.location.pathname);
             }}
-            className="border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+            className="border-indigo-200 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:text-indigo-300"
           >
             <X className="h-4 w-4 mr-1" />
             Clear Filter
@@ -551,7 +552,7 @@ export default function ApplicantsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{value}</p>
-                <p className="text-xs text-gray-600">{label}</p>
+                <p className="text-xs text-gray-600 dark:text-slate-400">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -572,7 +573,7 @@ export default function ApplicantsPage() {
         
         {uniqueJobIds.length > 0 && (
           <select
-            className="px-3 py-2 border rounded-md bg-white"
+            className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900"
             value={filterJobId}
             onChange={(e) => setFilterJobId(e.target.value)}
           >
@@ -584,7 +585,7 @@ export default function ApplicantsPage() {
         )}
         
         <select
-          className="px-3 py-2 border rounded-md bg-white"
+          className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
@@ -600,7 +601,7 @@ export default function ApplicantsPage() {
         </select>
         
         <select
-          className="px-3 py-2 border rounded-md bg-white"
+          className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900"
           value={filterSource}
           onChange={(e) => setFilterSource(e.target.value)}
         >
@@ -609,15 +610,15 @@ export default function ApplicantsPage() {
           <option value="email">Email</option>
         </select>
 
-        <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-white">
+        <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-white dark:bg-slate-900">
           <input 
             type="checkbox" 
             id="showGeneral" 
             checked={showGeneral}
             onChange={(e) => setShowGeneral(e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:text-indigo-400"
           />
-          <label htmlFor="showGeneral" className="text-sm font-medium text-gray-700 cursor-pointer">
+          <label htmlFor="showGeneral" className="text-sm font-medium text-gray-700 cursor-pointer dark:text-slate-300">
             Show General Inquiries
           </label>
         </div>
@@ -627,53 +628,53 @@ export default function ApplicantsPage() {
       <Card>
         <CardContent className="p-0">
           {filteredApplicants.length === 0 ? (
-            <div className="py-12 text-center">
-              <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No applicants yet</h3>
-              <p className="text-gray-500">Applicants from careers page and email will appear here</p>
-            </div>
+            <EmptyState
+              icon={<Users size={18} />}
+              title="No applicants yet"
+              description="Applicants from careers page and email will appear here"
+            />
           ) : (
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Candidate</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Experience</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Candidate</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Job ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Source</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Position</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Experience</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Date</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {filteredApplicants.map((applicant) => (
                   <tr 
                     key={applicant._id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="hover:bg-gray-50 cursor-pointer dark:hover:bg-slate-800"
                     onClick={() => setSelectedApplicant(applicant)}
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm dark:bg-blue-500/15 dark:text-blue-400">
                           {applicant.candidateName?.charAt(0).toUpperCase() || 'U'}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-gray-900">{applicant.candidateName || 'Unknown'}</p>
+                            <p className="font-medium text-gray-900 dark:text-slate-100">{applicant.candidateName || 'Unknown'}</p>
                             {applicant.hasAttachments && (
                               <span title="Has attachments">
                                 <Paperclip className="h-3 w-3 text-blue-500" />
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500">{applicant.fromEmail}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{applicant.fromEmail}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       {applicant.jobId ? (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono text-xs">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono text-xs dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
                           {applicant.jobId}
                         </Badge>
                       ) : (
@@ -686,15 +687,15 @@ export default function ApplicantsPage() {
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-sm text-gray-900">{applicant.appliedPosition || 'N/A'}</p>
+                      <p className="text-sm text-gray-900 dark:text-slate-100">{applicant.appliedPosition || 'N/A'}</p>
                       {applicant.currentDesignation && (
-                        <p className="text-xs text-gray-500">Current: {applicant.currentDesignation}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Current: {applicant.currentDesignation}</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-sm text-gray-900">{applicant.experience || 'N/A'}</p>
+                      <p className="text-sm text-gray-900 dark:text-slate-100">{applicant.experience || 'N/A'}</p>
                       {applicant.noticePeriod && (
-                        <p className="text-xs text-gray-500">Notice: {applicant.noticePeriod}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Notice: {applicant.noticePeriod}</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -709,7 +710,7 @@ export default function ApplicantsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
                       {new Date(applicant.receivedAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
@@ -718,7 +719,7 @@ export default function ApplicantsPage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400"
                             onClick={(e) => { e.stopPropagation(); openHireModal(applicant); }}
                             title="Hire & send portal access"
                           >
@@ -728,7 +729,7 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400"
                           onClick={(e) => { e.stopPropagation(); handleConsider(applicant); }}
                           title="Consider"
                         >
@@ -737,7 +738,7 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
                           onClick={(e) => { e.stopPropagation(); handleReject(applicant); }}
                           title="Reject"
                         >
@@ -755,7 +756,7 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
                           onClick={(e) => { e.stopPropagation(); handleDelete(applicant); }}
                           title="Delete"
                         >
@@ -786,15 +787,15 @@ export default function ApplicantsPage() {
             <CardContent className="space-y-6">
               {/* Header Info */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
+                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl dark:bg-blue-500/15 dark:text-blue-400">
                   {selectedApplicant.candidateName?.charAt(0).toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900">{selectedApplicant.candidateName}</h3>
-                  <p className="text-gray-600">{selectedApplicant.appliedPosition}</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">{selectedApplicant.candidateName}</h3>
+                  <p className="text-gray-600 dark:text-slate-400">{selectedApplicant.appliedPosition}</p>
                   <div className="flex items-center gap-2 mt-2">
                     {selectedApplicant.jobId && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 font-mono">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 font-mono dark:bg-blue-500/10 dark:text-blue-300">
                         {selectedApplicant.jobId}
                       </Badge>
                     )}
@@ -806,7 +807,7 @@ export default function ApplicantsPage() {
               </div>
 
               {/* Contact Info */}
-              <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg dark:bg-slate-800/50">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-400" />
                   <span className="text-sm">{selectedApplicant.fromEmail}</span>
@@ -834,7 +835,7 @@ export default function ApplicantsPage() {
               {/* Skills */}
               {selectedApplicant.skills && selectedApplicant.skills.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Skills</h4>
+                  <h4 className="font-medium text-gray-900 mb-2 dark:text-slate-100">Skills</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedApplicant.skills.map((skill, i) => (
                       <Badge key={i} variant="secondary">{skill}</Badge>
@@ -846,8 +847,8 @@ export default function ApplicantsPage() {
               {/* Cover Letter */}
               {selectedApplicant.coverLetter && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Cover Letter</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 whitespace-pre-wrap">
+                  <h4 className="font-medium text-gray-900 mb-2 dark:text-slate-100">Cover Letter</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 whitespace-pre-wrap dark:bg-slate-800/50 dark:text-slate-300">
                     {selectedApplicant.coverLetter}
                   </div>
                 </div>
@@ -856,17 +857,17 @@ export default function ApplicantsPage() {
               {/* Resume / Attachments */}
               {selectedApplicant.hasAttachments && selectedApplicant.attachments.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Resume & Attachments</h4>
+                  <h4 className="font-medium text-gray-900 mb-2 dark:text-slate-100">Resume & Attachments</h4>
                   <div className="space-y-2">
                     {selectedApplicant.attachments.map((att, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-blue-50 p-3 rounded-lg">
-                        <FileText className="h-5 w-5 text-blue-600" />
+                      <div key={i} className="flex items-center gap-2 bg-blue-50 p-3 rounded-lg dark:bg-blue-500/10">
+                        <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         <span className="text-sm flex-1 truncate">{att.filename}</span>
-                        <span className="text-xs text-gray-500">({(att.size / 1024).toFixed(1)} KB)</span>
+                        <span className="text-xs text-gray-500 dark:text-slate-400">({(att.size / 1024).toFixed(1)} KB)</span>
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                           onClick={() => window.open(att.fileUrl, '_blank')}
                           title="Preview"
                         >
@@ -875,7 +876,7 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                           onClick={() => window.open(att.fileUrl + '?download=true', '_blank')}
                           title="Download"
                         >
@@ -888,8 +889,8 @@ export default function ApplicantsPage() {
               )}
 
               {/* Portal access */}
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
-                <div className="flex items-center gap-2 text-sm text-blue-800">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:bg-blue-500/10">
+                <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
                   <KeyRound className="h-4 w-4" />
                   {selectedApplicant.portalAccessSentAt ? (
                     <span>Portal credentials sent on {new Date(selectedApplicant.portalAccessSentAt).toLocaleString()}</span>
@@ -901,7 +902,7 @@ export default function ApplicantsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-blue-200 text-blue-700 hover:bg-blue-100"
+                    className="border-blue-200 text-blue-700 hover:bg-blue-100 dark:border-blue-500/30 dark:text-blue-300"
                     onClick={() => handleResendCredentials(selectedApplicant)}
                   >
                     <Send className="h-3.5 w-3.5 mr-1.5" />
@@ -912,15 +913,15 @@ export default function ApplicantsPage() {
 
               {/* Onboarding link for hired candidates */}
               {selectedApplicant.status === 'hired' && selectedApplicant.onboardingId && (
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-50 p-3">
-                  <div className="flex items-center gap-2 text-sm text-green-800">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/30 dark:bg-green-500/10">
+                  <div className="flex items-center gap-2 text-sm text-green-800 dark:text-green-300">
                     <PartyPopper className="h-4 w-4" />
                     <span>This candidate is hired and has an onboarding record.</span>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-green-200 text-green-700 hover:bg-green-100"
+                    className="border-green-200 text-green-700 hover:bg-green-100 dark:border-green-500/30 dark:text-green-300"
                     onClick={() => window.open(`/onboarding/${selectedApplicant.onboardingId}`, '_blank')}
                   >
                     <ListChecks className="h-3.5 w-3.5 mr-1.5" />
@@ -931,25 +932,25 @@ export default function ApplicantsPage() {
 
               {/* Interview rounds */}
               <div>
-                <h4 className="mb-2 flex items-center gap-1.5 font-medium text-gray-900">
+                <h4 className="mb-2 flex items-center gap-1.5 font-medium text-gray-900 dark:text-slate-100">
                   <ListChecks className="h-4 w-4 text-blue-500" /> Interview Rounds
                 </h4>
                 {(selectedApplicant.interviewRounds || []).length === 0 ? (
-                  <p className="text-sm text-gray-500">No interview rounds added yet.</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">No interview rounds added yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {(selectedApplicant.interviewRounds || []).map((round, idx) => {
                       const rm = roundResultBadge[round.result || 'pending'] || roundResultBadge.pending;
                       return (
-                        <div key={round._id} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                        <div key={round._id} className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-slate-800 dark:bg-slate-800/50">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                              <p className="text-sm font-semibold text-gray-800">
+                              <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">
                                 {round.name || `Round ${idx + 1}`}
-                                {round.type && <span className="ml-2 text-xs font-normal text-gray-500 capitalize">{round.type}</span>}
+                                {round.type && <span className="ml-2 text-xs font-normal text-gray-500 capitalize dark:text-slate-400">{round.type}</span>}
                               </p>
                               <Badge className={`mt-1 text-xs ${rm.classes}`}>{rm.label}</Badge>
-                              <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                              <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                                 {round.scheduledDate && (
                                   <span className="flex items-center gap-1">
                                     <CalendarDays size={12} /> {new Date(round.scheduledDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -960,7 +961,7 @@ export default function ApplicantsPage() {
                                 {round.interviewer && <span>· {round.interviewer}</span>}
                                 {round.location && <span>· {round.location}</span>}
                                 {round.meetingLink && (
-                                  <a href={round.meetingLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
+                                  <a href={round.meetingLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400">
                                     <ExternalLink size={12} /> Join
                                   </a>
                                 )}
@@ -978,7 +979,7 @@ export default function ApplicantsPage() {
                                   className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                                     round.result === res
                                       ? res === 'cleared' ? 'bg-green-600 text-white' : res === 'failed' ? 'bg-red-600 text-white' : 'bg-gray-600 text-white'
-                                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-700'
                                   }`}
                                 >
                                   {roundResultBadge[res].label}
@@ -987,11 +988,11 @@ export default function ApplicantsPage() {
                             </div>
                           </div>
                           {round.feedback && (
-                            <p className="mt-1.5 text-sm text-gray-600 italic">&ldquo;{round.feedback}&rdquo;</p>
+                            <p className="mt-1.5 text-sm text-gray-600 italic dark:text-slate-400">&ldquo;{round.feedback}&rdquo;</p>
                           )}
                           <div className="mt-2 flex gap-2">
                             <input
-                              className="flex-1 rounded-md border border-gray-200 px-2 py-1 text-xs"
+                              className="flex-1 rounded-md border border-gray-200 px-2 py-1 text-xs dark:border-slate-700"
                               placeholder="Add feedback..."
                               defaultValue={round.feedback || ''}
                               onBlur={(e) => {
@@ -1006,8 +1007,8 @@ export default function ApplicantsPage() {
                 )}
 
                 {/* Add round */}
-                <div className="mt-3 rounded-lg border border-dashed border-gray-200 p-3">
-                  <p className="mb-2 text-xs font-medium text-gray-500 uppercase">Add interview round</p>
+                <div className="mt-3 rounded-lg border border-dashed border-gray-200 p-3 dark:border-slate-700">
+                  <p className="mb-2 text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Add interview round</p>
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                     <Input
                       className="col-span-2 md:col-span-2"
@@ -1016,7 +1017,7 @@ export default function ApplicantsPage() {
                       onChange={(e) => setNewRound({ ...newRound, name: e.target.value })}
                     />
                     <select
-                      className="rounded-md border bg-white px-2 py-1.5 text-sm"
+                      className="rounded-md border bg-white px-2 py-1.5 text-sm dark:bg-slate-900"
                       value={newRound.type}
                       onChange={(e) => setNewRound({ ...newRound, type: e.target.value })}
                     >
@@ -1086,7 +1087,7 @@ export default function ApplicantsPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
                   onClick={() => { handleReject(selectedApplicant); setSelectedApplicant(null); }}
                 >
                   <ThumbsDown className="h-4 w-4 mr-2" />
@@ -1094,7 +1095,7 @@ export default function ApplicantsPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
                   onClick={() => { handleDelete(selectedApplicant); }}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -1113,7 +1114,7 @@ export default function ApplicantsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <PartyPopper className="h-5 w-5 text-emerald-600" />
+                  <PartyPopper className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   Hire {selectedApplicant.candidateName || 'Candidate'}
                 </span>
                 <Button variant="ghost" size="sm" onClick={() => setShowHireModal(false)} disabled={hireLoading}>
@@ -1122,13 +1123,13 @@ export default function ApplicantsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+              <p className="rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:text-blue-300">
                 This will mark the applicant as <strong>Hired</strong>, create their temporary portal account,
                 generate an onboarding record + draft offer letter, and email their login credentials.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Joining Date</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Joining Date</label>
                   <Input
                     type="date"
                     value={hireForm.joiningDate}
@@ -1136,9 +1137,9 @@ export default function ApplicantsPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Employment Type</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Employment Type</label>
                   <select
-                    className="w-full rounded-md border bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-md border bg-white px-3 py-2 text-sm dark:bg-slate-900"
                     value={hireForm.employmentType}
                     onChange={(e) => setHireForm({ ...hireForm, employmentType: e.target.value })}
                   >
@@ -1149,7 +1150,7 @@ export default function ApplicantsPage() {
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Position</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Position</label>
                   <Input
                     placeholder="Position / designation"
                     value={hireForm.position}
@@ -1157,7 +1158,7 @@ export default function ApplicantsPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Department</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Department</label>
                   <Input
                     placeholder="Department"
                     value={hireForm.department}
@@ -1165,7 +1166,7 @@ export default function ApplicantsPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Annual CTC</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Annual CTC</label>
                   <Input
                     placeholder="e.g. ₹12,00,000"
                     value={hireForm.ctc}
@@ -1198,7 +1199,7 @@ export default function ApplicantsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <KeyRound className="h-5 w-5 text-blue-600" />
+                  <KeyRound className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   {credentialsResult.action === 'portal' ? 'Portal Access Granted' : credentialsResult.action === 'resend' ? 'Credentials Reset' : 'Candidate Hired'}
                 </span>
                 <Button variant="ghost" size="sm" onClick={() => setCredentialsResult(null)}>
@@ -1207,17 +1208,17 @@ export default function ApplicantsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-slate-400">
                 Share these credentials with <strong>{credentialsResult.email}</strong>. They log in at the company login page with their email + this password.
               </p>
               {credentialsResult.password ? (
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:bg-blue-500/10">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-blue-700 uppercase">Temporary Password</p>
+                    <p className="text-xs font-medium text-blue-700 uppercase dark:text-blue-300">Temporary Password</p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100"
+                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100 dark:text-blue-300"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(credentialsResult.password || '');
@@ -1230,11 +1231,11 @@ export default function ApplicantsPage() {
                       Copy
                     </Button>
                   </div>
-                  <p className="mt-1 select-all font-mono text-lg font-semibold text-gray-900">{credentialsResult.password}</p>
-                  <p className="mt-1 text-xs text-gray-500">Save this now — it is only shown once.</p>
+                  <p className="mt-1 select-all font-mono text-lg font-semibold text-gray-900 dark:text-slate-100">{credentialsResult.password}</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Save this now — it is only shown once.</p>
                 </div>
               ) : (
-                <p className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+                <p className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300">
                   The candidate already had an account, so no new password was generated.
                 </p>
               )}

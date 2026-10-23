@@ -36,7 +36,7 @@ export function AttendanceSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Attendance Settings</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Attendance Settings</h2>
         <Button onClick={onSave} disabled={isSaving} size="sm">
           {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
           Save
@@ -44,15 +44,15 @@ export function AttendanceSection({
       </div>
 
       {/* Geo-fencing Toggle */}
-      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+      <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
           {companySettings.enableGeoFencing ? 
-            <MapPin className="h-5 w-5 text-blue-600" /> : 
+            <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" /> : 
             <MapPinOff className="h-5 w-5 text-gray-400" />
           }
           <div>
-            <p className="font-medium text-gray-900">Geo-fencing</p>
-            <p className="text-sm text-gray-500">Require employees to be at office location</p>
+            <p className="font-medium text-gray-900 dark:text-slate-100">Geo-fencing</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">Require employees to be at office location</p>
           </div>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
@@ -62,14 +62,14 @@ export function AttendanceSection({
             checked={companySettings.enableGeoFencing}
             onChange={(e) => setCompanySettings({...companySettings, enableGeoFencing: e.target.checked})}
           />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:bg-slate-700"></div>
         </label>
       </div>
 
       {/* Map Section */}
       {companySettings.enableGeoFencing && (
         <div className="pt-2">
-          <p className="text-sm font-medium text-gray-700 mb-3">Office Location</p>
+          <p className="text-sm font-medium text-gray-700 mb-3 dark:text-slate-300">Office Location</p>
           <GeoFencePicker
             latitude={companySettings.officeLocation?.latitude?.toString() || ''}
             longitude={companySettings.officeLocation?.longitude?.toString() || ''}

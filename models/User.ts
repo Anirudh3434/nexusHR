@@ -95,6 +95,12 @@ const UserSchema = new Schema({
     type: Boolean,
     default: true,
   },
+  // Session revocation counter — bumped on password change / device unlink.
+  // Bearer JWTs carry `tv`; a mismatch means the token is revoked.
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
   // Temporary/temp-created portal accounts must set their own password at first login
   mustChangePassword: {
     type: Boolean,

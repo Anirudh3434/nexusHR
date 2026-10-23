@@ -1,16 +1,34 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import PerformanceAnalysis from '@/models/PerformanceAnalysis';
+import User from '@/models/User';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
     const { searchParams } = new URL(req.url);
     const employeeId = searchParams.get('employeeId');
     const days = parseInt(searchParams.get('days') || '14');
 
     if (!employeeId) {
       return NextResponse.json({ message: 'Missing employeeId' }, { status: 400 });
+    }
+
+    // Employees may only view their own history; staff stay within their company.
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr', 'manager']) && employeeId !== auth.userId) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+    if (hasRole(auth.role, ['admin', 'hr', 'manager'])) {
+      const target = await User.findById(employeeId).select('companyId').lean();
+      if (!target || target.companyId?.toString() !== auth.companyId) {
+        return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+      }
     }
 
     const startDate = new Date();

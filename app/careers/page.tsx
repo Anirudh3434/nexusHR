@@ -126,14 +126,14 @@ function CareersContent() {
   // Renders the full application form for a given position (used by both the
   // job cards and the {applyForm} slot in a custom HTML page).
   const renderApplyForm = (position: JobPosition) => (
-    <Card className="bg-white">
+    <Card className="bg-white dark:bg-slate-900">
       <CardHeader>
-        <CardTitle className="text-slate-900">Apply for {position.title}</CardTitle>
+        <CardTitle className="text-slate-900 dark:text-slate-100">Apply for {position.title}</CardTitle>
         {position.jobId && (
-          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm text-slate-700 mt-3">
+          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm text-slate-700 mt-3 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300">
             <p className="font-medium mb-1">📌 Application Tracking</p>
-            <p className="text-slate-600">Job ID: <strong className="font-mono bg-white px-2 py-0.5 rounded border">{position.jobId}</strong></p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-slate-600 dark:text-slate-400">Job ID: <strong className="font-mono bg-white px-2 py-0.5 rounded border dark:bg-slate-900">{position.jobId}</strong></p>
+            <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
               Include this ID in your application to help us track your application accurately.
             </p>
           </div>
@@ -143,10 +143,10 @@ function CareersContent() {
         {submitted ? (
           <div className="text-center py-8">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 dark:text-slate-100">
               Application Submitted!
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-slate-400">
               Thank you for applying. Our HR team will review your application.
             </p>
           </div>
@@ -154,7 +154,7 @@ function CareersContent() {
           <form onSubmit={(e) => handleApply(e, position._id)} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   <User className="h-4 w-4 inline mr-1" />
                   Full Name *
                 </label>
@@ -167,7 +167,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   <Mail className="h-4 w-4 inline mr-1" />
                   Email *
                 </label>
@@ -181,7 +181,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   <Phone className="h-4 w-4 inline mr-1" />
                   Phone *
                 </label>
@@ -194,7 +194,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   <Clock className="h-4 w-4 inline mr-1" />
                   Experience *
                 </label>
@@ -207,7 +207,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   <Briefcase className="h-4 w-4 inline mr-1" />
                   Current Designation
                 </label>
@@ -219,7 +219,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   <DollarSign className="h-4 w-4 inline mr-1" />
                   Expected Salary
                 </label>
@@ -231,7 +231,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Notice Period
                 </label>
                 <Input
@@ -242,7 +242,7 @@ function CareersContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Skills (comma separated)
                 </label>
                 <Input
@@ -254,7 +254,7 @@ function CareersContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                 Cover Letter
               </label>
               <textarea
@@ -266,7 +266,7 @@ function CareersContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                 Resume (PDF/DOC) *
               </label>
               <Input
@@ -279,7 +279,7 @@ function CareersContent() {
 
             {/* Apply Options */}
             <div className="border-t pt-4 mt-4">
-              <p className="text-sm text-slate-600 mb-3 text-center">Choose how you want to apply:</p>
+              <p className="text-sm text-slate-600 mb-3 text-center dark:text-slate-400">Choose how you want to apply:</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   type="submit"
@@ -388,8 +388,8 @@ function CareersContent() {
         <Card>
           <CardContent className="py-12 text-center">
             <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900">No open positions</h3>
-            <p className="text-gray-500">Check back later for new opportunities</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100">No open positions</h3>
+            <p className="text-gray-500 dark:text-slate-400">Check back later for new opportunities</p>
           </CardContent>
         </Card>
       ) : (
@@ -397,7 +397,7 @@ function CareersContent() {
           {positions.map((position) => (
             <Card key={position._id} className="overflow-hidden">
               <div
-                className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="p-6 cursor-pointer hover:bg-gray-50 transition-colors dark:hover:bg-slate-800"
                 onClick={() => setExpandedId(expandedId === position._id ? null : position._id)}
               >
                 <div className="flex items-start justify-between">
@@ -406,11 +406,11 @@ function CareersContent() {
                       <h3 className="text-xl font-semibold" style={{ color: palette.primary }}>
                         {position.title}
                       </h3>
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300">
                         {position.employmentType}
                       </Badge>
                       {position.jobId && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
                           ID: {position.jobId}
                         </Badge>
                       )}
@@ -441,7 +441,7 @@ function CareersContent() {
                       </span>
                     </div>
 
-                    <p className="line-clamp-2 text-gray-700">
+                    <p className="line-clamp-2 text-gray-700 dark:text-slate-300">
                       {position.description}
                     </p>
                   </div>
@@ -458,7 +458,7 @@ function CareersContent() {
 
               {/* Expanded Details */}
               {expandedId === position._id && (
-                <div className="border-t px-6 py-6 bg-gray-50">
+                <div className="border-t px-6 py-6 bg-gray-50 dark:bg-slate-800/50">
                   <div className="grid md:grid-cols-2 gap-8">
                     <div>
                       <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: palette.primary }}>
@@ -467,7 +467,7 @@ function CareersContent() {
                       </h4>
                       <ul className="space-y-2">
                         {position.requirements.map((req, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-700">
+                          <li key={i} className="flex items-start gap-2 text-gray-700 dark:text-slate-300">
                             <span style={{ color: palette.accent }}>•</span>
                             {req}
                           </li>
@@ -482,7 +482,7 @@ function CareersContent() {
                       </h4>
                       <ul className="space-y-2">
                         {position.responsibilities.map((resp, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-700">
+                          <li key={i} className="flex items-start gap-2 text-gray-700 dark:text-slate-300">
                             <span style={{ color: palette.accent }}>•</span>
                             {resp}
                           </li>
@@ -557,8 +557,8 @@ function CareersContent() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">No open positions</h3>
-                  <p className="text-gray-500">Check back later for new opportunities</p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100">No open positions</h3>
+                  <p className="text-gray-500 dark:text-slate-400">Check back later for new opportunities</p>
                 </CardContent>
               </Card>
             )}

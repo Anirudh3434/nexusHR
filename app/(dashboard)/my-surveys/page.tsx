@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   FileText, CheckCircle, Clock, Calendar, Send, 
   Star, ChevronRight, ChevronDown, AlertCircle
@@ -115,10 +116,10 @@ export default function MySurveysPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Surveys</h1>
-        <p className="text-gray-600 mt-1">Participate in company surveys and view your responses</p>
-      </div>
+      <PageHeader
+        title="My Surveys"
+        description="Participate in company surveys and view your responses"
+      />
 
       {/* Available Surveys */}
       <div>
@@ -130,7 +131,7 @@ export default function MySurveysPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No active surveys available</p>
+              <p className="text-gray-600 dark:text-slate-400">No active surveys available</p>
             </CardContent>
           </Card>
         ) : (
@@ -145,23 +146,23 @@ export default function MySurveysPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{survey.title}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{survey.title}</h3>
                           <Badge variant="outline">
                             {typeLabels[survey.type]}
                           </Badge>
                           {survey.isAnonymous && (
-                            <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                            <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">
                               Anonymous
                             </Badge>
                           )}
                           {isExpired && (
-                            <Badge className="bg-red-100 text-red-800">
+                            <Badge className="bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300">
                               Expired
                             </Badge>
                           )}
                         </div>
-                        <p className="text-gray-600 text-sm mb-3">{survey.description}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <p className="text-gray-600 text-sm mb-3 dark:text-slate-400">{survey.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
                           <span className="flex items-center gap-1">
                             <FileText className="w-4 h-4" />
                             {survey.questions.length} questions
@@ -176,7 +177,7 @@ export default function MySurveysPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {hasResponded ? (
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Completed
                           </Badge>
@@ -211,7 +212,7 @@ export default function MySurveysPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">You haven't responded to any surveys yet</p>
+              <p className="text-gray-600 dark:text-slate-400">You haven't responded to any surveys yet</p>
             </CardContent>
           </Card>
         ) : (
@@ -221,10 +222,10 @@ export default function MySurveysPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">
                         {response.surveyId.title}
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
                           Submitted: {new Date(response.submittedAt).toLocaleDateString()}
@@ -352,12 +353,12 @@ function TakeSurveyModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b sticky top-0 bg-white z-10">
+      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto dark:bg-slate-900">
+        <div className="p-6 border-b sticky top-0 bg-white z-10 dark:bg-slate-900">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold">{survey.title}</h2>
-              <p className="text-sm text-gray-600 mt-1">{survey.description}</p>
+              <p className="text-sm text-gray-600 mt-1 dark:text-slate-400">{survey.description}</p>
             </div>
             <Button variant="ghost" onClick={onClose}>
               <ChevronDown className="w-5 h-5" />
@@ -368,9 +369,9 @@ function TakeSurveyModal({
           {survey.questions.map((question, index) => (
             <div key={question.id} className="space-y-3">
               <div className="flex items-start gap-2">
-                <span className="text-sm font-medium text-gray-700 mt-1">{index + 1}.</span>
+                <span className="text-sm font-medium text-gray-700 mt-1 dark:text-slate-300">{index + 1}.</span>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                  <label className="block text-sm font-medium text-gray-900 mb-2 dark:text-slate-100">
                     {question.text}
                     {question.required && <span className="text-red-500 ml-1">*</span>}
                   </label>
@@ -394,8 +395,8 @@ function TakeSurveyModal({
                           onClick={() => handleAnswerChange(question.id, rating)}
                           className={`p-3 rounded-lg border-2 transition-colors ${
                             answers[question.id] === rating
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-slate-700'
                           }`}
                         >
                           <Star className={`w-5 h-5 ${answers[question.id] === rating ? 'fill-blue-500 text-blue-500' : 'text-gray-300'}`} />
@@ -517,12 +518,12 @@ function ViewResultsModal({
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b sticky top-0 bg-white z-10">
+      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto dark:bg-slate-900">
+        <div className="p-6 border-b sticky top-0 bg-white z-10 dark:bg-slate-900">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold">{response.surveyId.title}</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 mt-1 dark:text-slate-400">
                 Submitted on {new Date(response.submittedAt).toLocaleString()}
               </p>
             </div>
@@ -535,10 +536,10 @@ function ViewResultsModal({
           {response.answers.map((answer, index) => (
             <div key={answer.questionId} className="border rounded-lg p-4">
               <div className="flex items-start gap-2">
-                <span className="text-sm font-medium text-gray-700 mt-1">{index + 1}.</span>
+                <span className="text-sm font-medium text-gray-700 mt-1 dark:text-slate-300">{index + 1}.</span>
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900 mb-2">{answer.questionText}</p>
-                  <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="font-medium text-gray-900 mb-2 dark:text-slate-100">{answer.questionText}</p>
+                  <div className="bg-gray-50 rounded-lg p-3 dark:bg-slate-800/50">
                     {Array.isArray(answer.answer) ? (
                       <div className="flex flex-wrap gap-2">
                         {answer.answer.map((a, idx) => (
@@ -555,7 +556,7 @@ function ViewResultsModal({
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-700">{answer.answer || 'Not answered'}</p>
+                      <p className="text-gray-700 dark:text-slate-300">{answer.answer || 'Not answered'}</p>
                     )}
                   </div>
                 </div>

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { callNvidiaAI } from '@/lib/nvidia-ai';
+import { getAuthInfo } from '@/lib/auth-util';
 
 export async function POST(req: Request) {
   try {
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
     const body = await req.json();
     const { 
       jobTitle, 

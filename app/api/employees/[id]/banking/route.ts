@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Employee from '@/models/Employee';
 import User from '@/models/User';
-import { 
-  encryptObject, 
-  decryptObject, 
-  maskAccountNumber, 
-  maskPanNumber, 
+import {
+  encryptObject,
+  decryptObject,
+  maskAccountNumber,
+  maskPanNumber,
   maskAadhaar,
   generateBlindIndex,
   IEncryptedBankDetails,
   IEncryptedGovernmentId
 } from '@/lib/security/encryption';
-import { headers } from 'next/headers';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
 // GET - Retrieve decrypted bank details & crucial ID (Admin, HR, or Owner only)
 export async function GET(
@@ -21,11 +22,12 @@ export async function GET(
 ) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     const { id } = await params;
 
-    const headersList = await headers();
-    const currentUserId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'admin'; // fallback to admin in dev
+    const currentUserId = auth.userId;
+    const userRole = auth.role || 'employee';
 
     // Find employee by userId or employee record _id
     const employee = await Employee.findOne({
@@ -38,7 +40,7 @@ export async function GET(
 
     // Role-Based Access Control
     const isOwner = currentUserId && (employee.userId?.toString() === currentUserId);
-    const isPrivileged = userRole === 'admin' || userRole === 'hr';
+    const isPrivileged = hasRole(userRole, ['super_admin', 'admin', 'hr']);
 
     if (!isPrivileged && !isOwner) {
       // Non-privileged users only get masked data
@@ -46,6 +48,10 @@ export async function GET(
         bankAccountMasked: employee.bankAccountMasked || '••••••••',
         panMasked: employee.panMasked || '••••••••',
       }, { status: 200 });
+    }
+    // Same-company check for non-super_admin (owner is inherently same user; privileged must match)
+    if (userRole !== 'super_admin' && !isOwner && employee.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     // Decrypt crucial data
@@ -76,6 +82,8 @@ export async function POST(
 ) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     const { id } = await params;
     const body = await req.json();
     const { bankDetails, governmentId } = body;
@@ -86,6 +94,15 @@ export async function POST(
 
     if (!employee) {
       return NextResponse.json({ message: 'Employee profile not found' }, { status: 404 });
+    }
+
+    const isOwner = employee.userId?.toString() === auth.userId;
+    const isPrivileged = hasRole(auth.role, ['super_admin', 'admin', 'hr']);
+    if (!isOwner && !isPrivileged) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+    if (auth.role !== 'super_admin' && employee.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     const updates: any = {};

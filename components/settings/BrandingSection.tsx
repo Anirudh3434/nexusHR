@@ -87,10 +87,10 @@ export function BrandingSection({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Palette className="h-6 w-6 text-blue-600" />
+            <Palette className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             Branding & Login Customization
           </h2>
-          <p className="text-sm text-gray-500">Tailor the login experience for your employees.</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Tailor the login experience for your employees.</p>
         </div>
         <Button onClick={onSave} disabled={isSaving} className="shadow-lg shadow-blue-500/10">
           {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
@@ -101,8 +101,8 @@ export function BrandingSection({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Logo & Background */}
         <div className="space-y-6">
-          <Card className="border-gray-100 shadow-sm overflow-hidden group">
-            <CardHeader className="bg-gray-50/50 pb-4">
+          <Card className="border-gray-100 shadow-sm overflow-hidden group dark:border-slate-800">
+            <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
               <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                 <ImageIcon className="h-4 w-4" />
                 Company Assets
@@ -111,9 +111,9 @@ export function BrandingSection({
             <CardContent className="space-y-6 pt-6">
               {/* Logo */}
               <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700">Company Logo</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Company Logo</label>
                 <div className="flex items-center gap-4">
-                  <div className="h-24 w-24 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center bg-gray-50/50 overflow-hidden transition-all group-hover:border-blue-200 group-hover:bg-blue-50/10">
+                  <div className="h-24 w-24 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center bg-gray-50/50 overflow-hidden transition-all group-hover:border-blue-200 group-hover:bg-blue-50/10 dark:border-slate-700 dark:bg-slate-800/70 dark:group-hover:bg-blue-500/10">
                     {settings.logo ? (
                       <img src={settings.logo} alt="Logo preview" className="h-full w-full object-contain p-3" />
                     ) : (
@@ -130,7 +130,7 @@ export function BrandingSection({
                         size="sm"
                         onClick={() => document.getElementById('logoInput')?.click()}
                         disabled={isUploading === 'logo'}
-                        className="bg-white border-gray-200 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs h-9 px-4 rounded-xl"
+                        className="bg-white border-gray-200 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs h-9 px-4 rounded-xl dark:bg-slate-900 dark:border-slate-700"
                       >
                         {isUploading === 'logo' ? (
                           <Loader2 className="h-3 w-3 mr-2 animate-spin" />
@@ -164,11 +164,11 @@ export function BrandingSection({
 
               {/* Background */}
               <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700">Login Background</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Login Background</label>
                 <div className="flex items-center gap-4">
                   <div 
                     className={`relative h-24 w-24 border-2 rounded-2xl flex items-center justify-center overflow-hidden cursor-pointer transition-all ${
-                      settings.loginBackground ? 'border-blue-500 border-solid shadow-md shadow-blue-500/20' : 'border-dashed border-gray-200'
+                      settings.loginBackground ? 'border-blue-500 border-solid shadow-md shadow-blue-500/20' : 'border-dashed border-gray-200 dark:border-slate-700'
                     }`}
                     style={{ backgroundColor: settings.loginBackground ? undefined : settings.loginBackgroundColor }}
                   >
@@ -187,7 +187,7 @@ export function BrandingSection({
                         size="sm"
                         onClick={() => document.getElementById('bgInput')?.click()}
                         disabled={isUploading === 'background'}
-                        className="bg-white border-gray-200 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs h-9 px-4 rounded-xl"
+                        className="bg-white border-gray-200 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs h-9 px-4 rounded-xl dark:bg-slate-900 dark:border-slate-700"
                       >
                         {isUploading === 'background' ? (
                           <Loader2 className="h-3 w-3 mr-2 animate-spin" />
@@ -222,8 +222,8 @@ export function BrandingSection({
           </Card>
 
           {/* Primary Color */}
-          <Card className="border-gray-100 shadow-sm">
-             <CardHeader className="bg-gray-50/50 pb-4">
+          <Card className="border-gray-100 shadow-sm dark:border-slate-800">
+             <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
               <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                 <Palette className="h-4 w-4" />
                 Brand Color
@@ -238,7 +238,7 @@ export function BrandingSection({
                     <button
                       key={color}
                       onClick={() => setSettings({...settings, primaryColor: color})}
-                      className="relative w-full aspect-square rounded-lg border border-gray-100 hover:scale-110 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="relative w-full aspect-square rounded-lg border border-gray-100 hover:scale-110 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800"
                       style={{ backgroundColor: color }}
                     >
                       {settings.primaryColor === color && (
@@ -254,12 +254,12 @@ export function BrandingSection({
                     type="color"
                     value={settings.primaryColor || '#2563eb'}
                     onChange={(e) => setSettings({...settings, primaryColor: e.target.value})}
-                    className="h-10 w-16 rounded-xl cursor-pointer border border-gray-100 bg-white p-1"
+                    className="h-10 w-16 rounded-xl cursor-pointer border border-gray-100 bg-white p-1 dark:border-slate-800 dark:bg-slate-900"
                   />
                   <Input
                     value={settings.primaryColor || ''}
                     onChange={(e) => setSettings({...settings, primaryColor: e.target.value})}
-                    className="flex-1 font-mono text-sm h-10 border-gray-100 uppercase tracking-tighter font-bold"
+                    className="flex-1 font-mono text-sm h-10 border-gray-100 uppercase tracking-tighter font-bold dark:border-slate-800"
                   />
                 </div>
             </CardContent>
@@ -268,8 +268,8 @@ export function BrandingSection({
 
         {/* Text Customization & Preview */}
         <div className="space-y-6">
-          <Card className="border-gray-100 shadow-sm">
-             <CardHeader className="bg-gray-50/50 pb-4">
+          <Card className="border-gray-100 shadow-sm dark:border-slate-800">
+             <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
               <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                 <Type className="h-4 w-4" />
                 Messaging
@@ -277,21 +277,21 @@ export function BrandingSection({
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Login View Title</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1 dark:text-slate-400">Login View Title</label>
                 <Input
                   value={settings.loginTitle || ''}
                   onChange={(e) => setSettings({...settings, loginTitle: e.target.value})}
                   placeholder="Welcome Back"
-                  className="font-bold border-gray-100 h-10"
+                  className="font-bold border-gray-100 h-10 dark:border-slate-800"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Login View Subtitle</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1 dark:text-slate-400">Login View Subtitle</label>
                 <Input
                   value={settings.loginSubtitle || ''}
                   onChange={(e) => setSettings({...settings, loginSubtitle: e.target.value})}
                   placeholder="Sign in to your account"
-                  className="text-xs font-medium border-gray-100 h-10"
+                  className="text-xs font-medium border-gray-100 h-10 dark:border-slate-800"
                 />
               </div>
             </CardContent>
@@ -307,7 +307,7 @@ export function BrandingSection({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 dark:text-blue-400"
                 onClick={() => setShowFullPreview(true)}
               >
                 <Maximize2 className="h-3 w-3 mr-1.5" />
@@ -315,12 +315,12 @@ export function BrandingSection({
               </Button>
             </CardHeader>
             <CardContent className="pt-2">
-              <div className="relative rounded-2xl overflow-hidden scale-90 -m-4 sm:-m-8 border border-gray-100 shadow-xl shadow-blue-500/5 transition-all group-hover:scale-100 group-hover:m-0 duration-700">
+              <div className="relative rounded-2xl overflow-hidden scale-90 -m-4 sm:-m-8 border border-gray-100 shadow-xl shadow-blue-500/5 transition-all group-hover:scale-100 group-hover:m-0 duration-700 dark:border-slate-800">
                 <LoginPageView 
                   settings={settings as any} 
                   companyName={companyName} 
                 />
-                <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-white shadow-lg text-[8px] font-black uppercase tracking-widest text-gray-500">
+                <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-white shadow-lg text-[8px] font-black uppercase tracking-widest text-gray-500 dark:bg-slate-900 dark:text-slate-400">
                   Live Sync Active
                 </div>
               </div>

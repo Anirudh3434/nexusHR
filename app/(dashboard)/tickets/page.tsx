@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   Ticket, Search, Filter, Clock, CheckCircle, XCircle, 
   MessageSquare, ChevronDown, ChevronUp, Calendar, User,
@@ -175,22 +177,22 @@ export default function TicketsManagementPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'open': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'pending': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'resolved': return 'bg-green-100 text-green-700 border-green-200';
+      case 'open': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30';
+      case 'in_progress': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30';
+      case 'pending': return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30';
+      case 'resolved': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30';
       case 'closed': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
-      case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
+      case 'cancelled': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30';
       default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-700';
-      case 'high': return 'bg-orange-100 text-orange-700';
-      case 'medium': return 'bg-yellow-100 text-yellow-700';
-      case 'low': return 'bg-green-100 text-green-700';
+      case 'critical': return 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300';
+      case 'high': return 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300';
+      case 'medium': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300';
+      case 'low': return 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300';
       default: return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
     }
   };
@@ -222,20 +224,18 @@ export default function TicketsManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Ticket Management</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Manage and resolve employee support tickets</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Ticket Management"
+        description="Manage and resolve employee support tickets"
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -315,11 +315,11 @@ export default function TicketsManagementPage() {
       <div className="space-y-3">
         {filteredTickets.length === 0 ? (
           <Card className="border-gray-200 dark:border-gray-700">
-            <CardContent className="py-12 text-center">
-              <Ticket className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No tickets found</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Try adjusting your filters</p>
-            </CardContent>
+            <EmptyState
+              title="No tickets found"
+              description="Try adjusting your filters"
+              icon={<Ticket size={18} />}
+            />
           </Card>
         ) : (
           filteredTickets.map((ticket) => (
@@ -408,7 +408,7 @@ export default function TicketsManagementPage() {
                     Updated {new Date(ticket.updatedAt).toLocaleDateString('en-GB')}
                   </span>
                   {ticket.assignedTo && (
-                    <span className="flex items-center gap-1 text-blue-600">
+                    <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
                       <User className="h-3.5 w-3.5" />
                       Assigned: {ticket.assignedTo.name}
                     </span>
@@ -423,7 +423,7 @@ export default function TicketsManagementPage() {
 
                 {/* Expanded Details */}
                 {expandedId === ticket._id && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 dark:border-slate-800">
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-slate-950 p-3 rounded whitespace-pre-wrap">
@@ -434,7 +434,7 @@ export default function TicketsManagementPage() {
                     {ticket.resolutionNotes && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resolution Notes</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 bg-green-50 p-3 rounded">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 bg-green-50 p-3 rounded dark:bg-green-500/10">
                           {ticket.resolutionNotes}
                         </p>
                       </div>
@@ -450,7 +450,7 @@ export default function TicketsManagementPage() {
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                   {comment.authorName}
-                                  {comment.internal && <span className="ml-2 text-xs text-yellow-600">(Internal)</span>}
+                                  {comment.internal && <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">(Internal)</span>}
                                 </span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
                                   {new Date(comment.createdAt).toLocaleDateString('en-GB')}

@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   UserX, Plus, Search, Filter, Clock, CheckCircle, XCircle, 
   ChevronDown, ChevronUp, Calendar, User, AlertTriangle,
@@ -318,22 +320,22 @@ export default function TerminationsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'under_review': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'approved': return 'bg-green-100 text-green-700 border-green-200';
-      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
-      case 'completed': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30';
+      case 'under_review': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30';
+      case 'approved': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30';
+      case 'completed': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'involuntary': return 'text-red-600';
-      case 'layoff': return 'text-orange-600';
-      case 'voluntary': return 'text-green-600';
-      case 'retirement': return 'text-blue-600';
-      default: return 'text-gray-600';
+      case 'involuntary': return 'text-red-600 dark:text-red-400';
+      case 'layoff': return 'text-orange-600 dark:text-orange-400';
+      case 'voluntary': return 'text-green-600 dark:text-green-400';
+      case 'retirement': return 'text-blue-600 dark:text-blue-400';
+      default: return 'text-gray-600 dark:text-slate-400';
     }
   };
 
@@ -367,18 +369,18 @@ export default function TerminationsPage() {
   }
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">Terminations</h1>
-          <p className="text-sm text-gray-500">Manage employee terminations and exit process</p>
-        </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          {showForm ? 'Cancel' : 'Initiate Termination'}
-        </Button>
-      </div>
+      <PageHeader
+        title="Terminations"
+        description="Manage employee terminations and exit process"
+        actions={
+          <Button onClick={() => setShowForm(!showForm)}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            {showForm ? 'Cancel' : 'Initiate Termination'}
+          </Button>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -389,10 +391,10 @@ export default function TerminationsPage() {
           { label: 'Rejected', value: stats.rejected, color: 'red' },
           { label: 'Completed', value: stats.completed, color: 'gray' },
         ].map(({ label, value, color }) => (
-          <Card key={label} className="border-gray-200">
+          <Card key={label} className="border-gray-200 dark:border-slate-700">
             <CardContent className="p-3">
-              <p className="text-2xl font-semibold text-gray-900">{value}</p>
-              <p className="text-xs text-gray-500">{label}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{value}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
             </CardContent>
           </Card>
         ))}
@@ -400,7 +402,7 @@ export default function TerminationsPage() {
 
       {/* Create Form */}
       {showForm && (
-        <Card className="border-gray-200">
+        <Card className="border-gray-200 dark:border-slate-700">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Initiate Employee Termination</CardTitle>
           </CardHeader>
@@ -408,14 +410,14 @@ export default function TerminationsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Employee *
                   </label>
                   <select
                     required
                     value={selectedEmployee}
                     onChange={(e) => setSelectedEmployee(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   >
                     <option value="">Select employee</option>
                     {employees.map((emp) => (
@@ -426,14 +428,14 @@ export default function TerminationsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Termination Type *
                   </label>
                   <select
                     required
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   >
                     {typeOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -444,14 +446,14 @@ export default function TerminationsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Reason *
                   </label>
                   <select
                     required
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   >
                     <option value="">Select reason</option>
                     {reasonOptions.map((opt) => (
@@ -460,7 +462,7 @@ export default function TerminationsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Severance Amount (Optional)
                   </label>
                   <div className="relative">
@@ -472,7 +474,7 @@ export default function TerminationsPage() {
                       value={severanceAmount}
                       onChange={(e) => setSeveranceAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                     />
                   </div>
                 </div>
@@ -480,7 +482,7 @@ export default function TerminationsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Notice Date *
                   </label>
                   <input
@@ -488,11 +490,11 @@ export default function TerminationsPage() {
                     required
                     value={noticeDate}
                     onChange={(e) => setNoticeDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Termination Date *
                   </label>
                   <input
@@ -500,11 +502,11 @@ export default function TerminationsPage() {
                     required
                     value={terminationDate}
                     onChange={(e) => setTerminationDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                     Notice Period (Days)
                   </label>
                   <input
@@ -512,13 +514,13 @@ export default function TerminationsPage() {
                     min="0"
                     value={noticePeriodDays}
                     onChange={(e) => setNoticePeriodDays(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Detailed Reason
                 </label>
                 <textarea
@@ -527,14 +529,14 @@ export default function TerminationsPage() {
                   placeholder="Provide detailed justification for termination..."
                   maxLength={2000}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:border-slate-700"
                 />
                 <p className="text-xs text-gray-400 mt-1">{detailedReason.length}/2000 characters</p>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-yellow-700">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex items-start gap-2 dark:bg-yellow-500/10 dark:border-yellow-500/30">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0 dark:text-yellow-400" />
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   This will initiate a termination request that requires manager or admin approval. 
                   Please ensure all documentation is complete before submitting.
                 </p>
@@ -571,13 +573,13 @@ export default function TerminationsPage() {
             placeholder="Search by ID, employee name, or reason..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white dark:border-slate-700 dark:bg-slate-900"
         >
           <option value="">All Status</option>
           <option value="pending">Pending</option>
@@ -591,22 +593,22 @@ export default function TerminationsPage() {
       {/* Terminations List */}
       <div className="space-y-3">
         {filteredTerminations.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="py-12 text-center">
-              <UserX className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No terminations</h3>
-              <p className="text-gray-500 text-sm">No termination records found</p>
-            </CardContent>
+          <Card className="border-gray-200 dark:border-slate-700">
+            <EmptyState
+              icon={<UserX size={18} />}
+              title="No terminations"
+              description="No termination records found"
+            />
           </Card>
         ) : (
           filteredTerminations.map((termination) => (
-            <Card key={termination._id} className="border-gray-200 overflow-hidden">
+            <Card key={termination._id} className="border-gray-200 overflow-hidden dark:border-slate-700">
               <div className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   {/* Left: Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+                      <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono dark:bg-slate-800 dark:text-slate-400">
                         {termination.terminationNumber}
                       </code>
                       <Badge className={`${getStatusColor(termination.status)} text-xs px-2 py-0.5`}>
@@ -619,18 +621,18 @@ export default function TerminationsPage() {
                     
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 dark:text-slate-100">
                         {termination.employeeId?.name}
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
                       <span>{termination.employeeId?.department}</span>
                       <span>{termination.employeeId?.designation}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-600 dark:text-slate-400">
                         Reason: {reasonLabels[termination.reason] || termination.reason}
                       </span>
                     </div>
@@ -654,7 +656,7 @@ export default function TerminationsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedTermination(termination)}
-                          className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                          className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3 dark:border-red-500/30 dark:text-red-400"
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Reject
@@ -667,7 +669,7 @@ export default function TerminationsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCancel(termination._id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2 dark:text-red-400"
                       >
                         <XCircle className="h-4 w-4" />
                       </Button>
@@ -677,7 +679,7 @@ export default function TerminationsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleExpand(termination._id)}
-                      className="text-gray-500 h-8 px-2"
+                      className="text-gray-500 h-8 px-2 dark:text-slate-400"
                     >
                       {expandedId === termination._id ? (
                         <ChevronUp className="h-4 w-4" />
@@ -689,7 +691,7 @@ export default function TerminationsPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-3">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-3 dark:text-slate-400">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
                     Notice: {new Date(termination.noticeDate).toLocaleDateString('en-GB')}
@@ -709,7 +711,7 @@ export default function TerminationsPage() {
                     </span>
                   )}
                   {termination.approverId && (
-                    <span className="flex items-center gap-1 text-blue-600">
+                    <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
                       <Briefcase className="h-3.5 w-3.5" />
                       Approver: {termination.approverId.name}
                     </span>
@@ -718,11 +720,11 @@ export default function TerminationsPage() {
 
                 {/* Expanded Details */}
                 {expandedId === termination._id && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 dark:border-slate-800">
                     {termination.detailedReason && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Detailed Reason</h4>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Detailed Reason</h4>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded dark:text-slate-400 dark:bg-slate-800/50">
                           {termination.detailedReason}
                         </p>
                       </div>
@@ -730,8 +732,8 @@ export default function TerminationsPage() {
 
                     {termination.rejectionReason && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Rejection Reason</h4>
-                        <p className="text-sm text-gray-600 bg-red-50 p-3 rounded">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Rejection Reason</h4>
+                        <p className="text-sm text-gray-600 bg-red-50 p-3 rounded dark:text-slate-400 dark:bg-red-500/10">
                           {termination.rejectionReason}
                         </p>
                       </div>
@@ -740,18 +742,18 @@ export default function TerminationsPage() {
                     {/* Initiator & Approval Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-500">Initiated by:</span>{' '}
+                        <span className="text-gray-500 dark:text-slate-400">Initiated by:</span>{' '}
                         <span className="font-medium">{termination.initiatedBy?.name}</span>
-                        <span className="text-gray-500 ml-2">
+                        <span className="text-gray-500 ml-2 dark:text-slate-400">
                           on {new Date(termination.createdAt).toLocaleDateString('en-GB')}
                         </span>
                       </div>
                       {termination.approvedBy && (
                         <div>
-                          <span className="text-gray-500">Approved by:</span>{' '}
+                          <span className="text-gray-500 dark:text-slate-400">Approved by:</span>{' '}
                           <span className="font-medium">{termination.approvedBy.name}</span>
                           {termination.approvedAt && (
-                            <span className="text-gray-500 ml-2">
+                            <span className="text-gray-500 ml-2 dark:text-slate-400">
                               on {new Date(termination.approvedAt).toLocaleDateString('en-GB')}
                             </span>
                           )}
@@ -762,25 +764,25 @@ export default function TerminationsPage() {
                     {/* Exit Status */}
                     <div className="flex items-center gap-6 text-sm">
                       <div>
-                        <span className="text-gray-500">Exit Interview:</span>{' '}
+                        <span className="text-gray-500 dark:text-slate-400">Exit Interview:</span>{' '}
                         <Badge variant={termination.exitInterviewCompleted ? 'default' : 'outline'} className="text-xs">
                           {termination.exitInterviewCompleted ? 'Completed' : 'Pending'}
                         </Badge>
                       </div>
                       <div>
-                        <span className="text-gray-500">Assets:</span>{' '}
+                        <span className="text-gray-500 dark:text-slate-400">Assets:</span>{' '}
                         <Badge variant={termination.assetsReturned ? 'default' : 'outline'} className="text-xs">
                           {termination.assetsReturned ? 'Returned' : 'Pending'}
                         </Badge>
                       </div>
                       <div>
-                        <span className="text-gray-500">Clearance:</span>{' '}
+                        <span className="text-gray-500 dark:text-slate-400">Clearance:</span>{' '}
                         <span className={`text-xs px-2 py-0.5 rounded ${
                           termination.clearanceStatus === 'completed' 
-                            ? 'bg-green-100 text-green-700' 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' 
                             : termination.clearanceStatus === 'in_progress'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300'
+                            : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400'
                         }`}>
                           {termination.clearanceStatus}
                         </span>
@@ -790,20 +792,20 @@ export default function TerminationsPage() {
                     {/* Comments */}
                     {termination.comments && termination.comments.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Internal Comments</h4>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Internal Comments</h4>
                         <div className="space-y-2">
                           {termination.comments.map((comment, idx) => (
-                            <div key={idx} className="bg-yellow-50 border border-yellow-100 p-3 rounded text-sm">
+                            <div key={idx} className="bg-yellow-50 border border-yellow-100 p-3 rounded text-sm dark:bg-yellow-500/10">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-gray-900">
+                                <span className="font-medium text-gray-900 dark:text-slate-100">
                                   {comment.authorName}
-                                  <span className="text-xs text-gray-500 ml-2">({comment.role})</span>
+                                  <span className="text-xs text-gray-500 ml-2 dark:text-slate-400">({comment.role})</span>
                                 </span>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-slate-400">
                                   {new Date(comment.createdAt).toLocaleDateString('en-GB')}
                                 </span>
                               </div>
-                              <p className="text-gray-600">{comment.message}</p>
+                              <p className="text-gray-600 dark:text-slate-400">{comment.message}</p>
                             </div>
                           ))}
                         </div>
@@ -812,14 +814,14 @@ export default function TerminationsPage() {
 
                     {/* Add Comment */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Add Internal Comment</h4>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Add Internal Comment</h4>
                       <div className="flex gap-2">
                         <textarea
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
                           placeholder="Add a comment..."
                           rows={2}
-                          className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="flex-1 px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:border-slate-700"
                         />
                         <Button
                           onClick={() => handleAddComment(termination._id)}
@@ -847,7 +849,7 @@ export default function TerminationsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
                   Rejection Reason *
                 </label>
                 <textarea
@@ -855,7 +857,7 @@ export default function TerminationsPage() {
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Provide reason for rejection..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:border-slate-700"
                 />
               </div>
               <div className="flex gap-3 pt-2">

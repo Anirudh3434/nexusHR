@@ -36,21 +36,21 @@ const emailProviders = [
     name: 'Google Workspace', 
     icon: 'https://www.google.com/gmail/about/static/images/logo-gmail.png',
     description: 'Connect via Secure OAuth 2.0',
-    color: 'bg-red-50/50 border-red-100 text-red-700',
+    color: 'bg-red-50/50 border-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-300',
   },
   { 
     id: 'outlook', 
     name: 'Microsoft 365', 
     icon: 'https://upload.wikimedia.org/wikipedia/commons/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg',
     description: 'Connect via Microsoft OAuth',
-    color: 'bg-blue-50/50 border-blue-100 text-blue-700',
+    color: 'bg-blue-50/50 border-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300',
   },
   { 
     id: 'other', 
     name: 'Custom IMAP', 
     icon: null,
     description: 'Generic IMAP/SMTP settings',
-    color: 'bg-gray-50/50 border-gray-100 text-gray-700',
+    color: 'bg-gray-50/50 border-gray-100 text-gray-700 dark:bg-slate-800/70 dark:border-slate-800 dark:text-slate-300',
   },
 ];
 
@@ -169,10 +169,10 @@ export function EmailSection({ companyId }: EmailSectionProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Mail className="h-6 w-6 text-blue-600" />
+            <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             Email Integration
           </h2>
-          <p className="text-sm text-gray-500">Sync your recruitment inbox and automate replies.</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Sync your recruitment inbox and automate replies.</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="shadow-lg shadow-blue-500/10">
           {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
@@ -183,8 +183,8 @@ export function EmailSection({ companyId }: EmailSectionProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Provider Selection */}
-          <Card className="border-gray-100 shadow-sm overflow-hidden">
-             <CardHeader className="bg-gray-50/50 pb-4">
+          <Card className="border-gray-100 shadow-sm overflow-hidden dark:border-slate-800">
+             <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
                 <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                   <Globe className="h-4 w-4" />
                   Service Provider
@@ -198,16 +198,16 @@ export function EmailSection({ companyId }: EmailSectionProps) {
                     onClick={() => setFormData(prev => ({ ...prev, provider: provider.id as any }))}
                     className={`p-4 rounded-2xl border-2 text-left transition-all ${
                       formData.provider === provider.id 
-                        ? 'border-blue-500 ring-4 ring-blue-50 bg-white' 
-                        : 'border-gray-100 hover:border-gray-200 bg-gray-50/30'
+                        ? 'border-blue-500 ring-4 ring-blue-50 bg-white dark:bg-slate-900' 
+                        : 'border-gray-100 hover:border-gray-200 bg-gray-50/30 dark:border-slate-800 dark:bg-slate-800/70'
                     }`}
                   >
                     <div className="flex items-center gap-3 mb-2">
                       {provider.icon ? (
                         <img src={provider.icon} alt={provider.name} className="w-8 h-8 object-contain" />
                       ) : (
-                        <div className="h-8 w-8 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <Mail className="w-4 h-4 text-gray-500" />
+                        <div className="h-8 w-8 bg-gray-200 rounded-lg flex items-center justify-center dark:bg-slate-700">
+                          <Mail className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                         </div>
                       )}
                       {formData.provider === provider.id && (
@@ -216,7 +216,7 @@ export function EmailSection({ companyId }: EmailSectionProps) {
                         </div>
                       )}
                     </div>
-                    <h3 className="font-bold text-xs text-gray-900 tracking-tight">{provider.name}</h3>
+                    <h3 className="font-bold text-xs text-gray-900 tracking-tight dark:text-slate-100">{provider.name}</h3>
                     <p className="text-[10px] text-gray-400 font-medium mt-0.5">{provider.description}</p>
                   </button>
                 ))}
@@ -225,8 +225,8 @@ export function EmailSection({ companyId }: EmailSectionProps) {
           </Card>
 
           {/* Connection Area */}
-          <Card className="border-gray-100 shadow-sm overflow-hidden">
-             <CardHeader className="bg-gray-50/50 pb-4">
+          <Card className="border-gray-100 shadow-sm overflow-hidden dark:border-slate-800">
+             <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
                 <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                   <Lock className="h-4 w-4" />
                   Account Connection
@@ -234,7 +234,7 @@ export function EmailSection({ companyId }: EmailSectionProps) {
               </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 dark:text-slate-400">
                   Target Recruitment Email
                 </label>
                 <Input
@@ -242,7 +242,7 @@ export function EmailSection({ companyId }: EmailSectionProps) {
                   placeholder="careers@company.com"
                   value={formData.careerEmail}
                   onChange={(e) => setFormData(prev => ({ ...prev, careerEmail: e.target.value }))}
-                  className="h-11 border-gray-100 font-bold"
+                  className="h-11 border-gray-100 font-bold dark:border-slate-800"
                 />
               </div>
 
@@ -272,23 +272,23 @@ export function EmailSection({ companyId }: EmailSectionProps) {
                    <div className="space-y-4">
                      <h5 className="text-[10px] font-black uppercase text-gray-400 tracking-widest border-b pb-1">Incoming (IMAP)</h5>
                      <div>
-                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Host</label>
-                       <Input value={formData.imapHost} onChange={(e) => setFormData({...formData, imapHost: e.target.value})} className="h-9 border-gray-100" />
+                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block dark:text-slate-400">Host</label>
+                       <Input value={formData.imapHost} onChange={(e) => setFormData({...formData, imapHost: e.target.value})} className="h-9 border-gray-100 dark:border-slate-800" />
                      </div>
                      <div>
-                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Port</label>
-                       <Input type="number" value={formData.imapPort} onChange={(e) => setFormData({...formData, imapPort: parseInt(e.target.value)})} className="h-9 border-gray-100 text-xs" />
+                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block dark:text-slate-400">Port</label>
+                       <Input type="number" value={formData.imapPort} onChange={(e) => setFormData({...formData, imapPort: parseInt(e.target.value)})} className="h-9 border-gray-100 text-xs dark:border-slate-800" />
                      </div>
                    </div>
                    <div className="space-y-4">
                      <h5 className="text-[10px] font-black uppercase text-gray-400 tracking-widest border-b pb-1">Outgoing (SMTP)</h5>
                      <div>
-                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Host</label>
-                       <Input value={formData.smtpHost} onChange={(e) => setFormData({...formData, smtpHost: e.target.value})} className="h-9 border-gray-100" />
+                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block dark:text-slate-400">Host</label>
+                       <Input value={formData.smtpHost} onChange={(e) => setFormData({...formData, smtpHost: e.target.value})} className="h-9 border-gray-100 dark:border-slate-800" />
                      </div>
                      <div>
-                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Port</label>
-                       <Input type="number" value={formData.smtpPort} onChange={(e) => setFormData({...formData, smtpPort: parseInt(e.target.value)})} className="h-9 border-gray-100 text-xs" />
+                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block dark:text-slate-400">Port</label>
+                       <Input type="number" value={formData.smtpPort} onChange={(e) => setFormData({...formData, smtpPort: parseInt(e.target.value)})} className="h-9 border-gray-100 text-xs dark:border-slate-800" />
                      </div>
                    </div>
                 </div>
@@ -299,8 +299,8 @@ export function EmailSection({ companyId }: EmailSectionProps) {
 
         <div className="space-y-6">
           {/* Automation Switch */}
-          <Card className="border-gray-100 shadow-sm">
-             <CardHeader className="bg-gray-50/50 pb-4">
+          <Card className="border-gray-100 shadow-sm dark:border-slate-800">
+             <CardHeader className="bg-gray-50/50 pb-4 dark:bg-slate-800/70">
                 <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wider font-black text-gray-400">
                   <Sparkles className="h-4 w-4" />
                   Auto-Replies
@@ -308,7 +308,7 @@ export function EmailSection({ companyId }: EmailSectionProps) {
               </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between">
-                 <span className="text-xs font-bold text-gray-700">Enabled</span>
+                 <span className="text-xs font-bold text-gray-700 dark:text-slate-300">Enabled</span>
                  <label className="relative inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -316,7 +316,7 @@ export function EmailSection({ companyId }: EmailSectionProps) {
                       checked={formData.autoReplyEnabled}
                       onChange={(e) => setFormData(prev => ({ ...prev, autoReplyEnabled: e.target.checked }))}
                     />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 dark:bg-slate-700"></div>
                   </label>
               </div>
               <textarea
@@ -324,7 +324,7 @@ export function EmailSection({ companyId }: EmailSectionProps) {
                 onChange={(e) => setFormData(prev => ({ ...prev, autoReplyTemplate: e.target.value }))}
                 disabled={!formData.autoReplyEnabled}
                 rows={4}
-                className="w-full px-3 py-2 border rounded-xl text-xs font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all disabled:opacity-40"
+                className="w-full px-3 py-2 border rounded-xl text-xs font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all disabled:opacity-40 dark:border-slate-800"
                 placeholder="Confirmation message..."
               />
             </CardContent>
@@ -348,12 +348,12 @@ export function EmailSection({ companyId }: EmailSectionProps) {
              </div>
           )}
 
-          <div className="p-6 rounded-2xl border border-dashed border-gray-100 bg-gray-50/50">
+          <div className="p-6 rounded-2xl border border-dashed border-gray-100 bg-gray-50/50 dark:border-slate-800 dark:bg-slate-800/70">
              <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                 <Tag className="h-3.5 w-3.5" />
                 Detection Bias
              </h5>
-             <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic">
+             <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic dark:text-slate-400">
                 We automatically flag incoming emails as "Applications" if they contain keywords like: {formData.jobKeywords?.slice(0, 3).join(', ')}...
              </p>
           </div>

@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { PageHeader } from '../../../../../components/ui/PageHeader';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   CartesianGrid, Tooltip, LineChart, Line
@@ -75,37 +77,36 @@ export default function DetailedPerformancePage() {
   );
 
   if (!report) return (
-    <div className="text-center py-20">
-      <AlertCircle className="mx-auto text-gray-200 mb-4" size={48} />
-      <h2 className="text-gray-400 font-bold">Report not found.</h2>
-      <Button variant="ghost" className="mt-4" onClick={() => router.back()}>Return</Button>
-    </div>
+    <EmptyState
+      title="Report not found."
+      icon={<AlertCircle size={18} />}
+      action={
+        <Button variant="ghost" onClick={() => router.back()}>Return</Button>
+      }
+    />
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 px-4 sm:px-6 lg:px-8 py-10">
-      {/* Minimal Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 pb-10">
-        <div className="flex items-center gap-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft size={18} className="text-gray-400" />
-          </Button>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black tracking-tight text-gray-900">{report.employeeId.name}</h1>
-            <p className="text-indigo-600 font-bold uppercase tracking-[0.2em] text-[10px]">
-              {report.employeeId.designation} • {report.employeeId.department}
-            </p>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase font-black tracking-widest text-gray-400 mb-1">Performance Rating</div>
-          <div className="text-4xl font-black text-gray-900 tracking-tighter">{report.rating.toFixed(1)}</div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={report.employeeId.name}
+        description={`${report.employeeId.designation} • ${report.employeeId.department}`}
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => router.back()}
+              className="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors dark:bg-slate-800/50 dark:hover:bg-slate-700"
+            >
+              <ArrowLeft size={18} className="text-gray-400" />
+            </Button>
+            <div className="text-right">
+              <div className="text-[10px] uppercase font-black tracking-widest text-gray-400 mb-1">Performance Rating</div>
+              <div className="text-4xl font-black text-gray-900 tracking-tighter dark:text-slate-100">{report.rating.toFixed(1)}</div>
+            </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Detailed Charts & Feedback */}
@@ -115,11 +116,11 @@ export default function DetailedPerformancePage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">14-Day Performance Window</h3>
-              <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs">
+              <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs dark:text-indigo-400">
                 <TrendingUp size={14} /> Historical Trend
               </div>
             </div>
-            <div className="h-[260px] w-full bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <div className="h-[260px] w-full bg-white rounded-3xl p-6 border border-gray-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={history}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -166,7 +167,7 @@ export default function DetailedPerformancePage() {
               </h4>
               <div className="space-y-3">
                 {report.merits.map((m, i) => (
-                  <div key={i} className="text-sm font-medium text-gray-600 leading-relaxed pl-4 border-l-2 border-gray-100 italic">
+                  <div key={i} className="text-sm font-medium text-gray-600 leading-relaxed pl-4 border-l-2 border-gray-100 italic dark:text-slate-400 dark:border-slate-800">
                     {m}
                   </div>
                 ))}
@@ -178,7 +179,7 @@ export default function DetailedPerformancePage() {
               </h4>
               <div className="space-y-3">
                 {report.demerits.map((d, i) => (
-                  <div key={i} className="text-sm font-medium text-gray-600 leading-relaxed pl-4 border-l-2 border-rose-100 italic">
+                  <div key={i} className="text-sm font-medium text-gray-600 leading-relaxed pl-4 border-l-2 border-rose-100 italic dark:text-slate-400">
                     {d}
                   </div>
                 ))}
@@ -191,13 +192,13 @@ export default function DetailedPerformancePage() {
         <div className="lg:col-span-4 space-y-12">
           
           {/* Executive Summary Block */}
-          <div className="space-y-4 bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm relative overflow-hidden">
+          <div className="space-y-4 bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
             <div className="absolute top-0 left-0 w-1 y-full h-full bg-indigo-600" />
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={14} className="text-indigo-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">AI Conclusion</span>
+              <Sparkles size={14} className="text-indigo-600 dark:text-indigo-400" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">AI Conclusion</span>
             </div>
-            <p className="text-md font-medium text-gray-700 leading-relaxed italic">
+            <p className="text-md font-medium text-gray-700 leading-relaxed italic dark:text-slate-300">
               "{report.summary}"
             </p>
           </div>
@@ -208,39 +209,39 @@ export default function DetailedPerformancePage() {
             
             <div className="flex items-center justify-between group p-2">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+                <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all dark:border-slate-800">
                   <Clock size={14} className="text-gray-400" />
                 </div>
-                <div className="text-sm font-bold text-gray-500">Working Hours</div>
+                <div className="text-sm font-bold text-gray-500 dark:text-slate-400">Working Hours</div>
               </div>
-              <div className="text-lg font-black text-gray-900 tracking-tighter">{report.metrics.totalHours.toFixed(1)}h</div>
+              <div className="text-lg font-black text-gray-900 tracking-tighter dark:text-slate-100">{report.metrics.totalHours.toFixed(1)}h</div>
             </div>
 
             <div className="flex items-center justify-between group p-2">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+                <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all dark:border-slate-800">
                   <AlertCircle size={14} className="text-gray-400" />
                 </div>
-                <div className="text-sm font-bold text-gray-500">Late Arrival</div>
+                <div className="text-sm font-bold text-gray-500 dark:text-slate-400">Late Arrival</div>
               </div>
               <div className="text-lg font-black text-rose-500 tracking-tighter">{report.metrics.lateMinutes}m</div>
             </div>
 
             <div className="flex items-center justify-between group p-2">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
+                <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all dark:border-slate-800">
                   <TrendingUp size={14} className="text-gray-400" />
                 </div>
-                <div className="text-sm font-bold text-gray-500">Overtime Contribution</div>
+                <div className="text-sm font-bold text-gray-500 dark:text-slate-400">Overtime Contribution</div>
               </div>
-              <div className="text-lg font-black text-gray-900 tracking-tighter">{report.metrics.overtimeHours}h</div>
+              <div className="text-lg font-black text-gray-900 tracking-tighter dark:text-slate-100">{report.metrics.overtimeHours}h</div>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-gray-100">
+          <div className="pt-8 border-t border-gray-100 dark:border-slate-800">
              <Button 
                variant="outline" 
-               className="w-full border-gray-100 text-gray-400 font-bold uppercase tracking-widest text-[9px] hover:bg-gray-50 transition-all"
+               className="w-full border-gray-100 text-gray-400 font-bold uppercase tracking-widest text-[9px] hover:bg-gray-50 transition-all dark:border-slate-800 dark:hover:bg-slate-800"
              >
                Regenerate AI Analysis
              </Button>

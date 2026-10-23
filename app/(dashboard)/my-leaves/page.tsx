@@ -9,6 +9,8 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { getLeaves, createLeave, LeaveRequest } from "../../../services/leaveService";
 import { Loader2, Plus, X, Calendar } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 // Helper to format date
 const formatDate = (dateStr: string): string => {
@@ -113,49 +115,49 @@ export default function MyLeavesPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Leaves</h1>
-          <p className="text-gray-500">Manage your leave requests and view your current time-off balances.</p>
-        </div>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Request Leave
-        </Button>
-      </div>
+      <PageHeader
+        title="My Leaves"
+        description="Manage your leave requests and view your current time-off balances."
+        actions={
+          <Button onClick={() => setShowModal(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Request Leave
+          </Button>
+        }
+      />
 
       {/* Overview Cards - Dynamic Data */}
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Annual Leave Balance</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Annual Leave Balance</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
               {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : balances.annual.remaining}
-              <span className="text-sm font-normal text-gray-500 ml-1">days</span>
+              <span className="text-sm font-normal text-gray-500 ml-1 dark:text-slate-400">days</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">Used: {balances.annual.used} / {balances.annual.total}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Sick Leave Balance</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Sick Leave Balance</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
               {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : balances.sick.remaining}
-              <span className="text-sm font-normal text-gray-500 ml-1">days</span>
+              <span className="text-sm font-normal text-gray-500 ml-1 dark:text-slate-400">days</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">Used: {balances.sick.used} / {balances.sick.total}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Pending Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">
+            <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
               {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : pendingCount}
             </div>
           </CardContent>
@@ -189,8 +191,8 @@ export default function MyLeavesPage() {
                 </TableRow>
               ) : leaves.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                    No leave requests found.
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState title="No leave requests found." icon={<Calendar size={18} />} />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -202,15 +204,15 @@ export default function MyLeavesPage() {
                     <TableCell>{leave.totalDays || calculateDays(leave.startDate, leave.endDate)}</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium 
-                        ${leave.status === 'Approved' ? 'bg-green-100 text-green-800' 
-                        : leave.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-red-100 text-red-800'}`}>
+                        ${leave.status === 'Approved' ? 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300' 
+                        : leave.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300'}`}>
                         {leave.status}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
                       {leave.status === "Pending" ? (
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:border-red-500/30">
                           Cancel
                         </Button>
                       ) : (
@@ -228,7 +230,7 @@ export default function MyLeavesPage() {
       {/* Request Leave Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto dark:bg-slate-900">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Request Leave</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -238,11 +240,11 @@ export default function MyLeavesPage() {
             
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Leave Type</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-slate-600"
                 >
                   <option value="Annual">Annual Leave</option>
                   <option value="Sick">Sick Leave</option>
@@ -252,7 +254,7 @@ export default function MyLeavesPage() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">From Date *</label>
                   <Input
                     type="date"
                     value={formData.startDate}
@@ -261,7 +263,7 @@ export default function MyLeavesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">To Date *</label>
                   <Input
                     type="date"
                     value={formData.endDate}
@@ -272,18 +274,18 @@ export default function MyLeavesPage() {
               </div>
               
               {formData.startDate && formData.endDate && (
-                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded dark:text-slate-400 dark:bg-slate-800/50">
                   Total Days: <span className="font-semibold">{calculateDays(formData.startDate, formData.endDate)}</span>
                 </div>
               )}
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Reason</label>
                 <textarea
                   value={formData.reason}
                   onChange={(e) => setFormData({...formData, reason: e.target.value})}
                   placeholder="Enter reason for leave..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[80px]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[80px] dark:border-slate-600"
                 />
               </div>
               

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import HRKnowledgeBase from '@/models/HRKnowledgeBase';
 import { headers } from 'next/headers';
+import { escapeRegExp } from '@/lib/mongo';
 
 // GET - Fetch knowledge base articles
 export async function GET(req: NextRequest) {
@@ -33,10 +34,11 @@ export async function GET(req: NextRequest) {
     }
     
     if (search) {
+      const safeSearch = escapeRegExp(search, 128);
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } },
-        { keywords: { $in: [new RegExp(search, 'i')] } }
+        { title: { $regex: safeSearch, $options: 'i' } },
+        { content: { $regex: safeSearch, $options: 'i' } },
+        { keywords: { $in: [new RegExp(safeSearch, 'i')] } }
       ];
     }
 

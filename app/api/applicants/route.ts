@@ -3,18 +3,43 @@ import { headers } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import JobApplication from '@/models/JobApplication';
 import { grantPortalAccess, hireCandidate, notifyRejection } from '@/lib/hireService';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
+const RECRUITMENT_ROLES = ['admin', 'hr', 'manager'];
+
+const STATUS_ENUM = ['new', 'under_review', 'considered', 'rejected', 'shortlisted', 'interview', 'hired', 'spam'];
+
+// Allowed status transitions in the hiring pipeline
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  new: ['under_review', 'considered', 'rejected', 'shortlisted', 'spam'],
+  under_review: ['considered', 'shortlisted', 'interview', 'rejected', 'spam'],
+  considered: ['shortlisted', 'interview', 'rejected'],
+  shortlisted: ['interview', 'hired', 'rejected'],
+  interview: ['hired', 'rejected', 'shortlisted'],
+  rejected: [],
+  hired: [],
+  spam: [],
+};
 
 // GET applicants (all applications with Job ID - both website and email)
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
     const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
+    if (queryCompanyId && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
     const source = searchParams.get('source'); // Optional: filter by source
     const status = searchParams.get('status');
     const showGeneral = searchParams.get('showGeneral') === 'true';
     const jobId = searchParams.get('jobId');
-    const query: any = { companyId };
+    const query: any = { companyId: auth.companyId };
 
     // Default: Only show applications with a jobId
     // If showGeneral is true, we show EVERYTHING (all sources/general)
@@ -49,19 +74,49 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    const { id, status, rejectionReason, joiningDate, ctc, position, department, employmentType } = await req.json();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, RECRUITMENT_ROLES)) {
+      return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
+    }
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
+    const body = await req.json();
+    const { id, status, rejectionReason, joiningDate, ctc, position, department, employmentType } = body;
 
     if (!id || !status) {
       return NextResponse.json({ message: 'ID and status required' }, { status: 400 });
     }
 
+    if (!STATUS_ENUM.includes(status)) {
+      return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
+    }
+
+    // Scoped lookup: applicant must belong to the session company
+    const existing = await JobApplication.findOne({ _id: id, companyId: auth.companyId });
+    if (!existing) {
+      return NextResponse.json({ message: 'Application not found' }, { status: 404 });
+    }
+
+    // Validate status transition (same-status is a no-op update)
+    if (status !== existing.status) {
+      const allowed = ALLOWED_TRANSITIONS[existing.status] || [];
+      if (!allowed.includes(status)) {
+        return NextResponse.json({
+          message: `Status transition from "${existing.status}" to "${status}" is not allowed`,
+          error: 'TRANSITION_NOT_ALLOWED',
+        }, { status: 400 });
+      }
+    }
+
+    // Explicit allowlist (no body spread)
     const update: any = { status };
-    if (rejectionReason) {
+    if (rejectionReason !== undefined) {
       update.rejectionReason = rejectionReason;
     }
 
-    const application = await JobApplication.findByIdAndUpdate(
-      id,
+    const application = await JobApplication.findOneAndUpdate(
+      { _id: id, companyId: auth.companyId },
       update,
       { new: true }
     );
@@ -71,12 +126,12 @@ export async function PATCH(req: Request) {
     }
 
     const headersList = await headers();
-    const companyId = headersList.get('x-company-id');
+    const companyId = auth.companyId;
     const origin = req.headers.get('origin') || `http://${req.headers.get('host') || 'localhost:3000'}`;
     const actor = {
-      _id: headersList.get('x-user-id') || '',
+      _id: auth.userId || '',
       name: headersList.get('x-user-name') || 'HR',
-      email: headersList.get('x-user-email') || '',
+      email: auth.email || '',
     };
 
     // Auto-grant portal access: when an applicant is considered/shortlisted, create
@@ -158,6 +213,13 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, RECRUITMENT_ROLES)) {
+      return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
+    }
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
@@ -165,8 +227,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'Applicant ID required' }, { status: 400 });
     }
 
-    const application = await JobApplication.findByIdAndDelete(id);
-    
+    const application = await JobApplication.findOneAndDelete({ _id: id, companyId: auth.companyId });
+
     if (!application) {
       return NextResponse.json({ message: 'Applicant not found' }, { status: 404 });
     }

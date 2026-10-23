@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Expense from '@/models/Expense';
-import { headers } from 'next/headers';
 import mongoose from 'mongoose';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
 // Generate expense number helper
 async function generateExpenseNumber(): Promise<string> {
@@ -26,14 +27,14 @@ export async function GET(req: Request) {
   try {
     await connectDB();
     
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    const companyId = headersList.get('x-company-id');
-    
-    if (!userId) {
+    const auth = await getAuthInfo();
+    if (!auth) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const userId = auth.userId;
+    const userRole = auth.role || 'employee';
+    const isSuperAdmin = userRole === 'super_admin';
+    const isEmployee = userRole === 'employee';
     
     const { searchParams } = new URL(req.url);
     const urlCompanyId = searchParams.get('companyId');
@@ -43,17 +44,30 @@ export async function GET(req: Request) {
     const fromDate = searchParams.get('fromDate');
     const toDate = searchParams.get('toDate');
 
+    if (urlCompanyId && !isSuperAdmin && urlCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+
     const query: any = {};
 
-    // Role-based filtering
-    if (userRole === 'employee') {
+    // Role-based filtering + tenant scope (companyId ALWAYS from session)
+    if (isEmployee) {
+      // Employees see only their own; DELETE any ?employeeId= override
       query.employeeId = userId;
-    } else if (urlCompanyId || companyId) {
-      query.companyId = urlCompanyId || companyId;
+      if (auth.companyId) query.companyId = auth.companyId;
+    } else if (isSuperAdmin) {
+      const companyId = urlCompanyId || auth.companyId;
+      if (companyId) query.companyId = companyId;
+      if (employeeId) query.employeeId = employeeId;
+    } else {
+      if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = auth.companyId;
+      if (employeeId) query.employeeId = employeeId;
     }
 
     if (status) query.status = status;
-    if (employeeId) query.employeeId = employeeId;
+    // NOTE: employee ?employeeId= override intentionally deleted (forced to own above)
+    if (!isEmployee && employeeId) query.employeeId = employeeId;
     if (category) query.category = category;
     
     // Date range filter
@@ -96,16 +110,25 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    const companyId = headersList.get('x-company-id');
-    
-    if (!userId) {
+    const auth = await getAuthInfo();
+    if (!auth) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = auth.userId;
+    const companyId = auth.role === 'super_admin' ? (auth.companyId || undefined) : auth.companyId;
+    if (!companyId && auth.role !== 'super_admin') {
+      return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
     }
     
     const body = await req.json();
+    // Reject body companyId mismatch (except super_admin)
+    if (body.companyId && auth.role !== 'super_admin' && body.companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const resolvedCompanyId = auth.role === 'super_admin' ? (body.companyId || auth.companyId) : auth.companyId;
+    if (!resolvedCompanyId) {
+      return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+    }
     const { 
       category, 
       description, 
@@ -134,7 +157,7 @@ export async function POST(req: Request) {
     const expense = await Expense.create({
       expenseNumber,
       employeeId: userId,
-      companyId: companyId || body.companyId,
+      companyId: resolvedCompanyId,
       category,
       description,
       amount: parseFloat(amount),
@@ -163,28 +186,27 @@ export async function POST(req: Request) {
   }
 }
 
-// PATCH - Update expense (submit, approve, reject, reimburse)
+// PATCH - Update expense (submit, approve, reject, reimburse). Atomic to kill double-approve races.
 export async function PATCH(req: Request) {
   try {
     await connectDB();
     
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    const userName = headersList.get('x-user-name') || 'Unknown';
-    
-    if (!userId) {
+    const auth = await getAuthInfo();
+    if (!auth) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const userId = auth.userId;
+    const userRole = auth.role || 'employee';
+    const isSuperAdmin = userRole === 'super_admin';
     
     const body = await req.json();
+    // Allowlist: only these keys are honored
     const { 
       id, 
       status, 
       rejectionReason,
       approverId,
       approvalNotes,
-      reimbursed,
       paymentMethod,
       paymentReference,
       comment 
@@ -198,82 +220,116 @@ export async function PATCH(req: Request) {
     if (!expense) {
       return NextResponse.json({ message: 'Expense not found' }, { status: 404 });
     }
+    // Same-company check
+    if (!isSuperAdmin && expense.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
 
     const isOwner = expense.employeeId.toString() === userId;
-    const canManage = ['admin', 'hr', 'manager'].includes(userRole);
+    const canManage = ['super_admin', 'admin', 'hr', 'manager'].includes(userRole);
     const isApprover = expense.approverId?.toString() === userId || canManage;
+    const companyFilter: any = isSuperAdmin && !auth.companyId ? { _id: id } : { _id: id, companyId: expense.companyId };
 
-    const updateData: any = {};
-    
-    // Status updates
-    if (status) {
-      // Employee can only submit draft expenses
-      if (status === 'submitted' && isOwner && expense.status === 'draft') {
-        updateData.status = 'submitted';
-        updateData.submissionDate = new Date();
-      }
-      // Approver can approve/reject
-      else if (['approved', 'rejected'].includes(status) && isApprover) {
-        if (!['submitted', 'under_review'].includes(expense.status)) {
-          return NextResponse.json({ message: 'Cannot change status of processed expense' }, { status: 400 });
-        }
-        updateData.status = status;
-        
-        if (status === 'approved') {
-          updateData.approvedBy = userId;
-          updateData.approvedAt = new Date();
-          updateData.approvalNotes = approvalNotes;
-        }
-        
-        if (status === 'rejected') {
-          if (!rejectionReason) {
-            return NextResponse.json({ message: 'Rejection reason is required' }, { status: 400 });
-          }
-          updateData.rejectionReason = rejectionReason;
-        }
-      }
-      // Admin/HR can mark as reimbursed
-      else if (status === 'reimbursed' && canManage) {
-        if (expense.status !== 'approved') {
-          return NextResponse.json({ message: 'Can only reimburse approved expenses' }, { status: 400 });
-        }
-        updateData.status = 'reimbursed';
-        updateData.reimbursedAt = new Date();
-        updateData.reimbursedBy = userId;
-        if (paymentMethod) updateData.paymentMethod = paymentMethod;
-        if (paymentReference) updateData.paymentReference = paymentReference;
-      }
-    }
-    
-    // Assign approver
-    if (approverId && canManage) {
-      updateData.approverId = approverId;
-    }
-
-    // Add comment
+    // Add comment (same-company only; allowlist: comment string only)
     if (comment) {
+      if (typeof comment !== 'string') {
+        return NextResponse.json({ message: 'Invalid comment' }, { status: 400 });
+      }
       const newComment = {
         author: new mongoose.Types.ObjectId(userId),
-        authorName: userName,
+        authorName: auth.email || 'Unknown',
         role: userRole,
         message: comment,
         createdAt: new Date(),
       };
       
-      await Expense.findByIdAndUpdate(id, {
+      await Expense.findOneAndUpdate(companyFilter, {
         $push: { comments: newComment }
       });
     }
 
-    const updatedExpense = await Expense.findByIdAndUpdate(id, updateData, { new: true })
-      .populate('employeeId', 'name email department designation')
-      .populate('approverId', 'name email')
-      .populate('approvedBy', 'name email')
-      .populate('reimbursedBy', 'name email');
+    let updatedExpense = null;
+
+    // Status updates — all atomic with status preconditions; 409 on null (race / already processed)
+    if (status) {
+      // Owner submits own draft
+      if (status === 'submitted') {
+        if (!isOwner) return NextResponse.json({ message: 'Only the owner can submit this expense' }, { status: 403 });
+        updatedExpense = await Expense.findOneAndUpdate(
+          { ...companyFilter, employeeId: userId, status: 'draft' },
+          { $set: { status: 'submitted', submissionDate: new Date() } },
+          { new: true }
+        );
+        if (!updatedExpense) {
+          return NextResponse.json({ message: 'Expense already submitted or modified' }, { status: 409 });
+        }
+      }
+      // Approver-only approve/reject from submitted/under_review
+      else if (['approved', 'rejected'].includes(status)) {
+        if (!isApprover) return NextResponse.json({ message: 'Forbidden: approver only' }, { status: 403 });
+        const setData: any = { status };
+        if (status === 'approved') {
+          setData.approvedBy = userId;
+          setData.approvedAt = new Date();
+          if (approvalNotes !== undefined) setData.approvalNotes = approvalNotes;
+        }
+        if (status === 'rejected') {
+          if (!rejectionReason) {
+            return NextResponse.json({ message: 'Rejection reason is required' }, { status: 400 });
+          }
+          setData.rejectionReason = rejectionReason;
+        }
+        updatedExpense = await Expense.findOneAndUpdate(
+          { ...companyFilter, status: { $in: ['submitted', 'under_review'] } },
+          { $set: setData },
+          { new: true }
+        );
+        if (!updatedExpense) {
+          return NextResponse.json({ message: 'Expense already processed or modified' }, { status: 409 });
+        }
+      }
+      // Admin/HR reimburse approved only
+      else if (status === 'reimbursed') {
+        if (!hasRole(userRole, ['super_admin', 'admin', 'hr'])) {
+          return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+        }
+        const setData: any = { status: 'reimbursed', reimbursedAt: new Date(), reimbursedBy: userId };
+        if (paymentMethod !== undefined) setData.paymentMethod = paymentMethod;
+        if (paymentReference !== undefined) setData.paymentReference = paymentReference;
+        updatedExpense = await Expense.findOneAndUpdate(
+          { ...companyFilter, status: 'approved' },
+          { $set: setData },
+          { new: true }
+        );
+        if (!updatedExpense) {
+          return NextResponse.json({ message: 'Can only reimburse approved expenses' }, { status: 409 });
+        }
+      } else {
+        return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
+      }
+    }
+    
+    // Assign approver (staff only, allowlist)
+    if (approverId) {
+      if (!canManage) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+      updatedExpense = await Expense.findOneAndUpdate(companyFilter, { $set: { approverId } }, { new: true });
+    }
+
+    const result = updatedExpense
+      ? await Expense.findById(updatedExpense._id)
+          .populate('employeeId', 'name email department designation')
+          .populate('approverId', 'name email')
+          .populate('approvedBy', 'name email')
+          .populate('reimbursedBy', 'name email')
+      : await Expense.findOne(companyFilter)
+          .populate('employeeId', 'name email department designation')
+          .populate('approverId', 'name email')
+          .populate('approvedBy', 'name email')
+          .populate('reimbursedBy', 'name email');
 
     return NextResponse.json({ 
       message: 'Expense updated successfully',
-      expense: updatedExpense 
+      expense: result 
     });
   } catch (error: any) {
     console.error('Error updating expense:', error);
@@ -281,18 +337,19 @@ export async function PATCH(req: Request) {
   }
 }
 
-// DELETE - Delete draft expense
+// DELETE - Delete draft expense (atomic, tenant-scoped)
 export async function DELETE(req: Request) {
   try {
     await connectDB();
     
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    
-    if (!userId) {
+    const auth = await getAuthInfo();
+    if (!auth) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+    const userId = auth.userId;
+    const userRole = auth.role || 'employee';
+    const isSuperAdmin = userRole === 'super_admin';
+    const isAdmin = hasRole(userRole, ['super_admin', 'admin']);
     
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -305,19 +362,28 @@ export async function DELETE(req: Request) {
     if (!expense) {
       return NextResponse.json({ message: 'Expense not found' }, { status: 404 });
     }
+    if (!isSuperAdmin && expense.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
 
     const isOwner = expense.employeeId.toString() === userId;
-    const isAdmin = userRole === 'admin';
     
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ message: 'You can only delete your own expenses' }, { status: 403 });
     }
 
-    if (expense.status !== 'draft' && !isAdmin) {
-      return NextResponse.json({ message: 'Can only delete draft expenses' }, { status: 400 });
-    }
+    // Owners can only delete drafts (atomic: race returns 409); admins tenant-scoped delete
+    const filter: any = isAdmin
+      ? (isSuperAdmin && !auth.companyId ? { _id: id } : { _id: id, companyId: expense.companyId })
+      : { _id: id, companyId: expense.companyId, employeeId: userId, status: 'draft' };
+    const deleted = await Expense.findOneAndDelete(filter);
 
-    await Expense.findByIdAndDelete(id);
+    if (!deleted) {
+      if (!isAdmin) {
+        return NextResponse.json({ message: 'Can only delete draft expenses' }, { status: 409 });
+      }
+      return NextResponse.json({ message: 'Expense not found' }, { status: 404 });
+    }
 
     return NextResponse.json({ message: 'Expense deleted successfully' });
   } catch (error: any) {

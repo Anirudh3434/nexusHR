@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { PageHeader } from '../../../components/ui/PageHeader';
 
 export default function OvertimePage() {
   const { user } = useAuth();
@@ -150,34 +152,36 @@ export default function OvertimePage() {
   const manualCount = records.filter(r => r.manualOvertimeHours > 0).length;
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in duration-500">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 flex items-center gap-3">
-            <Clock className="text-blue-600" size={32} />
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-3">
+            <Clock className="text-blue-600 dark:text-blue-400" size={32} />
             Overtime Management
-          </h1>
-          <p className="text-gray-500 mt-1">Review and record extra working hours for your team.</p>
-        </div>
-        <Button 
-          onClick={() => setShowModal(true)} 
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 gap-2 h-11 px-6 rounded-xl"
-        >
-          <Plus size={18} /> Record Manual OT
-        </Button>
-      </div>
+          </span>
+        }
+        description="Review and record extra working hours for your team."
+        actions={
+          <Button
+            onClick={() => setShowModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 gap-2 h-11 px-6 rounded-xl"
+          >
+            <Plus size={18} /> Record Manual OT
+          </Button>
+        }
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-none shadow-sm bg-blue-50 dark:bg-blue-900/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600">
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
                 <Clock size={24} />
               </div>
               <div>
-                <p className="text-sm font-medium text-blue-600">Total Hours</p>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Hours</p>
                 <div className="text-2xl font-black text-blue-900 dark:text-blue-300">{totalOvertime.toFixed(1)}h</div>
               </div>
             </div>
@@ -187,11 +191,11 @@ export default function OvertimePage() {
         <Card className="border-none shadow-sm bg-purple-50 dark:bg-purple-900/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600">
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
                 <History size={24} />
               </div>
               <div>
-                <p className="text-sm font-medium text-purple-600">Manual Entries</p>
+                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Manual Entries</p>
                 <div className="text-2xl font-black text-purple-900 dark:text-purple-300">{manualCount} Records</div>
               </div>
             </div>
@@ -201,11 +205,11 @@ export default function OvertimePage() {
         <Card className="border-none shadow-sm bg-green-50 dark:bg-green-900/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600">
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400">
                 <CheckCircle2 size={24} />
               </div>
               <div>
-                <p className="text-sm font-medium text-green-600">Period Total</p>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">Period Total</p>
                 <div className="text-2xl font-black text-green-900 dark:text-green-300">{months[selectedMonth]} {selectedYear}</div>
               </div>
             </div>
@@ -215,10 +219,10 @@ export default function OvertimePage() {
 
       {/* Main Content */}
       <Card className="border-none shadow-xl shadow-gray-200/50">
-        <CardHeader className="border-b bg-gray-50/50">
+        <CardHeader className="border-b bg-gray-50/50 dark:bg-slate-800/70">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center border rounded-xl px-3 py-1.5 bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-500 w-64">
+              <div className="flex items-center border rounded-xl px-3 py-1.5 bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-500 w-64 dark:bg-slate-900">
                 <Search size={16} className="text-gray-400" />
                 <input 
                   type="text" 
@@ -228,7 +232,7 @@ export default function OvertimePage() {
                   className="bg-transparent border-none text-sm focus:ring-0 ml-2 w-full"
                 />
               </div>
-              <div className="flex items-center border rounded-xl px-3 py-1.5 bg-white shadow-sm">
+              <div className="flex items-center border rounded-xl px-3 py-1.5 bg-white shadow-sm dark:bg-slate-900">
                 <Calendar size={16} className="text-gray-400" />
                 <select 
                   value={selectedMonth} 
@@ -245,7 +249,7 @@ export default function OvertimePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50/50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                <tr className="bg-gray-50/50 text-gray-500 text-xs font-bold uppercase tracking-wider dark:bg-slate-800/70 dark:text-slate-400">
                   <th className="px-6 py-4">Employee</th>
                   <th className="px-6 py-4">Date</th>
                   <th className="px-6 py-4 text-center">System OT</th>
@@ -260,63 +264,66 @@ export default function OvertimePage() {
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
-                      <RefreshCw className="animate-spin text-blue-600 mx-auto" />
-                      <p className="text-gray-500 mt-2 text-sm font-medium">Crunching the hours...</p>
+                      <RefreshCw className="animate-spin text-blue-600 mx-auto dark:text-blue-400" />
+                      <p className="text-gray-500 mt-2 text-sm font-medium dark:text-slate-400">Crunching the hours...</p>
                     </td>
                   </tr>
                 ) : filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center text-gray-400 font-medium">
-                      No overtime records found for this period.
+                    <td colSpan={6} className="p-0">
+                      <EmptyState
+                        title="No overtime records found"
+                        description="No overtime records for this period"
+                      />
                     </td>
                   </tr>
                 ) : (
                   filteredRecords.map((record) => (
-                    <tr key={record._id} className="hover:bg-gray-50/80 transition-colors group">
+                    <tr key={record._id} className="hover:bg-gray-50/80 transition-colors group dark:hover:bg-slate-800/70">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-md">
                             {record.employeeId?.name.charAt(0)}
                           </div>
                           <div>
-                            <div className="text-sm font-bold text-gray-900">{record.employeeId?.name}</div>
+                            <div className="text-sm font-bold text-gray-900 dark:text-slate-100">{record.employeeId?.name}</div>
                             <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{record.employeeId?.department}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600 font-medium">
+                        <div className="text-sm text-gray-600 font-medium dark:text-slate-400">
                           {new Date(record.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="text-gray-500 text-sm">{record.overtimeHours || 0}h</span>
+                        <span className="text-gray-500 text-sm dark:text-slate-400">{record.overtimeHours || 0}h</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="text-blue-600 font-bold text-sm bg-blue-50 px-2 py-0.5 rounded-lg">
+                        <span className="text-blue-600 font-bold text-sm bg-blue-50 px-2 py-0.5 rounded-lg dark:text-blue-400 dark:bg-blue-500/10">
                           +{record.manualOvertimeHours || 0}h
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="text-sm font-black text-gray-900">
+                        <div className="text-sm font-black text-gray-900 dark:text-slate-100">
                           {((record.overtimeHours || 0) + (record.manualOvertimeHours || 0)).toFixed(1)}h
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           record.overtimeStatus === 'paid' 
-                            ? 'bg-green-100 text-green-700' 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' 
                             : record.overtimeStatus === 'comp_off'
-                              ? 'bg-blue-100 text-blue-700'
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300'
                               : record.overtimeStatus === 'rejected'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-yellow-100 text-yellow-700'
+                                ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
+                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300'
                         }`}>
                           {record.overtimeStatus || 'pending'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-xs text-gray-500 italic max-w-xs truncate">
+                        <div className="text-xs text-gray-500 italic max-w-xs truncate dark:text-slate-400">
                           {record.manualOvertimeNote || 'System Generated'}
                         </div>
                       </td>
@@ -326,7 +333,7 @@ export default function OvertimePage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400"
                               onClick={() => handleStatusUpdate(record._id, 'pending')}
                               title="Restore to Pending"
                             >
@@ -337,7 +344,7 @@ export default function OvertimePage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400"
                                 onClick={() => handleStatusUpdate(record._id, 'comp_off')}
                                 title="Convert to Comp-Off Leave"
                               >

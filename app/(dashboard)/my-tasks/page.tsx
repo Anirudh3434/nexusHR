@@ -6,6 +6,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   KanbanSquare, Search, Clock, CheckCircle, Calendar, User, 
   Play, Pause, Square, AlertCircle
@@ -65,19 +67,19 @@ const priorityLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  backlog: 'bg-gray-100 text-gray-700',
-  to_do: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  in_review: 'bg-purple-100 text-purple-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  backlog: 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300',
+  to_do: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
+  in_review: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+  completed: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 const priorityColors: Record<string, string> = {
-  low: 'bg-gray-100 text-gray-700',
-  medium: 'bg-blue-100 text-blue-700',
-  high: 'bg-orange-100 text-orange-700',
-  critical: 'bg-red-100 text-red-700',
+  low: 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300',
+  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  high: 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+  critical: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
 };
 
 export default function MyTasksPage() {
@@ -225,32 +227,31 @@ export default function MyTasksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">My Tasks</h1>
-          <p className="text-gray-600">Manage your assigned tasks</p>
-        </div>
-        
-        {/* Running Timer */}
-        {runningTimer && (
-          <div className="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2">
-            <Clock className="w-5 h-5 text-yellow-600 animate-pulse" />
-            <div className="text-sm">
-              <span className="font-medium text-yellow-800">Timer Running:</span>
-              <span className="ml-2 font-mono text-yellow-700">{formatTime(timerSeconds)}</span>
+      <PageHeader
+        title="My Tasks"
+        description="Manage your assigned tasks"
+        actions={
+          /* Running Timer */
+          runningTimer ? (
+            <div className="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 dark:bg-yellow-500/10 dark:border-yellow-500/30">
+              <Clock className="w-5 h-5 text-yellow-600 animate-pulse dark:text-yellow-400" />
+              <div className="text-sm">
+                <span className="font-medium text-yellow-800 dark:text-yellow-300">Timer Running:</span>
+                <span className="ml-2 font-mono text-yellow-700 dark:text-yellow-300">{formatTime(timerSeconds)}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleStopTimer}
+                className="text-red-600 hover:text-red-700 dark:text-red-400"
+              >
+                <Square className="w-4 h-4 mr-1" />
+                Stop
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleStopTimer}
-              className="text-red-600 hover:text-red-700"
-            >
-              <Square className="w-4 h-4 mr-1" />
-              Stop
-            </Button>
-          </div>
-        )}
-      </div>
+          ) : undefined
+        }
+      />
 
       {/* Filters */}
       <Card>
@@ -284,13 +285,11 @@ export default function MyTasksPage() {
       <div className="space-y-4">
         {filteredTasks.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-center text-gray-500">
-              No tasks found
-            </CardContent>
+            <EmptyState title="No tasks found" icon={<KanbanSquare size={18} />} />
           </Card>
         ) : (
           filteredTasks.map((task) => (
-            <Card key={task._id} className={task.status === 'in_progress' ? 'border-yellow-300 bg-yellow-50' : ''}>
+            <Card key={task._id} className={task.status === 'in_progress' ? 'border-yellow-300 bg-yellow-50 dark:bg-yellow-500/10' : ''}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -303,16 +302,16 @@ export default function MyTasksPage() {
                         {priorityLabels[task.priority]}
                       </Badge>
                       {task.status === 'in_progress' && (
-                        <Badge className="bg-yellow-100 text-yellow-700 animate-pulse">
+                        <Badge className="bg-yellow-100 text-yellow-700 animate-pulse dark:bg-yellow-500/15 dark:text-yellow-300">
                           <Clock className="w-3 h-3 mr-1" />
                           In Progress
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{task.taskNumber}</p>
-                    <p className="text-gray-700 mb-3">{task.description}</p>
+                    <p className="text-sm text-gray-600 mb-3 dark:text-slate-400">{task.taskNumber}</p>
+                    <p className="text-gray-700 mb-3 dark:text-slate-300">{task.description}</p>
                     
-                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-4 dark:text-slate-400">
                       <div className="flex items-center gap-2">
                         <KanbanSquare className="w-4 h-4" />
                         <span>{task.projectId?.name || 'Unknown Project'}</span>
@@ -338,10 +337,10 @@ export default function MyTasksPage() {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-600 dark:text-slate-400">Progress</span>
                         <span className="font-medium">{task.progressPercentage}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className="bg-blue-500 h-2 rounded-full transition-all"
                           style={{ width: `${task.progressPercentage}%` }}
@@ -356,7 +355,7 @@ export default function MyTasksPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStartTimer(task._id, task.projectId._id)}
-                        className="text-green-600 hover:text-green-700"
+                        className="text-green-600 hover:text-green-700 dark:text-green-400"
                       >
                         <Play className="w-4 h-4 mr-1" />
                         Start
@@ -367,7 +366,7 @@ export default function MyTasksPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStatusUpdate(task._id, 'in_progress', 25)}
-                        className="text-blue-600 hover:text-blue-700"
+                        className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
                       >
                         <Play className="w-4 h-4 mr-1" />
                         Start
@@ -379,7 +378,7 @@ export default function MyTasksPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleStatusUpdate(task._id, 'in_review', 75)}
-                          className="text-purple-600 hover:text-purple-700"
+                          className="text-purple-600 hover:text-purple-700 dark:text-purple-400"
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
                           Review
@@ -388,7 +387,7 @@ export default function MyTasksPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleStatusUpdate(task._id, 'completed', 100)}
-                          className="text-green-600 hover:text-green-700"
+                          className="text-green-600 hover:text-green-700 dark:text-green-400"
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
                           Complete
@@ -407,25 +406,25 @@ export default function MyTasksPage() {
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-gray-500">Total Tasks</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">Total Tasks</div>
             <div className="text-2xl font-bold">{tasks.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-gray-500">In Progress</div>
-            <div className="text-2xl font-bold text-yellow-600">{tasks.filter(t => t.status === 'in_progress').length}</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">In Progress</div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{tasks.filter(t => t.status === 'in_progress').length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-gray-500">Completed</div>
-            <div className="text-2xl font-bold text-green-600">{tasks.filter(t => t.status === 'completed').length}</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">Completed</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{tasks.filter(t => t.status === 'completed').length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-gray-500">Total Hours</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">Total Hours</div>
             <div className="text-2xl font-bold">{tasks.reduce((sum, t) => sum + t.actualHours, 0).toFixed(1)}h</div>
           </CardContent>
         </Card>

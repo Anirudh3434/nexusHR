@@ -13,6 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Stepper } from "../../../components/ui/Stepper";
 import { Button } from "../../../components/ui/Button";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { Input } from "../../../components/ui/Input";
 import { X, Plus, Loader2, Users, Briefcase, DollarSign, Clock, Pencil, ChevronLeft, ChevronRight, Sun, Moon, MapPinOff } from "lucide-react";
 
@@ -221,21 +223,23 @@ export default function EmployeesPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Users className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Employees
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">Manage your workforce, assign shifts and salaries.</p>
-        </div>
-        {user.role === "admin" && (
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Employee
-          </Button>
-        )}
-      </div>
+          </span>
+        }
+        description="Manage your workforce, assign shifts and salaries."
+        actions={
+          user.role === "admin" && (
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Employee
+            </Button>
+          )
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -264,8 +268,8 @@ export default function EmployeesPage() {
                 </TableRow>
               ) : employees.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No employees found.
+                  <TableCell colSpan={7} className="p-0">
+                    <EmptyState title="No employees found" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -275,7 +279,7 @@ export default function EmployeesPage() {
                       {employee.avatar ? (
                         <img src={employee.avatar} alt={employee.name} className="h-8 w-8 rounded-full" />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs">
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs dark:bg-blue-500/15 dark:text-blue-300">
                           {employee.name.charAt(0)}
                         </div>
                       )}
@@ -287,14 +291,14 @@ export default function EmployeesPage() {
                     <TableCell>{employee.department || "-"}</TableCell>
                     <TableCell>{employee.designation || "-"}</TableCell>
                     <TableCell>{getShiftName(employee.workShiftId)}</TableCell>
-                    <TableCell className="text-green-600 font-medium">
+                    <TableCell className="text-green-600 font-medium dark:text-green-400">
                       {formatCurrency(employee.salary)}
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         employee.status === 'Active' || employee.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300' 
+                          : 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300'
                       }`}>
                         {employee.status || (employee.isActive ? 'Active' : 'Inactive')}
                       </span>
@@ -398,7 +402,7 @@ export default function EmployeesPage() {
                         ))}
                       </select>
                       {departments.length === 0 && (
-                        <p className="text-xs text-amber-600 mt-1">
+                        <p className="text-xs text-amber-600 mt-1 dark:text-amber-400">
                           No departments found. Create in Department Mgmt.
                         </p>
                       )}
@@ -421,7 +425,7 @@ export default function EmployeesPage() {
                           ))}
                       </select>
                       {formData.department && designations.filter(d => d.department === formData.department || !d.department).length === 0 && (
-                        <p className="text-xs text-amber-600 mt-1">
+                        <p className="text-xs text-amber-600 mt-1 dark:text-amber-400">
                           No designations for this dept. Create in Designations.
                         </p>
                       )}
@@ -460,13 +464,13 @@ export default function EmployeesPage() {
                               className={`p-3 border rounded-lg text-left transition-all ${
                                 isSelected 
                                   ? isNight 
-                                    ? 'border-indigo-500 bg-indigo-50' 
-                                    : 'border-blue-500 bg-blue-50'
+                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' 
+                                    : 'border-blue-500 bg-blue-50 dark:bg-blue-500/10'
                                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:border-gray-600'
                               }`}
                             >
                               <div className="flex items-center gap-2">
-                                {isNight ? <Moon className="h-4 w-4 text-indigo-600" /> : <Sun className="h-4 w-4 text-amber-600" />}
+                                {isNight ? <Moon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> : <Sun className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
                                 <span className="font-medium text-sm">{shift.name}</span>
                               </div>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{shift.startTime} - {shift.endTime}</p>
@@ -498,7 +502,7 @@ export default function EmployeesPage() {
                     </div>
                     
                     <div className="bg-gray-50 dark:bg-slate-950 p-4 rounded-xl space-y-2 border border-blue-50">
-                      <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Salary Summary</h4>
+                      <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 dark:text-blue-400">Salary Summary</h4>
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-500 dark:text-gray-400">Basic Salary</span>
                         <span className="font-bold">₹{formData.salary ? Number(formData.salary).toLocaleString() : '0'}</span>

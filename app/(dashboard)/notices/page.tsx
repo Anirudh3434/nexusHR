@@ -7,8 +7,10 @@ import { useToast } from "../../../context/ToastContext";
 import { getNotices, createNotice, deleteNotice, Notice } from "../../../services/noticeService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { Input } from "../../../components/ui/Input";
-import { Loader2, Plus, X, AlertCircle, Megaphone, Trash2 } from "lucide-react";
+import { Loader2, Plus, X, Megaphone, Trash2 } from "lucide-react";
 
 export default function NoticesPage() {
   const { user, loading, hasRole } = useAuth();
@@ -102,20 +104,20 @@ export default function NoticesPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High': return 'text-red-600 bg-red-50 border-red-200';
-      case 'Medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'Low': return 'text-green-600 bg-green-50 border-green-200';
+      case 'High': return 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/30';
+      case 'Medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-500/10 dark:border-yellow-500/30';
+      case 'Low': return 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-500/10 dark:border-green-500/30';
       default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-gray-700';
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'Urgent': return 'bg-red-100 text-red-700';
-      case 'Holiday': return 'bg-green-100 text-green-700';
-      case 'Event': return 'bg-purple-100 text-purple-700';
-      case 'Policy': return 'bg-orange-100 text-orange-700';
-      default: return 'bg-blue-100 text-blue-700';
+      case 'Urgent': return 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300';
+      case 'Holiday': return 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300';
+      case 'Event': return 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300';
+      case 'Policy': return 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300';
+      default: return 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300';
     }
   };
 
@@ -124,19 +126,21 @@ export default function NoticesPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Megaphone className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Megaphone className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Notice Management
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">Create and manage company announcements.</p>
-        </div>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Post Notice
-        </Button>
-      </div>
+          </span>
+        }
+        description="Create and manage company announcements."
+        actions={
+          <Button onClick={() => setShowModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Post Notice
+          </Button>
+        }
+      />
 
       {/* Notices List */}
       <Card>
@@ -150,11 +154,11 @@ export default function NoticesPage() {
               <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
           ) : notices.length === 0 ? (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No notices found</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Create your first notice to announce something!</p>
-            </div>
+            <EmptyState
+              title="No notices found"
+              description="Create your first notice to announce something!"
+              icon={<Megaphone size={18} />}
+            />
           ) : (
             <div className="space-y-4">
               {notices.map((notice) => (
@@ -182,7 +186,7 @@ export default function NoticesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
                       onClick={() => handleDelete(notice.id)}
                       disabled={isDeleting === notice.id}
                     >

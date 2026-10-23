@@ -2,16 +2,28 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
 
 // GET all employees
 export async function GET(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
+
+    if (queryCompanyId && auth.role !== 'super_admin' && queryCompanyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = auth.role === 'super_admin' ? (queryCompanyId || auth.companyId) : auth.companyId;
     
     const query: any = {};
     if (companyId) query.companyId = companyId;
+    else if (auth.role !== 'super_admin') {
+      return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+    }
     
     const employees = await User.find(query)
       .select('-password')
@@ -35,14 +47,30 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const data = await req.json();
     
     console.log('Creating employee with data:', { ...data, password: '***' });
 
-    const { email, password, name, role, department, designation, companyId, salary, workShiftId, phone, joiningDate } = data;
+    const { email, password, name, role, department, designation, salary, workShiftId, phone, joiningDate } = data;
+    // companyId ALWAYS from session (super_admin may pass explicit when session has none)
+    if (data.companyId && auth.role !== 'super_admin' && data.companyId !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
+    const companyId = auth.role === 'super_admin' ? (auth.companyId || data.companyId) : auth.companyId;
+    if (!companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
 
     if (!email || !password || !name) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+    }
+
+    const allowedRoles = ['admin', 'hr', 'manager', 'employee'];
+    if (role && !allowedRoles.includes(role)) {
+      return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
     }
 
     // Check if user exists
@@ -52,7 +80,7 @@ export async function POST(req: Request) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Build user data object
     const userData: any = {
@@ -70,10 +98,8 @@ export async function POST(req: Request) {
       status: 'Active',
     };
     
-    // Only add companyId if it's provided and valid
-    if (companyId && companyId !== 'null' && companyId !== 'undefined') {
-      userData.companyId = companyId;
-    }
+    // companyId forced from session
+    userData.companyId = companyId;
 
     const newUser = await User.create(userData);
     
@@ -93,6 +119,11 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
     const data = await req.json();
     const { id, ...updateData } = data;
     
@@ -102,25 +133,37 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: 'Employee ID required' }, { status: 400 });
     }
 
-    // Convert salary to number if provided
-    if (updateData.salary) {
-      updateData.salary = Number(updateData.salary);
+    // NEVER role/salary/companyId/password via PATCH
+    if ('role' in updateData || 'salary' in updateData || 'companyId' in updateData || 'password' in updateData) {
+      return NextResponse.json({ message: 'role, salary, companyId and password cannot be updated via PATCH' }, { status: 400 });
+    }
+
+    // Strict allowlist
+    const allowedFields = ['name', 'phone', 'department', 'designation', 'workShiftId', 'joiningDate', 'isActive', 'status', 'avatar'];
+    const sanitized: any = {};
+    for (const key of allowedFields) {
+      if (key in updateData && updateData[key] !== undefined) sanitized[key] = updateData[key];
     }
 
     // Remove empty workShiftId to prevent ObjectId cast error
-    if (updateData.workShiftId === '' || updateData.workShiftId === null) {
-      delete updateData.workShiftId;
+    if (sanitized.workShiftId === '' || sanitized.workShiftId === null) {
+      delete sanitized.workShiftId;
     }
+    if (sanitized.joiningDate) sanitized.joiningDate = new Date(sanitized.joiningDate);
 
     const employee = await User.findById(id);
     if (!employee) {
       return NextResponse.json({ message: 'Employee not found' }, { status: 404 });
     }
+    // Same-company check
+    if (auth.role !== 'super_admin' && employee.companyId?.toString() !== auth.companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
 
-    // Apply updates
-    Object.keys(updateData).forEach(key => {
+    // Apply allowlisted updates only
+    Object.keys(sanitized).forEach(key => {
       // @ts-ignore
-      employee[key] = updateData[key];
+      employee[key] = sanitized[key];
     });
 
     const updatedUser = await employee.save();

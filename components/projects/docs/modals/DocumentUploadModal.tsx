@@ -102,13 +102,13 @@ export default function DocumentUploadModal({ projectId, isOpen, onClose, onSucc
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <Card className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-5xl w-full animate-in scale-in-95 duration-200">
+      <Card className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-5xl w-full animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-slate-900">Upload Document</CardTitle>
+            <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">Upload Document</CardTitle>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
             >
               <X className="w-5 h-5" />
             </button>
@@ -117,8 +117,8 @@ export default function DocumentUploadModal({ projectId, isOpen, onClose, onSucc
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">File *</label>
-              <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-indigo-500 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">File *</label>
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-indigo-500 transition-colors cursor-pointer dark:border-slate-600" onClick={() => fileInputRef.current?.click()}>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -128,14 +128,14 @@ export default function DocumentUploadModal({ projectId, isOpen, onClose, onSucc
                 />
                 {selectedFile ? (
                   <div className="space-y-1">
-                    <FileText className="w-6 h-6 text-indigo-600 mx-auto" />
-                    <p className="text-sm font-medium text-slate-900">{selectedFile.name}</p>
-                    <p className="text-xs text-slate-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <FileText className="w-6 h-6 text-indigo-600 mx-auto dark:text-indigo-400" />
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <Upload className="w-6 h-6 text-slate-400 mx-auto" />
-                    <p className="text-sm text-slate-600">Click to select or drag and drop</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Click to select or drag and drop</p>
                     <p className="text-xs text-slate-400">PDF, DOC, TXT, MD, XLS, PPT (Max 10MB)</p>
                   </div>
                 )}
@@ -144,21 +144,21 @@ export default function DocumentUploadModal({ projectId, isOpen, onClose, onSucc
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Title</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Title</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   placeholder="Document title"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Category</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -169,21 +169,21 @@ export default function DocumentUploadModal({ projectId, isOpen, onClose, onSucc
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={2}
                   placeholder="Brief description"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                   rows={2}
                   placeholder="Additional notes"
                 />
@@ -191,23 +191,23 @@ export default function DocumentUploadModal({ projectId, isOpen, onClose, onSucc
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tags</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Tags</label>
               <input
                 type="text"
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
                 placeholder="Comma-separated tags"
               />
             </div>
 
             {loading && uploadProgress > 0 && (
               <div className="space-y-2">
-                <div className="flex justify-between text-xs text-slate-600">
+                <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
                   <span>Uploading...</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
+                <div className="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700">
                   <div
                     className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}

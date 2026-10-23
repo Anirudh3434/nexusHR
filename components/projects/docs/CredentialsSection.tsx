@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/context/ToastContext";
+import { EmptyState } from "@/components/ui/EmptyState";
 import CredentialCreationModal from "@/components/projects/docs/modals/CredentialCreationModal";
 import { 
   Key, 
@@ -88,14 +89,14 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
 
   const getEnvironmentColor = (environment: string) => {
     const colors: Record<string, string> = {
-      'Local': 'bg-slate-100 text-slate-700',
-      'Development': 'bg-blue-100 text-blue-700',
-      'QA': 'bg-purple-100 text-purple-700',
-      'UAT': 'bg-orange-100 text-orange-700',
-      'Staging': 'bg-amber-100 text-amber-700',
-      'Production': 'bg-red-100 text-red-700'
+      'Local': 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+      'Development': 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+      'QA': 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+      'UAT': 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+      'Staging': 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+      'Production': 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
     };
-    return colors[environment] || 'bg-slate-100 text-slate-700';
+    return colors[environment] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
   };
 
   const getCategoryIcon = (category: string) => {
@@ -130,7 +131,7 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-slate-500">Loading credentials...</div>
+        <div className="text-slate-500 dark:text-slate-400">Loading credentials...</div>
       </div>
     );
   }
@@ -143,7 +144,7 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
           <select
             value={selectedEnvironment}
             onChange={(e) => setSelectedEnvironment(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
           >
             {environments.map(env => (
               <option key={env} value={env}>{env === 'all' ? 'All Environments' : env}</option>
@@ -152,7 +153,7 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
@@ -162,8 +163,8 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${
               showFavoritesOnly 
-                ? 'bg-amber-100 text-amber-700 border border-amber-300' 
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-500/15 dark:text-amber-300' 
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
             }`}
           >
             <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-amber-500' : ''}`} />
@@ -179,10 +180,7 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
       {/* Credentials Grid */}
       {filteredCredentials.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Key className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">No credentials found</p>
-          </CardContent>
+          <EmptyState icon={<Key size={18} />} title="No credentials found" />
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -195,8 +193,8 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <CategoryIcon className="w-4 h-4 text-slate-500" />
-                        <h3 className="font-semibold text-slate-900">{cred.service}</h3>
+                        <CategoryIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <h3 className="font-semibold text-slate-900 dark:text-slate-100">{cred.service}</h3>
                         {isExpiringSoon(cred.expiryDate) && (
                           <AlertTriangle className="w-4 h-4 text-amber-500" />
                         )}
@@ -205,7 +203,7 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getEnvironmentColor(cred.environment)}`}>
                           {cred.environment}
                         </span>
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                           {cred.category}
                         </span>
                       </div>
@@ -221,7 +219,7 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                         href={cred.loginUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-xs text-indigo-600 hover:underline line-clamp-1"
+                        className="text-xs text-indigo-600 hover:underline line-clamp-1 dark:text-indigo-400"
                       >
                         {cred.loginUrl}
                       </a>
@@ -231,9 +229,9 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                   <div className="space-y-2 mb-3">
                     {cred.username && (
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">Username:</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Username:</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-900">{cred.username}</span>
+                          <span className="text-sm text-slate-900 dark:text-slate-100">{cred.username}</span>
                           <button 
                             onClick={() => copyToClipboard(cred.username!)}
                             className="text-slate-400 hover:text-indigo-600 transition-colors"
@@ -245,9 +243,9 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                     )}
                     {cred.email && (
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">Email:</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Email:</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-900 line-clamp-1">{cred.email}</span>
+                          <span className="text-sm text-slate-900 line-clamp-1 dark:text-slate-100">{cred.email}</span>
                           <button 
                             onClick={() => copyToClipboard(cred.email!)}
                             className="text-slate-400 hover:text-indigo-600 transition-colors"
@@ -259,9 +257,9 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                     )}
                     {cred.password && (
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">Password:</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Password:</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-900">
+                          <span className="text-sm text-slate-900 dark:text-slate-100">
                             {isRevealed ? cred.password : '••••••••'}
                           </span>
                           <button 
@@ -281,9 +279,9 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
                     )}
                     {cred.apiKey && (
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">API Key:</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">API Key:</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-900 line-clamp-1">
+                          <span className="text-sm text-slate-900 line-clamp-1 dark:text-slate-100">
                             {isRevealed ? cred.apiKey : '••••••••'}
                           </span>
                           <button 
@@ -299,16 +297,16 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {cred.tags.slice(0, 3).map((tag, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                      <span key={idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs dark:bg-slate-800 dark:text-slate-400">
                         {tag}
                       </span>
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100 dark:text-slate-400 dark:border-slate-800">
                     <span>Updated {new Date(cred.updatedAt).toLocaleDateString()}</span>
                     {cred.expiryDate && (
-                      <span className={isExpiringSoon(cred.expiryDate) ? 'text-amber-600 font-medium' : ''}>
+                      <span className={isExpiringSoon(cred.expiryDate) ? 'text-amber-600 font-medium dark:text-amber-400' : ''}>
                         Expires {new Date(cred.expiryDate).toLocaleDateString()}
                       </span>
                     )}

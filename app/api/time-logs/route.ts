@@ -88,9 +88,17 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
+
+    if (!companyId) {
+      return NextResponse.json({ message: 'Forbidden: no company context' }, { status: 403 });
+    }
     
     const body = await req.json();
     const { taskId, projectId, description } = body;
+
+    if (body.companyId && body.companyId !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
 
     // Validation
     if (!taskId || !projectId) {
@@ -134,7 +142,7 @@ export async function POST(req: Request) {
       startTime: new Date(),
       status: 'running',
       description: description || '',
-      companyId: companyId || body.companyId,
+      companyId,
     });
 
     const populatedTimeLog = await TimeLog.findById(timeLog._id)
@@ -160,11 +168,12 @@ export async function PATCH(req: Request) {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const userRole = headersList.get('x-user-role') || 'employee';
-    
+    const companyId = headersList.get('x-company-id');
+
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const body = await req.json();
     const { logId, action, description } = body;
 
@@ -172,7 +181,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: 'Time log ID is required' }, { status: 400 });
     }
 
-    const timeLog = await TimeLog.findById(logId);
+    const timeLog = await TimeLog.findOne({ _id: logId, companyId });
 
     if (!timeLog) {
       return NextResponse.json({ message: 'Time log not found' }, { status: 404 });
@@ -188,14 +197,14 @@ export async function PATCH(req: Request) {
       const endTime = new Date();
       const duration = Math.round((endTime.getTime() - timeLog.startTime.getTime()) / (1000 * 60)); // in minutes
 
-      const updatedTimeLog = await TimeLog.findByIdAndUpdate(
-        logId,
-        { 
-          $set: { 
-            endTime, 
-            duration, 
-            status: 'completed' 
-          } 
+      const updatedTimeLog = await TimeLog.findOneAndUpdate(
+        { _id: logId, companyId },
+        {
+          $set: {
+            endTime,
+            duration,
+            status: 'completed'
+          }
         },
         { new: true }
       )
@@ -216,8 +225,8 @@ export async function PATCH(req: Request) {
 
     // Handle description update
     if (description !== undefined) {
-      const updatedTimeLog = await TimeLog.findByIdAndUpdate(
-        logId,
+      const updatedTimeLog = await TimeLog.findOneAndUpdate(
+        { _id: logId, companyId },
         { $set: { description } },
         { new: true }
       )
@@ -246,11 +255,12 @@ export async function DELETE(req: Request) {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const userRole = headersList.get('x-user-role') || 'employee';
-    
+    const companyId = headersList.get('x-company-id');
+
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const { searchParams } = new URL(req.url);
     const logId = searchParams.get('logId');
 
@@ -258,7 +268,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'Time log ID is required' }, { status: 400 });
     }
 
-    const timeLog = await TimeLog.findById(logId);
+    const timeLog = await TimeLog.findOne({ _id: logId, companyId });
 
     if (!timeLog) {
       return NextResponse.json({ message: 'Time log not found' }, { status: 404 });
@@ -276,7 +286,7 @@ export async function DELETE(req: Request) {
       });
     }
 
-    await TimeLog.findByIdAndDelete(logId);
+    await TimeLog.findOneAndDelete({ _id: logId, companyId });
 
     return NextResponse.json({ message: 'Time log deleted successfully' });
   } catch (error: any) {

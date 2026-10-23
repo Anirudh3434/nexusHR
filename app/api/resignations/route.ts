@@ -1,37 +1,44 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Resignation from '@/models/Resignation';
-import { headers } from 'next/headers';
+import { getAuthInfo } from '@/lib/auth-util';
+import { hasRole } from '@/lib/auth';
+
+const APPROVER_ROLES = ['admin', 'hr', 'manager'];
+const PENDING_STATUSES = ['pending', 'under_review'];
 
 // GET - Fetch resignations
 export async function GET(req: Request) {
   try {
     await connectDB();
-    
-    // Get user info from headers (set by middleware)
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    const companyId = headersList.get('x-company-id');
-    
-    if (!userId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-    
+
+    // Get user info from the verified session (never query/body).
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+    const userId = auth.userId;
+    const userRole = auth.role || 'employee';
+    const companyId = auth.companyId;
+
     const { searchParams } = new URL(req.url);
-    const urlCompanyId = searchParams.get('companyId');
+    const queryCompanyId = searchParams.get('companyId');
+    if (queryCompanyId && queryCompanyId !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
+    }
     const employeeId = searchParams.get('employeeId');
     const status = searchParams.get('status');
     const myResignation = searchParams.get('myResignation');
 
     const query: any = {};
 
-    // Role-based filtering
+    // Role-based filtering — company always from the session.
     if (userRole === 'employee') {
       // Employees can only see their own resignation
       query.submittedBy = userId;
-    } else if (urlCompanyId || companyId) {
-      query.companyId = urlCompanyId || companyId;
+      if (companyId) query.companyId = companyId;
+    } else {
+      if (!companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = companyId;
     }
 
     if (employeeId) {
@@ -63,34 +70,37 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     await connectDB();
-    
-    // Get user info from headers (set by middleware)
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    
-    if (!userId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-    
+
+    // Get user info from the verified session.
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
+    const userId = auth.userId;
+    // Identity bound from the session: employees submit for themselves, in their own company.
+    const employeeId = userId;
+    const companyId = auth.companyId;
+
     const body = await req.json();
-    const { employeeId, companyId, lastWorkingDate, reason, detailedReason, noticePeriodDays } = body;
+    const { lastWorkingDate, reason, detailedReason, noticePeriodDays } = body;
 
     // Validation
-    if (!employeeId || !companyId || !lastWorkingDate || !reason || !noticePeriodDays) {
-      return NextResponse.json({ 
+    if (!lastWorkingDate || !reason || !noticePeriodDays) {
+      return NextResponse.json({
         message: 'Missing required fields',
-        required: ['employeeId', 'companyId', 'lastWorkingDate', 'reason', 'noticePeriodDays']
+        required: ['lastWorkingDate', 'reason', 'noticePeriodDays']
       }, { status: 400 });
     }
 
-    // Check if employee already has an active resignation
+    // Check if employee already has an active resignation (scoped to session company)
     const existingResignation = await Resignation.findOne({
       employeeId,
+      companyId,
       status: { $in: ['pending', 'under_review', 'approved'] }
     });
 
     if (existingResignation) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'You already have an active resignation request',
         existingResignation: {
           id: existingResignation._id,
@@ -123,9 +133,9 @@ export async function POST(req: Request) {
       .populate('employeeId', 'firstName lastName email employeeId department designation')
       .populate('submittedBy', 'name email');
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'Resignation submitted successfully',
-      resignation: populatedResignation 
+      resignation: populatedResignation
     }, { status: 201 });
   } catch (error: any) {
     console.error('Error submitting resignation:', error);
@@ -137,18 +147,18 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    
-    // Get user info from headers (set by middleware)
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    
-    if (!userId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
 
-    // Only HR and Admin can update resignation status
-    if (!['admin', 'hr', 'manager'].includes(userRole)) {
+    // Get user info from the verified session.
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
+    const userId = auth.userId;
+    const userRole = auth.role || 'employee';
+    const companyId = auth.companyId;
+
+    // Only admin/hr/manager can update resignation status
+    if (!hasRole(userRole, APPROVER_ROLES)) {
       return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
     }
     const body = await req.json();
@@ -158,16 +168,34 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: 'Resignation ID is required' }, { status: 400 });
     }
 
-    const updateData: any = {};
-    
+    // Scoped lookup first.
+    const existing = await Resignation.findOne({ _id: id, companyId });
+    if (!existing) {
+      return NextResponse.json({ message: 'Resignation not found' }, { status: 404 });
+    }
+
+    // Atomic status transition: only a pending record can move; concurrent
+    // approvers get 409 instead of silently overwriting each other.
     if (status) {
-      updateData.status = status;
+      if (!PENDING_STATUSES.includes(existing.status)) {
+        return NextResponse.json({ message: 'Cannot change status of processed resignation' }, { status: 400 });
+      }
+      const statusUpdate: any = { status };
       if (status === 'approved') {
-        updateData.approvedBy = userId;
-        updateData.approvedAt = new Date();
+        statusUpdate.approvedBy = userId;
+        statusUpdate.approvedAt = new Date();
+      }
+      const claimed = await Resignation.findOneAndUpdate(
+        { _id: id, companyId, status: { $in: PENDING_STATUSES } },
+        { $set: statusUpdate },
+        { new: true }
+      );
+      if (!claimed) {
+        return NextResponse.json({ message: 'Resignation was already processed by another approver' }, { status: 409 });
       }
     }
-    
+
+    const updateData: any = {};
     if (hrRemarks !== undefined) updateData.hrRemarks = hrRemarks;
     if (exitInterviewCompleted !== undefined) updateData.exitInterviewCompleted = exitInterviewCompleted;
     if (exitInterviewNotes !== undefined) updateData.exitInterviewNotes = exitInterviewNotes;
@@ -175,22 +203,30 @@ export async function PATCH(req: Request) {
     if (assetsReturnedNotes !== undefined) updateData.assetsReturnedNotes = assetsReturnedNotes;
     if (clearanceStatus !== undefined) updateData.clearanceStatus = clearanceStatus;
 
-    const resignation = await Resignation.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    )
-      .populate('employeeId', 'firstName lastName email employeeId department designation')
-      .populate('submittedBy', 'name email')
-      .populate('approvedBy', 'name email');
+    let resignation;
+    if (Object.keys(updateData).length > 0) {
+      resignation = await Resignation.findOneAndUpdate(
+        { _id: id, companyId },
+        { $set: updateData },
+        { new: true }
+      )
+        .populate('employeeId', 'firstName lastName email employeeId department designation')
+        .populate('submittedBy', 'name email')
+        .populate('approvedBy', 'name email');
+    } else {
+      resignation = await Resignation.findOne({ _id: id, companyId })
+        .populate('employeeId', 'firstName lastName email employeeId department designation')
+        .populate('submittedBy', 'name email')
+        .populate('approvedBy', 'name email');
+    }
 
     if (!resignation) {
       return NextResponse.json({ message: 'Resignation not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'Resignation updated successfully',
-      resignation 
+      resignation
     });
   } catch (error: any) {
     console.error('Error updating resignation:', error);
@@ -202,15 +238,16 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
   try {
     await connectDB();
-    
-    // Get user info from headers (set by middleware)
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
-    const userRole = headersList.get('x-user-role') || 'employee';
-    
-    if (!userId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
+
+    // Get user info from the verified session.
+    const auth = await getAuthInfo();
+    if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+
+    const userId = auth.userId;
+    const userRole = auth.role || 'employee';
+    const companyId = auth.companyId;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
@@ -218,21 +255,21 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'Resignation ID is required' }, { status: 400 });
     }
 
-    const resignation = await Resignation.findById(id);
+    const resignation = await Resignation.findOne({ _id: id, companyId });
 
     if (!resignation) {
       return NextResponse.json({ message: 'Resignation not found' }, { status: 404 });
     }
 
-    // Only the submitter or admin can withdraw/delete
-    if (resignation.submittedBy.toString() !== userId && !['admin', 'hr'].includes(userRole)) {
+    // Only the submitter or approver-role staff can withdraw/delete
+    if (resignation.submittedBy.toString() !== userId && !hasRole(userRole, APPROVER_ROLES)) {
       return NextResponse.json({ message: 'You can only withdraw your own resignation' }, { status: 403 });
     }
 
     // Can only withdraw if not already approved or rejected
     if (['approved', 'rejected'].includes(resignation.status)) {
-      return NextResponse.json({ 
-        message: `Cannot withdraw resignation with status: ${resignation.status}` 
+      return NextResponse.json({
+        message: `Cannot withdraw resignation with status: ${resignation.status}`
       }, { status: 400 });
     }
 

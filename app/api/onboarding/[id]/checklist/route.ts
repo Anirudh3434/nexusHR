@@ -19,6 +19,7 @@ export async function POST(
     const userId = headersList.get('x-user-id');
     const userName = headersList.get('x-user-name') || '';
     const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
 
     if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     if (!STAFF_ROLES.includes(userRole)) return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
@@ -32,6 +33,10 @@ export async function POST(
 
     const record = await Onboarding.findById(id);
     if (!record) return NextResponse.json({ message: 'Onboarding record not found' }, { status: 404 });
+
+    if (record.companyId.toString() !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: Access to another company\'s record is not allowed' }, { status: 403 });
+    }
 
     record.checklist.push({
       title,
@@ -73,6 +78,7 @@ export async function PATCH(
     const userId = headersList.get('x-user-id');
     const userName = headersList.get('x-user-name') || '';
     const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
 
     if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
@@ -85,6 +91,10 @@ export async function PATCH(
 
     const record = await Onboarding.findById(id);
     if (!record) return NextResponse.json({ message: 'Onboarding record not found' }, { status: 404 });
+
+    if (record.companyId.toString() !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: Access to another company\'s record is not allowed' }, { status: 403 });
+    }
 
     const task = record.checklist.find((t: any) => t._id.toString() === taskId);
     if (!task) return NextResponse.json({ message: 'Task not found' }, { status: 404 });
@@ -147,6 +157,7 @@ export async function DELETE(
     const userId = headersList.get('x-user-id');
     const userName = headersList.get('x-user-name') || '';
     const userRole = headersList.get('x-user-role') || 'employee';
+    const companyId = headersList.get('x-company-id');
 
     if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     if (!STAFF_ROLES.includes(userRole)) return NextResponse.json({ message: 'Insufficient permissions' }, { status: 403 });
@@ -158,6 +169,10 @@ export async function DELETE(
 
     const record = await Onboarding.findById(id);
     if (!record) return NextResponse.json({ message: 'Onboarding record not found' }, { status: 404 });
+
+    if (record.companyId.toString() !== companyId) {
+      return NextResponse.json({ message: 'Forbidden: Access to another company\'s record is not allowed' }, { status: 403 });
+    }
 
     const task = record.checklist.find((t: any) => t._id.toString() === taskId);
     if (!task) return NextResponse.json({ message: 'Task not found' }, { status: 404 });

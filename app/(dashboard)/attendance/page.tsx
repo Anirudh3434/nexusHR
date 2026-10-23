@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search } from "lucide-react";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { PageHeader } from "../../../components/ui/PageHeader";
 
 // Helper to format date
 const formatDate = (dateStr: string): string => {
@@ -208,7 +210,7 @@ export default function AttendancePage() {
   const StatusBadge = ({ status, isLate, isOvertime }: { status?: string; isLate?: boolean; isOvertime?: boolean }) => {
     if (isLate || status === 'Late') {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800">
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300">
           <AlertCircle className="h-3 w-3" />
           Late
         </span>
@@ -216,7 +218,7 @@ export default function AttendancePage() {
     }
     if (isOvertime) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800">
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
           <Clock className="h-3 w-3" />
           Overtime
         </span>
@@ -224,7 +226,7 @@ export default function AttendancePage() {
     }
     if (status === 'On Time') {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800">
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300">
           <CheckCircle className="h-3 w-3" />
           On Time
         </span>
@@ -232,7 +234,7 @@ export default function AttendancePage() {
     }
     return (
       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        status === 'Present' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+        status === 'Present' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300' : 'bg-gray-100 text-gray-800 dark:bg-slate-800 dark:text-slate-200'
       }`}>
         {status || 'Not Marked'}
       </span>
@@ -249,37 +251,39 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Clock className="h-8 w-8 text-blue-600" />
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Attendance
-          </h1>
-          <p className="text-gray-500">Mark attendance and view your check-in records.</p>
-        </div>
-        {hasRole(["admin", "hr"]) && (
-          <Button variant="outline">
-            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            </svg>
-            Export CSV
-          </Button>
-        )}
-      </div>
+          </span>
+        }
+        description="Mark attendance and view your check-in records."
+        actions={
+          hasRole(["admin", "hr"]) && (
+            <Button variant="outline">
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg>
+              Export CSV
+            </Button>
+          )
+        }
+      />
 
       {/* Self Check-in Card */}
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white dark:border-blue-500/30">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-600" />
+                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Today's Attendance
               </h2>
-              <p className="text-gray-500 text-sm mt-1">
+              <p className="text-gray-500 text-sm mt-1 dark:text-slate-400">
                 Current Time: <span className="font-mono font-medium">{currentTime}</span>
                 {userShift && (
-                  <span className="ml-2 text-blue-600">
+                  <span className="ml-2 text-blue-600 dark:text-blue-400">
                     | Shift: {userShift.startTime} - {userShift.endTime}
                   </span>
                 )}
@@ -299,7 +303,7 @@ export default function AttendancePage() {
               ) : (
                 <div className="flex items-center gap-3">
                   <div className="text-sm">
-                    <span className="text-gray-500">Checked in at:</span>
+                    <span className="text-gray-500 dark:text-slate-400">Checked in at:</span>
                     <span className="font-mono font-medium ml-1">{todayAttendance.checkIn.time}</span>
                     <StatusBadge status={todayAttendance.status} isLate={todayAttendance.isLate} />
                   </div>
@@ -309,14 +313,14 @@ export default function AttendancePage() {
                       onClick={handleCheckOut} 
                       disabled={isCheckingOut}
                       variant="outline"
-                      className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                      className="border-orange-300 text-orange-700 hover:bg-orange-50 dark:text-orange-300"
                     >
                       {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LogOut className="h-4 w-4 mr-2" />}
                       Check Out
                     </Button>
                   ) : (
                     <span className="text-sm">
-                      <span className="text-gray-500">Out:</span>
+                      <span className="text-gray-500 dark:text-slate-400">Out:</span>
                       <span className="font-mono font-medium ml-1">{todayAttendance.checkOut.time}</span>
                     </span>
                   )}
@@ -327,13 +331,13 @@ export default function AttendancePage() {
           
           {/* Late Warning */}
           {todayAttendance?.isLate && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 dark:bg-red-500/10 dark:border-red-500/30">
               <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-red-800">
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">
                   You were {todayAttendance.lateMinutes} minutes late today
                 </p>
-                <p className="text-xs text-red-600">
+                <p className="text-xs text-red-600 dark:text-red-400">
                   Shift starts at {todayAttendance.shiftStartTime || userShift?.startTime}. 
                   Try to arrive on time tomorrow!
                 </p>
@@ -343,13 +347,13 @@ export default function AttendancePage() {
           
           {/* On Time Success */}
           {todayAttendance?.status === 'On Time' && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2 dark:bg-green-500/10 dark:border-green-500/30">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-green-800">
+                <p className="text-sm font-medium text-green-800 dark:text-green-300">
                   Great job! You are on time today.
                 </p>
-                <p className="text-xs text-green-600">
+                <p className="text-xs text-green-600 dark:text-green-400">
                   Keep up the good work!
                 </p>
               </div>
@@ -358,13 +362,13 @@ export default function AttendancePage() {
           
           {/* Overtime Info */}
           {todayAttendance?.isOvertime && (
-            <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-start gap-2">
+            <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-start gap-2 dark:bg-purple-500/10 dark:border-purple-500/30">
               <Clock className="h-5 w-5 text-purple-500 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-purple-800">
+                <p className="text-sm font-medium text-purple-800 dark:text-purple-300">
                   Overtime: {todayAttendance.overtimeHours} hours
                 </p>
-                <p className="text-xs text-purple-600">
+                <p className="text-xs text-purple-600 dark:text-purple-400">
                   {todayAttendance.isLate 
                     ? `You worked extra to compensate for being ${todayAttendance.lateMinutes} minutes late.`
                     : 'Great dedication! Extra hours worked beyond shift end.'}
@@ -418,7 +422,7 @@ export default function AttendancePage() {
                   <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="text-center py-8">
                     <div className="flex justify-center items-center">
                       <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
-                      <span className="ml-2 text-gray-500">Loading...</span>
+                      <span className="ml-2 text-gray-500 dark:text-slate-400">Loading...</span>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -430,11 +434,11 @@ export default function AttendancePage() {
                     <StatusBadge status={todayAttendance?.status} isLate={todayAttendance?.isLate} isOvertime={todayAttendance?.isOvertime} />
                   </TableCell>
                   <TableCell>{todayAttendance?.checkIn?.time || '-'}</TableCell>
-                  <TableCell className="text-gray-500">{todayAttendance?.shiftStartTime || userShift?.startTime || '-'}</TableCell>
+                  <TableCell className="text-gray-500 dark:text-slate-400">{todayAttendance?.shiftStartTime || userShift?.startTime || '-'}</TableCell>
                   <TableCell>{todayAttendance?.checkOut?.time || '-'}</TableCell>
                   <TableCell className="text-right">
                     {todayAttendance?.isOvertime ? (
-                      <span className="text-purple-600 font-medium">{todayAttendance?.totalHours} hrs (+{todayAttendance?.overtimeHours} OT)</span>
+                      <span className="text-purple-600 font-medium dark:text-purple-400">{todayAttendance?.totalHours} hrs (+{todayAttendance?.overtimeHours} OT)</span>
                     ) : (
                       <span>{todayAttendance?.totalHours || '-'} hrs</span>
                     )}
@@ -442,8 +446,8 @@ export default function AttendancePage() {
                 </TableRow>
               ) : filteredAttendance.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="text-center py-8 text-gray-500">
-                    No attendance records found.
+                  <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="p-0">
+                    <EmptyState title="No attendance records found." icon={<Clock size={18} />} />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -456,19 +460,19 @@ export default function AttendancePage() {
                       <TableCell className="font-medium">{formatDate(log.date)}</TableCell>
                       {hasRole(["admin", "hr"]) && (
                         <TableCell>
-                          <div className="font-medium text-gray-900">{log.employeeName}</div>
-                          <div className="text-xs text-gray-500">{log.department}</div>
+                          <div className="font-medium text-gray-900 dark:text-slate-100">{log.employeeName}</div>
+                          <div className="text-xs text-gray-500 dark:text-slate-400">{log.department}</div>
                         </TableCell>
                       )}
                       <TableCell>
                         <StatusBadge status={log.status} isLate={log.isLate} isOvertime={log.isOvertime} />
                       </TableCell>
                       <TableCell>{checkInTime}</TableCell>
-                      <TableCell className="text-gray-500">{log.shiftStartTime || '-'}</TableCell>
+                      <TableCell className="text-gray-500 dark:text-slate-400">{log.shiftStartTime || '-'}</TableCell>
                       <TableCell>{checkOutTime}</TableCell>
                       <TableCell className="text-right">
                         {log.isOvertime ? (
-                          <span className="text-purple-600 font-medium">{log.totalHours} hrs (+{log.overtimeHours} OT)</span>
+                          <span className="text-purple-600 font-medium dark:text-purple-400">{log.totalHours} hrs (+{log.overtimeHours} OT)</span>
                         ) : (
                           <span>{log.totalHours ? `${log.totalHours} hrs` : calculateHours(checkInTime, checkOutTime)}</span>
                         )}
@@ -478,7 +482,7 @@ export default function AttendancePage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-blue-600"
+                            className="h-8 w-8 p-0 text-blue-600 dark:text-blue-400"
                             onClick={() => setEditingRecord(log)}
                           >
                             <Edit className="h-4 w-4" />
@@ -486,7 +490,7 @@ export default function AttendancePage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-red-600"
+                            className="h-8 w-8 p-0 text-red-600 dark:text-red-400"
                             onClick={() => handleDeleteRecord(log.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -515,7 +519,7 @@ export default function AttendancePage() {
             
             <form onSubmit={handleUpdateRecord} className="p-6 space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-500">Employee</label>
+                <label className="text-sm font-medium text-gray-500 dark:text-slate-400">Employee</label>
                 <div className="font-semibold">{editingRecord.employeeName}</div>
               </div>
               

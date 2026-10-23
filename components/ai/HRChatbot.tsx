@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { MessageCircle, X, Send, ThumbsUp, ThumbsDown, Sparkles, FileText } from 'lucide-react';
+import { MessageCircle, X, Send, ThumbsUp, ThumbsDown, Sparkles, FileText, RotateCcw } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -38,6 +37,16 @@ const suggestedQuestions = [
   "How do I update my personal information?"
 ];
 
+function AssistantAvatar({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const dims = size === 'lg' ? 'w-14 h-14 rounded-2xl' : size === 'sm' ? 'w-7 h-7 rounded-lg' : 'w-10 h-10 rounded-xl';
+  const icon = size === 'lg' ? 'w-7 h-7' : size === 'sm' ? 'w-3.5 h-3.5' : 'w-5 h-5';
+  return (
+    <div className={`${dims} bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/25`} aria-hidden>
+      <Sparkles className={`${icon} text-white`} />
+    </div>
+  );
+}
+
 export default function HRChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,6 +56,7 @@ export default function HRChatbot() {
   const [showFeedback, setShowFeedback] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,6 +65,25 @@ export default function HRChatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Focus the composer when opened; return focus to the launcher on close.
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+    } else {
+      launcherRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  // Escape closes the panel.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen]);
 
   const handleSendMessage = async (messageText?: string) => {
     const text = messageText || inputValue.trim();
@@ -99,7 +128,7 @@ export default function HRChatbot() {
 
       if (response.ok) {
         const data: ChatResponse = await response.json();
-        
+
         const assistantMessage: Message = {
           role: 'assistant',
           content: data.response,
@@ -167,161 +196,200 @@ export default function HRChatbot() {
     }
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setConversationId(null);
+    setShowFeedback(false);
+    setInputValue('');
+    inputRef.current?.focus();
+  };
+
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <Button
+        <button
+          ref={launcherRef}
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300 bg-blue-600 hover:bg-blue-700"
-          size="icon"
+          aria-label="Open HR assistant chat"
+          className="rounded-full w-14 h-14 flex items-center justify-center bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30 hover:shadow-xl hover:shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <MessageCircle className="w-6 h-6" />
-        </Button>
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-96 max-h-[600px] flex flex-col">
-      <Card className="shadow-2xl border-2 border-blue-200 dark:border-blue-800">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
-              HR Assistant
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(false)}
-              className="text-white hover:bg-white/20"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+    <div
+      role="dialog"
+      aria-modal="false"
+      aria-label="HR assistant chat"
+      className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100dvh-6rem)] flex flex-col rounded-3xl border border-border bg-card shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+    >
+      {/* Identity header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0" aria-hidden>
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
-        </CardHeader>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white leading-tight">NexusAI HR Assistant</p>
+            <p className="flex items-center gap-1.5 text-xs text-indigo-100 leading-tight mt-0.5">
+              <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-300" />
+              </span>
+              Online · Policies, leave &amp; benefits
+            </p>
+          </div>
+          <button
+            onClick={handleNewChat}
+            aria-label="Start new conversation"
+            title="Start new conversation"
+            className="rounded-lg p-2 text-white/80 hover:bg-white/20 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setIsOpen(false)}
+            aria-label="Close chat"
+            className="rounded-lg p-2 text-white/80 hover:bg-white/20 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
-        <CardContent className="p-4 flex flex-col h-[500px]">
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-            {messages.length === 0 && (
-              <div className="text-center py-8">
-                <Sparkles className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Welcome to HR Assistant
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Ask me anything about HR policies, benefits, or procedures
-                </p>
-                <div className="space-y-2">
-                  {suggestedQuestions.slice(0, 3).map((question, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSendMessage(question)}
-                      className="w-full text-left justify-start text-xs h-auto py-2 px-3"
-                    >
-                      {question}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
-                  }`}
+      {/* Conversation */}
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation with HR assistant"
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+      >
+        {messages.length === 0 && (
+          <div className="text-center pt-10 pb-4 px-2">
+            <AssistantAvatar size="lg" />
+            <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">
+              Hi, I&apos;m NexusAI
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+              I can answer questions about HR policies, time off, holidays, and benefits.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {suggestedQuestions.slice(0, 4).map((question, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSendMessage(question)}
+                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-sm hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:shadow transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  
-                  {message.sources && message.sources.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-xs opacity-70 mb-1">Sources:</p>
-                      {message.sources.map((source, idx) => (
-                        <div key={idx} className="flex items-center gap-1 text-xs opacity-80">
-                          <FileText className="w-3 h-3" />
-                          <span>{source.title}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <p className="text-xs opacity-60 mt-1">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Feedback Section */}
-          {showFeedback && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
-            <div className="flex items-center justify-center gap-2 py-2 border-t border-gray-200 dark:border-gray-700 mb-2">
-              <span className="text-xs text-gray-600 dark:text-gray-400">Was this helpful?</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleFeedback(true)}
-                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-              >
-                <ThumbsUp className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleFeedback(false)}
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <ThumbsDown className="w-4 h-4" />
-              </Button>
+                  {question}
+                </button>
+              ))}
             </div>
-          )}
-
-          {/* Input Section */}
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask about HR policies..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button
-              onClick={() => handleSendMessage()}
-              disabled={isLoading || !inputValue.trim()}
-              size="icon"
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {messages.map((message, index) => (
+          message.role === 'user' ? (
+            <div key={index} className="flex justify-end">
+              <div className="max-w-[85%] rounded-2xl rounded-br-md bg-gradient-to-br from-indigo-600 to-violet-600 px-3.5 py-2.5 shadow-sm">
+                <p className="text-sm leading-relaxed text-white whitespace-pre-wrap">{message.content}</p>
+                <p className="mt-1 text-right text-[10px] text-white/70">
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div key={index} className="flex items-start gap-2.5">
+              <AssistantAvatar size="sm" />
+              <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-muted px-3.5 py-2.5 text-foreground">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+
+                {message.sources && message.sources.length > 0 && (
+                  <div className="mt-2.5 space-y-1.5 border-t border-border pt-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Sources</p>
+                    {message.sources.map((source, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <FileText className="w-3 h-3 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                        <span className="truncate">{source.title}</span>
+                        <span className="ml-auto shrink-0 tabular text-[10px]">{Math.round(source.relevance * 100)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p className="mt-1.5 text-[10px] text-muted-foreground">
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          )
+        ))}
+
+        {isLoading && (
+          <div className="flex items-start gap-2.5" aria-label="Assistant is typing">
+            <AssistantAvatar size="sm" />
+            <div className="rounded-2xl rounded-tl-md bg-muted px-4 py-3.5">
+              <div className="flex space-x-1.5">
+                <div className="w-2 h-2 bg-muted-foreground/60 rounded-full motion-safe:animate-bounce" />
+                <div className="w-2 h-2 bg-muted-foreground/60 rounded-full motion-safe:animate-bounce" style={{ animationDelay: '0.15s' }} />
+                <div className="w-2 h-2 bg-muted-foreground/60 rounded-full motion-safe:animate-bounce" style={{ animationDelay: '0.3s' }} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Feedback */}
+      {showFeedback && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+        <div className="px-4 pb-1">
+          <div className="flex items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm">
+            <span className="text-xs text-muted-foreground">Was this helpful?</span>
+            <button
+              onClick={() => handleFeedback(true)}
+              aria-label="Yes, helpful"
+              className="rounded-full p-1.5 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ThumbsUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => handleFeedback(false)}
+              aria-label="No, not helpful"
+              className="rounded-full p-1.5 text-rose-600 hover:bg-rose-500/10 dark:text-rose-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ThumbsDown className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Composer */}
+      <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="border-t border-border p-3 shrink-0">
+        <div className="flex items-center gap-2">
+          <Input
+            ref={inputRef}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask about HR policies..."
+            aria-label="Ask the HR assistant"
+            disabled={isLoading}
+            className="flex-1 rounded-xl"
+          />
+          <Button
+            type="submit"
+            disabled={isLoading || !inputValue.trim()}
+            size="icon"
+            aria-label="Send message"
+            className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/25 hover:opacity-90 disabled:opacity-50"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

@@ -38,15 +38,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage on mount
+    // UI state only. Authority lives in the HttpOnly session cookie
+    // set by the server — this copy is never trusted for access control.
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-        
-        // Re-set cookie for middleware (in case it was cleared)
-        document.cookie = `user=${encodeURIComponent(storedUser)}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
+        setUser(JSON.parse(storedUser));
       } catch (e) {
         localStorage.removeItem("user");
       }
@@ -71,12 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
-      
-      // Set cookie for middleware route protection
-      document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
+      // Session cookie is set HttpOnly by the server. The mobile token
+      // is kept for Bearer use; the web app authenticates via cookie.
       if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
+        localStorage.setItem("token", data.token);
       }
       
       return { success: true, user: data.user };
@@ -91,15 +86,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = (updated: User) => {
     setUser(updated);
     localStorage.setItem("user", JSON.stringify(updated));
-    document.cookie = `user=${encodeURIComponent(JSON.stringify(updated))}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    
-    // Clear cookies
+
+    // Ask the server to clear the HttpOnly session cookie (fire-and-forget).
+    // Also drop any legacy readable cookies from before this fix.
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   };
