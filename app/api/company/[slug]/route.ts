@@ -16,7 +16,7 @@ export async function GET(
     const decodedSlug = decodeURIComponent(slug).trim();
     const searchCode = decodedSlug.toUpperCase();
     const safeSlug = escapeRegExp(decodedSlug, 128);
-    const nameRegexPattern = safeSlug.replace(/[-_]/g, '[\\s-_]?');
+    const nameRegexPattern = safeSlug.replace(/[-_]/g, '[\\s_-]?');
 
     const company = await Company.findOne({
       $or: [
