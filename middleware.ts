@@ -78,6 +78,12 @@ function getSubdomain(host: string): string | null {
     return null
   }
 
+  // Vercel preview/production domains are not tenant subdomains.
+  // e.g. nexus-hr-udh9.vercel.app must serve the root app, not a tenant.
+  if (hostname.endsWith('.vercel.app')) {
+    return null
+  }
+
   // Production domain: e.g. webatlas.nexus.com or webatlas.nexushr.com
   const parts = hostname.split('.')
   if (parts.length >= 3) {
