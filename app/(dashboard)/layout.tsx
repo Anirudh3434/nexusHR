@@ -51,7 +51,7 @@ export default function DashboardLayout({
     return () => {
       cancelled = true;
     };
-  }, [loading, user, pathname, router]);
+  }, [loading, user?.companyId, pathname, router]);
 
   if (loading || !user) {
     return (

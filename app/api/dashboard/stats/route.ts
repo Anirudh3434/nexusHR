@@ -153,10 +153,10 @@ async function getCommonTaskProjectTicketData(userId: string, companyId: string 
       );
 
   const [userTasks, userProjects, userTickets, companyHolidays, weekLeaves] = await Promise.all([
-    Task.find(taskQuery).sort({ dueDate: 1, createdAt: -1 }).limit(20),
-    Project.find(projectQuery).limit(50),
-    Ticket.find(userObjId ? { $or: [{ reportedBy: userObjId }, { assignedTo: userObjId }] } : {}).sort({ createdAt: -1 }).limit(5),
-    Holiday.find({ date: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) } }).limit(10),
+    Task.find(taskQuery).sort({ dueDate: 1, createdAt: -1 }).limit(20).lean(),
+    Project.find(projectQuery).limit(50).lean(),
+    Ticket.find(userObjId ? { $or: [{ reportedBy: userObjId }, { assignedTo: userObjId }] } : {}).sort({ createdAt: -1 }).limit(5).lean(),
+    Holiday.find({ date: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) } }).limit(10).lean(),
     Leave.find({
       status: 'Approved',
       endDate: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7) }
@@ -289,7 +289,7 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
       status: { $in: ['Present', 'Late', 'Half Day'] } 
     }),
     Company.countDocuments({}),
-    User.find({ ...query, isActive: true }).select('name dob department designation avatar employeeId joiningDate'),
+    User.find({ ...query, isActive: true }).select('name dob department designation avatar employeeId joiningDate').lean(),
     Leave.find({
       ...query,
       status: 'Approved',
@@ -317,16 +317,16 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
     const years = today.getFullYear() - new Date(emp.joiningDate).getFullYear();
     return joinStr === todayMonthDay && years > 0;
   }).map(emp => ({
-    ...emp.toObject(),
+    ...(typeof (emp as any).toObject === 'function' ? (emp as any).toObject() : emp),
     years: today.getFullYear() - new Date(emp.joiningDate!).getFullYear()
   }));
 
   // Personal attendance record for admin
   const [adminUser, adminDevice, todayRecord] = await Promise.all([
-    User.findById(userId).populate('workShiftId', 'name startTime endTime'),
+    User.findById(userId).populate('workShiftId', 'name startTime endTime').lean(),
     LinkedDevice.findOne({ userId, isActive: true })
-      .select('deviceName platform lastActive model batteryLevel batteryState networkType'),
-    Attendance.findOne({ employeeId: userId, date: todayStr })
+      .select('deviceName platform lastActive model batteryLevel batteryState networkType').lean(),
+    Attendance.findOne({ employeeId: userId, date: todayStr }).lean()
   ]);
 
   const shiftInfo = adminUser?.workShiftId as any;

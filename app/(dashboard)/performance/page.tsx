@@ -3,11 +3,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { ActivitySquare } from "lucide-react";
 
 export default function PerformancePage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Performance" />
+      <PageHeader icon={<ActivitySquare />} title="Performance" />
       <Card>
         <CardHeader>
           <CardTitle>Performance Reviews</CardTitle>

@@ -44,3 +44,27 @@ export const deleteDepartment = async (id: string): Promise<void> => {
   const response = await fetch(url.toString(), { method: 'DELETE' });
   if (!response.ok) throw new Error('Failed to delete department');
 };
+
+export const bulkImportDepartments = async (
+  departments: Array<{ name: string; description?: string }>,
+  companyId?: string
+): Promise<{
+  message: string;
+  total: number;
+  importedCount: number;
+  skippedCount: number;
+  errors: Array<{ row: number; name: string; reason: string }>;
+}> => {
+  const response = await fetch(`${API_URL}/bulk-import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ departments, companyId }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to bulk import departments');
+  }
+  return response.json();
+};
+
+

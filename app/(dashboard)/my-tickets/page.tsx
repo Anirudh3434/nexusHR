@@ -238,6 +238,7 @@ export default function MyTicketsPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
+        icon={<Ticket />}
         title="My Tickets"
         description="Report issues and track your support requests"
         actions={

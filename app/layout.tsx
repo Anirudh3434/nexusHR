@@ -5,6 +5,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 import { AuthProvider } from "../context/AuthContext";
 import { ToastProvider } from "../context/ToastContext";
 import { ToastContainer } from "../components/ui/Toast";
+import { CompanyThemeSync } from "../components/theme/CompanyThemeSync";
 
 const sourceSans3 = Source_Sans_3({
   subsets: ["latin"],
@@ -129,13 +130,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${sourceSans3.variable} ${fraunces.variable}`} suppressHydrationWarning>
-      <head>
+      <body suppressHydrationWarning className={`${sourceSans3.className} bg-background text-foreground min-h-screen transition-colors`}>
         {/* Set .dark + color-scheme before first paint to avoid a light flash */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var k='hrm-theme';var s=localStorage.getItem(k);var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d){r.classList.add('dark')}else{r.classList.remove('dark')}r.style.colorScheme=d?'dark':'light';}catch(e){}})();`,
           }}
         />
+        <ThemeProvider>
+          <AuthProvider>
+            <CompanyThemeSync />
+            <ToastProvider>
+              {children}
+              <ToastContainer />
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
+        {/* Structured Data (JSON-LD) */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -144,16 +155,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
-      </head>
-      <body className={`${sourceSans3.className} bg-background text-foreground min-h-screen transition-colors`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              {children}
-              <ToastContainer />
-            </ToastProvider>
-          </AuthProvider>
-        </ThemeProvider>
       </body>
     </html>
   );

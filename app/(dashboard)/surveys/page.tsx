@@ -164,6 +164,7 @@ export default function SurveysManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<FileText />}
         title="Surveys"
         description="Create and manage employee surveys"
         actions={

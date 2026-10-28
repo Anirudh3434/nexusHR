@@ -281,9 +281,10 @@ export default function ProjectSettingsPage() {
             <span className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 rounded-lg hover:bg-slate-200 transition-colors"
+                className="-ml-1 rounded-md p-1 text-primary transition-colors hover:bg-primary/10"
+                aria-label="Back"
               >
-                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <ArrowLeft className="h-6 w-6" />
               </button>
               Project Settings
             </span>

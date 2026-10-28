@@ -3,11 +3,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { Users } from "lucide-react";
 
 export default function UsersPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="User Management" />
+      <PageHeader icon={<Users />} title="User Management" />
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>

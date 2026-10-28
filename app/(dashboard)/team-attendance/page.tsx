@@ -3,11 +3,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { CalendarClock } from "lucide-react";
 
 export default function TeamAttendancePage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Team Attendance" />
+      <PageHeader icon={<CalendarClock />} title="Team Attendance" />
       <Card>
         <CardHeader>
           <CardTitle>Team Attendance Logs</CardTitle>

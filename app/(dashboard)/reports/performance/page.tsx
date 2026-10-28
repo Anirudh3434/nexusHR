@@ -80,14 +80,8 @@ export default function PerformanceListPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={
-          <>
-            <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-[0.2em] dark:text-indigo-400">
-              <Sparkles size={14} /> Analytics Engine
-            </div>
-            Performance Reports
-          </>
-        }
+        icon={<Sparkles />}
+        title="Performance Reports"
         description="Daily AI-driven productivity analysis and insights."
         actions={
           (user?.role === 'admin' || user?.role === 'hr') && (

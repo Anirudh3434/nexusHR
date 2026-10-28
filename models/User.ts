@@ -60,6 +60,7 @@ const UserSchema = new Schema({
   employeeId: {
     type: String,
     unique: true,
+    sparse: true,
   },
   department: {
     type: String,
@@ -132,6 +133,10 @@ const UserSchema = new Schema({
 }, {
   timestamps: true,
 });
+
+UserSchema.index({ companyId: 1, role: 1 });
+UserSchema.index({ companyId: 1, isActive: 1 });
+UserSchema.index({ companyId: 1, department: 1 });
 
 // Force refresh the model in development to ensure new fields are caught
 if (process.env.NODE_ENV === 'development') {

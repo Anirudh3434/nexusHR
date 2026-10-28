@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { getLeaves, createLeave, LeaveRequest } from "../../../services/leaveService";
-import { Loader2, Plus, X, Calendar } from "lucide-react";
+import { Loader2, Plus, X, Calendar, FileClock } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 
@@ -48,7 +48,7 @@ export default function MyLeavesPage() {
 
   useEffect(() => {
     if (user) fetchLeaves();
-  }, [user]);
+  }, [user?.id]);
 
   const fetchLeaves = async () => {
     try {
@@ -116,6 +116,7 @@ export default function MyLeavesPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header Area */}
       <PageHeader
+        icon={<FileClock />}
         title="My Leaves"
         description="Manage your leave requests and view your current time-off balances."
         actions={

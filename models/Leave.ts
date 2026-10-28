@@ -46,6 +46,10 @@ const LeaveSchema = new Schema({
   timestamps: true,
 });
 
+LeaveSchema.index({ companyId: 1, status: 1 });
+LeaveSchema.index({ employeeId: 1, status: 1 });
+LeaveSchema.index({ companyId: 1, startDate: 1, endDate: 1 });
+
 const Leave = models.Leave || model('Leave', LeaveSchema);
 
 export default Leave;

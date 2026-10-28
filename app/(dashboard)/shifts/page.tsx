@@ -7,7 +7,7 @@ import { getShifts, createShift, updateShift, deleteShift, WorkShift, CreateShif
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { Loader2, Plus, Clock, Trash2, Edit2, Save, X, Sun, Moon } from "lucide-react";
+import { Loader2, Plus, Clock, Trash2, Edit2, Save, X, Sun, Moon, Search, CalendarCheck } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 
@@ -18,6 +18,7 @@ export default function ShiftsPage() {
   const { addToast } = useToast();
   
   const [shifts, setShifts] = useState<WorkShift[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingShift, setEditingShift] = useState<WorkShift | null>(null);
@@ -33,11 +34,21 @@ export default function ShiftsPage() {
 
   const canManage = hasRole(["admin", "hr", "manager"]);
 
+  const filteredShifts = shifts.filter((s) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return s.name.toLowerCase().includes(q) || s.workingDays.some(d => d.toLowerCase().includes(q));
+  });
+
+  const dayShiftsCount = shifts.filter(s => !s.name.toLowerCase().includes('night')).length;
+  const nightShiftsCount = shifts.filter(s => s.name.toLowerCase().includes('night')).length;
+  const coveredDaysCount = new Set(shifts.flatMap(s => s.workingDays)).size;
+
   useEffect(() => {
     if (user?.companyId) {
       fetchShifts();
     }
-  }, [user]);
+  }, [user?.companyId]);
 
   const fetchShifts = async () => {
     try {
@@ -151,7 +162,7 @@ export default function ShiftsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -160,105 +171,141 @@ export default function ShiftsPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Work Shifts
-          </span>
-        }
-        description="Manage employee work schedules and shifts"
+        icon={<Clock />}
+        title="Work Shifts"
+        description="Manage employee work schedules, shift rules, and daily timings"
         actions={
           canManage && (
-            <Button onClick={() => handleOpenModal()}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="sm" onClick={() => handleOpenModal()}>
+              <Plus className="h-4 w-4 mr-1.5" />
               Add Shift
             </Button>
           )
         }
       />
 
-      {/* Shifts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {shifts.map((shift) => (
-          <Card key={shift._id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  {shift.name.toLowerCase().includes('night') ? (
-                    <Moon className="h-5 w-5 text-indigo-500" />
-                  ) : (
-                    <Sun className="h-5 w-5 text-amber-500" />
-                  )}
-                  {shift.name}
-                </CardTitle>
-                {canManage && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenModal(shift)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 dark:text-red-400"
-                      onClick={() => handleDelete(shift._id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Shifts', value: shifts.length, icon: Clock },
+          { label: 'Day Shifts', value: dayShiftsCount, icon: Sun },
+          { label: 'Night Shifts', value: nightShiftsCount, icon: Moon },
+          { label: 'Days Covered', value: `${coveredDaysCount} / 7`, icon: CalendarCheck },
+        ].map(({ label, value, icon: Icon }) => (
+          <Card key={label} className="rounded-[14px] border border-border bg-card shadow-xs">
+            <CardContent className="p-4 flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                <Icon className="h-4 w-4 text-primary" />
               </div>
-              <CardDescription>
-                {formatTime(shift.startTime)} - {formatTime(shift.endTime)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-slate-400">Duration</span>
-                <span className="font-medium">{getDuration(shift.startTime, shift.endTime)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-slate-400">Late Threshold</span>
-                <span className="font-medium">{shift.lateThreshold} mins</span>
-              </div>
-              <div className="pt-2 border-t">
-                <p className="text-xs text-gray-500 mb-2 dark:text-slate-400">Working Days</p>
-                <div className="flex flex-wrap gap-1">
-                  {daysOfWeek.map(day => (
-                    <span
-                      key={day}
-                      className={`text-xs px-2 py-1 rounded ${
-                        shift.workingDays.includes(day)
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300'
-                          : 'bg-gray-100 text-gray-400 dark:bg-slate-800'
-                      }`}
-                    >
-                      {day.slice(0, 3)}
-                    </span>
-                  ))}
-                </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tracking-tight text-foreground font-display">{value}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {shifts.length === 0 && (
-        <Card>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search shifts by name or schedule..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 h-10 text-sm border-border bg-card"
+        />
+      </div>
+
+      {/* Shifts Grid or Empty State */}
+      {filteredShifts.length === 0 ? (
+        <Card className="rounded-[14px] border border-border bg-card shadow-xs">
           <EmptyState
             icon={<Clock size={18} />}
-            title="No shifts configured yet"
-            action={canManage ? (
-              <Button onClick={() => handleOpenModal()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create First Shift
-              </Button>
-            ) : undefined}
+            title={shifts.length === 0 ? "No shifts configured yet" : "No matching shifts found"}
+            description={
+              shifts.length === 0
+                ? "Configure daily work schedules, grace periods, and working day policies."
+                : "Try adjusting your search query to find configured shifts."
+            }
+            action={
+              canManage ? (
+                <Button size="sm" onClick={() => handleOpenModal()}>
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  {shifts.length === 0 ? "Create First Shift" : "Add Shift"}
+                </Button>
+              ) : undefined
+            }
           />
         </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredShifts.map((shift) => (
+            <Card key={shift._id} className="rounded-[14px] border border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {shift.name.toLowerCase().includes('night') ? (
+                      <Moon className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Sun className="h-5 w-5 text-amber-500" />
+                    )}
+                    {shift.name}
+                  </CardTitle>
+                  {canManage && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenModal(shift)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 dark:text-red-400"
+                        onClick={() => handleDelete(shift._id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <CardDescription>
+                  {formatTime(shift.startTime)} - {formatTime(shift.endTime)}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Duration</span>
+                  <span className="font-medium text-foreground">{getDuration(shift.startTime, shift.endTime)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Late Threshold</span>
+                  <span className="font-medium text-foreground">{shift.lateThreshold} mins</span>
+                </div>
+                <div className="pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2">Working Days</p>
+                  <div className="flex flex-wrap gap-1">
+                    {daysOfWeek.map(day => (
+                      <span
+                        key={day}
+                        className={`text-xs px-2 py-1 rounded ${
+                          shift.workingDays.includes(day)
+                            ? 'bg-primary/10 text-primary border border-primary/20 font-semibold'
+                            : 'bg-muted/40 text-muted-foreground/60 border border-transparent'
+                        }`}
+                      >
+                        {day.slice(0, 3)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* Modal */}
@@ -314,7 +361,7 @@ export default function ShiftsPage() {
                         onClick={() => toggleDay(day)}
                         className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
                           formData.workingDays.includes(day)
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-primary text-primary-foreground'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-400'
                         }`}
                       >

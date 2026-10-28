@@ -94,6 +94,7 @@ export default function OnboardingPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
+        icon={<UserPlus2 />}
         title="Employee Onboarding"
         description="Manage offer letters, document collection and onboarding tasks for new hires."
         actions={
@@ -111,7 +112,7 @@ export default function OnboardingPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400"><Users size={22} /></div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20"><Users size={22} /></div>
             <div><p className="text-2xl font-bold">{stats.total}</p><p className="text-sm text-gray-500 dark:text-slate-400">Total</p></div>
           </CardContent>
         </Card>
@@ -210,7 +211,7 @@ export default function OnboardingPage() {
                           <span>{r.progress}%</span>
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700">
-                          <div className="h-full rounded-full bg-blue-600" style={{ width: `${r.progress}%` }} />
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${r.progress}%` }} />
                         </div>
                       </div>
                     </div>

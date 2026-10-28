@@ -24,7 +24,8 @@ import {
   Settings as SettingsIcon,
   ShieldCheck,
   ShieldAlert,
-  Eye
+  Eye,
+  CircleDollarSign
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -248,6 +249,7 @@ export default function PayrollPage() {
     <div className="space-y-6">
       {/* Header Area */}
       <PageHeader
+        icon={<CircleDollarSign />}
         title="Payroll Management"
         description="Review and manage monthly employee salaries."
         actions={
@@ -272,11 +274,11 @@ export default function PayrollPage() {
 
       {/* Summary Stats */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-blue-600 text-white border-none shadow-lg shadow-blue-500/20">
+        <Card className="bg-primary text-primary-foreground border-none shadow-lg shadow-primary/20">
           <CardContent className="pt-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-blue-100 text-xs font-medium uppercase tracking-wider">Total Net Salary</p>
+                <p className="text-primary-foreground/80 text-xs font-medium uppercase tracking-wider">Total Net Salary</p>
                 <div className="text-3xl font-bold flex items-center">
                   <IndianRupee size={24} className="mr-1" />
                   {totalExpense.toLocaleString()}
@@ -399,7 +401,7 @@ export default function PayrollPage() {
                     <tr key={payroll._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
                             {payroll.employeeId?.name.charAt(0)}
                           </div>
                           <div>
@@ -439,7 +441,7 @@ export default function PayrollPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-bold text-blue-600 dark:text-blue-400">
+                        <div className="font-bold text-primary">
                           ₹{payroll.netSalary.toLocaleString()}
                         </div>
                       </td>
@@ -494,7 +496,7 @@ export default function PayrollPage() {
                             <Button 
                               size="sm" 
                               onClick={() => updateStatus(payroll._id, 'Paid')} 
-                              className="h-8 px-3 text-[10px] font-bold bg-green-600 hover:bg-green-700"
+                              className="h-8 px-3 text-[10px] font-bold"
                             >
                               Pay Now
                             </Button>
@@ -607,17 +609,17 @@ export default function PayrollPage() {
               </div>
 
               {/* Grand Total */}
-              <div className="mt-8 p-6 bg-blue-600 rounded-2xl text-white shadow-xl shadow-blue-500/20">
+              <div className="mt-8 p-6 bg-primary rounded-2xl text-primary-foreground shadow-xl shadow-primary/20">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-blue-100 text-xs font-semibold uppercase tracking-widest">Net Payable Salary</p>
+                    <p className="text-primary-foreground/80 text-xs font-semibold uppercase tracking-widest">Net Payable Salary</p>
                     <p className="text-4xl font-black mt-1 flex items-center">
                       <IndianRupee size={32} />
                       {viewingPayroll.netSalary.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-blue-100 text-xs italic">Status</p>
+                    <p className="text-primary-foreground/80 text-xs italic">Status</p>
                     <p className="inline-block mt-1 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-sm font-bold">
                       {viewingPayroll.status}
                     </p>

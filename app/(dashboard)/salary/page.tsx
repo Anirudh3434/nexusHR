@@ -41,7 +41,7 @@ export default function SalaryPage() {
     if (user?.companyId) {
       fetchSalaries();
     }
-  }, [user]);
+  }, [user?.companyId]);
 
   const fetchSalaries = async () => {
     try {
@@ -194,12 +194,8 @@ export default function SalaryPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
-            Salary Structures
-          </span>
-        }
+        icon={<DollarSign />}
+        title="Salary Structures"
         description="Manage employee salary components and calculations"
         actions={
           canManage && (

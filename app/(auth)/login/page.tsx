@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Zap
 } from "lucide-react";
+import { SmartLogoBadge } from "@/components/ui/SmartLogoBadge";
 
 type LookupState = "idle" | "connecting" | "success" | "failed";
 
@@ -265,8 +266,8 @@ export default function CompanyPortalLogin() {
   if (isCheckingSaved) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 dark:bg-slate-800/50">
-        <div className="h-16 w-16 rounded-full bg-[#03081c] p-2 shadow-2xl ring-4 ring-white border border-[#03081c] mb-4 flex items-center justify-center animate-pulse">
-          <img src="/logo.png" alt="NexusHR" className="h-full w-full object-contain scale-110" />
+        <div className="h-16 w-16 rounded-full bg-[#03081c] p-2 shadow-2xl ring-4 ring-white border border-[#03081c] mb-4 flex items-center justify-center animate-pulse overflow-hidden">
+          <img src="/logo.png" alt="NexusHR" className="h-full w-full object-contain" />
         </div>
         <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
           <Loader2 className="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400" />
@@ -303,11 +304,11 @@ export default function CompanyPortalLogin() {
                     <div className="relative group/circleA">
                       {/* Ambient Halo */}
                       <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-teal-500/20 blur-md animate-pulse" />
-                      <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-[#03081c] p-2 shadow-2xl ring-4 ring-indigo-100 border border-[#03081c] flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                      <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-[#03081c] p-2.5 shadow-2xl ring-4 ring-indigo-100 border border-[#03081c] flex items-center justify-center transition-transform hover:scale-105 duration-300 overflow-hidden">
                         <img 
                           src="/logo.png" 
                           alt="NexusHR" 
-                          className="h-full w-full object-contain scale-110 drop-shadow-[0_0_12px_rgba(99,102,241,0.5)]" 
+                          className="h-full w-full object-contain drop-shadow-[0_0_12px_rgba(99,102,241,0.5)]" 
                         />
                       </div>
                     </div>
@@ -382,16 +383,13 @@ export default function CompanyPortalLogin() {
                       {lookupState === "success" && targetCompany && (
                         <div className="animate-in zoom-in-75 duration-500 relative">
                           <div className="absolute -inset-3 rounded-full bg-emerald-400/30 blur-lg animate-pulse" />
-                          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-[#03081c] p-2 shadow-2xl ring-4 ring-emerald-200 border border-[#03081c] flex items-center justify-center">
-                            {targetCompany.logo ? (
-                              <img 
-                                src={targetCompany.logo} 
-                                alt={targetCompany.name} 
-                                className="h-full w-full object-contain scale-110" 
-                              />
-                            ) : (
-                              <Building2 className="h-10 w-10 text-emerald-400" />
-                            )}
+                          <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full shadow-2xl ring-4 ring-emerald-200 border border-slate-200 dark:border-slate-700">
+                            <SmartLogoBadge 
+                              src={targetCompany.logo} 
+                              alt={targetCompany.name} 
+                              className="h-full w-full p-2.5" 
+                              fallbackIcon={<Building2 className="h-10 w-10 text-emerald-500" />}
+                            />
                           </div>
                           <div className="absolute -top-1 -right-1 h-7 w-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg ring-2 ring-white animate-in zoom-in duration-300">
                             <Check className="h-4 w-4 stroke-[3]" />
@@ -461,11 +459,11 @@ export default function CompanyPortalLogin() {
             <div className="mb-6 text-center">
               <div className="relative mx-auto mb-3 inline-block group">
                 <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-indigo-400/30 via-purple-400/20 to-teal-400/30 opacity-70 blur-lg transition duration-500 group-hover:scale-105" />
-                <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-2xl shadow-slate-900/20 ring-4 ring-white border border-[#03081c]">
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-2xl shadow-slate-900/20 ring-4 ring-white border border-[#03081c] overflow-hidden">
                   <img 
                     src="/logo.png" 
                     alt="NexusHR" 
-                    className="h-full w-full object-contain scale-110" 
+                    className="h-full w-full object-contain" 
                   />
                 </div>
               </div>

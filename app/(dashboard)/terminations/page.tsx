@@ -372,6 +372,7 @@ export default function TerminationsPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
+        icon={<UserX />}
         title="Terminations"
         description="Manage employee terminations and exit process"
         actions={

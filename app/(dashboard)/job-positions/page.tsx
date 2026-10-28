@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { 
   Plus, Search, Briefcase, MapPin, Clock, DollarSign, Users,
   Edit2, Trash2, ExternalLink, Loader2, X, CheckCircle,
@@ -375,51 +376,71 @@ ${requirements}
   }
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Job Positions</h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400">Manage job openings and recruitment</p>
+      <PageHeader
+        icon={<Briefcase />}
+        title="Job Positions"
+        description="Manage job openings, requisitions, and recruitment pipelines"
+        actions={
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigator.clipboard.writeText(careersUrl).then(() => 
+                addToast({ type: "success", title: "Copied", description: "Careers page URL copied to clipboard" })
+              )}
+            >
+              <ExternalLink className="h-4 w-4 mr-1.5" />
+              Copy URL
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => { resetForm(); setShowModal(true); }}
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add Position
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Requisition Publishing Callout */}
+      <div className="flex items-start gap-3.5 rounded-[14px] border border-border bg-card p-4 shadow-xs">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+          <Briefcase className="h-4 w-4" />
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigator.clipboard.writeText(careersUrl).then(() => 
-              addToast({ type: "success", title: "Copied", description: "Careers page URL copied to clipboard" })
-            )}
-            className="text-gray-600 border-gray-300 hover:bg-gray-50 dark:text-slate-400 dark:border-slate-600 dark:hover:bg-slate-800"
-          >
-            <ExternalLink className="h-4 w-4 mr-1.5" />
-            Copy URL
-          </Button>
-          <Button 
-            size="sm"
-            onClick={() => { resetForm(); setShowModal(true); }}
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Add Position
-          </Button>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
+              Job Requisition & Publishing
+            </h4>
+            <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              Public Portal
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Create job openings with auto-generated Job Reference IDs (e.g., <code className="rounded bg-muted border border-border px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground">JB0001</code>) to publish to your careers portal and automatically route inbound applicants.
+          </p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Positions', value: positions.length, icon: Briefcase, color: 'blue' },
-          { label: 'Active', value: positions.filter(p => p.status === 'Active').length, icon: CheckCircle, color: 'green' },
-          { label: 'On Hold', value: positions.filter(p => p.status === 'On Hold').length, icon: Clock, color: 'yellow' },
-          { label: 'Closed', value: positions.filter(p => p.status === 'Closed').length, icon: X, color: 'red' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label} className="border-gray-200 dark:border-slate-700">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className={`p-2 rounded-md bg-${color}-50`}>
-                <Icon className={`h-4 w-4 text-${color}-600`} />
+          { label: 'Total Positions', value: positions.length, icon: Briefcase },
+          { label: 'Active', value: positions.filter(p => p.status === 'Active').length, icon: CheckCircle },
+          { label: 'On Hold', value: positions.filter(p => p.status === 'On Hold').length, icon: Clock },
+          { label: 'Closed', value: positions.filter(p => p.status === 'Closed').length, icon: X },
+        ].map(({ label, value, icon: Icon }) => (
+          <Card key={label} className="rounded-[14px] border border-border bg-card shadow-xs">
+            <CardContent className="p-4 flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                <Icon className="h-4 w-4 text-primary" />
               </div>
-              <div>
-                <p className="text-xl font-semibold text-gray-900 dark:text-slate-100">{value}</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tracking-tight text-foreground font-display">{value}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -428,23 +449,29 @@ ${requirements}
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search by title, department, or designation..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-9 text-sm border-gray-200 dark:border-slate-700"
+          className="pl-10 h-10 text-sm border-border bg-card"
         />
       </div>
 
       {/* Positions List */}
       <div className="space-y-3">
         {filteredPositions.length === 0 ? (
-          <Card>
+          <Card className="rounded-[14px] border border-border bg-card shadow-xs">
             <EmptyState
               icon={<Briefcase size={18} />}
-              title="No job positions"
-              description="Create your first job posting to start recruiting"
+              title="No job positions configured"
+              description="Create job postings to publish to your careers portal and accept applications."
+              action={
+                <Button size="sm" onClick={() => { resetForm(); setShowModal(true); }}>
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Create First Position
+                </Button>
+              }
             />
           </Card>
         ) : (
@@ -525,7 +552,7 @@ ${requirements}
                         size="sm"
                         onClick={() => router.push(`/applicants?jobId=${position.jobId}`)}
                         title="View Applications"
-                        className="text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 h-8 px-2 dark:text-slate-400 dark:hover:bg-blue-500/10"
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2"
                       >
                         <Briefcase className="h-4 w-4 mr-1.5" />
                         <span className="text-xs">{position.applicationCount || 0} applicants</span>
@@ -536,7 +563,7 @@ ${requirements}
                       size="icon"
                       onClick={() => generateLinkedInPost(position)}
                       title={position.jobId ? "Generate LinkedIn Post" : "Job ID required"}
-                      className="text-gray-400 hover:text-blue-600 hover:bg-blue-50/50 h-8 w-8 dark:hover:bg-blue-500/10"
+                      className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 w-8"
                       disabled={!position.jobId}
                     >
                       <Share2 className="h-4 w-4" />
@@ -734,11 +761,11 @@ ${requirements}
           <Card className="w-full max-w-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Share2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <Share2 className="h-5 w-5 text-primary" />
                 LinkedIn Post - {selectedPosition.jobId}
                 {linkedInLoading && (
                   <span className="text-xs font-normal text-gray-500 ml-2 flex items-center gap-1 dark:text-slate-400">
-                    <span className="animate-spin inline-block h-3 w-3 border-2 border-blue-500 border-t-transparent rounded-full" />
+                    <span className="animate-spin inline-block h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
                     AI Generating...
                   </span>
                 )}
@@ -746,8 +773,8 @@ ${requirements}
             </CardHeader>
             <CardContent className="space-y-4">
               {linkedInLoading ? (
-                <div className="bg-gray-50 p-8 rounded-lg flex flex-col items-center justify-center dark:bg-slate-800/50">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                <div className="bg-muted/40 p-8 rounded-lg flex flex-col items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
                   <p className="text-sm text-gray-600 dark:text-slate-400">Generating LinkedIn post with AI...</p>
                   <p className="text-xs text-gray-400 mt-1">Powered by NVIDIA AI (Gemma 4-31b)</p>
                 </div>
@@ -810,9 +837,9 @@ ${requirements}
                 </div>
               )}
               
-              <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 dark:bg-blue-500/10 dark:text-blue-300">
-                <p className="font-semibold mb-1">📧 Application Tracking:</p>
-                <p>Candidates should include <strong>Job ID: {selectedPosition.jobId}</strong> in their email subject line when applying.</p>
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-foreground dark:bg-primary/10">
+                <p className="mb-1 font-semibold text-primary">📧 Application Tracking:</p>
+                <p className="text-muted-foreground">Candidates should include <strong className="text-foreground">Job ID: {selectedPosition.jobId}</strong> in their email subject line when applying.</p>
               </div>
 
               <div className="flex gap-3">

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { FolderOpen } from "lucide-react";
 
 const MOCK_CANDIDATES = [
   { id: "C-101", name: "Sarah Jenkins", role: "Frontend Engineer", stage: "Interview", dateApplied: "2024-10-15", rating: "★★★★☆" },
@@ -33,6 +34,7 @@ export default function RecruitmentPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header Area */}
       <PageHeader
+        icon={<FolderOpen />}
         title="Recruitment Pipeline"
         description="Manage candidates, track application states, and process offers."
         actions={

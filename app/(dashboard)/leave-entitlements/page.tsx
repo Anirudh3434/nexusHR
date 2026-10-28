@@ -61,7 +61,7 @@ export default function LeaveEntitlementsPage() {
 
   useEffect(() => {
     if (user?.companyId) fetchData();
-  }, [user]);
+  }, [user?.companyId]);
 
   const fetchData = async () => {
     try {
@@ -173,12 +173,8 @@ export default function LeaveEntitlementsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Award className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Leave Entitlements
-          </span>
-        }
+        icon={<Award />}
+        title="Leave Entitlements"
         description="Define leave allocations based on employee experience tiers."
         actions={
           <>

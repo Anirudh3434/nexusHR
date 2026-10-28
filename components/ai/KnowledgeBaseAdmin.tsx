@@ -10,6 +10,7 @@ import {
   Save, X, FileText, TrendingUp, ThumbsUp, ThumbsDown 
 } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
+import { PageHeader } from '../ui/PageHeader';
 
 interface KnowledgeArticle {
   _id: string;
@@ -338,16 +339,17 @@ export default function KnowledgeBaseAdmin() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Knowledge Base</h2>
-          <p className="text-gray-600 dark:text-gray-400">Manage HR knowledge base articles for AI assistant</p>
-        </div>
-        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" />
-          New Article
-        </Button>
-      </div>
+      <PageHeader
+        icon={<FileText />}
+        title="Knowledge Base"
+        description="Manage HR knowledge base articles for AI assistant"
+        actions={
+          <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" />
+            New Article
+          </Button>
+        }
+      />
 
       {/* Filters */}
       <Card>

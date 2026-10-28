@@ -5,7 +5,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
-import { History, Calendar, FileDown, Loader2 } from "lucide-react";
+import { History, Calendar, FileDown, Loader2, CalendarClock } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 
@@ -44,7 +44,7 @@ export default function MyAttendancePage() {
 
   useEffect(() => {
     if (user) fetchMyAttendance();
-  }, [user]);
+  }, [user?.id]);
 
   const fetchMyAttendance = async () => {
     try {
@@ -92,6 +92,7 @@ export default function MyAttendancePage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
+        icon={<CalendarClock />}
         title="Attendance History"
         description="View and download your historical work session records."
         actions={
@@ -137,7 +138,7 @@ export default function MyAttendancePage() {
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Average Daily Shift</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-2xl font-bold text-primary">
               {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats.avgHours}h`}
             </div>
             <p className="text-xs text-gray-400 mt-1">Consistent performance</p>
@@ -191,16 +192,16 @@ export default function MyAttendancePage() {
                     <TableCell>
                       <span 
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium 
-                        ${log.status === 'Present' ? 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300' 
-                        : log.status === 'Late' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300' 
-                        : 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300'}`}
+                        ${log.status === 'Present' ? 'bg-primary/10 text-primary border border-primary/20 dark:bg-primary/15 dark:border-primary/30' 
+                        : log.status === 'Late' ? 'bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400 dark:border-amber-500/30' 
+                        : 'bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/15 dark:border-destructive/30'}`}
                       >
                         {log.status}
                       </span>
                     </TableCell>
                     <TableCell className="text-gray-600 dark:text-slate-400">{log.checkIn}</TableCell>
                     <TableCell className="text-gray-600 dark:text-slate-400">{log.checkOut}</TableCell>
-                    <TableCell className="text-right font-bold text-blue-600 dark:text-blue-400">
+                    <TableCell className="text-right font-medium text-foreground">
                       {log.totalHours}
                     </TableCell>
                   </TableRow>
