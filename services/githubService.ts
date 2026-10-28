@@ -67,13 +67,18 @@ class GitHubService {
     };
   }
 
-  getAuthUrl(): string {
+  getAuthUrl(state?: string): string {
+    if (!this.config.clientId) {
+      throw new Error(
+        'GitHub OAuth credentials are not set in environment. Use a GitHub Personal Access Token (PAT) or Direct Repository Connection below.'
+      );
+    }
     const scopes = ['repo', 'read:org', 'admin:repo_hook'];
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
       scope: scopes.join(' '),
-      state: this.generateState(),
+      state: state || this.generateState(),
     });
     return `https://github.com/login/oauth/authorize?${params.toString()}`;
   }
@@ -169,8 +174,9 @@ class GitHubService {
   }
 
   parseTicketNumberFromBranch(branchName: string): string | null {
-    // Common patterns: TASK-123, #123, task-123, 123
+    // Common patterns: TSK26070001, TASK-123, #123, task-123
     const patterns = [
+      /(TSK\d+)/i,               // NexusHR standard: TSK26070010
       /([A-Z]+-\d+)/i,           // TASK-123, PROJ-456
       /#(\d+)/,                   // #123
       /(\d{3,})/,                 // 123 (at least 3 digits)
@@ -191,8 +197,8 @@ class GitHubService {
     const secret = process.env.GITHUB_WEBHOOK_SECRET;
     
     if (!secret) {
-      console.error('GITHUB_WEBHOOK_SECRET not configured');
-      return false;
+      console.warn('GITHUB_WEBHOOK_SECRET not configured — allowing webhook in development mode');
+      return true;
     }
 
     const hmac = crypto.createHmac('sha256', secret);

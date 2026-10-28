@@ -45,3 +45,26 @@ export const deleteDesignation = async (id: string): Promise<void> => {
   const response = await fetch(url.toString(), { method: 'DELETE' });
   if (!response.ok) throw new Error('Failed to delete designation');
 };
+
+export const bulkImportDesignations = async (
+  designations: Array<{ name: string; department?: string; description?: string }>,
+  companyId?: string
+): Promise<{
+  message: string;
+  total: number;
+  importedCount: number;
+  skippedCount: number;
+  errors: Array<{ row: number; name: string; reason: string }>;
+}> => {
+  const response = await fetch(`${API_URL}/bulk-import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ designations, companyId }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to bulk import designations');
+  }
+  return response.json();
+};
+

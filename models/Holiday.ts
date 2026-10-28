@@ -39,6 +39,9 @@ const HolidaySchema = new Schema({
   timestamps: true,
 });
 
+HolidaySchema.index({ companyId: 1, date: 1 });
+HolidaySchema.index({ companyId: 1, isActive: 1 });
+
 const Holiday = models.Holiday || model('Holiday', HolidaySchema);
 
 export default Holiday;

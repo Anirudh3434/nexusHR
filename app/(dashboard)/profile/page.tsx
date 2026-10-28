@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
+import { Button } from "../../../components/ui/Button";
 import { 
   Loader2, 
   Globe, 
@@ -28,6 +29,7 @@ import {
   Link as LinkIcon
 } from "lucide-react";
 import { uploadImage } from "../../../services/uploadService";
+import { cn } from "../../../lib/utils";
 
 interface ProfileData {
   name: string;
@@ -67,7 +69,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) fetchProfile();
-  }, [user]);
+  }, [user?.id]);
 
   const fetchProfile = async () => {
     try {
@@ -155,9 +157,9 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600 dark:text-blue-400" />
-        <p className="text-xs font-semibold text-gray-400">Loading Profile Details...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-xs font-medium text-muted-foreground">Loading profile details...</p>
       </div>
     );
   }
@@ -169,60 +171,64 @@ export default function ProfilePage() {
   const displayDepartment = profile?.department || (user as any)?.department || "Engineering";
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-16">
+    <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300 pb-16">
       
-      {/* 1. Profile Hero Card with Banner & Avatar Layout */}
-      <div className="rounded-3xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-sm">
+      {/* 1. Profile Hero Card */}
+      <div className="rounded-[14px] overflow-hidden border border-border bg-card text-card-foreground shadow-xs">
         
-        {/* Banner Cover with Vibrant Gradient */}
-        <div className="relative h-44 sm:h-52 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-black/30" />
+        {/* Refined Harbor & Pine Architectural Banner */}
+        <div className="relative h-36 sm:h-44 w-full bg-[#0b1220] overflow-hidden border-b border-border">
+          {/* Ambient Pine Radial Wash */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-10%,rgba(15,118,110,0.35),transparent)]" />
+          {/* Subtle Ledger Grid */}
+          <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
         </div>
 
         {/* Profile Identity & Action Bar */}
         <div className="px-6 sm:px-8 pb-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pt-2">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pt-0">
             
             {/* Left: Avatar + Title Details */}
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
               
-              {/* Avatar with Glow Ring (Only element with -mt) */}
-              <div className="relative group shrink-0 -mt-16 sm:-mt-20">
-                <div className="p-1 rounded-full bg-white dark:bg-gray-900 shadow-xl">
-                  <div className="p-1 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600">
-                    {currentAvatar ? (
-                      <img 
-                        src={currentAvatar} 
-                        alt={displayName} 
-                        className="h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover border-2 border-white dark:border-gray-900 shadow-sm"
-                      />
-                    ) : (
-                      <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-4xl border-2 border-white dark:border-gray-900 shadow-inner">
-                        {displayName.charAt(0)}
-                      </div>
-                    )}
-                  </div>
+              {/* Avatar Container */}
+              <div className="relative group shrink-0 -mt-14 sm:-mt-16">
+                <div className="p-1 rounded-full bg-card ring-1 ring-border shadow-md">
+                  {currentAvatar ? (
+                    <img 
+                      src={currentAvatar} 
+                      alt={displayName} 
+                      className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-3xl">
+                      {displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
 
                 {/* Camera upload trigger button */}
-                <div className={`absolute bottom-1 right-1 flex gap-1 transition-all ${isEditing ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100'}`}>
+                <div className={cn(
+                  "absolute bottom-0 right-0 flex gap-1 transition-all",
+                  isEditing ? "opacity-100 scale-100" : "opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100"
+                )}>
                   <button
                     type="button"
                     onClick={() => document.getElementById('avatarUploadInput')?.click()}
                     disabled={isUploading}
-                    className="h-8 w-8 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-full flex items-center justify-center shadow-lg transition-all"
+                    className="h-7 w-7 bg-primary hover:opacity-90 active:scale-95 text-primary-foreground rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer"
                     title="Change Photo"
                   >
-                    {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                    {isUploading ? <Loader2 size={13} className="animate-spin" /> : <Camera size={13} />}
                   </button>
                   {currentAvatar && isEditing && (
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, avatar: undefined })}
-                      className="h-8 w-8 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-full flex items-center justify-center shadow-lg transition-all"
+                      className="h-7 w-7 bg-destructive hover:opacity-90 active:scale-95 text-destructive-foreground rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer"
                       title="Remove Photo"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={13} />
                     </button>
                   )}
                 </div>
@@ -236,30 +242,31 @@ export default function ProfilePage() {
                 />
               </div>
 
-              {/* Title & Role Info (Crisply placed in white body) */}
+              {/* Title & Role Info */}
               <div className="pt-2 text-center sm:text-left space-y-1">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                  <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                     {displayName}
                   </h1>
                 </div>
 
-                <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 flex items-center justify-center sm:justify-start gap-2">
-                  <span>{displayRole}</span>
-                  <span>•</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-bold">{displayDepartment}</span>
+                <p className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-2">
+                  <span className="font-medium text-foreground">{displayRole}</span>
+                  <span className="text-muted-foreground/60">•</span>
+                  <span className="text-primary font-medium">{displayDepartment}</span>
                 </p>
 
-                <div className="flex items-center justify-center sm:justify-start gap-2 pt-1.5">
+                <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
                   <button 
                     onClick={() => copyToClipboard(displayEmpId, "Employee ID")}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-mono font-bold transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground text-xs font-mono font-medium border border-border transition-colors cursor-pointer"
+                    title="Click to copy ID"
                   >
                     <span>ID: #{displayEmpId}</span>
-                    <Copy size={11} className="text-gray-400" />
+                    <Copy size={11} className="text-muted-foreground" />
                   </button>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/50 dark:border-emerald-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Active Employee
                   </span>
                 </div>
@@ -268,33 +275,37 @@ export default function ProfilePage() {
             </div>
 
             {/* Right: Edit Profile / Save Changes CTA */}
-            <div className="flex items-center justify-center sm:justify-end gap-3 pb-1">
+            <div className="flex items-center justify-center sm:justify-end gap-2 pb-1">
               {!isEditing ? (
-                <button
+                <Button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all"
+                  size="sm"
+                  className="gap-2 font-medium"
                 >
-                  <Edit3 size={15} />
+                  <Edit3 size={14} />
                   <span>Edit Profile</span>
-                </button>
+                </Button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all"
+                    className="gap-1.5 font-medium"
                   >
-                    <X size={15} />
+                    <X size={14} />
                     <span>Cancel</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="sm"
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all"
+                    className="gap-1.5 font-medium"
                   >
-                    {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                     <span>Save Changes</span>
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -302,31 +313,30 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick Metric Ribbon */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
-            <div className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Department</span>
-              <p className="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5">{displayDepartment}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-border">
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Department</span>
+              <p className="text-sm font-semibold text-foreground truncate mt-0.5">{displayDepartment}</p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Designation</span>
-              <p className="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5">{displayRole}</p>
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Designation</span>
+              <p className="text-sm font-semibold text-foreground truncate mt-0.5">{displayRole}</p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Joining Date</span>
-              <p className="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5">{formatDate(profile?.joiningDate)}</p>
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Joining Date</span>
+              <p className="text-sm font-semibold text-foreground truncate mt-0.5">{formatDate(profile?.joiningDate)}</p>
             </div>
-            <div className="p-3.5 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Account Type</span>
-              <p className="text-sm font-bold text-blue-600 dark:text-blue-400 capitalize truncate mt-0.5">{profile?.role || "Employee"}</p>
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Account Type</span>
+              <p className="text-sm font-semibold text-primary capitalize truncate mt-0.5">{profile?.role || "Employee"}</p>
             </div>
           </div>
 
         </div>
       </div>
 
-
       {/* 2. Navigation Tabs */}
-      <div className="flex items-center gap-2 p-1.5 bg-gray-100/80 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-800 max-w-fit flex-wrap">
+      <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border max-w-fit flex-wrap">
         {[
           { id: 'personal', label: 'Personal & Contact', icon: User },
           { id: 'work', label: 'Employment Details', icon: Building2 },
@@ -339,19 +349,19 @@ export default function ProfilePage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={cn(
+                "flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer",
                 isActive 
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-white shadow-xs' 
-                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 dark:text-slate-400'
-              }`}
+                  ? "bg-card text-foreground font-semibold shadow-2xs border border-border/70" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <Icon size={14} className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'} />
+              <Icon size={14} className={isActive ? "text-primary" : "text-muted-foreground"} />
               <span>{tab.label}</span>
             </button>
           );
         })}
       </div>
-
 
       {/* 3. Tab Content Panels */}
       <div className="space-y-6">
@@ -361,40 +371,42 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Bio Card (1 col) */}
-            <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
-                  <Sparkles size={16} />
+            <div className="rounded-[14px] border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                    <Sparkles size={15} />
+                  </div>
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground">About & Bio</h3>
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">About & Bio</h3>
-              </div>
 
-              {isEditing ? (
-                <div className="space-y-2">
-                  <textarea
-                    value={formData.bio || ''}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    placeholder="Write a brief professional summary about your role, skills, and goals..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-[140px] resize-none"
-                    maxLength={500}
-                  />
-                  <p className="text-[10px] text-gray-400 text-right">{(formData.bio?.length || 0)}/500 characters</p>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed italic">
-                  {profile?.bio ? `"${profile.bio}"` : "No personal bio provided yet. Click 'Edit Profile' to add a summary."}
-                </p>
-              )}
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={formData.bio || ''}
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      placeholder="Write a brief professional summary about your role, skills, and goals..."
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[140px] resize-none"
+                      maxLength={500}
+                    />
+                    <p className="text-[10px] text-muted-foreground text-right">{(formData.bio?.length || 0)}/500 characters</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed italic">
+                    {profile?.bio ? `"${profile.bio}"` : "No personal bio provided yet. Click 'Edit Profile' to add a summary."}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Contact Details (2 cols) */}
-            <div className="lg:col-span-2 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 shadow-sm space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
-                    <User size={16} />
+            <div className="lg:col-span-2 rounded-[14px] border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                    <User size={15} />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Personal Information</h3>
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground">Personal Information</h3>
                 </div>
               </div>
 
@@ -402,53 +414,53 @@ export default function ProfilePage() {
                 
                 {/* Full Name */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Full Legal Name</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Full Legal Name</label>
                   {isEditing ? (
                     <input
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   ) : (
-                    <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">{displayName}</p>
+                    <p className="font-semibold text-foreground text-sm">{displayName}</p>
                   )}
                 </div>
 
                 {/* Email (Read Only) */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
-                  <p className="font-mono font-semibold text-gray-800 dark:text-gray-200 text-xs py-2">{profile?.email || user?.email}</p>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Email Address</label>
+                  <p className="font-mono text-sm text-foreground py-1">{profile?.email || user?.email}</p>
                 </div>
 
                 {/* Phone */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Phone Number</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Phone Number</label>
                   {isEditing ? (
                     <input
                       type="tel"
                       value={formData.phone || ''}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="+91 98765 43210"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   ) : (
-                    <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">{profile?.phone || 'Not added'}</p>
+                    <p className="font-semibold text-foreground text-sm">{profile?.phone || 'Not added'}</p>
                   )}
                 </div>
 
                 {/* Date of Birth */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Date of Birth</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Date of Birth</label>
                   {isEditing ? (
                     <input
                       type="date"
                       value={formData.dob ? new Date(formData.dob).toISOString().split('T')[0] : ''}
                       onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   ) : (
-                    <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">{formatDate(profile?.dob)}</p>
+                    <p className="font-semibold text-foreground text-sm">{formatDate(profile?.dob)}</p>
                   )}
                 </div>
 
@@ -458,148 +470,146 @@ export default function ProfilePage() {
           </div>
         )}
 
-
         {/* TAB 2: Employment Details */}
         {activeTab === 'work' && (
-          <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/40 text-violet-600">
-                  <Building2 size={16} />
+          <div className="rounded-[14px] border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                  <Building2 size={15} />
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Employment & Organizational Record</h3>
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">Employment & Organizational Record</h3>
               </div>
-              <span className="text-xs text-gray-400">Managed by Organization HR</span>
+              <span className="text-xs text-muted-foreground">Managed by Organization HR</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Department</span>
-                <p className="text-base font-extrabold text-gray-900 dark:text-white">{displayDepartment}</p>
-                <p className="text-[11px] text-gray-400">Primary functional team</p>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Department</span>
+                <p className="text-base font-semibold text-foreground">{displayDepartment}</p>
+                <p className="text-xs text-muted-foreground">Primary functional team</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Designation</span>
-                <p className="text-base font-extrabold text-gray-900 dark:text-white">{displayRole}</p>
-                <p className="text-[11px] text-gray-400">Assigned role in hierarchy</p>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Designation</span>
+                <p className="text-base font-semibold text-foreground">{displayRole}</p>
+                <p className="text-xs text-muted-foreground">Assigned role in hierarchy</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Employee ID</span>
-                <p className="text-base font-extrabold font-mono text-blue-600 dark:text-blue-400">#{displayEmpId}</p>
-                <p className="text-[11px] text-gray-400">Official company identifier</p>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Employee ID</span>
+                <p className="text-base font-semibold font-mono text-primary">#{displayEmpId}</p>
+                <p className="text-xs text-muted-foreground">Official company identifier</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Date of Joining</span>
-                <p className="text-base font-extrabold text-gray-900 dark:text-white">{formatDate(profile?.joiningDate)}</p>
-                <p className="text-[11px] text-gray-400">Contract start timeline</p>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Date of Joining</span>
+                <p className="text-base font-semibold text-foreground">{formatDate(profile?.joiningDate)}</p>
+                <p className="text-xs text-muted-foreground">Contract start timeline</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">System Access Level</span>
-                <p className="text-base font-extrabold capitalize text-purple-600 dark:text-purple-400">{profile?.role || "Employee"}</p>
-                <p className="text-[11px] text-gray-400">RBAC permissions profile</p>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">System Access Level</span>
+                <p className="text-base font-semibold capitalize text-primary">{profile?.role || "Employee"}</p>
+                <p className="text-xs text-muted-foreground">RBAC permissions profile</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Reporting Manager</span>
-                <p className="text-base font-extrabold text-gray-900 dark:text-white">Sunil Singh</p>
-                <p className="text-[11px] text-gray-400">CTO & Co-founder</p>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reporting Status</span>
+                <p className="text-base font-semibold text-foreground">Active Organization Member</p>
+                <p className="text-xs text-muted-foreground">Assigned to team</p>
               </div>
 
             </div>
           </div>
         )}
 
-
         {/* TAB 3: Residential Address */}
         {activeTab === 'address' && (
-          <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                  <MapPin size={16} />
+          <div className="rounded-[14px] border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                  <MapPin size={15} />
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Residential Address</h3>
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">Residential Address</h3>
               </div>
             </div>
 
             {isEditing ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Street Address</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Street Address</label>
                   <input
                     type="text"
                     value={formData.address?.street || ''}
                     onChange={(e) => setFormData({ ...formData, address: { ...formData.address, street: e.target.value } })}
                     placeholder="e.g. 102 Cyber Park Avenue"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">City</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">City</label>
                   <input
                     type="text"
                     value={formData.address?.city || ''}
                     onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })}
                     placeholder="e.g. New Delhi"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">State / Province</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">State / Province</label>
                   <input
                     type="text"
                     value={formData.address?.state || ''}
                     onChange={(e) => setFormData({ ...formData, address: { ...formData.address, state: e.target.value } })}
                     placeholder="e.g. Delhi NCR"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Postal / ZIP Code</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Postal / ZIP Code</label>
                   <input
                     type="text"
                     value={formData.address?.zipCode || ''}
                     onChange={(e) => setFormData({ ...formData, address: { ...formData.address, zipCode: e.target.value } })}
                     placeholder="e.g. 110001"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Country</label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Country</label>
                   <input
                     type="text"
                     value={formData.address?.country || 'India'}
                     onChange={(e) => setFormData({ ...formData, address: { ...formData.address, country: e.target.value } })}
                     placeholder="India"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
               </div>
             ) : (
-              <div className="p-6 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-800 flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                  <MapPin size={20} />
+              <div className="p-5 rounded-xl border border-border/80 bg-muted/30 flex items-start gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary shrink-0">
+                  <MapPin size={18} />
                 </div>
                 <div className="space-y-1 text-xs">
                   {profile?.address?.street ? (
                     <>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">{profile.address.street}</p>
-                      <p className="text-gray-600 dark:text-gray-300 font-medium">
+                      <p className="text-sm font-semibold text-foreground">{profile.address.street}</p>
+                      <p className="text-muted-foreground font-medium">
                         {profile.address.city}, {profile.address.state} {profile.address.zipCode}
                       </p>
-                      <p className="text-gray-500 dark:text-gray-400 font-semibold">{profile.address.country || 'India'}</p>
+                      <p className="text-muted-foreground font-semibold">{profile.address.country || 'India'}</p>
                     </>
                   ) : (
-                    <p className="text-gray-400 italic">No address on file. Click 'Edit Profile' to add your residence details.</p>
+                    <p className="text-muted-foreground italic">No address on file. Click 'Edit Profile' to add your residence details.</p>
                   )}
                 </div>
               </div>
@@ -607,25 +617,24 @@ export default function ProfilePage() {
           </div>
         )}
 
-
         {/* TAB 4: Portfolios & Socials */}
         {activeTab === 'social' && (
-          <div className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400">
-                  <Globe size={16} />
+          <div className="rounded-[14px] border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                  <Globe size={15} />
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Online Portfolios & Profiles</h3>
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">Online Portfolios & Profiles</h3>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               
               {/* GitHub */}
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-800 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-gray-800 dark:text-gray-200">
-                  <span className="p-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono text-[10px]">GH</span>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-2">
+                <div className="flex items-center gap-2 font-semibold text-foreground">
+                  <span className="p-1 rounded-md bg-muted border border-border text-foreground font-mono text-[10px]">GH</span>
                   <span>GitHub Profile</span>
                 </div>
                 {isEditing ? (
@@ -634,21 +643,21 @@ export default function ProfilePage() {
                     value={formData.github || ''}
                     onChange={(e) => setFormData({ ...formData, github: e.target.value })}
                     placeholder="github.com/username"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-mono"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 ) : (
                   profile?.github ? (
-                    <a href={`https://${profile.github.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-mono font-semibold hover:underline flex items-center gap-1">
-                      {profile.github} <ExternalLink size={11} />
+                    <a href={`https://${profile.github.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary font-mono font-medium hover:underline flex items-center gap-1.5">
+                      {profile.github} <ExternalLink size={12} />
                     </a>
-                  ) : <span className="text-gray-400 italic">Not provided</span>
+                  ) : <span className="text-muted-foreground italic">Not provided</span>
                 )}
               </div>
 
               {/* LinkedIn */}
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-800 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-gray-800 dark:text-gray-200">
-                  <span className="p-1 rounded-md bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-mono text-[10px]">in</span>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-2">
+                <div className="flex items-center gap-2 font-semibold text-foreground">
+                  <span className="p-1 rounded-md bg-muted border border-border text-foreground font-mono text-[10px]">in</span>
                   <span>LinkedIn</span>
                 </div>
                 {isEditing ? (
@@ -657,21 +666,21 @@ export default function ProfilePage() {
                     value={formData.linkedin || ''}
                     onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
                     placeholder="linkedin.com/in/username"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-mono"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 ) : (
                   profile?.linkedin ? (
-                    <a href={`https://${profile.linkedin.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-mono font-semibold hover:underline flex items-center gap-1">
-                      {profile.linkedin} <ExternalLink size={11} />
+                    <a href={`https://${profile.linkedin.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary font-mono font-medium hover:underline flex items-center gap-1.5">
+                      {profile.linkedin} <ExternalLink size={12} />
                     </a>
-                  ) : <span className="text-gray-400 italic">Not provided</span>
+                  ) : <span className="text-muted-foreground italic">Not provided</span>
                 )}
               </div>
 
               {/* Website */}
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-800 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-gray-800 dark:text-gray-200">
-                  <Globe size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-2">
+                <div className="flex items-center gap-2 font-semibold text-foreground">
+                  <Globe size={15} className="text-primary" />
                   <span>Personal Website / Portfolio</span>
                 </div>
                 {isEditing ? (
@@ -680,21 +689,21 @@ export default function ProfilePage() {
                     value={formData.website || ''}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     placeholder="yourwebsite.dev"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-mono"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 ) : (
                   profile?.website ? (
-                    <a href={`https://${profile.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-mono font-semibold hover:underline flex items-center gap-1">
-                      {profile.website} <ExternalLink size={11} />
+                    <a href={`https://${profile.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary font-mono font-medium hover:underline flex items-center gap-1.5">
+                      {profile.website} <ExternalLink size={12} />
                     </a>
-                  ) : <span className="text-gray-400 italic">Not provided</span>
+                  ) : <span className="text-muted-foreground italic">Not provided</span>
                 )}
               </div>
 
               {/* Twitter */}
-              <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-800 space-y-2">
-                <div className="flex items-center gap-2 font-bold text-gray-800 dark:text-gray-200">
-                  <span className="p-1 rounded-md bg-sky-100 dark:bg-sky-900/60 text-sky-600 dark:text-sky-400 font-mono text-[10px]">𝕏</span>
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-2">
+                <div className="flex items-center gap-2 font-semibold text-foreground">
+                  <span className="p-1 rounded-md bg-muted border border-border text-foreground font-mono text-[10px]">𝕏</span>
                   <span>Twitter / X</span>
                 </div>
                 {isEditing ? (
@@ -703,14 +712,14 @@ export default function ProfilePage() {
                     value={formData.twitter || ''}
                     onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                     placeholder="x.com/username"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-mono"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 ) : (
                   profile?.twitter ? (
-                    <a href={`https://${profile.twitter.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-mono font-semibold hover:underline flex items-center gap-1">
-                      {profile.twitter} <ExternalLink size={11} />
+                    <a href={`https://${profile.twitter.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary font-mono font-medium hover:underline flex items-center gap-1.5">
+                      {profile.twitter} <ExternalLink size={12} />
                     </a>
-                  ) : <span className="text-gray-400 italic">Not provided</span>
+                  ) : <span className="text-muted-foreground italic">Not provided</span>
                 )}
               </div>
 

@@ -135,6 +135,7 @@ export default function MyProjectsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<FolderKanban />}
         title="My Projects"
         description="View your assigned projects"
       />

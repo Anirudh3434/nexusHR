@@ -21,6 +21,9 @@ const DepartmentSchema = new Schema({
   timestamps: true,
 });
 
+DepartmentSchema.index({ companyId: 1, name: 1 });
+DepartmentSchema.index({ companyId: 1, isActive: 1 });
+
 const Department = models.Department || model('Department', DepartmentSchema);
 
 export default Department;

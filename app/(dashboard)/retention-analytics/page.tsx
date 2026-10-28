@@ -183,14 +183,8 @@ export default function RetentionAnalyticsPage() {
     <div className="space-y-6">
       {/* Header Section */}
       <PageHeader
-        title={
-          <>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-400/30">
-              <Sparkles className="h-3.5 w-3.5" /> AI Predictive Intelligence
-            </div>
-            Retention & Attrition Analytics
-          </>
-        }
+        icon={<TrendingUp />}
+        title="Retention & Attrition Analytics"
         description="Continuous multi-factor retention modeling based on attendance consistency, sprint velocity, project workload, tenure, and compensation parity."
         actions={
           <Button

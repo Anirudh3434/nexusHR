@@ -347,7 +347,7 @@ export default function ProjectsManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -356,12 +356,13 @@ export default function ProjectsManagementPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
+        icon={<FolderKanban />}
         title="Projects"
         description="Manage and track your company projects"
         actions={
           user?.role !== 'employee' && (
-            <Button onClick={() => window.location.href = '/projects/create'} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button onClick={() => window.location.href = '/projects/create'} className="gap-2">
+              <Plus className="w-4 h-4 mr-1" />
               Create Project
             </Button>
           )
@@ -376,7 +377,7 @@ export default function ProjectsManagementPage() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Projects</p>
               <h3 className="text-2xl font-bold text-slate-800 tracking-tight dark:text-slate-200">{totalProjects}</h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 flex items-center justify-center text-indigo-600 border border-indigo-100/30 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 dark:bg-primary/15 dark:text-primary">
               <FolderKanban className="w-5 h-5" />
             </div>
           </CardContent>
@@ -776,7 +777,7 @@ export default function ProjectsManagementPage() {
                         <div className="flex items-center gap-3">
                           <div className="w-24 bg-slate-100 rounded-full h-1.5 overflow-hidden dark:bg-slate-800">
                             <div
-                              className="h-1.5 rounded-full bg-indigo-600 transition-all duration-500"
+                              className="h-1.5 rounded-full bg-primary transition-all duration-500"
                               style={{ width: `${project.progressPercentage}%` }}
                             />
                           </div>

@@ -233,6 +233,7 @@ export default function TicketsManagementPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
+        icon={<Ticket />}
         title="Ticket Management"
         description="Manage and resolve employee support tickets"
       />

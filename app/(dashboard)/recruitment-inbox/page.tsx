@@ -300,51 +300,64 @@ export default function RecruitmentInboxPage() {
     <div className="space-y-6 animate-in fade-in duration-500 h-[calc(100vh-6rem)]">
       {/* Header */}
       <PageHeader
+        icon={<Inbox />}
         title={
-          <span className="flex items-center gap-2">
-            <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <span className="flex flex-wrap items-center gap-2">
             Recruitment Inbox
             {!hasEmailConfig && (
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300">
+              <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400 font-semibold text-xs ml-1">
                 Not Configured
               </Badge>
             )}
           </span>
         }
+        description="Process inbound candidate emails, match job reference tags, and route to requisitions"
         actions={
           <>
             {lastSyncAt && (
-              <span className="text-xs text-gray-500 hidden sm:inline dark:text-slate-400">
+              <span className="text-xs text-muted-foreground hidden sm:inline">
                 Last sync: {lastSyncAt.toLocaleTimeString()}
               </span>
             )}
             <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
               {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              <span className="ml-2 hidden sm:inline">Sync</span>
+              <span className="ml-1.5 hidden sm:inline">Sync</span>
             </Button>
-            <Button variant="destructive" size="sm" onClick={clearMockData} title="Clear test data">
+            <Button variant="outline" size="sm" onClick={clearMockData} title="Clear test data" className="text-muted-foreground hover:text-destructive hover:border-destructive/30">
               <Trash2 className="h-4 w-4" />
             </Button>
             <Button size="sm" onClick={() => window.location.href = '/email-settings'}>
-              <Mail className="h-4 w-4 mr-2" />
+              <Mail className="h-4 w-4 mr-1.5" />
               Email Settings
             </Button>
           </>
         }
       />
 
-      {/* Job ID Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-300">
-        <p className="font-medium">📧 Job ID Auto-Detection</p>
-        <p className="text-blue-600 mt-1 dark:text-blue-400">
-          Emails with Job ID (e.g., JB0001) in the subject line will be automatically linked to the corresponding job position.
-        </p>
+      {/* Automated Job Requisition Callout */}
+      <div className="flex items-start gap-3.5 rounded-[14px] border border-border bg-card p-4 shadow-xs">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+          <Mail className="h-4 w-4" />
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
+              Automated Requisition Sync
+            </h4>
+            <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              Active
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Incoming applicant emails containing a Job Reference Code (e.g., <code className="rounded bg-muted border border-border px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground">JB0001</code>) in the subject line are automatically indexed and routed to the corresponding open position.
+          </p>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+      {/* Stats / Interactive Filter Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { key: 'all', label: 'All', count: stats.total, icon: Inbox },
+          { key: 'all', label: 'All Emails', count: stats.total, icon: Inbox },
           { key: 'new', label: 'New', count: stats.new, icon: Mail },
           { key: 'unread', label: 'Unread', count: stats.unread, icon: MailOpen },
           { key: 'starred', label: 'Starred', count: stats.starred, icon: Star },
@@ -352,34 +365,37 @@ export default function RecruitmentInboxPage() {
         ].map(({ key, label, count, icon: Icon }) => (
           <button
             key={key}
+            type="button"
             onClick={() => setFilter(key as any)}
-            className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+            className={`rounded-[14px] border p-3.5 text-left transition-all ${
               filter === key 
-                ? 'bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30' 
-                : 'bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800'
+                ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20' 
+                : 'border-border bg-card hover:bg-muted/50'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <Icon className={`h-4 w-4 ${filter === key ? 'text-blue-600' : 'text-gray-400'}`} />
-              <span className={`text-sm font-medium ${filter === key ? 'text-blue-700' : 'text-gray-600'}`}>
-                {label}
-              </span>
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
+                filter === key ? 'border-primary/30 bg-primary/20 text-primary' : 'border-border bg-muted/50 text-foreground'
+              }`}>
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tracking-tight text-foreground font-display">{count}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">{label}</p>
+              </div>
             </div>
-            <Badge variant={filter === key ? "default" : "secondary"} className="text-xs">
-              {count}
-            </Badge>
           </button>
         ))}
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search by name, email, subject, or position..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
+          className="pl-10 h-10 text-sm border-border bg-card"
         />
       </div>
 
@@ -391,22 +407,41 @@ export default function RecruitmentInboxPage() {
             <CardContent className="p-0 h-full overflow-auto">
               {isLoading ? (
                 <div className="flex justify-center items-center h-full">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : filteredApps.length === 0 ? (
                 <EmptyState
                   icon={<Inbox size={18} />}
                   title="No emails found"
-                  description={!hasEmailConfig ? "Configure email settings to start receiving emails" : undefined}
+                  description={
+                    !hasEmailConfig
+                      ? "Configure email settings to start receiving candidate emails."
+                      : searchQuery || filter !== 'all'
+                      ? "No candidate emails match your current search and filter criteria."
+                      : "Inbound candidate applications containing job codes will automatically arrive here."
+                  }
+                  action={
+                    !hasEmailConfig ? (
+                      <Button size="sm" onClick={() => window.location.href = '/email-settings'}>
+                        <Mail className="h-4 w-4 mr-1.5" />
+                        Configure Email
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={handleSync}>
+                        <RefreshCw className="h-4 w-4 mr-1.5" />
+                        Sync Now
+                      </Button>
+                    )
+                  }
                 />
               ) : (
                 <div className="divide-y">
                   {filteredApps.map((app) => (
                     <div 
                       key={app._id}
-                      className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer border-b ${
-                        selectedApp?._id === app._id ? 'bg-blue-50 dark:bg-blue-500/10' : ''
-                      } ${!app.isRead ? 'bg-white font-semibold dark:bg-slate-900' : 'bg-gray-50/50 dark:bg-slate-800/70'}`}
+                      className={`flex items-center gap-3 px-4 py-3 hover:bg-muted cursor-pointer border-b ${
+                        selectedApp?._id === app._id ? 'bg-primary/5 dark:bg-primary/10' : ''
+                      } ${!app.isRead ? 'bg-card font-semibold' : 'bg-muted/40'}`}
                       onClick={() => handleSelect(app)}
                     >
                       {/* Star Button */}
@@ -451,7 +486,7 @@ export default function RecruitmentInboxPage() {
                       
                       {/* Job ID Badge (if available) */}
                       {app.jobId && (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs shrink-0 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs shrink-0">
                           {app.jobId}
                         </Badge>
                       )}
@@ -489,7 +524,7 @@ export default function RecruitmentInboxPage() {
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">{selectedApp.subject}</h3>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold dark:bg-blue-500/15 dark:text-blue-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/10 font-semibold text-primary">
                     {(selectedApp.fromName || 'U').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
@@ -502,7 +537,7 @@ export default function RecruitmentInboxPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {selectedApp.jobId && (
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono">
                       Job ID: {selectedApp.jobId}
                     </Badge>
                   )}
@@ -523,11 +558,11 @@ export default function RecruitmentInboxPage() {
               </div>
 
               {/* Pipeline Actions */}
-              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 p-3 dark:bg-slate-800/50">
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-muted/40 p-3">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-green-700 border-green-200 hover:bg-green-50 dark:text-green-300 dark:border-green-500/30"
+                  className="text-primary border-primary/30 hover:bg-primary/10"
                   onClick={(e) => handleConsider(e, selectedApp)}
                 >
                   <ThumbsUp className="h-3.5 w-3.5 mr-1.5" /> Consider
@@ -553,7 +588,7 @@ export default function RecruitmentInboxPage() {
 
               {/* Attachments */}
               {selectedApp.hasAttachments && selectedApp.attachments.length > 0 && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg dark:bg-slate-800/50">
+                <div className="mb-4 rounded-lg bg-muted/40 p-3">
                   <span className="text-sm text-gray-500 dark:text-slate-400">Attachments:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedApp.attachments.map((att, i) => (
@@ -607,13 +642,13 @@ export default function RecruitmentInboxPage() {
                 Share these credentials with <strong>{credentialsResult.email}</strong>. They log in at the company login page with their email + this password.
               </p>
               {credentialsResult.password ? (
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:bg-blue-500/10">
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 dark:bg-primary/10">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-blue-700 uppercase dark:text-blue-300">Temporary Password</p>
+                    <p className="text-xs font-medium uppercase text-primary">Temporary Password</p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100 dark:text-blue-300"
+                      className="h-7 px-2 text-xs text-primary hover:bg-primary/10"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(credentialsResult.password || '');

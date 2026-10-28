@@ -41,7 +41,7 @@ export default function NoticesPage() {
     if (user && hasRole(["admin", "hr"])) {
       fetchNotices();
     }
-  }, [user]);
+  }, [user?.companyId, user?.role]);
 
   const fetchNotices = async () => {
     try {
@@ -127,12 +127,8 @@ export default function NoticesPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
-        title={
-          <span className="inline-flex items-center gap-2">
-            <Megaphone className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Notice Management
-          </span>
-        }
+        icon={<Megaphone />}
+        title="Notice Management"
         description="Create and manage company announcements."
         actions={
           <Button onClick={() => setShowModal(true)}>

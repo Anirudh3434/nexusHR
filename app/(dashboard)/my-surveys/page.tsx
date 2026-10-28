@@ -117,6 +117,7 @@ export default function MySurveysPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<FileText />}
         title="My Surveys"
         description="Participate in company surveys and view your responses"
       />

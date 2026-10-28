@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Stepper } from "@/components/ui/Stepper";
-import { ArrowLeft, ArrowRight, Check, ClipboardList, FolderOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ClipboardList, FolderOpen, UserPlus2 } from "lucide-react";
 import { DEFAULT_CHECKLIST_TEMPLATE, DEFAULT_DOCUMENT_TEMPLATE } from "@/lib/onboardingTemplates";
 import { PageHeader } from "../../../../components/ui/PageHeader";
 
@@ -116,6 +116,7 @@ export default function NewOnboardingPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader
+        icon={<UserPlus2 />}
         title="Start Employee Onboarding"
         description="Create the onboarding record. A login account is created for the new hire to complete documents and accept the offer."
       />

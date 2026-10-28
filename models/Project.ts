@@ -93,6 +93,8 @@ export interface IProject extends Document {
   clientName?: string;
   clientContact?: string;
   githubRepo?: string;
+  githubToken?: string;
+  githubDefaultBranch?: string;
   
   // Creator
   createdBy: mongoose.Types.ObjectId;
@@ -336,6 +338,14 @@ const ProjectSchema = new Schema<IProject>({
     trim: true,
   },
   githubRepo: {
+    type: String,
+    trim: true,
+  },
+  githubToken: {
+    type: String,
+    trim: true,
+  },
+  githubDefaultBranch: {
     type: String,
     trim: true,
   },

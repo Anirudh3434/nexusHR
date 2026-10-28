@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
-import { getSettings, updateSettings, Settings } from "../../../services/settingsService";
+import { getSettings, updateSettings, Settings, BRANDING_UPDATED_EVENT } from "../../../services/settingsService";
 import { 
   Palette, 
   ShieldCheck, 
@@ -38,7 +38,9 @@ function SettingsContent() {
     logo: null,
     loginBackground: null,
     loginBackgroundColor: '#ffffff',
-    primaryColor: '#2563eb',
+    primaryColor: '#0f766e',
+    secondaryColor: null,
+    themeSource: 'default',
     loginTitle: 'Welcome Back',
     loginSubtitle: 'Sign in to your account',
   });
@@ -65,7 +67,7 @@ function SettingsContent() {
       fetchSettings();
       fetchCompanySettings();
     }
-  }, [user]);
+  }, [user?.companyId]);
 
   const fetchCompanySettings = async () => {
     try {
@@ -99,17 +101,32 @@ function SettingsContent() {
     if (!user?.companyId) return;
     setIsSaving(true);
     try {
-      await updateSettings({
+      const result = await updateSettings({
         ...settings,
         companyId: user.companyId,
         updatedBy: user.id || '',
       });
+
+      // The API response is authoritative (it normalizes empty values).
+      const savedSettings: Settings = { ...settings, ...result.settings };
+      setSettings(savedSettings);
+
       if (user) {
         updateUser({
           ...user,
-          companyLogo: settings.logo || undefined,
+          companyLogo: savedSettings.logo || undefined,
+          companyPrimaryColor: savedSettings.primaryColor,
+          companySecondaryColor: savedSettings.secondaryColor || undefined,
+          companyThemeSource: savedSettings.themeSource,
         });
       }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent<Settings>(BRANDING_UPDATED_EVENT, { detail: savedSettings })
+        );
+      }
+
       addToast({ type: 'success', title: 'Saved', description: 'Branding updated successfully' });
     } catch (error) {
       addToast({ type: 'error', title: 'Error', description: 'Failed to update branding' });
