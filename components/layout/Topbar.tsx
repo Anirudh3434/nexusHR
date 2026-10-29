@@ -1,19 +1,137 @@
 "use client";
 
-import { Menu, LogOut, Sun, Moon, Building2 } from "lucide-react";
+import React, { useMemo } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, LogOut, Sun, Moon } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { Button } from "../ui/Button";
 import { SmartLogoBadge } from "../ui/SmartLogoBadge";
-import { getOptimizedImageUrl } from "@/lib/imageUtils";
+import { Avatar } from "../ui/Avatar";
+import { NotificationBell } from "../notifications/NotificationBell";
 
 interface TopbarProps {
   onMenuClick: () => void;
 }
 
+const ROUTE_LABELS: Record<string, string> = {
+  dashboard: "Dashboard",
+  employees: "Employees",
+  hierarchy: "Org Hierarchy",
+  team: "Team Overview",
+  attendance: "Attendance",
+  "team-attendance": "Team Attendance",
+  "my-attendance": "My Attendance",
+  leaves: "Leaves",
+  "leave-approvals": "Leave Approvals",
+  "leave-entitlements": "Leave Entitlements",
+  "leave-types": "Leave Types",
+  "my-leaves": "My Leaves",
+  payroll: "Payroll",
+  payslips: "Payslips",
+  salary: "Salary",
+  expenses: "Expenses",
+  "my-expenses": "My Expenses",
+  projects: "Projects",
+  "my-projects": "My Projects",
+  tasks: "Tasks",
+  "my-tasks": "My Tasks",
+  "today-tasks": "Today Tasks",
+  sprints: "Sprints",
+  tickets: "Tickets",
+  "my-tickets": "My Tickets",
+  notices: "Notice Board",
+  probation: "Probation",
+  resignations: "Resignations",
+  "my-resignation": "My Resignation",
+  terminations: "Terminations",
+  onboarding: "Onboarding",
+  "my-onboarding": "My Onboarding",
+  recruitment: "Recruitment",
+  "recruitment-inbox": "Recruitment Inbox",
+  applicants: "Applicants",
+  "job-positions": "Job Openings",
+  departments: "Departments",
+  designations: "Designations",
+  shifts: "Shifts",
+  "employee-shifts": "Employee Shifts",
+  overtime: "Overtime",
+  holidays: "Holidays",
+  permissions: "Permissions",
+  surveys: "Surveys",
+  "my-surveys": "My Surveys",
+  performance: "Performance",
+  reports: "Reports",
+  "reports-analytics": "Reports & Analytics",
+  "retention-analytics": "Retention Analytics",
+  "hr-knowledge-base": "HR Knowledge Base",
+  settings: "Settings",
+  "email-settings": "Email Settings",
+  profile: "Profile",
+  billing: "Billing",
+  commands: "Commands",
+  users: "Users",
+  board: "Board",
+  list: "List",
+  timeline: "Timeline",
+  docs: "Documents",
+  create: "Create",
+  new: "New",
+};
+
+function formatSegmentLabel(segment: string): string {
+  if (ROUTE_LABELS[segment]) return ROUTE_LABELS[segment];
+  return segment
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export const Topbar = ({ onMenuClick }: TopbarProps) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme, mounted } = useTheme();
+  const pathname = usePathname();
+
+  const breadcrumbs = useMemo(() => {
+    if (!pathname || pathname === "/" || pathname === "/dashboard") {
+      return [{ label: "Dashboard", href: "/dashboard" }];
+    }
+
+    const segments = pathname.split("/").filter(Boolean);
+    const items: Array<{ label: string; href: string }> = [];
+    let currentPath = "";
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      currentPath += `/${seg}`;
+
+      // Check for 24-character hexadecimal Mongo ObjectId
+      const isObjectId = /^[a-f\d]{24}$/i.test(seg);
+
+      if (isObjectId) {
+        // If there's a sub-page after the ID (e.g., /projects/123/board), skip showing the ID hash
+        const hasNext = i < segments.length - 1;
+        if (!hasNext) {
+          items.push({ label: "Details", href: currentPath });
+        }
+      } else {
+        items.push({
+          label: formatSegmentLabel(seg),
+          href: currentPath,
+        });
+      }
+    }
+
+    return items.length > 0 ? items : [{ label: "Dashboard", href: "/dashboard" }];
+  }, [pathname]);
+
+  const userPosition = useMemo(() => {
+    if (user?.designation?.trim()) return user.designation.trim();
+    if (user?.role === "admin") return "Administrator";
+    if (user?.role === "hr") return "HR Manager";
+    if (user?.role === "manager") return "Team Manager";
+    return "Team Member";
+  }, [user?.designation, user?.role]);
 
   if (!user) return null;
 
@@ -40,10 +158,36 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           </span>
         </div>
 
-        {/* Desktop context: quiet breadcrumb instead of empty space */}
-        <p className="hidden md:block text-sm text-muted-foreground">
-          {user.companyName || 'NexusHR'} <span aria-hidden className="mx-1 text-border">/</span> <span className="text-foreground font-medium capitalize">{user.role} workspace</span>
-        </p>
+        {/* Dynamic Desktop Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Link
+            href="/dashboard"
+            className="hover:text-foreground transition-colors font-medium text-muted-foreground"
+          >
+            {user.companyName || 'NexusHR'}
+          </Link>
+
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return (
+              <React.Fragment key={crumb.href || idx}>
+                <span aria-hidden className="text-border">/</span>
+                {isLast ? (
+                  <span className="text-foreground font-semibold">
+                    {crumb.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={crumb.href}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {crumb.label}
+                  </Link>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </nav>
       </div>
 
       <div className="flex items-center gap-1.5 md:gap-3">
@@ -62,28 +206,25 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           )}
         </button>
 
+        <NotificationBell />
+
         <div className="flex items-center gap-2 md:gap-3 border-l border-border pl-2 md:pl-4">
           <div className="hidden sm:flex flex-col text-right leading-tight">
-            <span className="text-sm font-semibold text-foreground truncate max-w-[140px]">
+            <span
+              className="text-sm font-semibold text-foreground truncate max-w-[140px]"
+              title={user.name}
+            >
               {user.name}
             </span>
-            <span className="text-xs text-muted-foreground capitalize">
-              {user.role}
+            <span
+              className="text-xs text-muted-foreground capitalize truncate max-w-[140px]"
+              title={user.department ? `${userPosition} (${user.department})` : userPosition}
+            >
+              {userPosition}
             </span>
           </div>
           
-          {user.avatar ? (
-            <img
-              src={getOptimizedImageUrl(user.avatar, 64, 64)}
-              loading="lazy"
-              alt={`${user.name} avatar`}
-              className="h-8 w-8 rounded-full border border-border object-cover"
-            />
-          ) : (
-            <div className="h-8 w-8 rounded-full bg-[#0b1220] dark:bg-white flex items-center justify-center text-white dark:text-[#0b1220] font-semibold text-xs" aria-hidden>
-              {user.name?.charAt(0) || "U"}
-            </div>
-          )}
+          <Avatar name={user.name} src={user.avatar} size="sm" bordered />
 
           <Button 
             variant="ghost" 

@@ -20,7 +20,7 @@ import {
   Award,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { getOptimizedImageUrl } from "@/lib/imageUtils";
+import { Avatar } from "../ui/Avatar";
 
 // Shared quiet card: one radius, one border, no perfumed shadows.
 // Hierarchy comes from spacing and rules, not competing card styles.
@@ -297,18 +297,7 @@ export const ExecutiveProfileCard = ({
   return (
     <section className={cn(cardClass, "p-5")} aria-label="Your profile">
       <div className="flex items-center gap-4">
-        {avatar ? (
-          <img
-            src={getOptimizedImageUrl(avatar, 112, 112)}
-            loading="lazy"
-            alt={name}
-            className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
-          />
-        ) : (
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#0b1220] text-lg font-semibold text-white dark:bg-white dark:text-[#0b1220]" aria-hidden>
-            {name?.charAt(0) || "E"}
-          </div>
-        )}
+        <Avatar name={name} src={avatar} size="lg" bordered />
         <div className="min-w-0">
           <h2 className="truncate text-[16px] font-semibold tracking-tight text-foreground">{name}</h2>
           <p className="truncate text-[13px] text-muted-foreground">{designation}</p>

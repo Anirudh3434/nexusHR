@@ -9,6 +9,7 @@ import {
   LayoutDashboard, FileText, ClipboardList, KeyRound, LogOut, Menu, X, Briefcase,
 } from "lucide-react";
 import { SmartLogoBadge } from "@/components/ui/SmartLogoBadge";
+import { Avatar } from "@/components/ui/Avatar";
 
 export default function CandidatePortalLayout({
   children,
@@ -143,13 +144,7 @@ export default function CandidatePortalLayout({
               <span className="text-sm font-medium text-gray-900 truncate max-w-[160px] dark:text-slate-100">{user.name}</span>
               <span className="text-xs text-gray-400">Job Applicant</span>
             </div>
-            {user.avatar ? (
-              <img src={user.avatar} alt="Avatar" className="h-8 w-8 rounded-full border border-gray-200 object-cover dark:border-slate-700" />
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs dark:bg-indigo-500/15 dark:text-indigo-400">
-                {user.name?.charAt(0) || "C"}
-              </div>
-            )}
+            <Avatar name={user.name} src={user.avatar} size="sm" bordered />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6 bg-gray-50/50 dark:bg-slate-800/70">{children}</main>

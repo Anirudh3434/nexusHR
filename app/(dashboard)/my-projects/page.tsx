@@ -172,7 +172,11 @@ export default function MyProjectsPage() {
       <div className="space-y-4">
         {filteredProjects.length === 0 ? (
           <Card>
-            <EmptyState icon={<FolderKanban size={18} />} title="No projects found" />
+            <EmptyState
+              icon={<FolderKanban size={18} />}
+              title="No projects found"
+              description="You haven't been added to a project yet."
+            />
           </Card>
         ) : (
           filteredProjects.map((project) => (

@@ -6,6 +6,7 @@ import Designation from '@/models/Designation';
 import bcrypt from 'bcryptjs';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { DEFAULT_PROBATION_MONTHS, buildProbationWindow } from '@/lib/probation';
 
 const WRITE_ROLES = ['super_admin', 'admin', 'hr'];
 const ALLOWED_ROLES = ['admin', 'hr', 'manager', 'employee'];
@@ -152,6 +153,15 @@ export async function POST(req: Request) {
           mustChangePassword: record.password === DEFAULT_PASSWORD, // force change if default
           joiningDate: record.joiningDate,
         };
+
+        // Bulk imports default to a standard probation window from the joining date.
+        const probation = buildProbationWindow(record.joiningDate, DEFAULT_PROBATION_MONTHS);
+        if (probation) {
+          userData.probationStatus = 'on_probation';
+          userData.probationMonths = probation.months;
+          userData.probationStartDate = probation.startDate;
+          userData.probationEndDate = probation.endDate;
+        }
 
         if (record.employeeId) userData.employeeId = record.employeeId;
         if (record.department) {

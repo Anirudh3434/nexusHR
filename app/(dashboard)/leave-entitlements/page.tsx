@@ -481,6 +481,7 @@ export default function LeaveEntitlementsPage() {
               {calcResults.length === 0 && calcExperience > 0 && (
                 <EmptyState
                   title="No entitlements found for this experience level."
+                  description="Add a rule for this level to see entitlements."
                   icon={<Award size={18} />}
                 />
               )}

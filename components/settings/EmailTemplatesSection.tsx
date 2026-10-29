@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Loader2, Save, Mail, Eye, EyeOff, FileText, AlertCircle, CheckCircle2,
+  Copy, RotateCcw, Code2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -77,6 +78,41 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
     }));
   };
 
+  const htmlEditorRef = useRef<HTMLTextAreaElement | null>(null);
+  const htmlGutterRef = useRef<HTMLDivElement | null>(null);
+
+  const htmlValue = currentTemplate.html || "";
+  const htmlLineCount = htmlValue.split("\n").length;
+  const htmlLines = Array.from({ length: htmlLineCount }, (_, index) => index + 1);
+
+  const insertIntoHtml = (text: string) => {
+    const editor = htmlEditorRef.current;
+    const start = editor?.selectionStart ?? htmlValue.length;
+    const end = editor?.selectionEnd ?? htmlValue.length;
+    updateField("html", htmlValue.slice(0, start) + text + htmlValue.slice(end));
+
+    requestAnimationFrame(() => {
+      editor?.focus();
+      const caret = start + text.length;
+      editor?.setSelectionRange(caret, caret);
+    });
+  };
+
+  const handleHtmlKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Tab") return;
+    event.preventDefault();
+    insertIntoHtml("  ");
+  };
+
+  const copyHtml = async () => {
+    try {
+      await navigator.clipboard.writeText(htmlValue);
+      addToast({ type: "success", title: "Copied", description: "HTML copied to clipboard" });
+    } catch {
+      addToast({ type: "error", title: "Copy failed", description: "Your browser blocked clipboard access" });
+    }
+  };
+
   const preview = renderEmailPreview(currentTemplate, {
     ...PREVIEW_VARS,
     companyName,
@@ -91,7 +127,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
       };
       await saveContentConfig(companyId, config);
       addToast({ type: "success", title: "Saved", description: "Email templates updated successfully" });
-    } catch (error) {
+    } catch {
       addToast({ type: "error", title: "Error", description: "Failed to update email templates" });
     } finally {
       setIsSaving(false);
@@ -117,7 +153,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <Mail className="h-6 w-6 text-primary" />
             Email Templates
           </h2>
           <p className="text-sm text-gray-500 dark:text-slate-400">
@@ -133,7 +169,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
             {showPreview ? <EyeOff className="h-4 w-4 mr-1.5" /> : <Eye className="h-4 w-4 mr-1.5" />}
             {showPreview ? "Hide Preview" : "Show Preview"}
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="text-xs shadow-lg shadow-blue-500/10">
+          <Button onClick={handleSave} disabled={isSaving} className="text-xs shadow-lg shadow-primary/10">
             {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save Templates
           </Button>
@@ -152,8 +188,8 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                 onClick={() => setSelectedKey(template.key)}
                 className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
                   isActive
-                    ? "border-blue-500 bg-blue-50/40 ring-4 ring-blue-50 dark:bg-blue-500/10"
-                    : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900"
+                    ? "border-primary bg-primary/5 ring-4 ring-primary/10"
+                    : "border-border bg-card hover:border-primary/30"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -186,12 +222,12 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-2 dark:bg-slate-800/50 dark:border-slate-700">
+                <div className="flex items-center justify-between rounded-xl bg-muted border border-border p-2">
                   <div className="flex gap-1">
                     <button
                       onClick={() => setHtmlMode(false)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                        !htmlMode ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400" : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                        !htmlMode ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       Simple Editor
@@ -199,7 +235,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     <button
                       onClick={() => setHtmlMode(true)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                        htmlMode ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400" : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                        htmlMode ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       HTML Code
@@ -231,7 +267,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     onChange={(e) => updateField("intro", e.target.value)}
                     placeholder="Enter the opening paragraph..."
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:border-slate-800"
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-primary/20 outline-none transition-all dark:border-slate-800"
                   />
                 </div>
                 <div>
@@ -243,7 +279,7 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     onChange={(e) => updateField("body", e.target.value)}
                     placeholder="Enter the main body text..."
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:border-slate-800"
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-primary/20 outline-none transition-all dark:border-slate-800"
                   />
                 </div>
                 <div>
@@ -255,44 +291,118 @@ export function EmailTemplatesSection({ companyId, companyName }: EmailTemplates
                     onChange={(e) => updateField("closing", e.target.value)}
                     placeholder="Enter the closing text..."
                     rows={2}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:border-slate-800"
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-medium border-gray-100 focus:ring-2 focus:ring-primary/20 outline-none transition-all dark:border-slate-800"
                   />
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50/60 border border-blue-100 rounded-xl p-3 dark:bg-blue-500/10">
-                  <AlertCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-blue-700 leading-relaxed dark:text-blue-300">
+                <div className="flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-xl p-3">
+                  <AlertCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-primary leading-relaxed">
                     Leave a field empty to keep the default text for that section. Changes apply the next time this
                     email is sent.
                   </p>
                 </div>
                 </>) : (
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 dark:text-slate-400">
+                    <div className="mb-2">
+                      <label
+                        htmlFor="email-html-body"
+                        className="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1 dark:text-slate-400"
+                      >
                         Custom HTML Body
                       </label>
-                      {currentTemplate.html && (
-                        <button
-                          onClick={() => updateField("html", "")}
-                          className="text-[11px] font-bold text-red-600 hover:text-red-700 dark:text-red-400"
-                        >
-                          Reset to Default
-                        </button>
-                      )}
                     </div>
-                    <textarea
-                      value={currentTemplate.html}
-                      onChange={(e) => updateField("html", e.target.value)}
-                      placeholder={`<!-- Write your custom HTML here. -->\n<!-- Use placeholders like {name}, {companyName}, {position}, {loginUrl} -->\n<div style="font-family: Arial, sans-serif;">\n  <h2>Hello {name},</h2>\n  <p>We are excited to share the position of {position}.</p>\n</div>`}
-                      rows={18}
-                      spellCheck={false}
-                      className="w-full px-3 py-3 border rounded-xl text-xs font-mono border-gray-200 bg-slate-900 text-green-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all leading-relaxed dark:border-slate-700"
-                    />
-                    <div className="flex items-start gap-2 bg-purple-50/60 border border-purple-100 rounded-xl p-3 mt-3 dark:bg-purple-500/10">
-                      <AlertCircle className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-purple-700 leading-relaxed dark:text-purple-300">
-                        When a custom HTML body is set, it completely replaces the standard template. The subject line
-                        above still applies. Available placeholders: {"{name}"}, {"{companyName}"}, {"{position}"}, {"{roundName}"}, {"{loginUrl}"}.
+
+                    <div className="overflow-hidden rounded-xl border border-border bg-[#0b1220] shadow-sm [color-scheme:dark] focus-within:ring-2 focus-within:ring-primary/30">
+                      {/* Toolbar */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                            <Code2 className="h-3 w-3" />
+                            HTML
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-400">
+                            {htmlLineCount} {htmlLineCount === 1 ? "line" : "lines"} · {htmlValue.length} chars
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={copyHtml}
+                            disabled={!htmlValue}
+                            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </button>
+                          {currentTemplate.html && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm("Clear the custom HTML body? This cannot be undone.")) {
+                                  updateField("html", "");
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-slate-400 transition-colors hover:bg-white/5 hover:text-red-300"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              Reset
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Placeholder chips */}
+                      <div className="flex flex-wrap items-center gap-1.5 border-b border-white/10 px-3 py-2">
+                        <span className="text-[10px] font-medium text-slate-500">Insert</span>
+                        {["name", "companyName", "position", "roundName", "loginUrl"].map((token) => (
+                          <button
+                            key={token}
+                            type="button"
+                            onClick={() => insertIntoHtml(`{${token}}`)}
+                            className="rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-300 transition-colors hover:border-primary/40 hover:text-primary"
+                          >
+                            {`{${token}}`}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Editor */}
+                      <div className="flex max-h-[460px] min-h-[380px]">
+                        <div
+                          ref={htmlGutterRef}
+                          aria-hidden
+                          className="shrink-0 select-none overflow-hidden border-r border-white/5 px-2.5 py-3 text-right font-mono text-[12px] leading-6 text-slate-600"
+                        >
+                          {htmlLines.map((line) => (
+                            <div key={line}>{line}</div>
+                          ))}
+                        </div>
+                        <textarea
+                          ref={htmlEditorRef}
+                          id="email-html-body"
+                          aria-label="Custom HTML email body"
+                          value={htmlValue}
+                          onChange={(e) => updateField("html", e.target.value)}
+                          onKeyDown={handleHtmlKeyDown}
+                          onScroll={(e) => {
+                            if (htmlGutterRef.current) {
+                              htmlGutterRef.current.scrollTop = e.currentTarget.scrollTop;
+                            }
+                          }}
+                          placeholder="<!-- Paste or write your email HTML here -->"
+                          spellCheck={false}
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          wrap="off"
+                          className="w-full flex-1 resize-none overflow-auto bg-transparent px-3 py-3 font-mono text-[12px] leading-6 text-slate-200 caret-primary outline-none placeholder:text-slate-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2 bg-muted/60 border border-border rounded-xl p-3 mt-3">
+                      <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Replaces the standard template. The subject line above still applies.
                       </p>
                     </div>
                   </div>

@@ -757,7 +757,11 @@ export default function TasksManagementPage() {
         <div className="space-y-4">
           {filteredTasks.length === 0 ? (
             <Card>
-              <EmptyState title="No tasks found" icon={<KanbanSquare size={18} />} />
+              <EmptyState
+                title="No tasks found"
+                description="Create a task to get started, or clear your filters."
+                icon={<KanbanSquare size={18} />}
+              />
             </Card>
           ) : (
             filteredTasks.map((task) => (

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { UserPlus2, Search, Users, ClipboardCheck, CheckCircle2, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { PageHeader } from "../../../components/ui/PageHeader";
 
 interface OnboardingRecord {
@@ -147,16 +148,21 @@ export default function OnboardingPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select
-          className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+        <CustomSelect
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="">All statuses</option>
-          {Object.entries(statusMeta).map(([value, meta]) => (
-            <option key={value} value={value}>{meta.label}</option>
-          ))}
-        </select>
+          onChange={setFilterStatus}
+          placeholder="All statuses"
+          ariaLabel="Filter onboarding records by status"
+          className="w-full shrink-0 sm:w-52"
+          buttonClassName="h-10"
+          options={[
+            { value: "", label: "All statuses" },
+            ...Object.entries(statusMeta).map(([value, meta]) => ({
+              value,
+              label: meta.label,
+            })),
+          ]}
+        />
       </div>
 
       {/* List */}
@@ -167,14 +173,23 @@ export default function OnboardingPage() {
         <CardContent className="space-y-3">
           {loading ? (
             <div className="flex justify-center py-10">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={<Users size={18} />}
               title="No onboarding records found."
+              description={
+                records.length === 0 && !searchQuery && !filterStatus
+                  ? "Onboarding starts once a candidate accepts an offer. You can also start one manually."
+                  : "No records match your current search or status filter."
+              }
               action={isStaff ? (
-                <Link href="/onboarding/new" className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+                <Link
+                  href="/onboarding/new"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  <UserPlus2 className="h-3.5 w-3.5" />
                   Start a new onboarding
                 </Link>
               ) : undefined}

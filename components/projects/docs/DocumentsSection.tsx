@@ -165,7 +165,11 @@ export default function DocumentsSection({ projectId, searchQuery, viewMode, onV
       {/* Documents Grid/List */}
       {filteredDocuments.length === 0 ? (
         <Card>
-          <EmptyState icon={<FileText size={18} />} title="No documents found" />
+          <EmptyState
+            icon={<FileText size={18} />}
+            title="No documents found"
+            description="Upload a document to get started."
+          />
         </Card>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

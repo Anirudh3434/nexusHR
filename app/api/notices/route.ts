@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Notice from '@/models/Notice';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { notify, PEOPLE_AUDIENCE } from '@/lib/notify';
 
 const WRITE_ROLES = ['super_admin', 'admin', 'hr'];
 
@@ -84,6 +85,20 @@ export async function POST(req: Request) {
       postedBy,
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       isActive: true,
+    });
+
+    // Notify all active company members across roles
+    await notify({
+      companyId: String(companyId),
+      kind: 'announcement',
+      title: title,
+      message: `${category || 'General'} · ${content.replace(/\r?\n/g, ' ').slice(0, 140)}${content.length > 140 ? '...' : ''}`,
+      href: '/notices',
+      meta: `${category || 'Notice'} · ${priority || 'Medium'}`,
+      actorId: postedBy,
+      roles: PEOPLE_AUDIENCE,
+      dedupeKey: `notice:${newNotice._id}`,
+
     });
 
     return NextResponse.json({

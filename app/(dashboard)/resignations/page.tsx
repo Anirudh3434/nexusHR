@@ -13,11 +13,18 @@ import {
   Search, Calendar, MessageSquare, ExternalLink, FileText, 
   Briefcase, User, ChevronDown, ChevronUp
 } from "lucide-react";
+import {
+  getNoticeInfo,
+  noticeLabel,
+  noticePhaseClasses,
+  RESIGNATION_ACTIVE_STATUSES,
+} from "@/lib/noticePeriod";
 
 interface Resignation {
   _id: string;
   employeeId: {
     _id: string;
+    name?: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -137,15 +144,45 @@ export default function ResignationsPage() {
   };
 
   const filteredResignations = resignations.filter(r => {
+    const employeeName =
+      r.employeeId?.name || [r.employeeId?.firstName, r.employeeId?.lastName].filter(Boolean).join(' ');
     const matchesSearch = 
-      r.employeeId?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.employeeId?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.employeeId?.employeeId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.employeeId?.department?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       reasonLabels[r.reason]?.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesSearch;
   });
+
+  const getNoticeFor = (resignation: Resignation) =>
+    getNoticeInfo({
+      noticeStart: resignation.resignationDate || resignation.createdAt,
+      lastWorkingDate: resignation.lastWorkingDate,
+      status: resignation.status,
+      activeStatuses: RESIGNATION_ACTIVE_STATUSES,
+    });
+
+  const renderNoticeChip = (resignation: Resignation) => {
+    const info = getNoticeFor(resignation);
+    if (!info.isActive || info.daysLeft === null) return null;
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${noticePhaseClasses(info.phase)}`}
+      >
+        <Clock className="h-3 w-3" />
+        {noticeLabel(info)}
+      </span>
+    );
+  };
+
+  const servingNoticeCount = resignations.filter((resignation) => {
+    const info = getNoticeFor(resignation);
+    return info.phase === 'serving' || info.phase === 'due_soon';
+  }).length;
+  const overdueNoticeCount = resignations.filter(
+    (resignation) => getNoticeFor(resignation).phase === 'overdue'
+  ).length;
 
   const stats = {
     total: resignations.length,
@@ -221,6 +258,22 @@ export default function ResignationsPage() {
         </select>
       </div>
 
+      {/* Notice-period pulse */}
+      {(servingNoticeCount > 0 || overdueNoticeCount > 0) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm">
+          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+            <Clock className="h-4 w-4 text-primary" />
+            Notice period
+          </span>
+          <span className="text-muted-foreground">{servingNoticeCount} serving</span>
+          {overdueNoticeCount > 0 && (
+            <span className="font-medium text-destructive">
+              {overdueNoticeCount} past last working day
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Resignations List */}
       <div className="space-y-3">
         {filteredResignations.length === 0 ? (
@@ -241,11 +294,16 @@ export default function ResignationsPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4 text-gray-400" />
                       <span className="font-medium text-gray-900 dark:text-slate-100">
-                        {resignation.employeeId?.firstName} {resignation.employeeId?.lastName}
+                        {resignation.employeeId?.name ||
+                          [resignation.employeeId?.firstName, resignation.employeeId?.lastName]
+                            .filter(Boolean)
+                            .join(' ') ||
+                          'Employee'}
                       </span>
                       <Badge className={`${getStatusColor(resignation.status)} text-xs px-2 py-0.5`}>
                         {resignation.status.replace('_', ' ')}
                       </Badge>
+                      {renderNoticeChip(resignation)}
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-2 dark:text-slate-400">
                       <span>{resignation.employeeId?.employeeId}</span>

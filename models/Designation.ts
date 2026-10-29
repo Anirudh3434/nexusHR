@@ -10,6 +10,11 @@ const DesignationSchema = new Schema({
     type: String,
     required: true,
   },
+  level: {
+    type: String,
+    enum: ['director', 'manager', 'lead', 'senior', 'junior', 'intern', 'hr'],
+    default: 'junior',
+  },
   department: {
     type: String,
   },

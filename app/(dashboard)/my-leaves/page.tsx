@@ -193,7 +193,11 @@ export default function MyLeavesPage() {
               ) : leaves.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <EmptyState title="No leave requests found." icon={<Calendar size={18} />} />
+                    <EmptyState
+                      title="No leave requests found."
+                      description="Your requests will appear here once you apply."
+                      icon={<Calendar size={18} />}
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

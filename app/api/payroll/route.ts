@@ -7,6 +7,12 @@ import Payroll from '@/models/Payroll';
 import Company from '@/models/Company';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { notify } from '@/lib/notify';
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
 
 // GET payroll records
 export async function GET(req: Request) {
@@ -131,6 +137,19 @@ async function generatePayrollThunk(month: number, year: number, companyId: stri
 
     const record = await Payroll.findOneAndUpdate({ employeeId: user._id, month, year }, payrollData, { upsert: true, new: true });
 
+    // Notify employee that payslip is ready
+    const monthLabel = MONTH_NAMES[month] || `Month ${month + 1}`;
+    await notify({
+      companyId: String(companyId),
+      kind: 'payroll',
+      title: 'Your payslip is ready',
+      message: `${monthLabel} ${year} payslip has been generated · Net Pay ₹${(netSalary || 0).toLocaleString('en-IN')}`,
+      href: '/payslips',
+      meta: 'Payslip Ready',
+      recipientIds: [String(user._id)],
+      dedupeKey: `payroll-slip:${user._id}:${month}:${year}`,
+    });
+
     // Sync OT Status
     await Attendance.updateMany(
       { employeeId: user._id, date: { $gte: startDate, $lte: endDate }, $or: [{ overtimeHours: { $gt: 0 } }, { manualOvertimeHours: { $gt: 0 } }] },
@@ -237,6 +256,19 @@ export async function POST(req: Request) {
         payrollData,
         { upsert: true, new: true }
       );
+
+      // Notify employee that payslip is ready
+      const monthLabel = MONTH_NAMES[month] || `Month ${month + 1}`;
+      await notify({
+        companyId: String(companyId),
+        kind: 'payroll',
+        title: 'Your payslip is ready',
+        message: `${monthLabel} ${year} payslip has been generated · Net Pay ₹${(netSalary || 0).toLocaleString('en-IN')}`,
+        href: '/payslips',
+        meta: 'Payslip Ready',
+        recipientIds: [String(user._id)],
+        dedupeKey: `payroll-slip:${user._id}:${month}:${year}`,
+      });
       
       // Sync OT Status (skip rejected)
       await Attendance.updateMany(
@@ -381,6 +413,22 @@ export async function PATCH(req: Request) {
     }
 
     const payroll = await Payroll.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (payroll && status === 'Paid') {
+      const monthLabel = MONTH_NAMES[payroll.month] || `Month ${payroll.month + 1}`;
+      await notify({
+        companyId: String(payroll.companyId),
+        kind: 'payroll',
+        title: 'Salary disbursed',
+        message: `Your salary for ${monthLabel} ${payroll.year} of ₹${(payroll.netSalary || 0).toLocaleString('en-IN')} has been disbursed.`,
+        href: '/payslips',
+        meta: 'Paid',
+        recipientIds: [String(payroll.employeeId)],
+        actorId: auth.userId,
+        dedupeKey: `payroll-paid:${payroll._id}:${status}`,
+      });
+    }
+
     return NextResponse.json(payroll);
   } catch (error: any) {
     return NextResponse.json({ message: 'Error updating payroll', error: error.message }, { status: 500 });

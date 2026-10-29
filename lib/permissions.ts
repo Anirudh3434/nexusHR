@@ -318,6 +318,8 @@ export function isRouteAccessibleWith(
     "/job-positions": "recruitment",
     "/email-settings": "recruitment",
     "/employees": "employees",
+    "/probation": "employees",
+    "/hierarchy": "employees",
     "/tickets": "tickets",
     "/resignations": "resignations",
     "/terminations": "terminations",

@@ -4,6 +4,7 @@ import Expense from '@/models/Expense';
 import mongoose from 'mongoose';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { notify } from '@/lib/notify';
 
 // Generate expense number helper
 async function generateExpenseNumber(): Promise<string> {
@@ -176,6 +177,20 @@ export async function POST(req: Request) {
     const populatedExpense = await Expense.findById(expense._id)
       .populate('employeeId', 'name email department designation');
 
+    if (submitNow && resolvedCompanyId) {
+      await notify({
+        companyId: String(resolvedCompanyId),
+        kind: 'expense',
+        title: '{actor} submitted an expense claim',
+        message: `${expenseNumber} · ${category} · ${currency || '₹'}${parseFloat(amount).toLocaleString('en-IN')} · ${description.slice(0, 100)}`,
+        href: '/expenses',
+        meta: 'Pending approval',
+        actorId: userId,
+        roles: ['admin', 'hr', 'manager'],
+        dedupeKey: `expense:${expense._id}:submitted`,
+      });
+    }
+
     return NextResponse.json({ 
       message: `Expense ${submitNow ? 'submitted' : 'saved as draft'} successfully`,
       expense: populatedExpense 
@@ -263,6 +278,19 @@ export async function PATCH(req: Request) {
         if (!updatedExpense) {
           return NextResponse.json({ message: 'Expense already submitted or modified' }, { status: 409 });
         }
+
+        // Notify approvers
+        await notify({
+          companyId: String(expense.companyId),
+          kind: 'expense',
+          title: '{actor} submitted an expense claim',
+          message: `${updatedExpense.expenseNumber || 'Expense'} · ${updatedExpense.category} · ${updatedExpense.currency || '₹'}${(updatedExpense.amount || 0).toLocaleString('en-IN')} · ${updatedExpense.description?.slice(0, 100)}`,
+          href: '/expenses',
+          meta: 'Pending approval',
+          actorId: userId,
+          roles: ['admin', 'hr', 'manager'],
+          dedupeKey: `expense:${updatedExpense._id}:submitted`,
+        });
       }
       // Approver-only approve/reject from submitted/under_review
       else if (['approved', 'rejected'].includes(status)) {
@@ -287,6 +315,32 @@ export async function PATCH(req: Request) {
         if (!updatedExpense) {
           return NextResponse.json({ message: 'Expense already processed or modified' }, { status: 409 });
         }
+
+        if (status === 'approved') {
+          await notify({
+            companyId: String(expense.companyId),
+            kind: 'expense',
+            title: 'Expense claim approved',
+            message: `${updatedExpense.expenseNumber || 'Expense'} (${updatedExpense.category}) · ${updatedExpense.currency || '₹'}${(updatedExpense.amount || 0).toLocaleString('en-IN')} has been approved.${approvalNotes ? ` Note: ${approvalNotes}` : ''}`,
+            href: '/my-expenses',
+            meta: 'Approved',
+            recipientIds: [String(expense.employeeId)],
+            actorId: userId,
+            dedupeKey: `expense-status:${updatedExpense._id}:approved`,
+          });
+        } else if (status === 'rejected') {
+          await notify({
+            companyId: String(expense.companyId),
+            kind: 'expense',
+            title: 'Expense claim rejected',
+            message: `${updatedExpense.expenseNumber || 'Expense'} (${updatedExpense.category}) · ${updatedExpense.currency || '₹'}${(updatedExpense.amount || 0).toLocaleString('en-IN')}.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`,
+            href: '/my-expenses',
+            meta: 'Rejected',
+            recipientIds: [String(expense.employeeId)],
+            actorId: userId,
+            dedupeKey: `expense-status:${updatedExpense._id}:rejected`,
+          });
+        }
       }
       // Admin/HR reimburse approved only
       else if (status === 'reimbursed') {
@@ -304,6 +358,18 @@ export async function PATCH(req: Request) {
         if (!updatedExpense) {
           return NextResponse.json({ message: 'Can only reimburse approved expenses' }, { status: 409 });
         }
+
+        await notify({
+          companyId: String(expense.companyId),
+          kind: 'expense',
+          title: 'Expense claim reimbursed',
+          message: `${updatedExpense.expenseNumber || 'Expense'} (${updatedExpense.category}) · ${updatedExpense.currency || '₹'}${(updatedExpense.amount || 0).toLocaleString('en-IN')} has been reimbursed${paymentMethod ? ` via ${paymentMethod}` : ''}.${paymentReference ? ` Ref: ${paymentReference}` : ''}`,
+          href: '/my-expenses',
+          meta: 'Reimbursed',
+          recipientIds: [String(expense.employeeId)],
+          actorId: userId,
+          dedupeKey: `expense-status:${updatedExpense._id}:reimbursed`,
+        });
       } else {
         return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
       }

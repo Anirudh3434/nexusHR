@@ -3,9 +3,14 @@ import connectDB from '@/lib/mongodb';
 import Resignation from '@/models/Resignation';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { notify } from '@/lib/notify';
+import type { Role } from '@/lib/permissions';
 
 const APPROVER_ROLES = ['admin', 'hr', 'manager'];
 const PENDING_STATUSES = ['pending', 'under_review'];
+
+const shortDate = (value: Date | string) =>
+  new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
 // GET - Fetch resignations
 export async function GET(req: Request) {
@@ -54,7 +59,7 @@ export async function GET(req: Request) {
     }
 
     const resignations = await Resignation.find(query)
-      .populate('employeeId', 'firstName lastName email employeeId department designation')
+      .populate('employeeId', 'name firstName lastName email employeeId department designation')
       .populate('submittedBy', 'name email')
       .populate('approvedBy', 'name email')
       .sort({ createdAt: -1 });
@@ -130,8 +135,21 @@ export async function POST(req: Request) {
     });
 
     const populatedResignation = await Resignation.findById(resignation._id)
-      .populate('employeeId', 'firstName lastName email employeeId department designation')
+      .populate('employeeId', 'name firstName lastName email employeeId department designation')
       .populate('submittedBy', 'name email');
+
+    // HR and managers get the action item in their login digest.
+    await notify({
+      companyId,
+      kind: 'resignation',
+      title: '{actor} submitted a resignation',
+      message: `Last working day ${shortDate(lwd)} · ${noticePeriodDays} days notice.`,
+      href: '/resignations',
+      meta: 'Action needed',
+      actorId: userId,
+      dedupeKey: `resignation:${resignation._id}`,
+      roles: APPROVER_ROLES as Role[],
+    });
 
     return NextResponse.json({
       message: 'Resignation submitted successfully',
@@ -210,18 +228,35 @@ export async function PATCH(req: Request) {
         { $set: updateData },
         { new: true }
       )
-        .populate('employeeId', 'firstName lastName email employeeId department designation')
+        .populate('employeeId', 'name firstName lastName email employeeId department designation')
         .populate('submittedBy', 'name email')
         .populate('approvedBy', 'name email');
     } else {
       resignation = await Resignation.findOne({ _id: id, companyId })
-        .populate('employeeId', 'firstName lastName email employeeId department designation')
+        .populate('employeeId', 'name firstName lastName email employeeId department designation')
         .populate('submittedBy', 'name email')
         .populate('approvedBy', 'name email');
     }
 
     if (!resignation) {
       return NextResponse.json({ message: 'Resignation not found' }, { status: 404 });
+    }
+
+    // Keep the employee posted on their own resignation.
+    if (status) {
+      await notify({
+        companyId,
+        kind: 'resignation',
+        title: `Resignation ${String(status).replace('_', ' ')}`,
+        message: `Last working day ${shortDate(existing.lastWorkingDate)}.${
+          hrRemarks ? ` ${hrRemarks}` : ''
+        }`,
+        href: '/my-resignation',
+        meta: String(status).replace('_', ' '),
+        recipientIds: [String(existing.employeeId)],
+        actorId: userId,
+        dedupeKey: `resignation-status:${id}:${status}`,
+      });
     }
 
     return NextResponse.json({

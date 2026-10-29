@@ -6,6 +6,8 @@ import EmailConfig from '@/models/EmailConfig';
 import { headers } from 'next/headers';
 import { generateOfferLetterHTML, deriveOnboardingStatus } from '@/lib/onboardingTemplates';
 import { sendEmail, buildOfferEmail, buildOfferResponseNotification, getEmailTemplateOverrides } from '@/lib/emailSender';
+import User from '@/models/User';
+import { DEFAULT_PROBATION_MONTHS, buildProbationWindow } from '@/lib/probation';
 
 const STAFF_ROLES = ['super_admin', 'admin', 'hr'];
 
@@ -85,6 +87,22 @@ export async function POST(
     record.progress = derived.progress;
 
     await record.save();
+
+    // Keep the employee's tracked probation window in step with the offer.
+    if (probationMonths !== undefined && record.employeeId) {
+      const employee = await User.findById(record.employeeId);
+      if (employee && employee.probationStatus !== 'confirmed') {
+        const start = employee.probationStartDate || record.candidate?.joiningDate || employee.joiningDate;
+        const window = start ? buildProbationWindow(start, Number(probationMonths) || DEFAULT_PROBATION_MONTHS) : null;
+        if (window) {
+          employee.probationStatus = 'on_probation';
+          employee.probationMonths = window.months;
+          employee.probationStartDate = window.startDate;
+          employee.probationEndDate = window.endDate;
+          await employee.save();
+        }
+      }
+    }
 
     return NextResponse.json({ message: 'Offer letter generated', onboarding: record });
   } catch (error: any) {

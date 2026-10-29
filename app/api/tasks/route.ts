@@ -7,6 +7,7 @@ import ActivityLog from '@/models/ActivityLog';
 import VersionSnapshot from '@/models/VersionSnapshot';
 import { headers } from 'next/headers';
 import mongoose from 'mongoose';
+import { notify } from '@/lib/notify';
 
 // Generate task number helper
 async function generateTaskNumber(): Promise<string> {
@@ -321,6 +322,27 @@ export async function POST(req: Request) {
       .populate('dependsOn', 'taskNumber title status')
       .populate('parentId', 'taskNumber title status')
       .populate('createdBy', 'name email');
+
+    // Notify assigned members on new task
+    const assigneeIds: string[] = Array.isArray(assignedTo)
+      ? assignedTo.filter(Boolean).map(String)
+      : assignedTo
+      ? [String(assignedTo)]
+      : [];
+
+    if (assigneeIds.length > 0 && companyId) {
+      await notify({
+        companyId: String(companyId),
+        kind: 'task',
+        title: 'New task assigned to you',
+        message: `${taskNumber}: ${title} · ${(priority || 'medium').toString()} priority`,
+        href: '/my-tasks',
+        meta: `${(priority || 'medium').toString().toUpperCase()} priority`,
+        recipientIds: assigneeIds,
+        actorId: userId,
+        dedupeKey: `task-assign:${task._id}`,
+      });
+    }
 
     return NextResponse.json({ 
       message: 'Task created successfully',
@@ -717,6 +739,45 @@ export async function PATCH(req: Request) {
       .populate('blocks', 'taskNumber title status')
       .populate('parentId', 'taskNumber title status')
       .populate('createdBy', 'name email');
+
+    // Notify newly assigned members
+    const oldAssignees = new Set((task.assignedTo || []).map((id: any) => String(id)));
+    const newAssignees: string[] = Array.isArray(updateData.assignedTo)
+      ? updateData.assignedTo.filter(Boolean).map(String)
+      : updateData.assignedTo
+      ? [String(updateData.assignedTo)]
+      : [];
+    const addedAssignees = newAssignees.filter(id => !oldAssignees.has(id));
+
+    if (addedAssignees.length > 0 && task.companyId) {
+      await notify({
+        companyId: String(task.companyId),
+        kind: 'task',
+        title: `Task ${task.taskNumber} assigned to you`,
+        message: `${task.title} · ${task.priority || 'medium'} priority`,
+        href: '/my-tasks',
+        meta: 'Assigned',
+        recipientIds: addedAssignees,
+        actorId: userId,
+      });
+    }
+
+    if (updateData.status === 'completed' && task.status !== 'completed' && task.companyId) {
+      const creatorOrAssigner = task.assignedBy || task.createdBy;
+      if (creatorOrAssigner && String(creatorOrAssigner) !== String(userId)) {
+        await notify({
+          companyId: String(task.companyId),
+          kind: 'task',
+          title: `{actor} completed task ${task.taskNumber}`,
+          message: task.title,
+          href: `/tasks?id=${task._id}`,
+          meta: 'Completed',
+          actorId: userId,
+          recipientIds: [String(creatorOrAssigner)],
+          dedupeKey: `task-completed:${task._id}`,
+        });
+      }
+    }
 
     console.log("PATCH updated task labels:", updatedTask?.labels);
 

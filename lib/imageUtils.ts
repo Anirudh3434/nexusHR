@@ -505,25 +505,32 @@ export function applyDynamicCompanyTheme(primaryHex: string, secondaryHex?: stri
   const primary = normalizeHexColor(primaryHex) || DEFAULT_BRAND_PRIMARY;
   const secondary = normalizeHexColor(secondaryHex) || rotateHue(primary, 28);
 
-  const pDark = isColorDark(primary);
   const primaryRgb = hexToRgb(primary);
 
-  const primaryFg = pDark ? "#ffffff" : "#0b1220";
+  // Foreground derived from the actual brand color, not a fixed lightness cutoff.
+  const primaryFg = getTextColorOn(primary);
+  const secondarySurface = isDark ? adjustBrightness(secondary, -45) : adjustBrightness(secondary, 75);
+  const accentSurface = isDark ? adjustBrightness(primary, -50) : adjustBrightness(primary, 80);
+  // Keep focus rings visible even when the brand color is a pale yellow/lime.
+  const ringColor = ensureReadableBrandText(primary, isDark ? "#0b1220" : "#ffffff", 3);
 
   // Primary color tokens
   root.style.setProperty("--primary", primary);
   root.style.setProperty("--primary-foreground", primaryFg);
-  root.style.setProperty("--ring", primary);
+  root.style.setProperty("--ring", ringColor);
   root.style.setProperty("--sidebar-primary", primary);
   root.style.setProperty("--sidebar-primary-foreground", primaryFg);
-  root.style.setProperty("--sidebar-ring", primary);
+  root.style.setProperty("--sidebar-ring", ringColor);
   root.style.setProperty("--chart-1", primary);
 
   // Secondary color tokens (adapts gracefully to light/dark surfaces)
-  root.style.setProperty("--secondary", isDark ? adjustBrightness(secondary, -45) : adjustBrightness(secondary, 75));
-  root.style.setProperty("--secondary-foreground", isDark ? "#ffffff" : secondary);
-  root.style.setProperty("--accent", isDark ? adjustBrightness(primary, -50) : adjustBrightness(primary, 80));
-  root.style.setProperty("--accent-foreground", primary);
+  root.style.setProperty("--secondary", secondarySurface);
+  root.style.setProperty(
+    "--secondary-foreground",
+    isDark ? WHITE_ON_DARK : ensureReadableBrandText(secondary, secondarySurface)
+  );
+  root.style.setProperty("--accent", accentSurface);
+  root.style.setProperty("--accent-foreground", ensureReadableBrandText(primary, accentSurface));
   root.style.setProperty("--chart-2", secondary);
 
   // Brand utility variables
@@ -599,9 +606,6 @@ export function generatePaletteFromColor(primaryHex: string, secondaryHex?: stri
   const activeHex = adjustBrightness(cleanHex, -24);
   const accentHex = rotateHue(cleanHex, 28);
 
-  const isDark = isColorDark(cleanHex);
-  const isSecDark = isColorDark(secHex);
-
   return {
     primary: cleanHex,
     primaryHover: hoverHex,
@@ -609,11 +613,11 @@ export function generatePaletteFromColor(primaryHex: string, secondaryHex?: stri
     primaryLight: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`,
     primaryBorder: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.28)`,
     primaryGlow: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.35)`,
-    textOnPrimary: isDark ? "#ffffff" : "#0f172a",
+    textOnPrimary: getTextColorOn(cleanHex),
     secondary: secHex,
     secondaryHover: adjustBrightness(secHex, -14),
     secondaryLight: `rgba(${secRgb.r}, ${secRgb.g}, ${secRgb.b}, 0.12)`,
-    textOnSecondary: isSecDark ? "#ffffff" : "#0f172a",
+    textOnSecondary: getTextColorOn(secHex),
     accent: accentHex,
     shades: {
       50: adjustBrightness(cleanHex, 75),
@@ -760,6 +764,87 @@ export function isColorDark(colorStr?: string | null): boolean {
 
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq < 135;
+}
+
+// ---------------- Contrast Engine ----------------
+// Solid brand surfaces (buttons, headers, chips) need a foreground that is
+// derived from the primary itself. Picking text with a fixed lightness cutoff
+// produced near-black labels on saturated reds/corals, which reads as muddy.
+// The helpers below follow WCAG luminance maths but bias the choice toward
+// white on brand colors, falling back to dark ink only for genuinely light
+// tones (yellow, lime, pastels).
+
+const INK_ON_LIGHT = "#0b1220";
+const WHITE_ON_DARK = "#ffffff";
+
+/** Minimum white-on-brand contrast we accept before switching to dark ink. */
+const BRAND_WHITE_MIN_CONTRAST = 2.2;
+
+/** Converts one sRGB channel (0-255) into linear light for luminance maths. */
+function srgbChannelToLinear(channel: number): number {
+  const value = channel / 255;
+  return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+}
+
+/** WCAG 2.x relative luminance of a hex color (0 = black, 1 = white). */
+export function getRelativeLuminance(color: string): number {
+  const hex = normalizeHexColor(color) ?? color;
+  const { r, g, b } = hexToRgb(hex);
+  return (
+    0.2126 * srgbChannelToLinear(r) +
+    0.7152 * srgbChannelToLinear(g) +
+    0.0722 * srgbChannelToLinear(b)
+  );
+}
+
+/** WCAG contrast ratio between two hex colors (1 - 21). */
+export function getContrastRatio(a: string, b: string): number {
+  const luminanceA = getRelativeLuminance(a);
+  const luminanceB = getRelativeLuminance(b);
+  const lighter = Math.max(luminanceA, luminanceB);
+  const darker = Math.min(luminanceA, luminanceB);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Picks the readable foreground for a solid primary-colored surface.
+ *
+ * Most brand tones (red, coral, orange, blue, teal, indigo, green) are
+ * intended to carry white text. Only genuinely light primaries - yellow,
+ * lime, pale pink, mint - should switch to dark ink. When even white is
+ * below the threshold we still verify ink actually improves the ratio.
+ */
+export function getTextColorOn(background: string): string {
+  const bg = normalizeHexColor(background) ?? background;
+  const whiteContrast = getContrastRatio(bg, WHITE_ON_DARK);
+
+  if (whiteContrast >= BRAND_WHITE_MIN_CONTRAST) return WHITE_ON_DARK;
+
+  const inkContrast = getContrastRatio(bg, INK_ON_LIGHT);
+  return inkContrast > whiteContrast ? INK_ON_LIGHT : WHITE_ON_DARK;
+}
+
+/**
+ * Nudges a brand color toward black (on light surfaces) or white (on dark
+ * surfaces) until it is readable as text. Keeps the hue recognisable instead
+ * of jumping straight to pure ink.
+ */
+export function ensureReadableBrandText(
+  color: string,
+  surface: string,
+  minRatio = 4.5
+): string {
+  const base = normalizeHexColor(color) ?? color;
+  if (getContrastRatio(base, surface) >= minRatio) return base;
+
+  const lighten = getRelativeLuminance(surface) < 0.5;
+
+  for (let step = 1; step <= 20; step += 1) {
+    const candidate = adjustBrightness(base, lighten ? step * 5 : -step * 5);
+    if (getContrastRatio(candidate, surface) >= minRatio) return candidate;
+  }
+
+  return getTextColorOn(surface);
 }
 
 /**

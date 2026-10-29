@@ -10,6 +10,7 @@ export interface User {
   email: string;
   role: Role;
   department?: string;
+  designation?: string;
   status?: string;
   avatar?: string;
   companyId?: string;
@@ -52,6 +53,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setLoading(false);
+
+    // Sync latest user details (designation, department, company name)
+    fetch('/api/auth/me')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((freshUser) => {
+        if (freshUser && freshUser.id) {
+          setUser((prev) => {
+            const updated = { ...prev, ...freshUser };
+            localStorage.setItem("user", JSON.stringify(updated));
+            return updated;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> => {

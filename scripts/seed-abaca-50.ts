@@ -213,7 +213,6 @@ async function seedAbaca() {
 
   const seededUsers: any[] = [];
   for (const emp of rawEmployees) {
-    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=0d9488&color=ffffff&bold=true`;
     const doc = await User.findOneAndUpdate(
       { email: emp.email },
       {
@@ -230,7 +229,6 @@ async function seedAbaca() {
           dob: new Date(emp.dob),
           joiningDate: new Date(emp.join),
           workShiftId: emp.shift,
-          avatar,
           phone: `+91 98${Math.floor(10000000 + Math.random() * 90000000).toString().slice(0, 8)}`,
           address: { street: 'Main Road', city: emp.city, state: 'Haryana', country: 'India', zipCode: '122002' },
           bio: `${emp.desig} at Abaca System. Passionate about enterprise cloud technology, AI solutions, and digital transformation.`,

@@ -74,9 +74,48 @@ const UserSchema = new Schema({
   salary: {
     type: Number,
   },
+  // Organizational Hierarchy & Reporting Structure
+  reportsTo: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
+  hierarchyLevel: {
+    type: String,
+    enum: ['director', 'manager', 'lead', 'senior', 'junior', 'intern', 'hr'],
+    default: null,
+  },
   workShiftId: {
     type: Schema.Types.ObjectId,
     ref: 'WorkShift',
+  },
+  // Probation & confirmation. The window is fixed at hire time from the offer
+  // letter so list views and reminders never recompute from a mutable setting.
+  probationStatus: {
+    type: String,
+    enum: ['on_probation', 'confirmed'],
+    default: null,
+  },
+  probationMonths: {
+    type: Number,
+    default: null,
+  },
+  probationStartDate: {
+    type: Date,
+  },
+  probationEndDate: {
+    type: Date,
+  },
+  probationConfirmedAt: {
+    type: Date,
+  },
+  probationConfirmedBy: {
+    _id: String,
+    name: String,
+  },
+  probationNotes: {
+    type: String,
+    maxlength: 500,
   },
   // Leave balances - stores { leaveTypeId: { allocated: number, used: number } }
   leaveBalances: {
@@ -137,6 +176,9 @@ const UserSchema = new Schema({
 UserSchema.index({ companyId: 1, role: 1 });
 UserSchema.index({ companyId: 1, isActive: 1 });
 UserSchema.index({ companyId: 1, department: 1 });
+UserSchema.index({ companyId: 1, probationStatus: 1, probationEndDate: 1 });
+UserSchema.index({ companyId: 1, reportsTo: 1 });
+UserSchema.index({ companyId: 1, hierarchyLevel: 1 });
 
 // Force refresh the model in development to ensure new fields are caught
 if (process.env.NODE_ENV === 'development') {

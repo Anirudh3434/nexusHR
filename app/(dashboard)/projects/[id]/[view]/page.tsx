@@ -3072,7 +3072,11 @@ export default function ProjectBoardPage() {
                         return (
                           <tr>
                             <td colSpan={7} className="p-0">
-                              <EmptyState title="No tasks found" icon={<KanbanSquare size={18} />} />
+                              <EmptyState
+                                title="No tasks found"
+                                description="Create a task to get started, or clear your filters."
+                                icon={<KanbanSquare size={18} />}
+                              />
                             </td>
                           </tr>
                         );

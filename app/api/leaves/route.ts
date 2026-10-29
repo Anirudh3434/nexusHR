@@ -3,6 +3,10 @@ import connectDB from '@/lib/mongodb';
 import Leave from '@/models/Leave';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { notify } from '@/lib/notify';
+
+const shortDate = (value: Date | string) =>
+  new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
 // GET leave requests
 export async function GET(req: Request) {
@@ -86,6 +90,21 @@ export async function POST(req: Request) {
       status: 'Pending',
     });
 
+    // Approvers see the request in their login digest.
+    await notify({
+      companyId,
+      kind: 'leave',
+      title: '{actor} requested leave',
+      message: `${type} · ${shortDate(startDate)} → ${shortDate(endDate)} · ${totalDays || 1} ${
+        totalDays === 1 ? 'day' : 'days'
+      }.`,
+      href: '/leave-approvals',
+      meta: 'Awaiting approval',
+      actorId: employeeId,
+      dedupeKey: `leave:${newLeave._id}`,
+      roles: ['admin', 'hr', 'manager'],
+    });
+
     return NextResponse.json({
       message: 'Leave request created successfully',
       id: newLeave._id,
@@ -138,6 +157,21 @@ export async function PATCH(req: Request) {
     if (!leave) {
       return NextResponse.json({ message: 'Leave request not found' }, { status: 404 });
     }
+
+    // Tell the requester the decision.
+    await notify({
+      companyId: existing.companyId.toString(),
+      kind: 'leave',
+      title: `Leave ${status.toLowerCase()}`,
+      message: `${existing.type} · ${shortDate(existing.startDate)} → ${shortDate(existing.endDate)}${
+        comment ? ` · ${comment}` : ''
+      }`,
+      href: '/my-leaves',
+      meta: status,
+      recipientIds: [String(existing.employeeId)],
+      actorId: auth.userId,
+      dedupeKey: `leave-status:${leave._id}:${status}`,
+    });
 
     return NextResponse.json({
       message: 'Leave request updated successfully',
