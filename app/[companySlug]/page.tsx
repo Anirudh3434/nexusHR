@@ -361,22 +361,7 @@ export default function CompanyLoginPage() {
                 onClick={() => {
                   if (typeof document !== "undefined") {
                     document.cookie = "nexushr_company_code=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
-                    document.cookie = "nexushr_company_code=; path=/; domain=.localhost; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
                     localStorage.removeItem("nexushr_company_code");
-                  }
-                  if (typeof window !== "undefined") {
-                    const port = window.location.port ? `:${window.location.port}` : '';
-                    const host = window.location.hostname.toLowerCase();
-                    if (host.endsWith('.localhost') || host === 'localhost' || host === '127.0.0.1') {
-                      window.location.href = `${window.location.protocol}//localhost${port}/login?switch=true`;
-                      return;
-                    }
-                    const parts = host.split('.');
-                    if (parts.length >= 2) {
-                      const root = parts.slice(-2).join('.');
-                      window.location.href = `${window.location.protocol}//${root}${port}/login?switch=true`;
-                      return;
-                    }
                   }
                   router.push("/login?switch=true");
                 }}

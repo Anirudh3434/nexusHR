@@ -620,7 +620,7 @@ async function seedAbaca() {
       postedAt: new Date(Date.now() - 7 * 86400000)
     }
   ];
-  const createdJobs = await JobPosition.insertMany(jobsData.map(j => ({ ...j, companyId })));
+  const createdJobs: any = await JobPosition.insertMany(jobsData.map(j => ({ ...j, companyId })));
   console.log(`   Created ${createdJobs.length} open job positions.`);
 
   // 13. Candidate Applications
