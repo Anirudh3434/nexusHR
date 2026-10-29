@@ -46,6 +46,8 @@ import {
   AgendaScheduleWidget,
   SupportDeskWidget,
 } from "../../../components/dashboard/WorksuiteDashboardWidgets";
+import { CareerLifecycleWidget } from "../../../components/dashboard/CareerLifecycleWidget";
+import { LoginCelebration } from "../../../components/dashboard/LoginCelebration";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -551,6 +553,10 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5">
+      {/* Milestone cards for the signed-in user (birthday, anniversary,
+          probation, notice) — animate in once per session. */}
+      <LoginCelebration />
+
       {/* Top Worksuite Header Bar & Action Controls */}
       <WorksuiteHeader
         userName={dashboardData?.employee?.name || user?.name || "Employee"}
@@ -596,6 +602,8 @@ export default function DashboardPage() {
           />
 
           <CelebrationHub birthdays={dashboardData?.widgets?.birthdays} />
+
+          {["admin", "hr", "manager"].includes(user?.role || "") && <CareerLifecycleWidget />}
         </div>
 
         {/* Right Column (Execution & Roadmap - 8 cols) */}

@@ -20,6 +20,7 @@ import {
   sendEmail,
   SendEmailResult,
 } from './emailSender';
+import { DEFAULT_PROBATION_MONTHS, buildProbationWindow } from './probation';
 
 export interface Actor {
   _id: string;
@@ -239,6 +240,7 @@ export async function hireCandidate(input: HireInput): Promise<HireResult> {
   if (!user) {
     password = generateTemporaryPassword();
     const hashed = await bcrypt.hash(password, 12);
+    const probation = buildProbationWindow(joiningDate || new Date(), DEFAULT_PROBATION_MONTHS);
     user = await User.create({
       name: fullName,
       email,
@@ -248,11 +250,27 @@ export async function hireCandidate(input: HireInput): Promise<HireResult> {
       department: department || undefined,
       designation: position || undefined,
       joiningDate: joiningDate || undefined,
+      probationStatus: probation ? 'on_probation' : 'confirmed',
+      probationMonths: probation?.months ?? null,
+      probationStartDate: probation?.startDate,
+      probationEndDate: probation?.endDate,
+      probationConfirmedAt: probation ? undefined : new Date(),
       isActive: true,
       mustChangePassword: true,
       isCandidate: true,
     });
     accountCreated = true;
+  } else if (joiningDate && !user.probationEndDate && !user.probationConfirmedAt) {
+    // Converted applicant with an existing portal account: only start
+    // probation when a confirmed joining date exists.
+    const probation = buildProbationWindow(joiningDate, DEFAULT_PROBATION_MONTHS);
+    user.joiningDate = joiningDate;
+    user.probationStatus = probation ? 'on_probation' : 'confirmed';
+    user.probationMonths = probation?.months ?? null;
+    user.probationStartDate = probation?.startDate;
+    user.probationEndDate = probation?.endDate;
+    if (!probation) user.probationConfirmedAt = new Date();
+    await user.save();
   }
 
   // 2. Create / reuse the onboarding record

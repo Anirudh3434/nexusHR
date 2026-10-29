@@ -286,7 +286,11 @@ export default function MyTasksPage() {
       <div className="space-y-4">
         {filteredTasks.length === 0 ? (
           <Card>
-            <EmptyState title="No tasks found" icon={<KanbanSquare size={18} />} />
+            <EmptyState
+              title="No tasks found"
+              description="Tasks assigned to you will appear here."
+              icon={<KanbanSquare size={18} />}
+            />
           </Card>
         ) : (
           filteredTasks.map((task) => (

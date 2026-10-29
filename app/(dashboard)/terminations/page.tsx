@@ -13,6 +13,12 @@ import {
   ChevronDown, ChevronUp, Calendar, User, AlertTriangle,
   FileText, MessageSquare, DollarSign, Briefcase
 } from "lucide-react";
+import {
+  getNoticeInfo,
+  noticeLabel,
+  noticePhaseClasses,
+  TERMINATION_ACTIVE_STATUSES,
+} from "@/lib/noticePeriod";
 
 interface TerminationItem {
   _id: string;
@@ -615,6 +621,23 @@ export default function TerminationsPage() {
                       <Badge className={`${getStatusColor(termination.status)} text-xs px-2 py-0.5`}>
                         {termination.status.replace('_', ' ')}
                       </Badge>
+                      {(() => {
+                        const info = getNoticeInfo({
+                          noticeStart: termination.noticeDate,
+                          lastWorkingDate: termination.terminationDate,
+                          status: termination.status,
+                          activeStatuses: TERMINATION_ACTIVE_STATUSES,
+                        });
+                        if (!info.isActive || info.daysLeft === null) return null;
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${noticePhaseClasses(info.phase)}`}
+                          >
+                            <Clock className="h-3 w-3" />
+                            {noticeLabel(info)}
+                          </span>
+                        );
+                      })()}
                       <span className={`text-xs font-medium ${getTypeColor(termination.type)}`}>
                         {typeLabels[termination.type] || termination.type}
                       </span>

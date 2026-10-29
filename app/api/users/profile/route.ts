@@ -59,6 +59,11 @@ export async function GET(req: Request) {
       website: user.website,
       twitter: user.twitter,
       joiningDate: user.joiningDate,
+      probationStatus: user.probationStatus ?? null,
+      probationStartDate: user.probationStartDate,
+      probationEndDate: user.probationEndDate,
+      probationMonths: user.probationMonths,
+      probationConfirmedAt: user.probationConfirmedAt,
       isActive: user.isActive,
       createdAt: user.createdAt,
     });

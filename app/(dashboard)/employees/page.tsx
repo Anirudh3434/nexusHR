@@ -16,9 +16,28 @@ import { Button } from "../../../components/ui/Button";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { Input } from "../../../components/ui/Input";
+import { Avatar } from "../../../components/ui/Avatar";
+import { getProbationInfo, probationLabel, probationPhaseClasses } from "../../../lib/probation";
 import { X, Plus, Loader2, Users, Briefcase, DollarSign, Clock, Pencil, ChevronLeft, ChevronRight, Sun, Moon, MapPinOff, Upload } from "lucide-react";
 import { CsvImportModal } from "../../../components/ui/CsvImportModal";
 import { EMPLOYEE_CSV_TEMPLATE, parseEmployeeCSV, ParsedEmployeeRow } from "../../../lib/csvUtils";
+
+function ProbationBadge({ employee }: { employee: Employee }) {
+  const info = getProbationInfo({
+    probationStatus: employee.probationStatus ?? null,
+    probationStartDate: employee.probationStartDate ?? null,
+    probationEndDate: employee.probationEndDate ?? null,
+    probationMonths: employee.probationMonths ?? null,
+  });
+  if (info.phase === "none") return null;
+  return (
+    <span
+      className={`mt-1 inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${probationPhaseClasses(info.phase)}`}
+    >
+      {info.phase === "confirmed" ? "Confirmed" : `Probation · ${probationLabel(info)}`}
+    </span>
+  );
+}
 
 export default function EmployeesPage() {
   const { user, loading, hasRole } = useAuth();
@@ -274,23 +293,21 @@ export default function EmployeesPage() {
               ) : employees.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="p-0">
-                    <EmptyState title="No employees found" />
+                    <EmptyState
+                      title="No employees found"
+                      description="Add your first employee, or adjust your search."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
                 employees.map((employee: Employee) => (
                   <TableRow key={employee.id}>
                     <TableCell className="flex items-center gap-3">
-                      {employee.avatar ? (
-                        <img src={employee.avatar} alt={employee.name} className="h-8 w-8 rounded-full" />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs dark:bg-blue-500/15 dark:text-blue-300">
-                          {employee.name.charAt(0)}
-                        </div>
-                      )}
+                      <Avatar name={employee.name} src={employee.avatar} size="sm" />
                       <div>
                         <div className="font-medium">{employee.name}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{employee.role}</div>
+                        <ProbationBadge employee={employee} />
                       </div>
                     </TableCell>
                     <TableCell>{employee.department || "-"}</TableCell>

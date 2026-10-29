@@ -31,6 +31,16 @@ const EmployeeSchema = new Schema({
     type: String,
     default: 'General',
   },
+  reportsTo: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
+  hierarchyLevel: {
+    type: String,
+    enum: ['director', 'manager', 'lead', 'senior', 'junior', 'intern', 'hr'],
+    default: null,
+  },
   designation: {
     type: String,
   },

@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { daysBetween } from "@/lib/probation";
+import { getNoticeInfo, noticeLabel, noticePhaseClasses } from "@/lib/noticePeriod";
 import { 
   LogOut, Calendar, Clock, AlertCircle, CheckCircle, 
   FileText, XCircle, ChevronDown, ChevronUp, Info
@@ -191,12 +193,16 @@ export default function MyResignationPage() {
 
   const getDaysUntilLastDay = () => {
     if (!myResignation) return 0;
-    const lwd = new Date(myResignation.lastWorkingDate);
-    const today = new Date();
-    const diffTime = lwd.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
+    return Math.max(0, daysBetween(myResignation.lastWorkingDate));
   };
+
+  const myNotice = myResignation
+    ? getNoticeInfo({
+        noticeStart: myResignation.resignationDate || myResignation.createdAt,
+        lastWorkingDate: myResignation.lastWorkingDate,
+        status: myResignation.status,
+      })
+    : null;
 
   if (loading) {
     return (
@@ -375,9 +381,17 @@ export default function MyResignationPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">Days Remaining</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
-                  {getDaysUntilLastDay()} days
-                </p>
+                {myNotice && myNotice.phase !== 'none' ? (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${noticePhaseClasses(myNotice.phase)}`}
+                  >
+                    {noticeLabel(myNotice)}
+                  </span>
+                ) : (
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                    {getDaysUntilLastDay()} days
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">Notice Period</p>

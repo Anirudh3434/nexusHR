@@ -136,6 +136,7 @@ export async function POST(req: Request) {
       email: user.email,
       role: user.role,
       department: user.department,
+      designation: user.designation,
       status: user.status,
       avatar: user.avatar,
       companyId: user.companyId?.toString(),

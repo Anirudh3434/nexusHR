@@ -764,7 +764,11 @@ function AnalyticsModal({ survey, onClose }: { survey: SurveyItem; onClose: () =
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-slate-900 rounded-lg max-w-4xl w-full p-6">
           <div className="flex items-center justify-center h-64">
-            <EmptyState title="No analytics data available" icon={<BarChart3 size={18} />} />
+            <EmptyState
+              title="No analytics data available"
+              description="Results appear here once responses are collected."
+              icon={<BarChart3 size={18} />}
+            />
           </div>
         </div>
       </div>

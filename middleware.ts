@@ -184,6 +184,8 @@ export async function middleware(request: NextRequest) {
   const needsSession =
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/employees') ||
+    pathname.startsWith('/probation') ||
+    pathname.startsWith('/hierarchy') ||
     pathname.startsWith('/candidate') ||
     (pathname.startsWith('/super-admin') && pathname !== '/super-admin/login');
   if (!session && needsSession) {

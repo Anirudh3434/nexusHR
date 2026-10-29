@@ -16,6 +16,7 @@ export interface EmailConfig {
   autoReplyTemplate: string;
   jobKeywords: string[];
   isActive: boolean;
+  connected?: boolean;
   createdAt: string;
   updatedAt: string;
 }

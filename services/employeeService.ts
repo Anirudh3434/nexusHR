@@ -17,6 +17,10 @@ export interface Employee {
   isGeoFencingExempt?: boolean;
   geoFencingExemptUntil?: string | Date;
   overtimePreference?: string;
+  probationStatus?: 'on_probation' | 'confirmed' | null;
+  probationStartDate?: string;
+  probationEndDate?: string;
+  probationMonths?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }

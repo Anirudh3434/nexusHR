@@ -387,6 +387,7 @@ export default function PayrollPage() {
                     <td colSpan={7} className="p-0">
                       <EmptyState
                         title="No payroll records found for this period."
+                        description="Generate payroll for this period to see records."
                         icon={<AlertCircle size={18} />}
                         action={
                           <Button variant="outline" onClick={generatePayroll} size="sm">

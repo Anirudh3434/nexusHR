@@ -180,7 +180,11 @@ export default function CredentialsSection({ projectId, searchQuery }: Credentia
       {/* Credentials Grid */}
       {filteredCredentials.length === 0 ? (
         <Card>
-          <EmptyState icon={<Key size={18} />} title="No credentials found" />
+          <EmptyState
+            icon={<Key size={18} />}
+            title="No credentials found"
+            description="Add a credential to share access securely."
+          />
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

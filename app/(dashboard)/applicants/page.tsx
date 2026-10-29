@@ -635,7 +635,7 @@ export default function ApplicantsPage() {
             id="showGeneral" 
             checked={showGeneral}
             onChange={(e) => setShowGeneral(e.target.checked)}
-            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            className="h-4 w-4 rounded border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
           />
           <label htmlFor="showGeneral" className="text-sm font-medium text-muted-foreground whitespace-nowrap cursor-pointer select-none">
             Show General Inquiries

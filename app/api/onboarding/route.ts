@@ -10,6 +10,7 @@ import {
   buildDocumentsFromTemplate,
   generateOfferLetterHTML,
 } from '@/lib/onboardingTemplates';
+import { DEFAULT_PROBATION_MONTHS, buildProbationWindow } from '@/lib/probation';
 
 // GET - List onboarding records (role-scoped)
 export async function GET(req: Request) {
@@ -128,6 +129,8 @@ export async function POST(req: Request) {
     // Link or create the user account so the new hire can log in for self-service
     let employeeUser = await User.findOne({ email: email.toLowerCase() }).select('-password');
     let accountCreated = false;
+    const probation = buildProbationWindow(joinDate, Number(probationMonths) || DEFAULT_PROBATION_MONTHS);
+
     if (!employeeUser) {
       if (!password || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
         return NextResponse.json({
@@ -144,10 +147,25 @@ export async function POST(req: Request) {
         department: department || undefined,
         designation: position || undefined,
         joiningDate: joinDate,
+        probationStatus: probation ? 'on_probation' : 'confirmed',
+        probationMonths: probation?.months ?? null,
+        probationStartDate: probation?.startDate,
+        probationEndDate: probation?.endDate,
+        probationConfirmedAt: probation ? undefined : new Date(),
         isActive: true,
       });
       employeeUser = newUser;
       accountCreated = true;
+    } else if (!employeeUser.probationEndDate && !employeeUser.probationConfirmedAt) {
+      // Existing portal account (e.g. converted applicant) — start tracking
+      // probation from the confirmed joining date if nothing is recorded yet.
+      employeeUser.joiningDate = employeeUser.joiningDate || joinDate;
+      employeeUser.probationStatus = probation ? 'on_probation' : 'confirmed';
+      employeeUser.probationMonths = probation?.months ?? null;
+      employeeUser.probationStartDate = probation?.startDate;
+      employeeUser.probationEndDate = probation?.endDate;
+      if (!probation) employeeUser.probationConfirmedAt = new Date();
+      await employeeUser.save();
     }
 
     // Build checklist & documents from templates

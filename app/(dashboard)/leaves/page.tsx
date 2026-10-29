@@ -135,7 +135,10 @@ export default function LeaveManagementPage() {
               ) : leaves.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <EmptyState title="No leave requests found." />
+                    <EmptyState
+                      title="No leave requests found."
+                      description="Requests appear here when employees apply for leave."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

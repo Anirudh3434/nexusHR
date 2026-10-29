@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
 import { Button } from "../../../components/ui/Button";
+import { Avatar, isGeneratedAvatar } from "../../../components/ui/Avatar";
+import { getProbationInfo, probationLabel, probationPhaseClasses } from "@/lib/probation";
 import { 
   Loader2, 
   Globe, 
@@ -54,6 +56,11 @@ interface ProfileData {
   twitter?: string;
   avatar?: string;
   joiningDate?: string;
+  probationStatus?: 'on_probation' | 'confirmed' | null;
+  probationStartDate?: string;
+  probationEndDate?: string;
+  probationMonths?: number | null;
+  probationConfirmedAt?: string;
 }
 
 export default function ProfilePage() {
@@ -164,11 +171,18 @@ export default function ProfilePage() {
     );
   }
 
-  const currentAvatar = formData.avatar || profile?.avatar;
+  const storedAvatar = formData.avatar || profile?.avatar;
+  const currentAvatar = isGeneratedAvatar(storedAvatar) ? undefined : storedAvatar;
   const displayName = profile?.name || user?.name || "Employee";
   const displayRole = profile?.designation || profile?.role || "Software Developer";
   const displayEmpId = profile?.employeeId || (user as any)?.employeeId || "—";
   const displayDepartment = profile?.department || (user as any)?.department || "Engineering";
+  const probationInfo = getProbationInfo({
+    probationStatus: profile?.probationStatus,
+    probationStartDate: profile?.probationStartDate,
+    probationEndDate: profile?.probationEndDate,
+    probationMonths: profile?.probationMonths,
+  });
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300 pb-16">
@@ -194,17 +208,7 @@ export default function ProfilePage() {
               {/* Avatar Container */}
               <div className="relative group shrink-0 -mt-14 sm:-mt-16">
                 <div className="p-1 rounded-full bg-card ring-1 ring-border shadow-md">
-                  {currentAvatar ? (
-                    <img 
-                      src={currentAvatar} 
-                      alt={displayName} 
-                      className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border border-border"
-                    />
-                  ) : (
-                    <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-3xl">
-                      {displayName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <Avatar name={displayName} src={currentAvatar} size="xl" />
                 </div>
 
                 {/* Camera upload trigger button */}
@@ -269,6 +273,21 @@ export default function ProfilePage() {
                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Active Employee
                   </span>
+                  {probationInfo.phase !== "none" && (
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${probationPhaseClasses(probationInfo.phase)}`}
+                      title={
+                        probationInfo.endDate
+                          ? `Probation ends ${formatDate(probationInfo.endDate.toISOString())}`
+                          : undefined
+                      }
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      {probationInfo.phase === "confirmed"
+                        ? "Confirmed"
+                        : `Probation · ${probationLabel(probationInfo)}`}
+                    </span>
+                  )}
                 </div>
               </div>
 

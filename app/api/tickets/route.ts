@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Ticket from '@/models/Ticket';
 import { headers } from 'next/headers';
+import { notify } from '@/lib/notify';
 
 // Generate ticket number helper
 async function generateTicketNumber(): Promise<string> {
@@ -137,6 +138,20 @@ export async function POST(req: Request) {
       .populate('reportedBy', 'name email')
       .populate('employeeId', 'firstName lastName employeeId department');
 
+    // Support desk roles see the new ticket in their login digest.
+    await notify({
+      companyId,
+      kind: 'ticket',
+      title: `New ticket ${ticketNumber}`,
+      message: `${title} · ${(priority || 'medium').toString()} priority.`,
+      href: '/tickets',
+      meta: 'Open',
+      actorId: userId,
+      actorName: headersList.get('x-user-name') || null,
+      dedupeKey: `ticket:${ticket._id}`,
+      roles: ['admin', 'hr', 'manager'],
+    });
+
     return NextResponse.json({ 
       message: 'Ticket created successfully',
       ticket: populatedTicket 
@@ -230,6 +245,36 @@ export async function PATCH(req: Request) {
       .populate('reportedBy', 'name email')
       .populate('employeeId', 'firstName lastName employeeId department')
       .populate('assignedTo', 'name email');
+
+    // Reassignment pings the new owner.
+    if (assignedTo && assignedTo !== String(ticket.assignedTo || '')) {
+      await notify({
+        companyId: String(ticket.companyId),
+        kind: 'ticket',
+        title: `Ticket ${ticket.ticketNumber} assigned to you`,
+        message: ticket.title,
+        href: '/my-tickets',
+        meta: 'Assigned',
+        recipientIds: [assignedTo],
+        actorId: userId,
+      });
+    }
+
+    // Notify reporter on status change
+    if (status && status !== ticket.status && ticket.reportedBy) {
+      const statusLabel = status.replace('_', ' ');
+      await notify({
+        companyId: String(ticket.companyId),
+        kind: 'ticket',
+        title: `Ticket ${ticket.ticketNumber} ${statusLabel}`,
+        message: `${ticket.title}${resolutionNotes ? ` · ${resolutionNotes}` : ''}`,
+        href: '/my-tickets',
+        meta: statusLabel.toUpperCase(),
+        recipientIds: [String(ticket.reportedBy)],
+        actorId: userId,
+        dedupeKey: `ticket-status:${ticket._id}:${status}`,
+      });
+    }
 
     return NextResponse.json({ 
       message: 'Ticket updated successfully',

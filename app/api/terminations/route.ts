@@ -73,7 +73,7 @@ export async function GET(req: Request) {
     if (employeeId) query.employeeId = employeeId;
 
     const terminations = await Termination.find(query)
-      .populate('employeeId', 'firstName lastName email employeeId department designation')
+      .populate('employeeId', 'name firstName lastName email employeeId department designation')
       .populate('initiatedBy', 'name email')
       .populate('approverId', 'name email')
       .populate('approvedBy', 'name email')
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
     });
 
     const populatedTermination = await Termination.findById(termination._id)
-      .populate('employeeId', 'firstName lastName email employeeId department designation')
+      .populate('employeeId', 'name firstName lastName email employeeId department designation')
       .populate('initiatedBy', 'name email')
       .populate('approverId', 'name email');
 
@@ -297,7 +297,7 @@ export async function PATCH(req: Request) {
     }
 
     const updatedTermination = await Termination.findOne({ _id: id, companyId })
-      .populate('employeeId', 'firstName lastName email employeeId department designation')
+      .populate('employeeId', 'name firstName lastName email employeeId department designation')
       .populate('initiatedBy', 'name email')
       .populate('approverId', 'name email')
       .populate('approvedBy', 'name email');

@@ -172,7 +172,11 @@ export default function NotesSection({ projectId, searchQuery, viewMode, onViewM
       {/* Notes Grid/List */}
       {filteredNotes.length === 0 ? (
         <Card>
-          <EmptyState icon={<BookOpen size={18} />} title="No notes found" />
+          <EmptyState
+            icon={<BookOpen size={18} />}
+            title="No notes found"
+            description="Write a note to get started."
+          />
         </Card>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

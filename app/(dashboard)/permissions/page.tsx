@@ -491,7 +491,7 @@ export default function PermissionsPage() {
                     <ShieldAlert size={15} />
                     {ROLE_LABELS[role] || role}
                     {customCount > 0 && (
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular ${activeRole === role ? "bg-white/25 text-white" : "bg-primary/10 text-primary"}`}>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular ${activeRole === role ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"}`}>
                         {customCount}
                       </span>
                     )}

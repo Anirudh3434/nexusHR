@@ -143,6 +143,11 @@
   html {
     @apply font-sans;
   }
+  /* Native checkboxes and radios inherit the company theme instead of browser blue */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--primary);
+  }
   /* Ledger type scale: display serif handles voice, body stays quiet */
   .font-display {
     font-family: var(--font-display), Georgia, serif;
@@ -585,5 +590,32 @@ div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[
   .modal-flip-zoom,
   .flip-zoom-card {
     animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   FIELD ATTENTION — guides the user to the email input that still needs data
+   ========================================================================== */
+@keyframes field-attention {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--primary) 18%, transparent);
+  }
+}
+
+.field-attention {
+  border-color: var(--primary) !important;
+  background-color: color-mix(in oklab, var(--primary) 4%, var(--card));
+  animation: field-attention 1.1s ease-in-out 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-attention {
+    animation: none;
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 }

@@ -690,7 +690,11 @@ export default function AttendancePage() {
               ) : filteredAttendance.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="p-0">
-                    <EmptyState title="No attendance records found." icon={<Clock size={18} />} />
+                    <EmptyState
+                      title="No attendance records found."
+                      description="Records appear here once employees check in."
+                      icon={<Clock size={18} />}
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

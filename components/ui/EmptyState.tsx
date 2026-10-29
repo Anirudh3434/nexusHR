@@ -8,6 +8,8 @@ interface EmptyStateProps {
   icon?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
+  /** Tighter spacing for table cells, sidebars, and popovers. */
+  compact?: boolean;
 }
 
 /**
@@ -21,20 +23,44 @@ export const EmptyState = ({
   icon,
   action,
   className,
+  compact = false,
 }: EmptyStateProps) => (
-  <div className={cn("flex items-start gap-3.5 px-4 py-6 sm:px-5", className)} role="status">
+  <div
+    className={cn(
+      "flex items-start gap-3.5 text-left",
+      compact ? "px-4 py-4" : "px-5 py-6",
+      className
+    )}
+    role="status"
+    aria-live="polite"
+  >
     <div
       aria-hidden
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground"
-    >
-      {icon ?? <Inbox size={18} />}
-    </div>
-    <div className="min-w-0 py-0.5">
-      <p className="text-sm font-semibold text-foreground">{title}</p>
-      {description && (
-        <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">{description}</p>
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary",
+        compact
+          ? "h-9 w-9 [&>svg]:h-4 [&>svg]:w-4"
+          : "h-11 w-11 [&>svg]:h-[18px] [&>svg]:w-[18px]"
       )}
-      {action && <div className="mt-3">{action}</div>}
+    >
+      {icon ?? <Inbox />}
+    </div>
+
+    <div className={cn("min-w-0 flex-1", compact ? "py-0" : "py-0.5")}>
+      <p className={cn("font-semibold text-foreground", compact ? "text-[13px]" : "text-sm")}>
+        {title}
+      </p>
+      {description && (
+        <p
+          className={cn(
+            "mt-1 max-w-md leading-relaxed text-muted-foreground",
+            compact ? "text-xs" : "text-[13px]"
+          )}
+        >
+          {description}
+        </p>
+      )}
+      {action && <div className="mt-4 flex flex-wrap items-center gap-2">{action}</div>}
     </div>
   </div>
 );

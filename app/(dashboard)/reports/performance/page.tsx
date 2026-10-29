@@ -117,7 +117,11 @@ export default function PerformanceListPage() {
               <Loader2 className="animate-spin" size={48} />
             </div>
           ) : filteredReports.length === 0 ? (
-            <EmptyState title="No performance data found." icon={<TrendingUp size={18} />} />
+            <EmptyState
+              title="No performance data found."
+              description="Summaries appear here once reviews are recorded."
+              icon={<TrendingUp size={18} />}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">

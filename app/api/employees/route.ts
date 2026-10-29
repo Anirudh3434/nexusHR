@@ -4,6 +4,7 @@ import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
+import { DEFAULT_PROBATION_MONTHS, buildProbationWindow } from '@/lib/probation';
 
 // GET all employees
 export async function GET(req: Request) {
@@ -82,6 +83,11 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Probation starts on the joining date and is stored as a fixed window.
+    const joinDate = joiningDate ? new Date(joiningDate) : new Date();
+    const probationMonths = Number(data.probationMonths ?? DEFAULT_PROBATION_MONTHS);
+    const probation = buildProbationWindow(joinDate, probationMonths);
+
     // Build user data object
     const userData: any = {
       name,
@@ -93,7 +99,12 @@ export async function POST(req: Request) {
       phone,
       salary: salary ? Number(salary) : undefined,
       workShiftId: workShiftId || undefined,
-      joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
+      joiningDate: joinDate,
+      probationStatus: probation ? 'on_probation' : 'confirmed',
+      probationMonths: probation?.months ?? null,
+      probationStartDate: probation?.startDate,
+      probationEndDate: probation?.endDate,
+      probationConfirmedAt: probation ? undefined : new Date(),
       isActive: true,
       status: 'Active',
     };
