@@ -3,11 +3,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { Building } from "lucide-react";
 
 export default function CommandsPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Company Management" />
+      <PageHeader icon={<Building />} title="Company Management" />
       <Card>
         <CardHeader>
           <CardTitle>Company Overview</CardTitle>

@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   KanbanSquare, Search, Clock, CheckCircle, Calendar, User, 
-  Play, Pause, Square, AlertCircle
+  Play, Pause, Square, AlertCircle, CheckSquare
 } from "lucide-react";
 
 interface TaskItem {
@@ -228,6 +228,7 @@ export default function MyTasksPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<CheckSquare />}
         title="My Tasks"
         description="Manage your assigned tasks"
         actions={

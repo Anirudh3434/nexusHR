@@ -4,6 +4,8 @@ import { Menu, LogOut, Sun, Moon, Building2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { Button } from "../ui/Button";
+import { SmartLogoBadge } from "../ui/SmartLogoBadge";
+import { getOptimizedImageUrl } from "@/lib/imageUtils";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -28,13 +30,11 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
 
         {/* Mobile Logo - only visible on small screens */}
         <div className="flex items-center gap-2.5 md:hidden">
-          <div className="h-9 w-9 rounded-lg bg-[#0b1220] flex items-center justify-center p-1 border border-[#0b1220] shrink-0">
-            <img 
-              src={user.companyLogo || "/logo.png"} 
-              alt={user.companyName || 'Logo'} 
-              className="h-full w-full object-contain scale-110" 
-            />
-          </div>
+          <SmartLogoBadge 
+            src={user.companyLogo || "/logo.png"} 
+            alt={user.companyName || 'Logo'} 
+            className="h-9 w-9 p-1 border border-slate-200 shrink-0 shadow-sm dark:border-slate-700" 
+          />
           <span className="font-display font-semibold text-foreground text-[15px] truncate max-w-[140px]">
             {user.companyName || 'NexusHR'}
           </span>
@@ -50,8 +50,8 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         <button
           onClick={toggleTheme}
           className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none transition-colors"
-          aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
-          title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+          aria-label={!mounted ? "Toggle theme" : theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+          title={!mounted ? "Toggle theme" : theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
         >
           {!mounted ? (
             <span className="block w-[18px] h-[18px]" aria-hidden />
@@ -74,7 +74,8 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           
           {user.avatar ? (
             <img
-              src={user.avatar}
+              src={getOptimizedImageUrl(user.avatar, 64, 64)}
+              loading="lazy"
               alt={`${user.name} avatar`}
               className="h-8 w-8 rounded-full border border-border object-cover"
             />

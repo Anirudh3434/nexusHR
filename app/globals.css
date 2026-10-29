@@ -168,11 +168,11 @@
 @layer utilities {
   /* Single orchestrated entrance: page shell only, respects reduced motion */
   @keyframes ledger-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   .ledger-enter {
-    animation: ledger-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: ledger-in 0.25s ease-out;
   }
   /* Hairline ledger rule used for metric strip + card dividers */
   .ledger-rule {
@@ -406,4 +406,184 @@
 .dark [role="menu"].bg-white,
 .dark [data-radix-popper-content-wrapper] .bg-white {
   background-color: var(--popover);
+}
+
+/* ========================================================
+   Custom Sleek Scrollbar Styles & Utilities
+   ======================================================== */
+
+/* Utility to completely hide scrollbar while preserving scrolling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+/* Ultra-sleek custom scrollbar for Sidebar and dark surfaces */
+.sidebar-scroll,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar-scroll::-webkit-scrollbar-button,
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Custom scrollbar for light surfaces */
+.custom-scrollbar-light {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.16) transparent;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.custom-scrollbar-light::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ==========================================================================
+   FLIP-ZOOM CARD MODAL & POPUP ANIMATION
+   Animates every modal dialog and popup card from wherever the user clicks.
+   ========================================================================== */
+
+:root {
+  --modal-origin-x: 50%;
+  --modal-origin-y: 50%;
+  --modal-shift-x: 0px;
+  --modal-shift-y: 20px;
+  --modal-rot-x: -12deg;
+  --modal-rot-y: 6deg;
+}
+
+@keyframes modal-backdrop-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-flip-zoom-in {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px)
+      translate3d(var(--modal-shift-x, 0px), var(--modal-shift-y, 20px), -70px)
+      rotateX(var(--modal-rot-x, -12deg))
+      rotateY(var(--modal-rot-y, 6deg))
+      scale(0.62);
+    filter: blur(2px);
+  }
+  65% {
+    opacity: 1;
+    transform: perspective(1200px)
+      translate3d(calc(var(--modal-shift-x, 0px) * -0.05), calc(var(--modal-shift-y, 20px) * -0.05), 6px)
+      rotateX(calc(var(--modal-rot-x, -12deg) * -0.15))
+      rotateY(calc(var(--modal-rot-y, 6deg) * -0.15))
+      scale(1.02);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px)
+      translate3d(0, 0, 0)
+      rotateX(0deg)
+      rotateY(0deg)
+      scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* Modal overlay backdrop fade in */
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) {
+  animation: modal-backdrop-fade-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Modal dialog cards inside full-screen fixed overlays */
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div:not([class*="absolute"]):not([aria-hidden="true"]),
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > [role="dialog"],
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > form,
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div > div:not([class*="absolute"]):not([aria-hidden="true"]):first-child:last-child,
+.modal-flip-zoom,
+.flip-zoom-card,
+[data-modal-card] {
+  animation: modal-flip-zoom-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  transform-origin: var(--modal-origin-x, 50%) var(--modal-origin-y, 50%);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Prevent layout wrapper divs from animating if they have children */
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[class*="flex"]:not([class*="bg-"]):not([class*="rounded"]):not([class*="shadow"]):not([class*="border"]),
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[class*="grid"]:not([class*="bg-"]):not([class*="rounded"]):not([class*="shadow"]):not([class*="border"]) {
+  animation: none !important;
+}
+
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[class*="flex"]:not([class*="bg-"]):not([class*="rounded"]):not([class*="shadow"]):not([class*="border"]) > div:not([class*="absolute"]),
+div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[class*="grid"]:not([class*="bg-"]):not([class*="rounded"]):not([class*="shadow"]):not([class*="border"]) > div:not([class*="absolute"]) {
+  animation: modal-flip-zoom-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  transform-origin: var(--modal-origin-x, 50%) var(--modal-origin-y, 50%);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div,
+  .modal-flip-zoom,
+  .flip-zoom-card {
+    animation: none !important;
+  }
 }

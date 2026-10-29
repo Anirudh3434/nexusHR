@@ -14,8 +14,9 @@ import { format } from "date-fns";
 import { 
   KanbanSquare, Plus, Settings, GripVertical, User, Clock, 
   ArrowLeft, MoreHorizontal, Filter, Search, CheckCircle, Trash2, Edit,
-  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy
+  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useParams, useRouter } from "next/navigation";
 import TransitionErrorPopup from "@/components/projects/TransitionErrorPopup";
 import TimelineView from "@/components/projects/TimelineView";
@@ -2577,10 +2578,11 @@ export default function ProjectBoardPage() {
             <span className="text-sm font-medium">Back to Projects</span>
           </button>
           <div className="h-6 w-px bg-gray-300"></div>
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">{project?.name}</h1>
-            <p className="text-sm text-gray-500 dark:text-slate-400">{project?.projectNumber}</p>
-          </div>
+          <PageHeader
+            icon={<FolderKanban />}
+            title={project?.name}
+            description={project?.projectNumber}
+          />
         </div>
         <div className="flex items-center gap-3">
           {/* View Mode Selector - labeled */}

@@ -22,7 +22,19 @@ const SettingsSchema = new Schema({
   },
   primaryColor: {
     type: String,
-    default: '#2563eb', // blue-600
+    default: '#0f766e',
+  },
+  secondaryColor: {
+    type: String,
+    default: null,
+  },
+  // Which strategy wins when applying the company theme.
+  // "logo" = keep colors in sync with the uploaded logo, "custom" = the
+  // admin picked colors manually, "default" = product Harbor & Pine palette.
+  themeSource: {
+    type: String,
+    enum: ['default', 'logo', 'custom'],
+    default: 'default',
   },
   // Login Page Text
   loginTitle: {

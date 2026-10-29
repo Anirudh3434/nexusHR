@@ -40,18 +40,17 @@ function applyTheme(next: Theme) {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  // Start with a lazy initializer so the first client render already matches
-  // the persisted / system preference (the blocking script in layout.tsx sets
-  // the .dark class pre-paint to avoid a flash).
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof window === "undefined" ? "light" : getInitialTheme()
-  );
+  // Deterministic initial state so SSR and client initial hydration match identically.
+  // The blocking script in layout.tsx sets the .dark class pre-paint so there is no visual flash.
+  const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   // Keep <html> in sync + follow OS changes when the user has no saved choice.
   // The mounted flag guards the toggle icon against hydration mismatch.
   useEffect(() => {
-    applyTheme(theme);
+    const initial = getInitialTheme();
+    setThemeState(initial);
+    applyTheme(initial);
     setMounted(true);
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");

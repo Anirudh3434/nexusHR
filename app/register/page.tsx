@@ -291,11 +291,11 @@ export default function RegisterPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-xl shadow-[#03081c]/20 border border-[#03081c]">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-xl shadow-[#03081c]/20 border border-[#03081c] overflow-hidden">
             <img 
               src="/logo.png" 
               alt="NexusHR Logo" 
-              className="h-full w-full object-contain scale-105" 
+              className="h-full w-full object-contain" 
             />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">Register Your Company</h1>

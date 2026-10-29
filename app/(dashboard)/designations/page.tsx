@@ -3,15 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
-import { getDesignations, createDesignation, updateDesignation, deleteDesignation, Designation } from "../../../services/designationService";
+import { getDesignations, createDesignation, updateDesignation, deleteDesignation, bulkImportDesignations, Designation } from "../../../services/designationService";
 import { getDepartments, Department } from "../../../services/departmentService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
-import { Briefcase, Plus, Pencil, Trash2, Loader2, X } from "lucide-react";
+import { Briefcase, Plus, Pencil, Trash2, Loader2, X, Upload } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { ModalPortal } from "../../../components/ui/ModalPortal";
+import { CsvImportModal } from "../../../components/ui/CsvImportModal";
+import { DESIGNATION_CSV_TEMPLATE, parseDesignationCSV, ParsedDesignationRow } from "../../../lib/csvUtils";
 
 export default function DesignationsPage() {
   const { user, hasRole } = useAuth();
@@ -21,6 +24,7 @@ export default function DesignationsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDesig, setEditingDesig] = useState<Designation | null>(null);
   const [formData, setFormData] = useState({ name: '', department: '', description: '' });
@@ -29,7 +33,7 @@ export default function DesignationsPage() {
 
   useEffect(() => {
     if (user?.companyId) fetchData();
-  }, [user]);
+  }, [user?.companyId]);
 
   const fetchData = async () => {
     try {
@@ -104,19 +108,21 @@ export default function DesignationsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Briefcase className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Designations
-          </span>
-        }
+        icon={<Briefcase />}
+        title="Designations"
         description="Manage job designations linked to departments."
         actions={
           canManage && (
-            <Button onClick={() => setShowModal(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Designation
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setShowImportModal(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import CSV
+              </Button>
+              <Button onClick={() => setShowModal(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Designation
+              </Button>
+            </div>
           )
         }
       />
@@ -183,59 +189,112 @@ export default function DesignationsPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">
-                {editingDesig ? "Edit Designation" : "Add Designation"}
-              </h2>
-              <button onClick={resetForm} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                <X className="h-5 w-5" />
-              </button>
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-md">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h2 className="text-lg font-semibold">
+                  {editingDesig ? "Edit Designation" : "Add Designation"}
+                </h2>
+                <button onClick={resetForm} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSubmit} className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Designation Name *</label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., Software Engineer, Manager"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+                  <select
+                    value={formData.department}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="">Select Department (Optional)</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept.name}>{dept.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                  <Input
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Brief description..."
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={resetForm} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (editingDesig ? "Update" : "Create")}
+                  </Button>
+                </div>
+              </form>
             </div>
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Designation Name *</label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Software Engineer, Manager"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-                <select
-                  value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="">Select Department (Optional)</option>
-                  {departments.map((dept) => (
-                    <option key={dept._id} value={dept.name}>{dept.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                <Input
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Brief description..."
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={resetForm} disabled={isSubmitting}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (editingDesig ? "Update" : "Create")}
-                </Button>
-              </div>
-            </form>
           </div>
-        </div>
+        </ModalPortal>
       )}
+
+      {/* CSV Import Modal */}
+      <CsvImportModal<ParsedDesignationRow>
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Import Designations from CSV"
+        description="Bulk upload designations linked to company departments."
+        sampleFileName="designations_sample_template.csv"
+        sampleContent={DESIGNATION_CSV_TEMPLATE}
+        rowParser={parseDesignationCSV}
+        columns={[
+          {
+            header: "Designation Name",
+            accessor: (row) => (
+              <span className="font-medium text-slate-900 dark:text-slate-100">
+                {row.name || <span className="text-red-500 italic">Missing name</span>}
+              </span>
+            ),
+          },
+          {
+            header: "Department",
+            accessor: (row) => (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                {row.department || "General / Unassigned"}
+              </span>
+            ),
+          },
+          {
+            header: "Description",
+            accessor: (row) => <span className="text-slate-500">{row.description || "—"}</span>,
+          },
+        ]}
+        onImport={async (validRows) => {
+          const res = await bulkImportDesignations(
+            validRows.map((r) => ({
+              name: r.name,
+              department: r.department,
+              description: r.description,
+            })),
+            user?.companyId
+          );
+          addToast({
+            type: "success",
+            title: "Import Successful",
+            description: `${res.importedCount} designations imported successfully${res.skippedCount > 0 ? `, ${res.skippedCount} skipped` : ""}.`,
+          });
+          return res;
+        }}
+        onSuccess={() => fetchData()}
+      />
     </div>
   );
 }
+

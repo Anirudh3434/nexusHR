@@ -104,12 +104,8 @@ export default function EmployeeShiftsPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Employee Shift Assignment
-          </span>
-        }
+        icon={<Users />}
+        title="Employee Shift Assignment"
         description="Manage employee work schedules and view salary information"
         actions={
           <select

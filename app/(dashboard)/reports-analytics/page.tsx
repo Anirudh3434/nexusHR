@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import ReportTemplates from '../../../components/reports/ReportTemplates';
 import ReportViewer from '../../../components/reports/ReportViewer';
 import { Button } from '../../../components/ui/Button';
+import { PageHeader } from '../../../components/ui/PageHeader';
 import { ArrowLeft, FileText } from 'lucide-react';
 
 export default function ReportsAnalyticsPage() {
@@ -34,21 +35,19 @@ export default function ReportsAnalyticsPage() {
         />
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Templates
-            </Button>
-            <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {selectedTemplate?.name}
-              </h1>
-            </div>
-          </div>
+          <PageHeader
+            icon={<FileText />}
+            title={selectedTemplate?.name}
+            actions={
+              <Button
+                variant="outline"
+                onClick={handleBack}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Templates
+              </Button>
+            }
+          />
 
           {selectedTemplate && (
             <ReportViewer template={selectedTemplate} />

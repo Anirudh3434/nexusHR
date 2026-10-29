@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import {
   Briefcase, ClipboardList, CheckCircle2, XCircle, Clock,
-  CalendarDays, ArrowRight, SearchX, PartyPopper, ListChecks,
+  CalendarDays, ArrowRight, SearchX, PartyPopper, ListChecks, FileText,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const statusMeta: Record<string, { label: string; classes: string }> = {
   new: { label: "New", classes: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
@@ -89,10 +90,11 @@ export default function MyApplication() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Application</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400">Track your application status, interview rounds and offer.</p>
-      </div>
+      <PageHeader
+        icon={<FileText />}
+        title="My Application"
+        description="Track your application status, interview rounds and offer."
+      />
 
       {sorted.length === 0 ? (
         <Card>

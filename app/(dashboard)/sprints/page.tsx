@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   Calendar, Users, Target, TrendingUp, Plus, Edit, Trash2, 
-  CheckCircle, Play, Pause, Clock
+  CheckCircle, Play, Pause, Clock, KanbanSquare
 } from "lucide-react";
 
 interface SprintItem {
@@ -171,6 +171,7 @@ export default function SprintsManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<KanbanSquare />}
         title="Sprints"
         description="Manage agile sprints for your projects"
         actions={

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
@@ -9,6 +9,7 @@ import { sidebarConfig, SidebarGroup, SidebarRoute, Role } from "../../config/si
 import { cn } from "../../lib/utils";
 import { featureForPath, type Feature } from "../../lib/entitlements";
 import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock } from "lucide-react";
+import { SmartLogoBadge } from "../ui/SmartLogoBadge";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -37,19 +38,22 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   };
   const goUpgrade = (feature: Feature) => router.push(`/billing?upgrade=${feature}`);
 
+  const logoFetchedRef = useRef(false);
+
   useEffect(() => {
     if (user?.companyId && pmsEnabled) {
       fetchProjects();
-      if (!user.companyLogo) {
-        fetch(`/api/settings?companyId=${user.companyId}`)
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data?.logo) {
-              updateUser({ ...user, companyLogo: data.logo });
-            }
-          })
-          .catch(() => {});
-      }
+    }
+    if (user?.companyId && !user.companyLogo && !logoFetchedRef.current) {
+      logoFetchedRef.current = true;
+      fetch(`/api/settings?companyId=${user.companyId}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.logo && user && data.logo !== user.companyLogo) {
+            updateUser({ ...user, companyLogo: data.logo });
+          }
+        })
+        .catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.companyId, pmsEnabled]);
@@ -118,13 +122,11 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         <div className="flex h-18 items-center justify-between px-4 border-b border-white/10">
           {!collapsed && (
             <div className="flex items-center gap-3 overflow-hidden animate-in fade-in zoom-in duration-300 min-w-0 pr-2">
-              <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-none border border-white/20 shrink-0">
-                <img 
-                  src={user?.companyLogo || "/logo.png"} 
-                  alt={user?.companyName || 'Logo'} 
-                  className="h-full w-full object-contain scale-110" 
-                />
-              </div>
+              <SmartLogoBadge 
+                src={user?.companyLogo || "/logo.png"} 
+                alt={user?.companyName || 'Logo'} 
+                className="h-10 w-10 p-1 rounded-xl border border-white/20 shrink-0" 
+              />
               <div className="flex flex-col min-w-0">
                 <span className="font-display text-[17px] font-semibold tracking-tight text-white truncate">
                   {user?.companyName || 'NexusHR'}
@@ -136,11 +138,11 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
             </div>
           )}
           {collapsed && (
-            <div className="mx-auto h-10 w-10 rounded-xl bg-white flex items-center justify-center p-1 border border-white/20 animate-in fade-in duration-300">
-              <img 
+            <div className="mx-auto flex justify-center">
+              <SmartLogoBadge 
                 src={user?.companyLogo || "/favicon.png"} 
                 alt={user?.companyName || 'Logo'} 
-                className="h-full w-full object-contain scale-110" 
+                className="h-10 w-10 p-1 rounded-xl border border-white/20 animate-in fade-in duration-300" 
               />
             </div>
           )}
@@ -164,7 +166,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         </button>
 
       {/* Navigation Links rendering dynamically per role */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3 scrollbar-hide" aria-label="Workspace navigation">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3 sidebar-scroll" aria-label="Workspace navigation">
         {navigationItems.map((item, index) => {
           // Handle Group with Accordion
           if (isGroup(item)) {

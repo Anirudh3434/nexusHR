@@ -4,6 +4,15 @@ import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
 import { headers } from 'next/headers';
 
+function normalizeRepoFullName(input: string): string {
+  let cleaned = input.trim();
+  cleaned = cleaned.replace(/^https?:\/\/github\.com\//i, '');
+  cleaned = cleaned.replace(/^github\.com\//i, '');
+  cleaned = cleaned.replace(/\.git$/i, '');
+  cleaned = cleaned.replace(/^\/+|\/+$/g, '');
+  return cleaned;
+}
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -24,34 +33,59 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { projectId, repoFullName, accessToken } = body;
 
-    if (!projectId || !repoFullName || !accessToken) {
+    if (!projectId || !repoFullName) {
       return NextResponse.json({ 
-        message: 'Missing required fields',
-        required: ['projectId', 'repoFullName', 'accessToken']
+        message: 'Project ID and repository name (owner/repo) are required.'
       }, { status: 400 });
     }
 
-    const project = await Project.findById(projectId);
+    const cleanRepo = normalizeRepoFullName(repoFullName);
+    const parts = cleanRepo.split('/');
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return NextResponse.json({
+        message: 'Invalid repository format. Please use "owner/repository" or full GitHub URL.'
+      }, { status: 400 });
+    }
 
+    const [owner, repo] = parts;
+
+    const project = await Project.findById(projectId);
     if (!project) {
       return NextResponse.json({ message: 'Project not found' }, { status: 404 });
     }
 
-    // Parse owner and repo from full name
-    const [owner, repo] = repoFullName.split('/');
-
-    // Create webhook for the repository
-    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/github/webhook`;
-    const webhook = await githubService.createWebhook(accessToken, owner, repo, webhookUrl);
-
     // Update project with GitHub repo info
-    project.githubRepo = repoFullName;
+    project.githubRepo = cleanRepo;
+    if (accessToken) {
+      project.githubToken = accessToken.trim();
+    }
     await project.save();
 
+    // Webhook configuration URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const webhookUrl = `${appUrl}/api/webhooks/github`;
+    let webhookCreated = false;
+    let webhookError: string | null = null;
+
+    // If an access token is provided, attempt automatic webhook installation via GitHub API
+    if (accessToken) {
+      try {
+        await githubService.createWebhook(accessToken.trim(), owner, repo, webhookUrl);
+        webhookCreated = true;
+      } catch (err: any) {
+        console.warn('Automatic GitHub webhook installation skipped:', err?.response?.data?.message || err.message);
+        webhookError = err?.response?.data?.message || 'Could not auto-install webhook (requires admin:repo_hook scope or public domain). You can add it manually in GitHub repository settings.';
+      }
+    }
+
     return NextResponse.json({ 
-      message: 'GitHub repository connected successfully',
+      success: true,
+      message: 'GitHub repository linked successfully',
       project,
-      webhook
+      repoFullName: cleanRepo,
+      webhookUrl,
+      webhookCreated,
+      webhookNotice: webhookError
     });
   } catch (error: any) {
     console.error('Error connecting GitHub repository:', error);
@@ -91,9 +125,14 @@ export async function DELETE(req: Request) {
 
     // Remove GitHub repo connection
     project.githubRepo = undefined;
+    project.githubToken = undefined;
+    project.githubDefaultBranch = undefined;
     await project.save();
 
-    return NextResponse.json({ message: 'GitHub repository disconnected successfully' });
+    return NextResponse.json({ 
+      success: true,
+      message: 'GitHub repository disconnected successfully' 
+    });
   } catch (error: any) {
     console.error('Error disconnecting GitHub repository:', error);
     return NextResponse.json({ message: 'Error disconnecting repository', error: error.message }, { status: 500 });

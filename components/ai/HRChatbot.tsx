@@ -211,7 +211,7 @@ export default function HRChatbot() {
           ref={launcherRef}
           onClick={() => setIsOpen(true)}
           aria-label="Open HR assistant chat"
-          className="rounded-full w-14 h-14 flex items-center justify-center bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30 hover:shadow-xl hover:shadow-indigo-600/40 hover:scale-105 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-full w-14 h-14 flex items-center justify-center bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:scale-105 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <MessageCircle className="w-6 h-6" />
         </button>
@@ -227,14 +227,14 @@ export default function HRChatbot() {
       className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100dvh-6rem)] flex flex-col rounded-3xl border border-border bg-card shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
     >
       {/* Identity header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3.5 shrink-0">
+      <div className="bg-primary text-primary-foreground px-4 py-3.5 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0" aria-hidden>
-            <Sparkles className="w-5 h-5 text-white" />
+            <Sparkles className="w-5 h-5 text-primary-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white leading-tight">NexusAI HR Assistant</p>
-            <p className="flex items-center gap-1.5 text-xs text-indigo-100 leading-tight mt-0.5">
+            <p className="text-sm font-semibold text-primary-foreground leading-tight">NexusAI HR Assistant</p>
+            <p className="flex items-center gap-1.5 text-xs text-primary-foreground/80 leading-tight mt-0.5">
               <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-300" />
@@ -293,9 +293,9 @@ export default function HRChatbot() {
         {messages.map((message, index) => (
           message.role === 'user' ? (
             <div key={index} className="flex justify-end">
-              <div className="max-w-[85%] rounded-2xl rounded-br-md bg-gradient-to-br from-indigo-600 to-violet-600 px-3.5 py-2.5 shadow-sm">
-                <p className="text-sm leading-relaxed text-white whitespace-pre-wrap">{message.content}</p>
-                <p className="mt-1 text-right text-[10px] text-white/70">
+              <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary text-primary-foreground px-3.5 py-2.5 shadow-sm">
+                <p className="text-sm leading-relaxed text-primary-foreground whitespace-pre-wrap">{message.content}</p>
+                <p className="mt-1 text-right text-[10px] text-primary-foreground/75">
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -311,7 +311,7 @@ export default function HRChatbot() {
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Sources</p>
                     {message.sources.map((source, idx) => (
                       <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <FileText className="w-3 h-3 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                        <FileText className="w-3 h-3 shrink-0 text-primary" />
                         <span className="truncate">{source.title}</span>
                         <span className="ml-auto shrink-0 tabular text-[10px]">{Math.round(source.relevance * 100)}%</span>
                       </div>
@@ -384,7 +384,7 @@ export default function HRChatbot() {
             disabled={isLoading || !inputValue.trim()}
             size="icon"
             aria-label="Send message"
-            className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/25 hover:opacity-90 disabled:opacity-50"
+            className="h-10 w-10 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
           </Button>

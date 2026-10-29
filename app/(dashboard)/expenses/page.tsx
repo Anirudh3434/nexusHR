@@ -326,6 +326,7 @@ export default function ExpensesManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<Receipt />}
         title="Expense Management"
         description="Review, approve, and reimburse employee expenses"
         actions={

@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/Badge";
 import {
   ArrowLeft, Plus, Trash2, Settings, Layers, Layout,
   KanbanSquare, CheckCircle, Clock, AlertCircle, Info,
-  Search, Check, Users, User, GripVertical
+  Search, Check, Users, User, GripVertical, FolderKanban
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useSearchParams } from 'next/navigation';
 import StatusTransitionFlow from "@/components/projects/StatusTransitionFlow";
 
@@ -311,14 +312,11 @@ export default function CreateProjectPage() {
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div className="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-              <div>
-                <h1 className="text-lg font-bold text-slate-800 tracking-tight dark:text-slate-200">
-                  {isEditMode ? 'Edit Project' : 'Create New Project'}
-                </h1>
-                <p className="text-xs text-slate-400">
-                  {isEditMode ? 'Update project configuration' : 'Set up your project workspace'}
-                </p>
-              </div>
+              <PageHeader
+                icon={<FolderKanban />}
+                title={isEditMode ? 'Edit Project' : 'Create New Project'}
+                description={isEditMode ? 'Update project configuration' : 'Set up your project workspace'}
+              />
             </div>
 
             {/* Custom Stepper */}
@@ -343,13 +341,13 @@ export default function CreateProjectPage() {
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 ${
                           isEditMode || isCompleted || item.num < step ? 'cursor-pointer hover:opacity-90' : ''
                         } ${isActive
-                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10 border border-indigo-500/20 scale-105'
+                          ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-105'
                           : isCompleted
-                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/40 dark:bg-indigo-500/10 dark:text-indigo-300'
+                            ? 'bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary'
                             : 'text-slate-400 hover:text-slate-600'
                           }`}
                       >
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-white text-indigo-600 dark:bg-slate-900 dark:text-indigo-400' : isCompleted ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isActive ? 'bg-primary-foreground text-primary dark:bg-slate-900 dark:text-primary' : isCompleted ? 'bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
                           }`}>
                           {isCompleted ? <Check className="w-2.5 h-2.5 stroke-[3]" /> : item.num}
                         </div>
@@ -548,7 +546,7 @@ export default function CreateProjectPage() {
                                           {employee.department}
                                         </Badge>
                                       )}
-                                      <div className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-350 bg-white dark:bg-slate-900'
+                                      <div className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-slate-350 bg-white dark:bg-slate-900'
                                         }`}>
                                         {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                                       </div>
@@ -561,7 +559,7 @@ export default function CreateProjectPage() {
                         </div>
                       )}
                       {selectedEmployees.length > 0 && (
-                        <div className="mt-2.5 text-[11px] font-semibold text-indigo-600 bg-indigo-50/50 px-3 py-1 rounded-lg inline-block border border-indigo-100/30 dark:text-indigo-400 dark:bg-indigo-500/10">
+                        <div className="mt-2.5 text-[11px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-lg inline-block border border-primary/20">
                           {selectedEmployees.length} member{selectedEmployees.length !== 1 ? 's' : ''} assigned to project
                         </div>
                       )}
@@ -573,7 +571,7 @@ export default function CreateProjectPage() {
                   <Button variant="ghost" onClick={() => window.location.href = '/projects'} className="rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Cancel
                   </Button>
-                  <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-5">
+                  <Button onClick={handleNext} className="font-semibold px-5">
                     Next: Board Configuration
                   </Button>
                 </div>
@@ -610,15 +608,15 @@ export default function CreateProjectPage() {
                                 : 'border-slate-200/80 bg-white hover:border-slate-350 hover:bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/70'
                                 }`}
                             >
-                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 transition-colors ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                 }`}>
                                 <type.icon className="w-4.5 h-4.5" />
                               </div>
-                              <h3 className={`font-bold text-sm mb-1 ${isSelected ? 'text-indigo-950 dark:text-indigo-200' : 'text-slate-800 dark:text-slate-200'}`}>{type.label}</h3>
+                              <h3 className={`font-bold text-sm mb-1 ${isSelected ? 'text-primary dark:text-primary' : 'text-slate-800 dark:text-slate-200'}`}>{type.label}</h3>
                               <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">{type.desc}</p>
 
                               {isSelected && (
-                                <div className="absolute top-3 right-3 w-4 h-4 bg-indigo-600 text-white rounded-full flex items-center justify-center">
+                                <div className="absolute top-3 right-3 w-4 h-4 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
                                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                                 </div>
                               )}
@@ -641,7 +639,7 @@ export default function CreateProjectPage() {
                           onChange={(e) => setFormData({ ...formData, useSprints: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600 dark:bg-slate-700"></div>
+                        <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-primary dark:bg-slate-700"></div>
                       </label>
                     </div>
                   </CardContent>
@@ -651,7 +649,7 @@ export default function CreateProjectPage() {
                   <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Back
                   </Button>
-                  <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-5">
+                  <Button onClick={handleNext} className="font-semibold px-5">
                     Next: Board Columns
                   </Button>
                 </div>
@@ -846,7 +844,7 @@ export default function CreateProjectPage() {
                   <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Back
                   </Button>
-                  <Button onClick={handleNext} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-5">
+                  <Button onClick={handleNext} className="font-semibold px-5">
                     Next: Review & Save
                   </Button>
                 </div>
@@ -939,7 +937,7 @@ export default function CreateProjectPage() {
                                 <span>0%</span>
                               </div>
                               <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden dark:bg-slate-800">
-                                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: '0%' }} />
+                                <div className="h-1.5 rounded-full bg-primary" style={{ width: '0%' }} />
                               </div>
                             </div>
                           </CardContent>
@@ -981,7 +979,7 @@ export default function CreateProjectPage() {
                   <Button variant="ghost" onClick={handleBack} className="rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-400">
                     Back
                   </Button>
-                  <Button onClick={handleCreateProject} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-bold px-6">
+                  <Button onClick={handleCreateProject} className="font-bold px-6">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     {isEditMode ? 'Save Specifications' : 'Deploy Project Workspace'}
                   </Button>

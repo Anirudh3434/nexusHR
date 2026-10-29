@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -81,6 +82,7 @@ const roundResultBadge: Record<string, { label: string; classes: string }> = {
 };
 
 export default function ApplicantsPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const { addToast } = useToast();
   
@@ -479,43 +481,60 @@ export default function ApplicantsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
+        icon={<Users />}
         title="Applicants"
-        description="Candidates who applied through careers page"
+        description="Review candidate applications, track pipeline stages, and manage hiring"
         actions={
-          <>
+          <div className="flex items-center gap-2">
             {lastSyncAt && (
-              <span className="text-xs text-gray-500 hidden sm:inline dark:text-slate-400">
+              <span className="text-xs text-muted-foreground hidden sm:inline">
                 Last sync: {lastSyncAt.toLocaleTimeString()}
               </span>
             )}
-            <Button variant="outline" onClick={fetchApplicants}>
-              <Loader2 className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <Button variant="outline" size="sm" onClick={fetchApplicants} disabled={loading}>
+              <Loader2 className={`h-4 w-4 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-          </>
+            <Button size="sm" onClick={() => router.push('/job-positions')}>
+              <Briefcase className="h-4 w-4 mr-1.5" />
+              Job Positions
+            </Button>
+          </div>
         }
       />
 
-      {/* Job ID Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-300">
-        <p className="font-medium">📌 Job ID Tracking</p>
-        <p className="text-blue-600 mt-1 dark:text-blue-400">
-          Shows all applicants (both online and email) linked to a Job ID. Use filters to view by source or job position.
-        </p>
+      {/* Requisition Pipeline Callout */}
+      <div className="flex items-start gap-3.5 rounded-[14px] border border-border bg-card p-4 shadow-xs">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+          <Briefcase className="h-4 w-4" />
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
+              Unified Requisition Pipeline
+            </h4>
+            <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              Omnichannel
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Consolidating all candidate submissions from web applications and inbound email streams indexed by Job Reference. Use the filters below to inspect source channels or individual position stages.
+          </p>
+        </div>
       </div>
 
       {/* Active Job ID Filter Banner */}
       {filterJobId && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center justify-between dark:bg-indigo-500/10 dark:border-indigo-500/30">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex items-center justify-between dark:bg-primary/10 dark:border-primary/25">
           <div className="flex items-center gap-3">
-            <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <Briefcase className="h-5 w-5 text-primary" />
             <div>
-              <p className="font-medium text-indigo-900">
-                Filtered by Job ID: <span className="font-mono bg-indigo-100 px-2 py-1 rounded dark:bg-indigo-500/15">{filterJobId}</span>
+              <p className="font-medium text-foreground">
+                Filtered by Job ID: <span className="font-mono bg-primary/10 px-2 py-1 rounded text-primary">{filterJobId}</span>
               </p>
-              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+              <p className="text-sm text-muted-foreground">
                 Showing {filteredApplicants.length} applicant{filteredApplicants.length !== 1 ? 's' : ''} for this position
               </p>
             </div>
@@ -527,7 +546,7 @@ export default function ApplicantsPage() {
               setFilterJobId('');
               window.history.replaceState({}, '', window.location.pathname);
             }}
-            className="border-indigo-200 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:text-indigo-300"
+            className="border-primary/30 text-primary hover:bg-primary/10"
           >
             <X className="h-4 w-4 mr-1" />
             Clear Filter
@@ -536,23 +555,23 @@ export default function ApplicantsPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Total', value: stats.total, icon: Users, color: 'blue' },
-          { label: 'New', value: stats.new, icon: UserCheck, color: 'blue' },
-          { label: 'Interview', value: stats.interview, icon: CalendarDays, color: 'purple' },
-          { label: 'Shortlisted', value: stats.shortlisted, icon: Briefcase, color: 'green' },
-          { label: 'Hired', value: stats.hired, icon: PartyPopper, color: 'emerald' },
-          { label: 'Rejected', value: stats.rejected, icon: ThumbsDown, color: 'red' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className={`p-2 rounded-lg bg-${color}-100`}>
-                <Icon className={`h-4 w-4 text-${color}-600`} />
+          { label: 'Total', value: stats.total, icon: Users },
+          { label: 'New', value: stats.new, icon: UserCheck },
+          { label: 'Interview', value: stats.interview, icon: CalendarDays },
+          { label: 'Shortlisted', value: stats.shortlisted, icon: Briefcase },
+          { label: 'Hired', value: stats.hired, icon: PartyPopper },
+          { label: 'Rejected', value: stats.rejected, icon: ThumbsDown },
+        ].map(({ label, value, icon: Icon }) => (
+          <Card key={label} className="rounded-[14px] border border-border bg-card shadow-xs">
+            <CardContent className="p-4 flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                <Icon className="h-4 w-4 text-primary" />
               </div>
-              <div>
-                <p className="text-xl font-bold">{value}</p>
-                <p className="text-xs text-gray-600 dark:text-slate-400">{label}</p>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tracking-tight text-foreground font-display">{value}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -560,20 +579,20 @@ export default function ApplicantsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, email, position, or Job ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10 text-sm border-border bg-card"
           />
         </div>
         
         {uniqueJobIds.length > 0 && (
           <select
-            className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900"
+            className="h-10 rounded-lg border border-border bg-card text-foreground px-3 text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs"
             value={filterJobId}
             onChange={(e) => setFilterJobId(e.target.value)}
           >
@@ -585,7 +604,7 @@ export default function ApplicantsPage() {
         )}
         
         <select
-          className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900"
+          className="h-10 rounded-lg border border-border bg-card text-foreground px-3 text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
@@ -601,7 +620,7 @@ export default function ApplicantsPage() {
         </select>
         
         <select
-          className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900"
+          className="h-10 rounded-lg border border-border bg-card text-foreground px-3 text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs"
           value={filterSource}
           onChange={(e) => setFilterSource(e.target.value)}
         >
@@ -610,53 +629,65 @@ export default function ApplicantsPage() {
           <option value="email">Email</option>
         </select>
 
-        <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-white dark:bg-slate-900">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 h-10 shadow-xs">
           <input 
             type="checkbox" 
             id="showGeneral" 
             checked={showGeneral}
             onChange={(e) => setShowGeneral(e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:text-indigo-400"
+            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
           />
-          <label htmlFor="showGeneral" className="text-sm font-medium text-gray-700 cursor-pointer dark:text-slate-300">
+          <label htmlFor="showGeneral" className="text-sm font-medium text-muted-foreground whitespace-nowrap cursor-pointer select-none">
             Show General Inquiries
           </label>
         </div>
       </div>
 
       {/* Applicants Table */}
-      <Card>
+      <Card className="rounded-[14px] border border-border bg-card shadow-xs">
         <CardContent className="p-0">
           {filteredApplicants.length === 0 ? (
             <EmptyState
               icon={<Users size={18} />}
               title="No applicants yet"
-              description="Applicants from careers page and email will appear here"
+              description="Candidates submitting applications via the careers portal or emailing requisitions will appear here."
+              action={
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={fetchApplicants}>
+                    <Loader2 className={`h-4 w-4 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                  <Button size="sm" onClick={() => router.push('/job-positions')}>
+                    <Briefcase className="h-4 w-4 mr-1.5" />
+                    View Job Positions
+                  </Button>
+                </div>
+              }
             />
           ) : (
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-slate-800/50">
+              <thead className="bg-muted/40">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Candidate</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Job ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Source</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Position</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Experience</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Date</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Candidate</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Job ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Source</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Position</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Experience</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {filteredApplicants.map((applicant) => (
                   <tr 
                     key={applicant._id}
-                    className="hover:bg-gray-50 cursor-pointer dark:hover:bg-slate-800"
+                    className="hover:bg-muted/60 cursor-pointer"
                     onClick={() => setSelectedApplicant(applicant)}
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm dark:bg-blue-500/15 dark:text-blue-400">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
                           {applicant.candidateName?.charAt(0).toUpperCase() || 'U'}
                         </div>
                         <div>
@@ -664,7 +695,7 @@ export default function ApplicantsPage() {
                             <p className="font-medium text-gray-900 dark:text-slate-100">{applicant.candidateName || 'Unknown'}</p>
                             {applicant.hasAttachments && (
                               <span title="Has attachments">
-                                <Paperclip className="h-3 w-3 text-blue-500" />
+                                <Paperclip className="h-3 w-3 text-primary" />
                               </span>
                             )}
                           </div>
@@ -674,7 +705,7 @@ export default function ApplicantsPage() {
                     </td>
                     <td className="px-4 py-3">
                       {applicant.jobId ? (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono text-xs dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono text-xs">
                           {applicant.jobId}
                         </Badge>
                       ) : (
@@ -705,7 +736,7 @@ export default function ApplicantsPage() {
                         </Badge>
                         {applicant.portalAccessSentAt && (
                           <span title={`Portal credentials sent on ${new Date(applicant.portalAccessSentAt).toLocaleString()}`}>
-                            <Mail className="h-3.5 w-3.5 text-blue-500" />
+                            <Mail className="h-3.5 w-3.5 text-primary" />
                           </span>
                         )}
                       </div>
@@ -719,7 +750,7 @@ export default function ApplicantsPage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400"
+                            className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
                             onClick={(e) => { e.stopPropagation(); openHireModal(applicant); }}
                             title="Hire & send portal access"
                           >
@@ -729,7 +760,7 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400"
+                          className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
                           onClick={(e) => { e.stopPropagation(); handleConsider(applicant); }}
                           title="Consider"
                         >
@@ -787,7 +818,7 @@ export default function ApplicantsPage() {
             <CardContent className="space-y-6">
               {/* Header Info */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl dark:bg-blue-500/15 dark:text-blue-400">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-2xl font-bold text-primary">
                   {selectedApplicant.candidateName?.charAt(0).toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1">
@@ -795,7 +826,7 @@ export default function ApplicantsPage() {
                   <p className="text-gray-600 dark:text-slate-400">{selectedApplicant.appliedPosition}</p>
                   <div className="flex items-center gap-2 mt-2">
                     {selectedApplicant.jobId && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 font-mono dark:bg-blue-500/10 dark:text-blue-300">
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono">
                         {selectedApplicant.jobId}
                       </Badge>
                     )}
@@ -807,7 +838,7 @@ export default function ApplicantsPage() {
               </div>
 
               {/* Contact Info */}
-              <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg dark:bg-slate-800/50">
+              <div className="grid md:grid-cols-2 gap-4 rounded-lg bg-muted/40 p-4">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-400" />
                   <span className="text-sm">{selectedApplicant.fromEmail}</span>
@@ -848,7 +879,7 @@ export default function ApplicantsPage() {
               {selectedApplicant.coverLetter && (
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2 dark:text-slate-100">Cover Letter</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 whitespace-pre-wrap dark:bg-slate-800/50 dark:text-slate-300">
+                  <div className="bg-muted/40 p-4 rounded-lg text-sm text-foreground/80 whitespace-pre-wrap">
                     {selectedApplicant.coverLetter}
                   </div>
                 </div>
@@ -860,14 +891,14 @@ export default function ApplicantsPage() {
                   <h4 className="font-medium text-gray-900 mb-2 dark:text-slate-100">Resume & Attachments</h4>
                   <div className="space-y-2">
                     {selectedApplicant.attachments.map((att, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-blue-50 p-3 rounded-lg dark:bg-blue-500/10">
-                        <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <div key={i} className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 dark:bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" />
                         <span className="text-sm flex-1 truncate">{att.filename}</span>
-                        <span className="text-xs text-gray-500 dark:text-slate-400">({(att.size / 1024).toFixed(1)} KB)</span>
+                        <span className="text-xs text-muted-foreground">({(att.size / 1024).toFixed(1)} KB)</span>
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                          className="text-primary hover:bg-primary/10"
                           onClick={() => window.open(att.fileUrl, '_blank')}
                           title="Preview"
                         >
@@ -876,7 +907,7 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                          className="text-primary hover:bg-primary/10"
                           onClick={() => window.open(att.fileUrl + '?download=true', '_blank')}
                           title="Download"
                         >
@@ -889,9 +920,9 @@ export default function ApplicantsPage() {
               )}
 
               {/* Portal access */}
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:bg-blue-500/10">
-                <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
-                  <KeyRound className="h-4 w-4" />
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 dark:bg-primary/10">
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <KeyRound className="h-4 w-4 text-primary" />
                   {selectedApplicant.portalAccessSentAt ? (
                     <span>Portal credentials sent on {new Date(selectedApplicant.portalAccessSentAt).toLocaleString()}</span>
                   ) : (
@@ -902,7 +933,7 @@ export default function ApplicantsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-blue-200 text-blue-700 hover:bg-blue-100 dark:border-blue-500/30 dark:text-blue-300"
+                    className="border-primary/30 text-primary hover:bg-primary/10"
                     onClick={() => handleResendCredentials(selectedApplicant)}
                   >
                     <Send className="h-3.5 w-3.5 mr-1.5" />
@@ -933,7 +964,7 @@ export default function ApplicantsPage() {
               {/* Interview rounds */}
               <div>
                 <h4 className="mb-2 flex items-center gap-1.5 font-medium text-gray-900 dark:text-slate-100">
-                  <ListChecks className="h-4 w-4 text-blue-500" /> Interview Rounds
+                  <ListChecks className="h-4 w-4 text-primary" /> Interview Rounds
                 </h4>
                 {(selectedApplicant.interviewRounds || []).length === 0 ? (
                   <p className="text-sm text-gray-500 dark:text-slate-400">No interview rounds added yet.</p>
@@ -942,7 +973,7 @@ export default function ApplicantsPage() {
                     {(selectedApplicant.interviewRounds || []).map((round, idx) => {
                       const rm = roundResultBadge[round.result || 'pending'] || roundResultBadge.pending;
                       return (
-                        <div key={round._id} className="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-slate-800 dark:bg-slate-800/50">
+                        <div key={round._id} className="rounded-lg border border-border bg-muted/40 p-3">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
                               <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">
@@ -961,7 +992,7 @@ export default function ApplicantsPage() {
                                 {round.interviewer && <span>· {round.interviewer}</span>}
                                 {round.location && <span>· {round.location}</span>}
                                 {round.meetingLink && (
-                                  <a href={round.meetingLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400">
+                                  <a href={round.meetingLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline">
                                     <ExternalLink size={12} /> Join
                                   </a>
                                 )}
@@ -1007,8 +1038,8 @@ export default function ApplicantsPage() {
                 )}
 
                 {/* Add round */}
-                <div className="mt-3 rounded-lg border border-dashed border-gray-200 p-3 dark:border-slate-700">
-                  <p className="mb-2 text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Add interview round</p>
+                <div className="mt-3 rounded-lg border border-dashed border-border p-3">
+                  <p className="mb-2 text-xs font-medium text-muted-foreground uppercase">Add interview round</p>
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                     <Input
                       className="col-span-2 md:col-span-2"
@@ -1071,7 +1102,7 @@ export default function ApplicantsPage() {
               <div className="flex gap-3 pt-4 border-t">
                 {selectedApplicant.status !== 'hired' && (
                   <Button 
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                    className="flex-1"
                     onClick={() => { openHireModal(selectedApplicant); }}
                   >
                     <UserPlus2 className="h-4 w-4 mr-2" />
@@ -1079,7 +1110,8 @@ export default function ApplicantsPage() {
                   </Button>
                 )}
                 <Button 
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  variant="outline"
+                  className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
                   onClick={() => { handleConsider(selectedApplicant); setSelectedApplicant(null); }}
                 >
                   <ThumbsUp className="h-4 w-4 mr-2" />
@@ -1114,7 +1146,7 @@ export default function ApplicantsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <PartyPopper className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <PartyPopper className="h-5 w-5 text-primary" />
                   Hire {selectedApplicant.candidateName || 'Candidate'}
                 </span>
                 <Button variant="ghost" size="sm" onClick={() => setShowHireModal(false)} disabled={hireLoading}>
@@ -1123,7 +1155,7 @@ export default function ApplicantsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-500/10 dark:text-blue-300">
+              <p className="rounded-md border border-primary/20 bg-primary/5 p-3 text-sm text-foreground dark:bg-primary/10">
                 This will mark the applicant as <strong>Hired</strong>, create their temporary portal account,
                 generate an onboarding record + draft offer letter, and email their login credentials.
               </p>
@@ -1176,7 +1208,7 @@ export default function ApplicantsPage() {
               </div>
               <div className="flex gap-3 pt-2">
                 <Button
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  className="flex-1"
                   disabled={hireLoading}
                   onClick={() => handleHire(selectedApplicant)}
                 >
@@ -1199,7 +1231,7 @@ export default function ApplicantsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <KeyRound className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <KeyRound className="h-5 w-5 text-primary" />
                   {credentialsResult.action === 'portal' ? 'Portal Access Granted' : credentialsResult.action === 'resend' ? 'Credentials Reset' : 'Candidate Hired'}
                 </span>
                 <Button variant="ghost" size="sm" onClick={() => setCredentialsResult(null)}>
@@ -1212,13 +1244,13 @@ export default function ApplicantsPage() {
                 Share these credentials with <strong>{credentialsResult.email}</strong>. They log in at the company login page with their email + this password.
               </p>
               {credentialsResult.password ? (
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:bg-blue-500/10">
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 dark:bg-primary/10">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-blue-700 uppercase dark:text-blue-300">Temporary Password</p>
+                    <p className="text-xs font-medium uppercase text-primary">Temporary Password</p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-blue-700 hover:bg-blue-100 dark:text-blue-300"
+                      className="h-7 px-2 text-xs text-primary hover:bg-primary/10"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(credentialsResult.password || '');

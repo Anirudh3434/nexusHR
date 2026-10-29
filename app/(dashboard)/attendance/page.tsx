@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search } from "lucide-react";
+import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { ModalPortal } from "../../../components/ui/ModalPortal";
 
 // Helper to format date
 const formatDate = (dateStr: string): string => {
@@ -63,6 +64,7 @@ export default function AttendancePage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [showCharts, setShowCharts] = useState(true);
 
   // Update current time every minute
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function AttendancePage() {
     if (user) {
       fetchData();
     }
-  }, [user]);
+  }, [user?.id, user?.companyId, user?.workShiftId]);
 
   const fetchData = async () => {
     try {
@@ -200,6 +202,40 @@ export default function AttendancePage() {
     }
   };
 
+  const handleExportCSV = () => {
+    const recordsToExport = filteredAttendance.length > 0 ? filteredAttendance : attendance;
+    if (recordsToExport.length === 0) {
+      addToast({ type: 'info', title: 'Export', description: 'No attendance records to export' });
+      return;
+    }
+    const headers = ['Date', 'Employee', 'Department', 'Status', 'Check In', 'Shift Start', 'Check Out', 'Hours', 'Overtime Hours'];
+    const rows = recordsToExport.map((log: any) => [
+      log.date || '',
+      log.employeeName || user?.name || '',
+      log.department || '',
+      log.status || '',
+      log.checkIn?.time || log.checkIn || '',
+      log.shiftStartTime || '',
+      log.checkOut?.time || log.checkOut || '',
+      log.totalHours || '',
+      log.overtimeHours || '0',
+    ]);
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `attendance_records_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const filteredAttendance = attendance.filter(log => {
     const matchesSearch = log.employeeName?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDate = filterDate ? log.date.includes(filterDate) : true;
@@ -210,7 +246,7 @@ export default function AttendancePage() {
   const StatusBadge = ({ status, isLate, isOvertime }: { status?: string; isLate?: boolean; isOvertime?: boolean }) => {
     if (isLate || status === 'Late') {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300">
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/15 dark:border-destructive/30">
           <AlertCircle className="h-3 w-3" />
           Late
         </span>
@@ -218,28 +254,60 @@ export default function AttendancePage() {
     }
     if (isOvertime) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400 dark:border-amber-500/30">
           <Clock className="h-3 w-3" />
           Overtime
         </span>
       );
     }
-    if (status === 'On Time') {
+    if (status === 'On Time' || status === 'Present') {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300">
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary border border-primary/20 dark:bg-primary/15 dark:border-primary/30">
           <CheckCircle className="h-3 w-3" />
-          On Time
+          {status}
         </span>
       );
     }
     return (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        status === 'Present' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300' : 'bg-gray-100 text-gray-800 dark:bg-slate-800 dark:text-slate-200'
-      }`}>
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-muted text-muted-foreground border border-border">
         {status || 'Not Marked'}
       </span>
     );
   };
+
+  // Computed analytics for graphical and pie chart visual
+  const totalLogs = attendance.length;
+  const presentCount = attendance.filter(a => a.status === 'Present' || a.status === 'On Time').length;
+  const lateCount = attendance.filter(a => a.status === 'Late' || a.isLate).length;
+  const halfDayCount = attendance.filter(a => a.status === 'Half Day').length;
+
+  const presentPercent = totalLogs > 0 ? Math.round((presentCount / totalLogs) * 100) : 0;
+  const latePercent = totalLogs > 0 ? Math.round((lateCount / totalLogs) * 100) : 0;
+  const halfDayPercent = totalLogs > 0 ? Math.round((halfDayCount / totalLogs) * 100) : 0;
+
+  // Pie chart stroke calculations (Circumference: 2 * Math.PI * 65 ≈ 408.4)
+  const c = 408.4;
+  const presentStroke = totalLogs > 0 ? (presentCount / totalLogs) * c : 0;
+  const lateStroke = totalLogs > 0 ? (lateCount / totalLogs) * c : 0;
+  const halfDayStroke = totalLogs > 0 ? (halfDayCount / totalLogs) * c : 0;
+
+  // 12-day trend calculations
+  const datesMap: Record<string, { date: string; displayDate: string; present: number; late: number; halfDay: number; total: number }> = {};
+  attendance.forEach(a => {
+    if (!a.date) return;
+    const d = new Date(a.date);
+    const key = d.toISOString().slice(0, 10);
+    const display = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    if (!datesMap[key]) {
+      datesMap[key] = { date: key, displayDate: display, present: 0, late: 0, halfDay: 0, total: 0 };
+    }
+    datesMap[key].total++;
+    if (a.status === 'Present' || a.status === 'On Time') datesMap[key].present++;
+    else if (a.status === 'Late' || a.isLate) datesMap[key].late++;
+    else if (a.status === 'Half Day') datesMap[key].halfDay++;
+  });
+  const trendDays = Object.values(datesMap).sort((a, b) => a.date.localeCompare(b.date)).slice(-12);
+  const maxDayTotal = Math.max(...trendDays.map(t => t.total), 1);
 
   if (loading) {
     return (
@@ -252,59 +320,68 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Attendance
-          </span>
-        }
-        description="Mark attendance and view your check-in records."
+        icon={<Clock />}
+        title="Attendance"
+        description="Mark attendance, inspect punctuality metrics, and view check-in logs."
         actions={
           hasRole(["admin", "hr"]) && (
-            <Button variant="outline">
-              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-              </svg>
-              Export CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowCharts(!showCharts)}>
+                <BarChart3 className="mr-1.5 h-4 w-4" />
+                {showCharts ? 'Hide Visuals' : 'Analytics & Charts'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                <Download className="mr-1.5 h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
           )
         }
       />
 
       {/* Self Check-in Card */}
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white dark:border-blue-500/30">
+      <Card className="rounded-[14px] border border-border bg-card shadow-xs">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                Today's Attendance
-              </h2>
-              <p className="text-gray-500 text-sm mt-1 dark:text-slate-400">
-                Current Time: <span className="font-mono font-medium">{currentTime}</span>
-                {userShift && (
-                  <span className="ml-2 text-blue-600 dark:text-blue-400">
-                    | Shift: {userShift.startTime} - {userShift.endTime}
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold tracking-tight text-foreground">
+                  Today's Attendance
+                </h2>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground mt-0.5">
+                  <span>
+                    Current Time: <span className="font-mono font-medium text-foreground">{currentTime}</span>
                   </span>
-                )}
-              </p>
+                  {userShift && (
+                    <>
+                      <span className="text-border">|</span>
+                      <span className="text-primary font-medium">
+                        Shift: {userShift.startTime} - {userShift.endTime}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
               {!todayAttendance?.checkIn ? (
                 <Button 
                   onClick={handleCheckIn} 
                   disabled={isCheckingIn}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="gap-2 font-medium"
                 >
-                  {isCheckingIn ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LogIn className="h-4 w-4 mr-2" />}
+                  {isCheckingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
                   Check In
                 </Button>
               ) : (
                 <div className="flex items-center gap-3">
-                  <div className="text-sm">
-                    <span className="text-gray-500 dark:text-slate-400">Checked in at:</span>
-                    <span className="font-mono font-medium ml-1">{todayAttendance.checkIn.time}</span>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Checked in at:</span>
+                    <span className="font-mono font-semibold text-foreground">{todayAttendance.checkIn.time}</span>
                     <StatusBadge status={todayAttendance.status} isLate={todayAttendance.isLate} />
                   </div>
                   
@@ -313,15 +390,15 @@ export default function AttendancePage() {
                       onClick={handleCheckOut} 
                       disabled={isCheckingOut}
                       variant="outline"
-                      className="border-orange-300 text-orange-700 hover:bg-orange-50 dark:text-orange-300"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/10 dark:border-destructive/30 gap-1.5"
                     >
-                      {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LogOut className="h-4 w-4 mr-2" />}
+                      {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
                       Check Out
                     </Button>
                   ) : (
                     <span className="text-sm">
-                      <span className="text-gray-500 dark:text-slate-400">Out:</span>
-                      <span className="font-mono font-medium ml-1">{todayAttendance.checkOut.time}</span>
+                      <span className="text-muted-foreground">Out:</span>
+                      <span className="font-mono font-semibold text-foreground ml-1">{todayAttendance.checkOut.time}</span>
                     </span>
                   )}
                 </div>
@@ -331,13 +408,13 @@ export default function AttendancePage() {
           
           {/* Late Warning */}
           {todayAttendance?.isLate && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 dark:bg-red-500/10 dark:border-red-500/30">
-              <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
+            <div className="mt-4 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                <p className="text-sm font-semibold text-destructive">
                   You were {todayAttendance.lateMinutes} minutes late today
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">
+                <p className="text-xs text-destructive/80 mt-0.5">
                   Shift starts at {todayAttendance.shiftStartTime || userShift?.startTime}. 
                   Try to arrive on time tomorrow!
                 </p>
@@ -347,13 +424,13 @@ export default function AttendancePage() {
           
           {/* On Time Success */}
           {todayAttendance?.status === 'On Time' && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2 dark:bg-green-500/10 dark:border-green-500/30">
-              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+            <div className="mt-4 p-3.5 bg-primary/10 border border-primary/20 rounded-xl flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                <p className="text-sm font-semibold text-primary">
                   Great job! You are on time today.
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Keep up the good work!
                 </p>
               </div>
@@ -362,13 +439,13 @@ export default function AttendancePage() {
           
           {/* Overtime Info */}
           {todayAttendance?.isOvertime && (
-            <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-start gap-2 dark:bg-purple-500/10 dark:border-purple-500/30">
-              <Clock className="h-5 w-5 text-purple-500 mt-0.5" />
+            <div className="mt-4 p-3.5 bg-muted/60 border border-border rounded-xl flex items-start gap-3">
+              <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-purple-800 dark:text-purple-300">
+                <p className="text-sm font-semibold text-foreground">
                   Overtime: {todayAttendance.overtimeHours} hours
                 </p>
-                <p className="text-xs text-purple-600 dark:text-purple-400">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {todayAttendance.isLate 
                     ? `You worked extra to compensate for being ${todayAttendance.lateMinutes} minutes late.`
                     : 'Great dedication! Extra hours worked beyond shift end.'}
@@ -379,6 +456,172 @@ export default function AttendancePage() {
         </CardContent>
       </Card>
 
+      {/* Graphical and Pie Chart Visuals Section */}
+      {showCharts && hasRole(["admin", "hr"]) && attendance.length > 0 && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="rounded-[14px] border border-border bg-card shadow-xs">
+              <CardContent className="p-4 flex items-center gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                  <CheckCircle className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold tracking-tight text-foreground font-display">{presentPercent}%</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">On-Time Rate</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[14px] border border-border bg-card shadow-xs">
+              <CardContent className="p-4 flex items-center gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold tracking-tight text-foreground font-display">{lateCount}</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Late Arrivals</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[14px] border border-border bg-card shadow-xs">
+              <CardContent className="p-4 flex items-center gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                  <Clock className="h-4 w-4 text-indigo-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold tracking-tight text-foreground font-display">{halfDayCount}</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Half-Day Records</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[14px] border border-border bg-card shadow-xs">
+              <CardContent className="p-4 flex items-center gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold tracking-tight text-foreground font-display">{totalLogs}</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Logs</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Visuals: Pie / Donut Chart & Daily Trend Bar Chart */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Pie / Donut Chart */}
+            <Card className="lg:col-span-5 rounded-[14px] border border-border bg-card shadow-xs">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <PieChartIcon className="h-4 w-4 text-primary" />
+                    Attendance Distribution
+                  </CardTitle>
+                  <span className="text-xs text-muted-foreground">Pie / Donut View</span>
+                </div>
+                <CardDescription>Overall breakdown by check-in status</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-around gap-4 py-2">
+                  <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 160 160" className="w-36 h-36 transform -rotate-90">
+                      <circle cx="80" cy="80" r="65" fill="none" stroke="currentColor" strokeWidth="22" className="text-muted/30" />
+                      {/* Present */}
+                      <circle cx="80" cy="80" r="65" fill="none" stroke="#10b981" strokeWidth="22"
+                        strokeDasharray={`${presentStroke} ${c}`} strokeDashoffset="0" className="transition-all duration-500" />
+                      {/* Late */}
+                      <circle cx="80" cy="80" r="65" fill="none" stroke="#f59e0b" strokeWidth="22"
+                        strokeDasharray={`${lateStroke} ${c}`} strokeDashoffset={String(-presentStroke)} className="transition-all duration-500" />
+                      {/* Half Day */}
+                      <circle cx="80" cy="80" r="65" fill="none" stroke="#6366f1" strokeWidth="22"
+                        strokeDasharray={`${halfDayStroke} ${c}`} strokeDashoffset={String(-(presentStroke + lateStroke))} className="transition-all duration-500" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-xl font-bold font-display text-foreground">{totalLogs}</span>
+                      <span className="text-[10px] uppercase font-semibold text-muted-foreground">Logs</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-xs w-full sm:w-auto">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 
+                        <span className="font-medium text-foreground">Present</span>
+                      </span>
+                      <span className="font-semibold text-foreground">{presentCount} ({presentPercent}%)</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 
+                        <span className="font-medium text-foreground">Late Arrivals</span>
+                      </span>
+                      <span className="font-semibold text-foreground">{lateCount} ({latePercent}%)</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> 
+                        <span className="font-medium text-foreground">Half Day</span>
+                      </span>
+                      <span className="font-semibold text-foreground">{halfDayCount} ({halfDayPercent}%)</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Daily Trend Graphical Bar Chart */}
+            <Card className="lg:col-span-7 rounded-[14px] border border-border bg-card shadow-xs">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    Daily Attendance Trends
+                  </CardTitle>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-emerald-500"></span> Present</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-amber-500"></span> Late</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-indigo-500"></span> Half Day</span>
+                  </div>
+                </div>
+                <CardDescription>Shift punctuality over recent workdays</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="h-36 w-full flex items-end gap-2 border-b border-border pb-2 pt-2">
+                  {trendDays.map((day) => {
+                    const pH = (day.present / maxDayTotal) * 100;
+                    const lH = (day.late / maxDayTotal) * 100;
+                    const hH = (day.halfDay / maxDayTotal) * 100;
+                    return (
+                      <div 
+                        key={day.date} 
+                        className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer" 
+                        title={`${day.displayDate}: ${day.present} Present, ${day.late} Late, ${day.halfDay} Half Day`}
+                      >
+                        <div className="w-full flex flex-col-reverse rounded-t overflow-hidden transition-all group-hover:opacity-80" style={{ height: '100%' }}>
+                          <div style={{ height: `${pH}%` }} className="bg-emerald-500"></div>
+                          <div style={{ height: `${lH}%` }} className="bg-amber-500"></div>
+                          <div style={{ height: `${hH}%` }} className="bg-indigo-500"></div>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground mt-1 truncate max-w-full font-mono">
+                          {day.displayDate.split(' ')[0]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                  <span>Daily Shift Volume (Max {maxDayTotal} records/day)</span>
+                  <span className="font-medium text-emerald-600">Avg {presentPercent}% On-Time</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Daily Log</CardTitle>
@@ -387,7 +630,7 @@ export default function AttendancePage() {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search by employee name..." 
                 className="pl-10"
@@ -421,8 +664,8 @@ export default function AttendancePage() {
                 <TableRow>
                   <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="text-center py-8">
                     <div className="flex justify-center items-center">
-                      <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
-                      <span className="ml-2 text-gray-500 dark:text-slate-400">Loading...</span>
+                      <Loader2 className="animate-spin h-5 w-5 text-muted-foreground" />
+                      <span className="ml-2 text-muted-foreground">Loading...</span>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -434,11 +677,11 @@ export default function AttendancePage() {
                     <StatusBadge status={todayAttendance?.status} isLate={todayAttendance?.isLate} isOvertime={todayAttendance?.isOvertime} />
                   </TableCell>
                   <TableCell>{todayAttendance?.checkIn?.time || '-'}</TableCell>
-                  <TableCell className="text-gray-500 dark:text-slate-400">{todayAttendance?.shiftStartTime || userShift?.startTime || '-'}</TableCell>
+                  <TableCell className="text-muted-foreground">{todayAttendance?.shiftStartTime || userShift?.startTime || '-'}</TableCell>
                   <TableCell>{todayAttendance?.checkOut?.time || '-'}</TableCell>
                   <TableCell className="text-right">
                     {todayAttendance?.isOvertime ? (
-                      <span className="text-purple-600 font-medium dark:text-purple-400">{todayAttendance?.totalHours} hrs (+{todayAttendance?.overtimeHours} OT)</span>
+                      <span className="text-amber-700 font-medium dark:text-amber-400">{todayAttendance?.totalHours} hrs (+{todayAttendance?.overtimeHours} OT)</span>
                     ) : (
                       <span>{todayAttendance?.totalHours || '-'} hrs</span>
                     )}
@@ -460,19 +703,19 @@ export default function AttendancePage() {
                       <TableCell className="font-medium">{formatDate(log.date)}</TableCell>
                       {hasRole(["admin", "hr"]) && (
                         <TableCell>
-                          <div className="font-medium text-gray-900 dark:text-slate-100">{log.employeeName}</div>
-                          <div className="text-xs text-gray-500 dark:text-slate-400">{log.department}</div>
+                          <div className="font-medium text-foreground">{log.employeeName}</div>
+                          <div className="text-xs text-muted-foreground">{log.department}</div>
                         </TableCell>
                       )}
                       <TableCell>
                         <StatusBadge status={log.status} isLate={log.isLate} isOvertime={log.isOvertime} />
                       </TableCell>
                       <TableCell>{checkInTime}</TableCell>
-                      <TableCell className="text-gray-500 dark:text-slate-400">{log.shiftStartTime || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground">{log.shiftStartTime || '-'}</TableCell>
                       <TableCell>{checkOutTime}</TableCell>
                       <TableCell className="text-right">
                         {log.isOvertime ? (
-                          <span className="text-purple-600 font-medium dark:text-purple-400">{log.totalHours} hrs (+{log.overtimeHours} OT)</span>
+                          <span className="text-amber-700 font-medium dark:text-amber-400">{log.totalHours} hrs (+{log.overtimeHours} OT)</span>
                         ) : (
                           <span>{log.totalHours ? `${log.totalHours} hrs` : calculateHours(checkInTime, checkOutTime)}</span>
                         )}
@@ -482,7 +725,7 @@ export default function AttendancePage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-blue-600 dark:text-blue-400"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                             onClick={() => setEditingRecord(log)}
                           >
                             <Edit className="h-4 w-4" />
@@ -490,7 +733,7 @@ export default function AttendancePage() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-red-600 dark:text-red-400"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                             onClick={() => handleDeleteRecord(log.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -506,88 +749,90 @@ export default function AttendancePage() {
         </CardContent>
       </Card>
 
-      {/* Edit Modal */}
+            {/* Edit Modal */}
       {editingRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b dark:border-gray-800">
-              <h3 className="font-bold text-lg">Edit Attendance</h3>
-              <Button variant="ghost" size="sm" onClick={() => setEditingRecord(null)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            
-            <form onSubmit={handleUpdateRecord} className="p-6 space-y-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-500 dark:text-slate-400">Employee</label>
-                <div className="font-semibold">{editingRecord.employeeName}</div>
+        <ModalPortal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div className="bg-card text-card-foreground border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="font-bold text-lg text-foreground">Edit Attendance</h3>
+                <Button variant="ghost" size="sm" onClick={() => setEditingRecord(null)}>
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Check In</label>
-                  <Input 
-                    type="time" 
-                    value={typeof editingRecord.checkIn === 'object' ? editingRecord.checkIn.time : editingRecord.checkIn || ''} 
-                    onChange={(e) => setEditingRecord({
-                      ...editingRecord,
-                      checkIn: { ...((editingRecord.checkIn as any) || {}), time: e.target.value }
-                    })}
-                  />
+              <form onSubmit={handleUpdateRecord} className="p-6 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground">Employee</label>
+                  <div className="font-semibold text-foreground">{editingRecord.employeeName}</div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Check Out</label>
-                  <Input 
-                    type="time" 
-                    value={typeof editingRecord.checkOut === 'object' ? editingRecord.checkOut.time : editingRecord.checkOut || ''} 
-                    onChange={(e) => setEditingRecord({
-                      ...editingRecord,
-                      checkOut: { ...((editingRecord.checkOut as any) || {}), time: e.target.value }
-                    })}
-                  />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Check In</label>
+                    <Input 
+                      type="time" 
+                      value={typeof editingRecord.checkIn === 'object' ? editingRecord.checkIn.time : editingRecord.checkIn || ''} 
+                      onChange={(e) => setEditingRecord({
+                        ...editingRecord,
+                        checkIn: { ...((editingRecord.checkIn as any) || {}), time: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Check Out</label>
+                    <Input 
+                      type="time" 
+                      value={typeof editingRecord.checkOut === 'object' ? editingRecord.checkOut.time : editingRecord.checkOut || ''} 
+                      onChange={(e) => setEditingRecord({
+                        ...editingRecord,
+                        checkOut: { ...((editingRecord.checkOut as any) || {}), time: e.target.value }
+                      })}
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status Override (Optional)</label>
-                <select 
-                  className="w-full h-10 px-3 py-2 bg-white dark:bg-gray-800 border rounded-md text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  value={editingRecord.status}
-                  onChange={(e) => setEditingRecord({ ...editingRecord, status: e.target.value as any })}
-                >
-                  <option value="Present">Present</option>
-                  <option value="Late">Late</option>
-                  <option value="On Time">On Time</option>
-                  <option value="Half Day">Half Day</option>
-                  <option value="Absent">Absent</option>
-                  <option value="Holiday">Holiday</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Work Mode</label>
-                <select 
-                  className="w-full h-10 px-3 py-2 bg-white dark:bg-gray-800 border rounded-md text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  value={editingRecord.workMode || 'office'}
-                  onChange={(e) => setEditingRecord({ ...editingRecord, workMode: e.target.value as any })}
-                >
-                  <option value="office">Office</option>
-                  <option value="wfh">Work From Home</option>
-                </select>
-              </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Status Override (Optional)</label>
+                  <select 
+                    className="w-full h-10 px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+                    value={editingRecord.status}
+                    onChange={(e) => setEditingRecord({ ...editingRecord, status: e.target.value as any })}
+                  >
+                    <option value="Present">Present</option>
+                    <option value="Late">Late</option>
+                    <option value="On Time">On Time</option>
+                    <option value="Half Day">Half Day</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Holiday">Holiday</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Work Mode</label>
+                  <select 
+                    className="w-full h-10 px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+                    value={editingRecord.workMode || 'office'}
+                    onChange={(e) => setEditingRecord({ ...editingRecord, workMode: e.target.value as any })}
+                  >
+                    <option value="office">Office</option>
+                    <option value="wfh">Work From Home</option>
+                  </select>
+                </div>
 
-              <div className="pt-4 flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => setEditingRecord(null)} type="button">
-                  Cancel
-                </Button>
-                <Button className="flex-1" disabled={isUpdating} type="submit">
-                  {isUpdating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  Save Changes
-                </Button>
-              </div>
-            </form>
+                <div className="pt-4 flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setEditingRecord(null)} type="button">
+                    Cancel
+                  </Button>
+                  <Button className="flex-1" disabled={isUpdating} type="submit">
+                    {isUpdating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

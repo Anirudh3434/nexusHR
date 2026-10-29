@@ -1,5 +1,13 @@
 const API_URL = '/api/settings';
 
+export type BrandingThemeSource = 'default' | 'logo' | 'custom';
+
+/**
+ * Fired after branding is saved so every mounted theme consumer can update
+ * immediately without requiring a page reload.
+ */
+export const BRANDING_UPDATED_EVENT = 'nexushr:branding-updated';
+
 export interface Settings {
   id?: string;
   companyId?: string;
@@ -7,6 +15,8 @@ export interface Settings {
   loginBackground?: string | null;
   loginBackgroundColor?: string;
   primaryColor?: string;
+  secondaryColor?: string | null;
+  themeSource?: BrandingThemeSource;
   loginTitle?: string;
   loginSubtitle?: string;
   updatedAt?: string;

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { 
   LogOut, Users, Clock, CheckCircle, XCircle, AlertCircle,
   Search, Calendar, MessageSquare, ExternalLink, FileText, 
@@ -165,12 +166,11 @@ export default function ResignationsPage() {
   return (
     <div className="p-5 space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Resignations</h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400">Manage employee resignation requests</p>
-        </div>
-      </div>
+      <PageHeader
+        icon={<LogOut />}
+        title="Resignations"
+        description="Manage employee resignation requests"
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

@@ -89,6 +89,7 @@ export default function DetailedPerformancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<Sparkles />}
         title={report.employeeId.name}
         description={`${report.employeeId.designation} • ${report.employeeId.department}`}
         actions={
