@@ -87,21 +87,6 @@ export default function CompanyPortalLogin() {
           if (res.ok && data.exists) {
             // Automatically redirect to remembered company portal using clean company name slug
             const targetSlug = data.company.slug || data.company.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || data.company.code;
-            if (typeof window !== "undefined") {
-              const host = window.location.hostname.toLowerCase();
-              const protocol = window.location.protocol;
-              const port = window.location.port ? `:${window.location.port}` : '';
-              if (host.includes('localhost') || host === '127.0.0.1') {
-                window.location.href = `${protocol}//${targetSlug}.localhost${port}/`;
-                return;
-              }
-              const parts = host.split('.');
-              if (parts.length >= 2) {
-                const root = parts.slice(-2).join('.');
-                window.location.href = `${protocol}//${targetSlug}.${root}${port}/`;
-                return;
-              }
-            }
             router.push(`/${targetSlug}`);
             return;
           }
@@ -204,27 +189,8 @@ export default function CompanyPortalLogin() {
           description: `Connected to ${data.company.name}! Entering portal...`,
         });
 
-        // 2-second hold on the success screen before entering workplace subdomain
+        // 2-second hold on the success screen before entering workplace portal
         setTimeout(() => {
-          if (typeof window !== "undefined") {
-            const host = window.location.hostname.toLowerCase();
-            const protocol = window.location.protocol;
-            const port = window.location.port ? `:${window.location.port}` : '';
-
-            // Subdomain routing for localhost (webatlas.localhost:3000)
-            if (host.includes('localhost') || host === '127.0.0.1') {
-              window.location.href = `${protocol}//${companySlug}.localhost${port}/`;
-              return;
-            }
-
-            // Subdomain routing for production (webatlas.nexus.com)
-            const parts = host.split('.');
-            if (parts.length >= 2) {
-              const root = parts.slice(-2).join('.');
-              window.location.href = `${protocol}//${companySlug}.${root}${port}/`;
-              return;
-            }
-          }
           router.push(`/${companySlug}`);
         }, 2000);
 

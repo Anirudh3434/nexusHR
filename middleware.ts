@@ -64,37 +64,9 @@ async function getVerifiedSession(request: NextRequest): Promise<VerifiedSession
   }
 }
 
-// Helper to extract company subdomain (e.g. webatlas.localhost:3000 -> webatlas)
+// Helper to extract company subdomain (disabled in favor of path routing e.g. /abaca)
 function getSubdomain(host: string): string | null {
-  if (!host) return null
-  const hostname = host.split(':')[0].toLowerCase()
-
-  // Localhost subdomain: e.g. webatlas.localhost
-  if (hostname.endsWith('.localhost')) {
-    const parts = hostname.split('.')
-    if (parts.length >= 2 && parts[0] !== 'localhost') {
-      return parts[0]
-    }
-    return null
-  }
-
-  // Vercel preview/production domains are not tenant subdomains.
-  // e.g. nexus-hr-udh9.vercel.app must serve the root app, not a tenant.
-  if (hostname.endsWith('.vercel.app')) {
-    return null
-  }
-
-  // Production domain: e.g. webatlas.nexus.com or webatlas.nexushr.com
-  const parts = hostname.split('.')
-  if (parts.length >= 3) {
-    const sub = parts[0]
-    const reserved = ['www', 'api', 'app', 'admin', 'candidate', 'mail', 'staging', 'dev']
-    if (!reserved.includes(sub)) {
-      return sub
-    }
-  }
-
-  return null
+  return null;
 }
 
 export async function middleware(request: NextRequest) {
