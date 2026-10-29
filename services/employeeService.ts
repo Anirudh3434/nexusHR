@@ -53,3 +53,37 @@ export const createEmployee = async (data: CreateEmployeeInput): Promise<{ messa
   }
   return response.json();
 };
+
+export const bulkImportEmployees = async (
+  employees: Array<{
+    employeeId?: string;
+    name: string;
+    email: string;
+    role?: string;
+    department?: string;
+    designation?: string;
+    phone?: string;
+    salary?: number;
+    joiningDate?: string;
+    password?: string;
+  }>,
+  companyId?: string
+): Promise<{
+  message: string;
+  total: number;
+  importedCount: number;
+  skippedCount: number;
+  errors: Array<{ row: number; email?: string; name?: string; reason: string }>;
+}> => {
+  const response = await fetch(`${API_URL}/bulk-import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ employees, companyId }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to bulk import employees');
+  }
+  return response.json();
+};
+

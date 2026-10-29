@@ -7,7 +7,7 @@ import { getLeaves, updateLeaveStatus, LeaveRequest } from "../../../services/le
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileClock } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 
@@ -27,7 +27,7 @@ export default function LeaveManagementPage() {
     if (user && hasRole(["admin", "hr"])) {
       fetchLeaves();
     }
-  }, [user]);
+  }, [user?.companyId, user?.role]);
 
   const fetchLeaves = async () => {
     try {
@@ -74,6 +74,7 @@ export default function LeaveManagementPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
+        icon={<FileClock />}
         title="Leave Management"
         description="Review and approve employee leave requests."
       />

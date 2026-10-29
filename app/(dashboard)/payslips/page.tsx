@@ -12,7 +12,8 @@ import {
   FileText,
   TrendingUp,
   TrendingDown,
-  Printer
+  Printer,
+  CircleDollarSign
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -28,7 +29,7 @@ export default function PayslipsPage() {
     if (user?.id) {
       fetchMyPayslips();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchMyPayslips = async () => {
     try {
@@ -50,6 +51,7 @@ export default function PayslipsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<CircleDollarSign />}
         title="My Payslips"
         description="View and download your monthly salary statements."
       />

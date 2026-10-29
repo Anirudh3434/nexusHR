@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
-import { getEmployees, Employee } from "../../../services/employeeService";
+import { getEmployees, bulkImportEmployees, Employee } from "../../../services/employeeService";
 import { getShifts, WorkShift } from "../../../services/shiftService";
 import { getDepartments, Department } from "../../../services/departmentService";
 import { getDesignations, Designation } from "../../../services/designationService";
@@ -16,7 +16,9 @@ import { Button } from "../../../components/ui/Button";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { Input } from "../../../components/ui/Input";
-import { X, Plus, Loader2, Users, Briefcase, DollarSign, Clock, Pencil, ChevronLeft, ChevronRight, Sun, Moon, MapPinOff } from "lucide-react";
+import { X, Plus, Loader2, Users, Briefcase, DollarSign, Clock, Pencil, ChevronLeft, ChevronRight, Sun, Moon, MapPinOff, Upload } from "lucide-react";
+import { CsvImportModal } from "../../../components/ui/CsvImportModal";
+import { EMPLOYEE_CSV_TEMPLATE, parseEmployeeCSV, ParsedEmployeeRow } from "../../../lib/csvUtils";
 
 export default function EmployeesPage() {
   const { user, loading, hasRole } = useAuth();
@@ -29,8 +31,9 @@ export default function EmployeesPage() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   
-  // Add Employee Modal
+  // Modals
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -73,7 +76,7 @@ export default function EmployeesPage() {
     if (user && hasRole(["admin", "hr"])) {
       fetchData();
     }
-  }, [user]);
+  }, [user?.companyId, user?.role]);
 
   const fetchData = async () => {
     try {
@@ -224,19 +227,21 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Employees
-          </span>
-        }
+        icon={<Users />}
+        title="Employees"
         description="Manage your workforce, assign shifts and salaries."
         actions={
-          user.role === "admin" && (
-            <Button onClick={() => setShowModal(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Employee
-            </Button>
+          (user.role === "admin" || user.role === "hr") && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setShowImportModal(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import CSV
+              </Button>
+              <Button onClick={() => setShowModal(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Employee
+              </Button>
+            </div>
           )
         }
       />
@@ -716,6 +721,84 @@ export default function EmployeesPage() {
           </div>
         </div>
       )}
+
+      {/* CSV Import Modal */}
+      <CsvImportModal<ParsedEmployeeRow>
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Import Employees from CSV"
+        description="Bulk onboard staff members, assign departments, roles, and compensation."
+        sampleFileName="employees_sample_template.csv"
+        sampleContent={EMPLOYEE_CSV_TEMPLATE}
+        rowParser={parseEmployeeCSV}
+        columns={[
+          {
+            header: "Employee ID",
+            accessor: (row) => <span className="font-mono text-slate-500">{row.employeeId || "—"}</span>,
+          },
+          {
+            header: "Full Name",
+            accessor: (row) => (
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {row.name || <span className="text-red-500 italic">Missing name</span>}
+              </span>
+            ),
+          },
+          {
+            header: "Email Address",
+            accessor: (row) => (
+              <span className="font-mono text-xs text-slate-600 dark:text-slate-300">
+                {row.email || <span className="text-red-500 italic">Missing email</span>}
+              </span>
+            ),
+          },
+          {
+            header: "Role",
+            accessor: (row) => (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 capitalize">
+                {row.role}
+              </span>
+            ),
+          },
+          {
+            header: "Department",
+            accessor: (row) => <span>{row.department || "—"}</span>,
+          },
+          {
+            header: "Designation",
+            accessor: (row) => <span>{row.designation || "—"}</span>,
+          },
+          {
+            header: "Salary",
+            accessor: (row) => <span>{row.salary ? formatCurrency(row.salary) : "—"}</span>,
+          },
+        ]}
+        onImport={async (validRows) => {
+          const res = await bulkImportEmployees(
+            validRows.map((r) => ({
+              employeeId: r.employeeId,
+              name: r.name,
+              email: r.email,
+              role: r.role,
+              department: r.department,
+              designation: r.designation,
+              phone: r.phone,
+              salary: r.salary,
+              joiningDate: r.joiningDate,
+              password: r.password,
+            })),
+            user?.companyId
+          );
+          addToast({
+            type: "success",
+            title: "Import Finished",
+            description: `${res.importedCount} employees onboarded successfully${res.skippedCount > 0 ? `, ${res.skippedCount} skipped` : ""}.`,
+          });
+          return res;
+        }}
+        onSuccess={() => fetchData()}
+      />
     </div>
   );
 }
+

@@ -53,7 +53,7 @@ export default function LeaveTypesPage() {
 
   useEffect(() => {
     if (user?.companyId) fetchLeaveTypes();
-  }, [user]);
+  }, [user?.companyId]);
 
   const fetchLeaveTypes = async () => {
     try {
@@ -139,12 +139,8 @@ export default function LeaveTypesPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Palmtree className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Leave Types
-          </span>
-        }
+        icon={<Palmtree />}
+        title="Leave Types"
         description="Define leave categories and default allocations for employees."
         actions={
           <>

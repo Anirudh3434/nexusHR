@@ -47,7 +47,7 @@ export function AttendanceSection({
       <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
           {companySettings.enableGeoFencing ? 
-            <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" /> : 
+            <MapPin className="h-5 w-5 text-primary" /> : 
             <MapPinOff className="h-5 w-5 text-gray-400" />
           }
           <div>
@@ -62,7 +62,7 @@ export function AttendanceSection({
             checked={companySettings.enableGeoFencing}
             onChange={(e) => setCompanySettings({...companySettings, enableGeoFencing: e.target.checked})}
           />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:bg-slate-700"></div>
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:bg-slate-700"></div>
         </label>
       </div>
 

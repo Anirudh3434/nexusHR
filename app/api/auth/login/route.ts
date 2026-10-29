@@ -8,6 +8,18 @@ import bcrypt from 'bcryptjs';
 import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS, getSessionCookieDomain, type SessionPayload } from '@/lib/auth';
 import { loginRateLimitHit, loginRateLimitClear } from '@/lib/rate-limit';
 
+interface LoginCompanyBranding {
+  name?: string;
+  logo?: string | null;
+}
+
+interface LoginSettingsBranding {
+  logo?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  themeSource?: string | null;
+}
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -96,7 +108,7 @@ export async function POST(req: Request) {
       name: user.name,
       isCandidate: !!user.isCandidate,
       mustChangePassword: !!user.mustChangePassword,
-      tv: (user as any).tokenVersion ?? 0,
+      tv: user.tokenVersion ?? 0,
       perms: user.companyId
         ? (await getEffectiveUserMap(user.companyId.toString(), user._id.toString(), user.role) as Record<string, string[]>)
         : undefined,
@@ -107,10 +119,16 @@ export async function POST(req: Request) {
     loginRateLimitClear(rateKey);
 
     // Filter out password from response
-    const company = user.companyId ? await Company.findById(user.companyId).select('name logo').lean() : null;
-    const settings = user.companyId ? await Settings.findOne({ companyId: user.companyId }).select('logo').lean() : null;
-    const resolvedLogo = (settings as any)?.logo || (company as any)?.logo || '';
-    const resolvedName = (company as any)?.name || '';
+    const company = (user.companyId
+      ? await Company.findById(user.companyId).select('name logo').lean()
+      : null) as LoginCompanyBranding | null;
+    const settings = (user.companyId
+      ? await Settings.findOne({ companyId: user.companyId })
+          .select('logo primaryColor secondaryColor themeSource')
+          .lean()
+      : null) as LoginSettingsBranding | null;
+    const resolvedLogo = settings?.logo || company?.logo || '';
+    const resolvedName = company?.name || '';
 
     const userResponse = {
       id: user._id,
@@ -123,6 +141,9 @@ export async function POST(req: Request) {
       companyId: user.companyId?.toString(),
       companyLogo: resolvedLogo,
       companyName: resolvedName,
+      companyPrimaryColor: settings?.primaryColor || undefined,
+      companySecondaryColor: settings?.secondaryColor || undefined,
+      companyThemeSource: settings?.themeSource || undefined,
       workShiftId: user.workShiftId?.toString(),
       salary: user.salary,
       employeeId: user.employeeId,
@@ -147,7 +168,7 @@ export async function POST(req: Request) {
     });
     return res;
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }

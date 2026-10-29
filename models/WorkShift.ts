@@ -30,6 +30,8 @@ const WorkShiftSchema = new Schema({
   timestamps: true,
 });
 
+WorkShiftSchema.index({ companyId: 1, name: 1 });
+
 const WorkShift = models.WorkShift || model('WorkShift', WorkShiftSchema);
 
 export default WorkShift;

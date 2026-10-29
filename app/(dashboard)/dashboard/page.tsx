@@ -33,8 +33,8 @@ const LiveLocationMap = dynamic(() => import("../../../components/dashboard/Live
    return `${h}:${String(minutes).padStart(2, '0')} ${ampm}`;
  };
 
-import WelcomeBriefingModal from "../../../components/WelcomeBriefingModal";
-import HRChatbot from "../../../components/ai/HRChatbot";
+const WelcomeBriefingModal = dynamic(() => import("../../../components/WelcomeBriefingModal"), { ssr: false });
+const HRChatbot = dynamic(() => import("../../../components/ai/HRChatbot"), { ssr: false });
 import {
   WorksuiteHeader,
   QuickMetricsBar,
@@ -147,7 +147,7 @@ export default function DashboardPage() {
       if (qrTimerRef.current) clearInterval(qrTimerRef.current);
       if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
     };
-  }, [user]);
+  }, [user?.id, user?.companyId]);
 
   // Conditional API polling: only poll when socket is disconnected
   useEffect(() => {
@@ -166,7 +166,7 @@ export default function DashboardPage() {
       clearInterval(statsIntervalRef.current);
       statsIntervalRef.current = null;
     }
-  }, [isConnected, user]);
+  }, [isConnected, user?.id]);
 
   // QR token refresh interval (always runs, independent of socket)
   useEffect(() => {
@@ -177,7 +177,7 @@ export default function DashboardPage() {
     return () => {
       if (qrTimerRef.current) clearInterval(qrTimerRef.current);
     };
-  }, [user]);
+  }, [user?.id, user?.companyId]);
 
   // Rejoin QR room on socket reconnect
   useEffect(() => {

@@ -8,6 +8,7 @@ import { cn } from "../../lib/utils";
 import {
   LayoutDashboard, FileText, ClipboardList, KeyRound, LogOut, Menu, X, Briefcase,
 } from "lucide-react";
+import { SmartLogoBadge } from "@/components/ui/SmartLogoBadge";
 
 export default function CandidatePortalLayout({
   children,
@@ -67,13 +68,11 @@ export default function CandidatePortalLayout({
       >
         <div className="flex h-18 items-center justify-between border-b border-indigo-100 px-4">
           <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div className="h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] shrink-0">
-              <img 
-                src={user.companyLogo || "/logo.png"} 
-                alt={user.companyName || 'Logo'} 
-                className="h-full w-full object-contain scale-110" 
-              />
-            </div>
+            <SmartLogoBadge 
+              src={user.companyLogo || "/logo.png"} 
+              alt={user.companyName || 'Logo'} 
+              className="h-12 w-12 p-1.5 shadow-sm border border-slate-200 shrink-0 dark:border-slate-700" 
+            />
             <div className="min-w-0">
               <h1 className="text-sm font-extrabold tracking-tight text-slate-900 truncate dark:text-slate-100">
                 {user.companyName || 'NexusHR'}
@@ -89,7 +88,7 @@ export default function CandidatePortalLayout({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3 sidebar-scroll">
           {navItems.map((item) => (
             <Link
               key={item.href}

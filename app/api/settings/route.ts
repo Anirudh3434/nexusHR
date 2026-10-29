@@ -6,6 +6,41 @@ import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
 
 const ADMIN_ROLES = ['super_admin', 'admin'];
+const DEFAULT_PRIMARY_COLOR = '#0f766e';
+const LEGACY_DEFAULT_PRIMARY = '#2563eb';
+const THEME_SOURCES = ['default', 'logo', 'custom'] as const;
+
+type ThemeSource = (typeof THEME_SOURCES)[number];
+
+function normalizeThemeSource(value: unknown): ThemeSource | undefined {
+  return THEME_SOURCES.includes(value as ThemeSource) ? (value as ThemeSource) : undefined;
+}
+
+/**
+ * Records created before `themeSource` existed still need to resolve
+ * correctly. Treat saved colors as custom, logo-only records as logo-driven,
+ * and everything else as the product default.
+ */
+function inferThemeSource(settings: {
+  themeSource?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  logo?: string | null;
+} | null): ThemeSource {
+  if (!settings) return 'default';
+
+  const explicit = normalizeThemeSource(settings.themeSource);
+  if (explicit) return explicit;
+
+  const primary = settings.primaryColor?.trim().toLowerCase();
+  if (settings.secondaryColor) return 'custom';
+  if (primary && primary !== LEGACY_DEFAULT_PRIMARY && primary !== DEFAULT_PRIMARY_COLOR) {
+    return 'custom';
+  }
+  if (settings.logo) return 'logo';
+
+  return 'default';
+}
 
 // GET settings for a company
 export async function GET(req: Request) {
@@ -15,7 +50,7 @@ export async function GET(req: Request) {
     const companyId = searchParams.get('companyId');
     const companySlug = searchParams.get('slug');
 
-    let query: any = {};
+    const query: Record<string, string> = {};
     if (companyId) query.companyId = companyId;
     
     // If no specific query, return first settings (for public login page)
@@ -32,7 +67,9 @@ export async function GET(req: Request) {
         logo: null,
         loginBackground: null,
         loginBackgroundColor: '#ffffff',
-        primaryColor: '#2563eb',
+        primaryColor: DEFAULT_PRIMARY_COLOR,
+        secondaryColor: null,
+        themeSource: 'default',
         loginTitle: 'Welcome Back',
         loginSubtitle: 'Sign in to your account',
       });
@@ -44,14 +81,19 @@ export async function GET(req: Request) {
       logo: settings.logo,
       loginBackground: settings.loginBackground,
       loginBackgroundColor: settings.loginBackgroundColor,
-      primaryColor: settings.primaryColor,
+      primaryColor: settings.primaryColor || DEFAULT_PRIMARY_COLOR,
+      secondaryColor: settings.secondaryColor || null,
+      themeSource: inferThemeSource(settings),
       loginTitle: settings.loginTitle,
       loginSubtitle: settings.loginSubtitle,
       updatedAt: settings.updatedAt,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Settings fetch error:', error);
-    return NextResponse.json({ message: 'Error fetching settings', error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Error fetching settings', error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -75,7 +117,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
     }
 
-    const { logo, loginBackground, loginBackgroundColor, primaryColor, loginTitle, loginSubtitle } = data;
+    const { logo, loginBackground, loginBackgroundColor, primaryColor, secondaryColor, loginTitle, loginSubtitle } = data;
+    const themeSource =
+      normalizeThemeSource(data.themeSource) ??
+      inferThemeSource({
+        logo,
+        primaryColor: primaryColor || DEFAULT_PRIMARY_COLOR,
+        secondaryColor,
+      });
     const updatedBy = auth.userId;
 
     // Find and update or create new
@@ -86,7 +135,11 @@ export async function POST(req: Request) {
         logo,
         loginBackground,
         loginBackgroundColor,
-        primaryColor,
+        // Never persist an empty primary color: it is the token used by every
+        // themed surface, so fall back to the product default instead.
+        primaryColor: primaryColor || DEFAULT_PRIMARY_COLOR,
+        secondaryColor: secondaryColor || null,
+        themeSource,
         loginTitle,
         loginSubtitle,
         updatedBy,
@@ -105,13 +158,18 @@ export async function POST(req: Request) {
         logo: settings.logo,
         loginBackground: settings.loginBackground,
         loginBackgroundColor: settings.loginBackgroundColor,
-        primaryColor: settings.primaryColor,
+        primaryColor: settings.primaryColor || DEFAULT_PRIMARY_COLOR,
+        secondaryColor: settings.secondaryColor || null,
+        themeSource: inferThemeSource(settings),
         loginTitle: settings.loginTitle,
         loginSubtitle: settings.loginSubtitle,
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Settings update error:', error);
-    return NextResponse.json({ message: 'Error updating settings', error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Error updating settings', error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }

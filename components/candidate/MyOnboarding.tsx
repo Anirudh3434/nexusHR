@@ -7,7 +7,8 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { UserRoundPlus, ClipboardList, FolderOpen, FileText, ArrowRight } from "lucide-react";
+import { UserRoundPlus, ClipboardList, FolderOpen, FileText, ArrowRight, UserPlus2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const statusMeta: Record<string, { label: string; classes: string }> = {
   draft: { label: "Draft", classes: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
@@ -51,10 +52,11 @@ export default function MyOnboarding() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Onboarding</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400">Complete your onboarding: accept the offer, upload documents and finish your tasks.</p>
-      </div>
+      <PageHeader
+        icon={<UserPlus2 />}
+        title="My Onboarding"
+        description="Complete your onboarding: accept the offer, upload documents and finish your tasks."
+      />
 
       {records.length === 0 ? (
         <Card>

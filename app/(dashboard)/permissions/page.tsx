@@ -380,7 +380,7 @@ export default function PermissionsPage() {
   if (!canManage) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Roles & Permissions" />
+        <PageHeader icon={<ShieldAlert />} title="Roles & Permissions" />
         <Card>
           <CardContent className="flex items-center gap-3 p-6">
             <Lock className="h-5 w-5 text-muted-foreground" />
@@ -394,6 +394,7 @@ export default function PermissionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<ShieldAlert />}
         title="Roles & Permissions"
         description="Set what each role can do, then fine-tune access for individual employees. Changes apply on next sign-in."
         actions={

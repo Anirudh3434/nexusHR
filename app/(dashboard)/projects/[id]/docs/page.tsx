@@ -21,6 +21,7 @@ import {
   Vault,
   ArrowLeft
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import DocumentsSection from "@/components/projects/docs/DocumentsSection";
@@ -75,15 +76,11 @@ export default function ProjectDocsPage() {
               <span>Back to Board</span>
             </button>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
-                <Vault className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight dark:text-slate-100">Vault</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Centralized documentation and resources</p>
-              </div>
-            </div>
+            <PageHeader
+              icon={<Vault />}
+              title="Vault"
+              description="Centralized documentation and resources"
+            />
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">

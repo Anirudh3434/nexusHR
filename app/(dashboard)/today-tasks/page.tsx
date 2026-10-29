@@ -21,6 +21,7 @@ import {
   Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 interface AssignedTask {
   _id: string;
@@ -481,57 +482,50 @@ export default function TodayTasksPage() {
   return (
     <div className="space-y-6 mx-auto pb-12 font-sans">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-700">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm dark:bg-indigo-500/10 dark:text-indigo-400">
-            <CheckSquare className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-800 tracking-tight dark:text-slate-200">Today Task & EOD Status</h1>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">
-              {isAdminView 
-                ? 'Review submitted employee daily task plans and EOD status updates across the company'
-                : 'Plan your daily task completion estimates and submit EOD progress directly to management'
-              }
-            </p>
-          </div>
-        </div>
-
-        {/* Date Selector & Tab Control */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <input 
-              type="date" 
-              value={date} 
-              onChange={(e) => setDate(e.target.value)} 
-              className="bg-transparent border-none focus:outline-none text-xs font-semibold text-slate-800 dark:text-slate-200"
-            />
-          </div>
-
-          {!isAdminView && companyReports.length > 0 && (
-            <div className="flex bg-slate-100 p-1 rounded-xl gap-1 dark:bg-slate-800">
-              <button
-                onClick={() => setActiveTab('my_tasks')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'my_tasks' ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-900 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
-                }`}
-              >
-                My Today Task
-              </button>
-              <button
-                onClick={() => setActiveTab('team_eod')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                  activeTab === 'team_eod' ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-900 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Team EOD Reports ({companyReports.length})
-              </button>
+      <PageHeader
+        icon={<CheckSquare />}
+        title="Today Task & EOD Status"
+        description={
+          isAdminView
+            ? 'Review submitted employee daily task plans and EOD status updates across the company'
+            : 'Plan your daily task completion estimates and submit EOD progress directly to management'
+        }
+        actions={
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <input 
+                type="date" 
+                value={date} 
+                onChange={(e) => setDate(e.target.value)} 
+                className="bg-transparent border-none focus:outline-none text-xs font-semibold text-slate-800 dark:text-slate-200"
+              />
             </div>
-          )}
-        </div>
-      </div>
+
+            {!isAdminView && companyReports.length > 0 && (
+              <div className="flex bg-slate-100 p-1 rounded-xl gap-1 dark:bg-slate-800">
+                <button
+                  onClick={() => setActiveTab('my_tasks')}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    activeTab === 'my_tasks' ? 'bg-white text-primary shadow-sm dark:bg-slate-900' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  My Today Task
+                </button>
+                <button
+                  onClick={() => setActiveTab('team_eod')}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                    activeTab === 'team_eod' ? 'bg-white text-primary shadow-sm dark:bg-slate-900' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Team EOD Reports ({companyReports.length})
+                </button>
+              </div>
+            )}
+          </div>
+        }
+      />
 
       {activeTab === 'my_tasks' && !isAdminView ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -642,7 +636,7 @@ export default function TodayTasksPage() {
                       size="sm"
                       onClick={() => handleSubmitReport('submit')}
                       disabled={submitting || pickedItems.length === 0}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-100"
+                      className="text-xs font-semibold"
                     >
                       {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Send className="w-3.5 h-3.5 mr-1" />}
                       {managerApproval === 'changes_requested' ? 'Re-submit to Manager' : 'Submit to Manager'}
@@ -655,7 +649,7 @@ export default function TodayTasksPage() {
                       size="sm"
                       onClick={() => handleSubmitReport('save_draft')}
                       disabled={submitting}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-100 flex items-center gap-1"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-xl shadow-md shadow-primary/20 flex items-center gap-1"
                     >
                       {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                       Save EOD Status
@@ -733,7 +727,7 @@ export default function TodayTasksPage() {
                         size="sm"
                         onClick={() => reportId && handleAddComment(reportId, newComment)}
                         disabled={!newComment.trim()}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+                        className="text-xs"
                       >
                         Send
                       </Button>
@@ -1096,7 +1090,7 @@ export default function TodayTasksPage() {
               <Button
                 onClick={() => handleSubmitReport('submit')}
                 disabled={!employeeComment.trim() || submitting}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
+                className="flex-1 text-sm"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                 Submit with Comment

@@ -155,17 +155,13 @@ export default function OvertimePage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
-        title={
-          <span className="inline-flex items-center gap-3">
-            <Clock className="text-blue-600 dark:text-blue-400" size={32} />
-            Overtime Management
-          </span>
-        }
+        icon={<Clock />}
+        title="Overtime Management"
         description="Review and record extra working hours for your team."
         actions={
           <Button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 gap-2 h-11 px-6 rounded-xl"
+            className="gap-2"
           >
             <Plus size={18} /> Record Manual OT
           </Button>
@@ -174,10 +170,10 @@ export default function OvertimePage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-sm bg-blue-50 dark:bg-blue-900/10">
+        <Card className="border border-primary/20 shadow-xs bg-primary/5 dark:bg-primary/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
+              <div className="p-3 bg-primary/15 rounded-xl text-primary">
                 <Clock size={24} />
               </div>
               <div>
@@ -443,8 +439,8 @@ export default function OvertimePage() {
                 </div>
 
                 <div className="pt-4 flex gap-3">
-                  <Button type="button" variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setShowModal(false)}>Cancel</Button>
-                  <Button type="submit" className="flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white" disabled={isSubmitting}>
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowModal(false)}>Cancel</Button>
+                  <Button type="submit" className="flex-1" disabled={isSubmitting}>
                     {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Record Overtime'}
                   </Button>
                 </div>

@@ -9,7 +9,14 @@ import { getSettings, Settings } from "@/services/settingsService";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { Building2, Lock, Mail, Eye, EyeOff, Loader2, ArrowLeft, AlertCircle } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, Loader2, ArrowLeft, AlertCircle, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+import { SmartLogoBadge } from "@/components/ui/SmartLogoBadge";
+import {
+  generatePaletteFromColor,
+  getBrandColorsFromSettings,
+  extractTwoMajorLogoColors,
+} from "@/lib/imageUtils";
 
 interface CompanyInfo {
   id: string;
@@ -25,6 +32,7 @@ export default function CompanyLoginPage() {
   const companySlug = params.companySlug as string;
   const { login } = useAuth();
   const { addToast } = useToast();
+  const { theme, toggleTheme, mounted } = useTheme();
   
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -35,6 +43,11 @@ export default function CompanyLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [logoFallback, setLogoFallback] = useState<{
+    primary: string;
+    secondary: string;
+    logo: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchCompanyInfo();
@@ -45,6 +58,36 @@ export default function CompanyLoginPage() {
       fetchSettings();
     }
   }, [company]);
+
+  // Compatibility for records saved before `themeSource` existed: those
+  // records can still be logo-driven even though their stored primary color
+  // is the old default blue. New/custom themes never hit this path.
+  useEffect(() => {
+    const logo = settings?.logo || company?.logo;
+    const primary = settings?.primaryColor?.toLowerCase();
+    const needsLogoFallback =
+      settings?.themeSource === 'logo' &&
+      !settings?.secondaryColor &&
+      (!primary || primary === '#2563eb');
+
+    if (!needsLogoFallback || !logo) return;
+
+    let isCancelled = false;
+    extractTwoMajorLogoColors(logo).then((colors) => {
+      if (isCancelled || !colors) return;
+      setLogoFallback({ ...colors, logo });
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    settings?.themeSource,
+    settings?.primaryColor,
+    settings?.secondaryColor,
+    settings?.logo,
+    company?.logo,
+  ]);
 
   const fetchCompanyInfo = async () => {
     try {
@@ -140,58 +183,111 @@ export default function CompanyLoginPage() {
     );
   }
 
-  // Get branding values from settings or defaults
+  // Get branding values from settings or defaults.
+  // Saved settings are authoritative here too: the logo is only a fallback
+  // color source in CompanyThemeSync, never a replacement for a chosen theme.
   const logoUrl = settings?.logo || company.logo;
-  const primaryColor = settings?.primaryColor || '#2563eb';
+  const legacyNeedsLogoFallback =
+    settings?.themeSource === 'logo' &&
+    !settings?.secondaryColor &&
+    (!settings?.primaryColor || settings.primaryColor.toLowerCase() === '#2563eb');
+  const resolvedBrand =
+    legacyNeedsLogoFallback && logoFallback && logoFallback.logo === logoUrl
+      ? logoFallback
+      : getBrandColorsFromSettings(settings);
+  const { primary: primaryColor, secondary: secondaryColor } = resolvedBrand;
+  const palette = generatePaletteFromColor(primaryColor, secondaryColor);
   const loginTitle = settings?.loginTitle || 'Welcome Back';
   const loginSubtitle = settings?.loginSubtitle || `Sign in to ${company.name}`;
   const bgImage = settings?.loginBackground;
-  const bgColor = settings?.loginBackgroundColor || '#f9fafb';
+  const rawBgColor = settings?.loginBackgroundColor;
+  const isDefaultBg = !rawBgColor || 
+    rawBgColor.toLowerCase() === '#ffffff' || 
+    rawBgColor.toLowerCase() === '#f9fafb' ||
+    rawBgColor.toLowerCase() === '#fff';
+
+  // Scope brand tokens to this page so the login form always matches the
+  // selected branding, even when no authenticated user is present yet.
+  const brandStyle = {
+    backgroundColor: bgImage ? 'transparent' : (!isDefaultBg ? rawBgColor : undefined),
+    backgroundImage: bgImage ? `url(${bgImage})` : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    "--primary": palette.primary,
+    "--primary-foreground": palette.textOnPrimary,
+    "--secondary": palette.secondary,
+    "--secondary-foreground": palette.textOnSecondary,
+    "--accent": palette.primaryLight,
+    "--accent-foreground": palette.primary,
+    "--ring": palette.primary,
+    "--brand-primary": palette.primary,
+    "--brand-secondary": palette.secondary,
+    "--brand-primary-glow": palette.primaryGlow,
+  } as React.CSSProperties;
 
   return (
     <div 
-      className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden"
-      style={{
-        backgroundColor: bgImage ? 'transparent' : bgColor,
-        backgroundImage: bgImage ? `url(${bgImage})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
+      className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300"
+      style={brandStyle}
     >
+      {/* Theme toggle in top right */}
+      <div className="absolute top-4 right-4 z-20">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:scale-105 active:scale-95 transition-all backdrop-blur-md"
+          title={!mounted ? "Toggle theme" : theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+          aria-label="Toggle theme"
+        >
+          {!mounted ? (
+            <span className="block h-4 w-4" aria-hidden />
+          ) : theme === "light" ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
+        </button>
+      </div>
+
       {/* Decorative ambient glows if no custom background image */}
-      {!bgImage && (
+      {!bgImage && isDefaultBg && (
         <>
-          <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl pointer-events-none" />
+          <div
+            className="absolute -top-40 -left-40 h-96 w-96 rounded-full blur-3xl pointer-events-none"
+            style={{ backgroundColor: palette.primaryLight }}
+          />
+          <div
+            className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full blur-3xl pointer-events-none"
+            style={{ backgroundColor: palette.secondaryLight }}
+          />
         </>
       )}
 
       <div className="relative w-full max-w-md">
         {/* Company Header */}
         <div className="text-center mb-8">
-          {logoUrl ? (
-            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-[#03081c] p-2.5 shadow-2xl shadow-[#03081c]/30 border border-[#03081c] transition-transform hover:scale-105 duration-300">
-              <img 
-                src={logoUrl} 
-                alt={company.name} 
-                className="h-full w-full object-contain scale-105"
-              />
-            </div>
-          ) : (
-            <div 
-              className="h-20 w-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl text-white"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <Building2 className="h-10 w-10" />
-            </div>
-          )}
+          <div className="mx-auto mb-4 flex justify-center">
+            <SmartLogoBadge
+              src={logoUrl}
+              alt={company.name}
+              className="h-24 w-24 p-3 shadow-xl shadow-slate-900/10 border border-slate-200/80 transition-transform hover:scale-105 duration-300 dark:border-slate-700"
+              fallbackBg={primaryColor}
+            />
+          </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{loginTitle}</h1>
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 mt-1 dark:text-indigo-400">{company.name}</p>
-          <p className="text-sm text-slate-500 mt-0.5 dark:text-slate-400">{loginSubtitle}</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-primary mt-1">{company.name}</p>
+          <p className="text-sm text-slate-600 mt-0.5 dark:text-slate-300 font-medium">{loginSubtitle}</p>
         </div>
 
         {/* Login Card */}
-        <Card className="bg-white/95 backdrop-blur-xl shadow-2xl shadow-indigo-500/10 border-slate-200/80 rounded-2xl dark:bg-slate-900 dark:border-slate-700">
+        <Card className="bg-white/95 backdrop-blur-xl shadow-2xl shadow-[0_20px_60px_-25px_var(--brand-primary-glow)] border-slate-200/80 rounded-2xl overflow-hidden dark:bg-slate-900 dark:border-slate-700">
+          {/* Secondary brand accent */}
+          <div
+            className="h-1 w-full"
+            style={{
+              background: `linear-gradient(90deg, ${palette.primary}, ${palette.secondary})`,
+            }}
+          />
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Employee Sign In
@@ -245,8 +341,7 @@ export default function CompanyLoginPage() {
 
               <Button 
                 type="submit" 
-                className="w-full h-11 rounded-xl text-white font-bold shadow-lg transition-all mt-2"
-                style={{ backgroundColor: primaryColor }}
+                className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90 shadow-[0_10px_30px_-10px_var(--brand-primary-glow)] transition-all mt-2"
                 disabled={isLoggingIn}
               >
                 {isLoggingIn ? (
@@ -285,7 +380,7 @@ export default function CompanyLoginPage() {
                   }
                   router.push("/login?switch=true");
                 }}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline transition-colors dark:text-slate-400"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-primary hover:underline transition-colors dark:text-slate-400"
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Switch Organization (Enter Different ID)
               </button>
@@ -294,8 +389,8 @@ export default function CompanyLoginPage() {
         </Card>
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-400 mt-8">
-          Powered by <span className="font-semibold text-slate-600 dark:text-slate-400">NexusHR Enterprise</span>
+        <p className="text-center text-xs text-slate-400 mt-8 dark:text-slate-500">
+          Powered by <span className="font-semibold text-slate-600 dark:text-slate-300">NexusHR Enterprise</span>
         </p>
       </div>
     </div>

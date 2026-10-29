@@ -3,11 +3,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { FileBarChart2 } from "lucide-react";
 
 export default function ReportsPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Reports" />
+      <PageHeader icon={<FileBarChart2 />} title="Reports" />
       <Card>
         <CardHeader>
           <CardTitle>Organizational Reports</CardTitle>

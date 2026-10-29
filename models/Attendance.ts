@@ -111,6 +111,11 @@ const AttendanceSchema = new Schema({
   timestamps: true,
 });
 
+AttendanceSchema.index({ companyId: 1, date: -1 });
+AttendanceSchema.index({ employeeId: 1, date: -1 });
+AttendanceSchema.index({ companyId: 1, status: 1 });
+AttendanceSchema.index({ employeeId: 1, companyId: 1, date: 1 });
+
 const Attendance = models.Attendance || model('Attendance', AttendanceSchema);
 
 export default Attendance;

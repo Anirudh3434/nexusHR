@@ -11,7 +11,7 @@ import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   KanbanSquare, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
-  AlertCircle, Play, Pause, Square, GripVertical, X, CornerDownRight, Link2, Loader2
+  AlertCircle, Play, Pause, Square, GripVertical, X, CornerDownRight, Link2, Loader2, CheckSquare
 } from "lucide-react";
 
 interface TaskItem {
@@ -675,6 +675,7 @@ export default function TasksManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={<CheckSquare />}
         title="Tasks"
         description="Manage project tasks"
         actions={
@@ -1309,7 +1310,7 @@ export default function TasksManagementPage() {
                   </Button>
                   <Button 
                     onClick={handleCreateTask}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
+                    className="text-xs font-bold"
                     disabled={!formData.projectId || !formData.title}
                   >
                     Create Issue
@@ -1871,7 +1872,7 @@ export default function TasksManagementPage() {
                   </Button>
                   <Button 
                     onClick={handleUpdateTask}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
+                    className="text-xs font-bold"
                   >
                     Save Changes
                   </Button>

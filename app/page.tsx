@@ -298,11 +298,11 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] transition-transform group-hover:scale-105 shrink-0">
+              <div className="h-12 w-12 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] transition-transform group-hover:scale-105 shrink-0 overflow-hidden">
                 <img 
                   src="/logo.png" 
                   alt="NexusHR Logo" 
-                  className="h-full w-full object-contain scale-110" 
+                  className="h-full w-full object-contain" 
                 />
               </div>
               <div className="flex flex-col">
@@ -765,11 +765,11 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] shrink-0">
+                <div className="h-11 w-11 rounded-full bg-[#03081c] flex items-center justify-center p-1.5 shadow-sm border border-[#03081c] shrink-0 overflow-hidden">
                   <img 
                     src="/logo.png" 
                     alt="NexusHR Logo" 
-                    className="h-full w-full object-contain scale-110" 
+                    className="h-full w-full object-contain" 
                   />
                 </div>
                 <span className="text-sm font-bold text-slate-900 dark:text-slate-100">NexusHR</span>

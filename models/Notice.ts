@@ -40,6 +40,8 @@ const NoticeSchema = new Schema({
   timestamps: true,
 });
 
+NoticeSchema.index({ companyId: 1, isActive: 1, createdAt: -1 });
+
 const Notice = models.Notice || model('Notice', NoticeSchema);
 
 export default Notice;

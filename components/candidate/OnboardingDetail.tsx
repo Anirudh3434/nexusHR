@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/Input";
 import {
   ArrowLeft, LayoutDashboard, FileText, ClipboardList, FolderOpen,
   Send, CheckCircle2, XCircle, Pencil, Trash2, Upload,
-  Eye, Plus, RefreshCw
+  Eye, Plus, RefreshCw, UserPlus2
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const statusMeta: Record<string, { label: string; classes: string }> = {
   draft: { label: "Draft", classes: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
@@ -363,15 +364,16 @@ export default function OnboardingDetail() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
           <Button variant="outline" size="icon" onClick={() => router.back()}><ArrowLeft size={16} /></Button>
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">{record.candidate.fullName}</h1>
-              <Badge className={meta.classes}>{meta.label}</Badge>
-            </div>
-            <p className="text-sm text-gray-500 dark:text-slate-400">
-              {record.candidate.position || 'Position TBD'}{record.candidate.department && ` · ${record.candidate.department}`}
-            </p>
-          </div>
+          <PageHeader
+            icon={<UserPlus2 />}
+            title={
+              <span className="flex flex-wrap items-center gap-2">
+                {record.candidate.fullName}
+                <Badge className={meta.classes}>{meta.label}</Badge>
+              </span>
+            }
+            description={`${record.candidate.position || 'Position TBD'}${record.candidate.department ? ` · ${record.candidate.department}` : ''}`}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="mr-2 w-32">

@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { 
   LogOut, Calendar, Clock, AlertCircle, CheckCircle, 
   FileText, XCircle, ChevronDown, ChevronUp, Info
@@ -208,10 +209,11 @@ export default function MyResignationPage() {
   return (
     <div className="p-5 space-y-5 max-w-3xl mx-auto">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Resignation Portal</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400">Submit or manage your resignation request</p>
-      </div>
+      <PageHeader
+        icon={<LogOut />}
+        title="Resignation Portal"
+        description="Submit or manage your resignation request"
+      />
 
       {/* No Active Resignation - Show Submit Form */}
       {!myResignation || (myResignation.status !== 'pending' && myResignation.status !== 'under_review' && myResignation.status !== 'approved') ? (

@@ -68,11 +68,11 @@ export default function CandidateLoginPage() {
           <div className="relative mx-auto mb-4 inline-block group">
             {/* Soft outer glow */}
             <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-purple-400/30 via-indigo-400/20 to-teal-400/30 opacity-70 blur-lg group-hover:opacity-100 transition duration-500 group-hover:scale-110" />
-            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-2xl shadow-slate-900/20 ring-4 ring-white border border-[#03081c] transition-transform duration-300 group-hover:scale-105">
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-2xl shadow-slate-900/20 ring-4 ring-white border border-[#03081c] transition-transform duration-300 group-hover:scale-105 overflow-hidden">
               <img 
                 src="/logo.png" 
                 alt="NexusHR Logo" 
-                className="h-full w-full object-contain scale-110" 
+                className="h-full w-full object-contain" 
               />
             </div>
           </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from "react";
 
 type Role = 'admin' | 'hr' | 'manager' | 'employee';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -15,6 +15,9 @@ interface User {
   companyId?: string;
   companyLogo?: string;
   companyName?: string;
+  companyPrimaryColor?: string;
+  companySecondaryColor?: string;
+  companyThemeSource?: 'default' | 'logo' | 'custom';
   workShiftId?: string;
   salary?: number;
   employeeId?: string;
@@ -51,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> => {
+  const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> => {
     setLoading(true);
     try {
       const response = await fetch('/api/auth/login', {
@@ -80,15 +83,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Persist an updated user object (e.g. after changing password clears the flag)
-  const updateUser = (updated: User) => {
-    setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
-  };
+  // Persist an updated user object with equality guard to prevent render loops
+  const updateUser = useCallback((updated: User) => {
+    setUser((prev) => {
+      if (!prev) return updated;
+      const keys = Object.keys(updated) as (keyof User)[];
+      const hasChanged = keys.some((k) => prev[k] !== updated[k]);
+      if (!hasChanged) return prev; // Avoid unnecessary re-renders if nothing changed
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -98,15 +107,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  };
+  }, []);
 
-  const hasRole = (allowedRoles: Role[]) => {
+  const hasRole = useCallback((allowedRoles: Role[]) => {
     if (!user) return false;
     return allowedRoles.includes(user.role);
-  };
+  }, [user]);
+
+  const contextValue = useMemo(
+    () => ({ user, loading, login, logout, hasRole, updateUser }),
+    [user, loading, login, logout, hasRole, updateUser]
+  );
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole, updateUser }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

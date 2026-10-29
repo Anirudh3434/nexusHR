@@ -42,7 +42,7 @@ export default function HolidaysPage() {
     if (user?.companyId) {
       fetchHolidays();
     }
-  }, [user, currentYear]);
+  }, [user?.companyId, currentYear]);
 
   const fetchHolidays = async () => {
     try {
@@ -233,12 +233,8 @@ export default function HolidaysPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Holiday Calendar
-          </span>
-        }
+        icon={<Calendar />}
+        title="Holiday Calendar"
         description="View company holidays and plan your year"
         actions={
           <>
@@ -290,7 +286,7 @@ export default function HolidaysPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{companyHolidays}</div>
+            <div className="text-2xl font-bold text-primary">{companyHolidays}</div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Company Holidays</p>
           </CardContent>
         </Card>
