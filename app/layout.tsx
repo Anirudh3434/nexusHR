@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Source_Sans_3, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../context/ThemeContext";
@@ -132,7 +133,9 @@ export default function RootLayout({
     <html lang="en" className={`${sourceSans3.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning className={`${sourceSans3.className} bg-background text-foreground min-h-screen transition-colors`}>
         {/* Set .dark + color-scheme before first paint to avoid a light flash */}
-        <script
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var k='hrm-theme';var s=localStorage.getItem(k);var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d){r.classList.add('dark')}else{r.classList.remove('dark')}r.style.colorScheme=d?'dark':'light';}catch(e){}})();`,
           }}

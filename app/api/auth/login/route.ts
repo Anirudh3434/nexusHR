@@ -23,7 +23,7 @@ interface LoginSettingsBranding {
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { email, password } = await req.json();
+    const { email, password, companyId: expectedCompanyId, candidateOnly, superAdminOnly } = await req.json();
 
     if (typeof email !== 'string' || !email || !password) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
@@ -41,6 +41,9 @@ export async function POST(req: Request) {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
+      if (expectedCompanyId || candidateOnly) {
+        return NextResponse.json({ message: "This account does not belong to this company's portal." }, { status: 403 });
+      }
       // Platform administrators live in a separate collection.
       const platform = await SuperAdmin.findOne({ email: email.toLowerCase() }).select('+password');
       if (!platform || !platform.isActive) {
@@ -88,8 +91,22 @@ export async function POST(req: Request) {
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
+    if (superAdminOnly) {
+      return NextResponse.json({ message: 'This sign-in is reserved for platform super admins.' }, { status: 403 });
+    }
+
     if (!isMatch) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    }
+
+    if (expectedCompanyId) {
+      if (!user.companyId || user.companyId.toString() !== expectedCompanyId.toString()) {
+        return NextResponse.json({ message: "This account does not belong to this company's portal." }, { status: 403 });
+      }
+    }
+
+    if (candidateOnly && !user.isCandidate) {
+      return NextResponse.json({ message: 'This account is not a candidate account.' }, { status: 403 });
     }
 
     // Generate session JWT — companyId is embedded so tenant scope

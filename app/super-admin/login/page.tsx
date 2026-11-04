@@ -45,7 +45,7 @@ export default function SuperAdminLoginPage() {
   const handlePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy("password");
-    const result = await login(email.trim(), password);
+    const result = await login(email.trim(), password, { superAdminOnly: true });
     if (result.success) {
       admit(result.user);
     } else {

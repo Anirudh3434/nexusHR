@@ -30,7 +30,7 @@ export default function CompanyLoginPage() {
   const params = useParams();
   const router = useRouter();
   const companySlug = params.companySlug as string;
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { addToast } = useToast();
   const { theme, toggleTheme, mounted } = useTheme();
   
@@ -126,11 +126,12 @@ export default function CompanyLoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
 
-    const result = await login(email, password);
+    const result = await login(email, password, { companyId: company?.id });
 
     if (result.success) {
       // Ensure the account belongs to this company before granting access
       if (!result.user?.isCandidate && result.user?.companyId !== company?.id) {
+        logout();
         addToast({ type: "error", title: "Wrong Company", description: "This account does not belong to this company's portal." });
         setIsLoggingIn(false);
         return;
@@ -359,6 +360,7 @@ export default function CompanyLoginPage() {
               <button 
                 type="button"
                 onClick={() => {
+                  logout();
                   if (typeof document !== "undefined") {
                     document.cookie = "nexushr_company_code=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
                     localStorage.removeItem("nexushr_company_code");

@@ -26,10 +26,16 @@ export interface User {
   isCandidate?: boolean;
 }
 
+export interface LoginOptions {
+  companyId?: string;
+  candidateOnly?: boolean;
+  superAdminOnly?: boolean;
+}
+
 interface AuthContextProps {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
+  login: (email: string, password: string, options?: LoginOptions) => Promise<{ success: boolean; error?: string; user?: User }>;
   logout: () => void;
   hasRole: (roles: Role[]) => boolean;
   updateUser: (user: User) => void;
@@ -69,13 +75,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .catch(() => {});
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> => {
+  const login = useCallback(async (email: string, password: string, options?: LoginOptions): Promise<{ success: boolean; error?: string; user?: User }> => {
     setLoading(true);
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          companyId: options?.companyId,
+          candidateOnly: options?.candidateOnly,
+          superAdminOnly: options?.superAdminOnly,
+        }),
       });
 
       const data = await response.json();

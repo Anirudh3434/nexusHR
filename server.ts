@@ -10,7 +10,12 @@ const hostname = "0.0.0.0";
 const port = 3000;
 
 // Initialize Next.js
-const app = next({ dev, hostname, port });
+const app = next({
+  dev,
+  hostname,
+  port,
+  turbopack: dev,
+});
 const handle = app.getRequestHandler();
 
 // CORS origins: explicit allow-list via SOCKET_ALLOWED_ORIGINS (comma list).

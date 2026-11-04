@@ -82,6 +82,11 @@ next-env.d.ts
 .yarn-integrity
 
 # dotenv environment variable files
+.env*.local
+.env
+.env.local
+.env.production
+.env.development
 !.env.example
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -159,3 +164,7 @@ vite.config.ts.timestamp-*
 # vercel
 .vercel
 config.bat
+
+# Local portable environment & temporary files
+portable/
+.tmp/

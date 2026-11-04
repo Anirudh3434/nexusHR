@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/context/ToastContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -44,6 +45,7 @@ export default function CompanyPortalLogin() {
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { addToast } = useToast();
+  const { logout } = useAuth();
   const router = useRouter();
 
   // 1. On Mount: Check cookie / localStorage for saved 6-character Company ID and recent list
@@ -61,6 +63,7 @@ export default function CompanyPortalLogin() {
     const checkSavedCompanyCode = async () => {
       // If user came via "Switch Organization", clear all saved state immediately
       if (typeof window !== "undefined" && window.location.search.includes('switch')) {
+        logout();
         document.cookie = "nexushr_company_code=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
         document.cookie = "nexushr_company_code=; path=/; domain=.localhost; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
         localStorage.removeItem("nexushr_company_code");
