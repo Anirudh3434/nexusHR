@@ -212,8 +212,8 @@ export default function SalaryPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-lg dark:bg-blue-500/15">
-                <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <TrendingUp className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Total Gross</p>
@@ -301,7 +301,7 @@ export default function SalaryPage() {
                     </td>
                     <td className="text-right px-4 py-3">{formatCurrency(salary.basicSalary)}</td>
                     <td className="text-right px-4 py-3">{formatCurrency(salary.hra)}</td>
-                    <td className="text-right px-4 py-3 font-medium text-blue-600 dark:text-blue-400">{formatCurrency(salary.grossSalary)}</td>
+                    <td className="text-right px-4 py-3 font-semibold text-primary">{formatCurrency(salary.grossSalary)}</td>
                     <td className="text-right px-4 py-3 text-red-600 dark:text-red-400">{formatCurrency(salary.totalDeductions)}</td>
                     <td className="text-right px-4 py-3 font-medium text-green-600 dark:text-green-400">{formatCurrency(salary.netSalary)}</td>
                     <td className="text-right px-4 py-3 font-medium text-purple-600 dark:text-purple-400">{formatCurrency(salary.ctc)}</td>
@@ -440,7 +440,7 @@ export default function SalaryPage() {
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2 dark:bg-slate-800/50">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-slate-400">Gross Salary:</span>
-                    <span className="font-medium text-blue-600 dark:text-blue-400">{formatCurrency(totals.gross)}</span>
+                    <span className="font-semibold text-primary">{formatCurrency(totals.gross)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-slate-400">Total Deductions:</span>

@@ -86,8 +86,8 @@ interface Project {
 
 const getInitials = (name: string) => name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
 const getAvatarColor = (index: number) => {
-  const colors = ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-purple-500'];
-  return colors[index % colors.length];
+  return 'bg-primary text-primary-foreground';
+
 };
 
 export default function ProjectBoardPage() {
@@ -2078,7 +2078,16 @@ export default function ProjectBoardPage() {
     return tasks.filter(task => task.taskType === 'epic');
   }, [tasks]);
 
-  const filteredTasks = tasks;
+  const filteredTasks = useMemo(() => {
+    if (!searchVal.trim() || aiActive) return tasks;
+    const q = searchVal.toLowerCase();
+    return tasks.filter(t => {
+      const matchesTitle = t.title?.toLowerCase().includes(q);
+      const matchesNumber = t.taskNumber?.toLowerCase().includes(q);
+      const matchesDesc = typeof t.description === 'string' && t.description.toLowerCase().includes(q);
+      return matchesTitle || matchesNumber || matchesDesc;
+    });
+  }, [tasks, searchVal, aiActive]);
 
   const statusLabels: Record<string, string> = {
     backlog: 'Backlog',
@@ -2191,7 +2200,7 @@ export default function ProjectBoardPage() {
                 className={`pl-10 pr-10 py-2.5 w-full text-xs bg-white dark:bg-slate-900 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
                   aiMode 
                     ? 'border-2 border-indigo-400 focus:ring-indigo-400/20 text-indigo-900 dark:text-indigo-200 placeholder-indigo-400 dark:placeholder-indigo-300' 
-                    : 'border border-slate-200 focus:border-blue-500 focus:ring-blue-400/20 text-slate-700 placeholder-slate-400 dark:border-slate-700 dark:text-slate-300'
+                    : 'border border-slate-200 focus:border-primary focus:ring-primary/20 text-slate-700 placeholder-slate-400 dark:border-slate-700 dark:text-slate-300'
                 }`}
               />
 
@@ -2212,8 +2221,8 @@ export default function ProjectBoardPage() {
               disabled={aiLoading || !searchVal.trim()}
               className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
                 aiMode
-                  ? 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white'
+                  ? 'bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground'
+                  : 'bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground'
               }`}
             >
               {aiLoading ? (
@@ -2238,7 +2247,7 @@ export default function ProjectBoardPage() {
             
             const stateClass = hasAnySelected
               ? isSelected
-                ? 'ring-2 ring-indigo-500 ring-offset-2 z-10 scale-105 opacity-100'
+                ? 'ring-2 ring-primary ring-offset-2 z-10 scale-105 opacity-100'
                 : 'opacity-40 hover:opacity-80 scale-95'
               : 'opacity-100 hover:scale-105 hover:z-10';
               
@@ -2273,7 +2282,7 @@ export default function ProjectBoardPage() {
                       : [...prev.assignee, user._id]
                   }));
                 }}
-                className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm transition-all duration-200 focus:outline-none shrink-0 ${getAvatarBg(name)} ${stateClass}`}
+                className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm transition-all duration-200 focus:outline-none shrink-0 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-primary/15 text-primary hover:bg-primary/25 border-primary/20'} ${stateClass}`}
                 title={name}
               >
                 {user.avatar ? (
@@ -2656,7 +2665,7 @@ export default function ProjectBoardPage() {
                 return (
                   <div className="w-[30%] shrink-0 h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-650 shadow-sm shrink-0 dark:bg-indigo-500/10">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-primary shadow-sm shrink-0 dark:bg-indigo-500/10">
                         <Zap className="w-4 h-4 fill-indigo-100" />
                       </div>
                       <div className="min-w-0">
@@ -2684,7 +2693,7 @@ export default function ProjectBoardPage() {
                         value={selectedSprintId || ''}
                         onChange={(val) => setSelectedSprintId(val || null)}
                         options={sprintOptions}
-                        buttonClassName="py-1 px-2.5 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/10 shadow-sm text-[10px] font-semibold text-slate-800 rounded-xl dark:border-slate-700 dark:hover:bg-indigo-500/10 dark:text-slate-200"
+                        buttonClassName="py-1 px-2.5 border border-slate-200 hover:border-primary/40 hover:bg-indigo-50/10 shadow-sm text-[10px] font-semibold text-slate-800 rounded-xl dark:border-slate-700 dark:hover:bg-indigo-500/10 dark:text-slate-200"
                       />
                     </div>
                   </div>
@@ -2733,9 +2742,9 @@ export default function ProjectBoardPage() {
                 borderTop: `3px solid ${activeColor}`,
                 boxShadow: `0 4px 16px -2px ${activeColor}15`
               }}
-              className={`flex-shrink-0 w-80 rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
+              className={`flex-1 min-w-[270px] max-w-[340px] rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
                 dragOverColumn === column.status 
-                  ? 'border-indigo-500 bg-indigo-50/30 shadow-[inset_0_2px_8px_rgba(99,102,241,0.05)] dark:bg-indigo-500/10' 
+                  ? 'border-primary bg-primary/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)]' 
                   : isOverWip
                     ? 'border-rose-200 bg-rose-50/20 dark:border-rose-500/30 dark:bg-rose-500/10'
                     : 'border-slate-200/60 dark:border-slate-700'
@@ -2754,7 +2763,7 @@ export default function ProjectBoardPage() {
                         setSelectedColumn(column);
                         setShowColumnSettings(true);
                       }}
-                      className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-indigo-650 transition-all dark:text-slate-400"
+                      className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-primary transition-all dark:text-slate-400"
                       title="Column settings"
                     >
                       <Settings className="w-3.5 h-3.5" />
@@ -2762,7 +2771,7 @@ export default function ProjectBoardPage() {
                   )}
                   <button
                     onClick={() => handleOpenCreateModal(column.status)}
-                    className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-indigo-650 transition-all dark:text-slate-400"
+                    className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-primary transition-all dark:text-slate-400"
                     title={`Create task in ${column.name}`}
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -2790,7 +2799,7 @@ export default function ProjectBoardPage() {
               <div className="space-y-3 min-h-[350px] overflow-y-auto pr-0.5 scrollbar-thin relative">
                 {tasksLoading && (
                   <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-xl z-20 dark:bg-slate-900">
-                    <Loader2 className="w-6 h-6 animate-spin text-indigo-650" />
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 )}
                 {taskCount === 0 ? (
@@ -2798,10 +2807,10 @@ export default function ProjectBoardPage() {
                     onClick={() => handleOpenCreateModal(column.status)}
                     className="w-full border border-dashed border-slate-250/80 rounded-xl p-8 text-center bg-white/40 flex flex-col items-center justify-center space-y-2 hover:bg-white hover:border-slate-350 transition-all duration-200 group dark:bg-slate-900 dark:hover:bg-slate-800"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all dark:group-hover:bg-indigo-500/20 dark:group-hover:text-indigo-300`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-all`}>
                       <Plus className="w-4 h-4 text-slate-550" />
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 group-hover:text-indigo-650 transition-colors">Create task</p>
+                    <p className="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors">Create task</p>
                   </button>
                 ) : (
                   <>
@@ -2843,7 +2852,7 @@ export default function ProjectBoardPage() {
                           </div>
 
                           <div>
-                            <h4 className="font-bold text-slate-800 text-xs line-clamp-2 leading-relaxed group-hover:text-indigo-650 transition-colors dark:text-slate-200">
+                            <h4 className="font-bold text-slate-800 text-xs line-clamp-2 leading-relaxed group-hover:text-primary transition-colors dark:text-slate-200">
                               {task.title}
                             </h4>
                           </div>
@@ -2906,7 +2915,7 @@ export default function ProjectBoardPage() {
                                 <span>{task.progressPercentage}%</span>
                               </div>
                               <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden dark:bg-slate-800">
-                                <div className="h-1 bg-indigo-600 rounded-full" style={{ width: `${task.progressPercentage}%` }} />
+                                <div className="h-1 bg-primary rounded-full transition-all" style={{ width: `${task.progressPercentage}%` }} />
                               </div>
                             </div>
                           )}
@@ -2987,7 +2996,7 @@ export default function ProjectBoardPage() {
                 return (
                   <div className="w-[30%] shrink-0 h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-650 shadow-sm shrink-0 dark:bg-indigo-500/10">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-primary shadow-sm shrink-0 dark:bg-indigo-500/10">
                         <Zap className="w-4 h-4 fill-indigo-100" />
                       </div>
                       <div className="min-w-0">
@@ -3015,7 +3024,7 @@ export default function ProjectBoardPage() {
                         value={selectedSprintId || ''}
                         onChange={(val) => setSelectedSprintId(val || null)}
                         options={sprintOptions}
-                        buttonClassName="py-1 px-2.5 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/10 shadow-sm text-[10px] font-semibold text-slate-800 rounded-xl dark:border-slate-700 dark:hover:bg-indigo-500/10 dark:text-slate-200"
+                        buttonClassName="py-1 px-2.5 border border-slate-200 hover:border-primary/40 hover:bg-indigo-50/10 shadow-sm text-[10px] font-semibold text-slate-800 rounded-xl dark:border-slate-700 dark:hover:bg-indigo-500/10 dark:text-slate-200"
                       />
                     </div>
                   </div>
@@ -3186,7 +3195,7 @@ export default function ProjectBoardPage() {
                           <div className="flex items-center gap-2">
                             <div className="w-16 bg-gray-200 rounded-full h-1.5 overflow-hidden dark:bg-slate-700">
                               <div 
-                                className="h-1.5 bg-indigo-600 rounded-full" 
+                                className="h-1.5 bg-primary rounded-full transition-all" 
                                 style={{ width: `${task.progressPercentage}%` }} 
                               />
                             </div>
@@ -3838,7 +3847,7 @@ export default function ProjectBoardPage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 dark:bg-slate-900 dark:border-slate-700">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650 shadow-sm dark:bg-indigo-500/10">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-primary shadow-sm dark:bg-indigo-500/10">
                   <Link2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -3872,7 +3881,7 @@ export default function ProjectBoardPage() {
                     type="submit"
                     size="sm"
                     disabled={isConnectingRepo}
-                    className="bg-indigo-650 hover:bg-indigo-775 text-white font-semibold rounded-xl shrink-0 h-9"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shrink-0 h-9"
                   >
                     {isConnectingRepo ? 'Connecting...' : 'Connect Repository'}
                   </Button>
@@ -3901,7 +3910,7 @@ export default function ProjectBoardPage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 dark:bg-slate-900 dark:border-slate-700">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650 shadow-sm dark:bg-indigo-500/10">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-primary shadow-sm dark:bg-indigo-500/10">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
@@ -3978,7 +3987,7 @@ export default function ProjectBoardPage() {
                         key={member._id}
                         type="button"
                         onClick={() => setAutoRuleForm(prev => ({ ...prev, template: prev.template + ' @' + member.name }))}
-                        className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 hover:border-indigo-300 rounded-lg text-[10px] font-bold transition-all shadow-sm dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30"
+                        className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 hover:border-primary/40 rounded-lg text-[10px] font-bold transition-all shadow-sm dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/30"
                         title={`Click to mention @${member.name}`}
                       >
                         @{member.name}
@@ -4000,7 +4009,7 @@ export default function ProjectBoardPage() {
                 </div>
 
                 <div className="flex justify-end pt-1">
-                  <Button type="submit" size="sm" className="bg-indigo-650 hover:bg-indigo-700 text-white font-semibold rounded-xl">
+                  <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl">
                     <Plus className="w-3.5 h-3.5 mr-1" />
                     Create Rule
                   </Button>
@@ -4135,7 +4144,7 @@ export default function ProjectBoardPage() {
                     <button
                       key={idx}
                       onClick={() => setChatInput(item.query)}
-                      className="p-4 bg-white/80 border border-slate-205 rounded-2xl text-left hover:border-indigo-300 dark:hover:border-indigo-500/40 hover:bg-white hover:shadow-md transition-all duration-200 group flex gap-3 cursor-pointer dark:bg-slate-900 dark:hover:bg-slate-800"
+                      className="p-4 bg-white/80 border border-slate-205 rounded-2xl text-left hover:border-primary/40 dark:hover:border-indigo-500/40 hover:bg-white hover:shadow-md transition-all duration-200 group flex gap-3 cursor-pointer dark:bg-slate-900 dark:hover:bg-slate-800"
                     >
                       <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors dark:bg-slate-800/50 dark:border-slate-800 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30">
                         {item.icon}
@@ -4405,7 +4414,7 @@ export default function ProjectBoardPage() {
                   name="title"
                   type="text"
                   required
-                  className="w-full px-3.5 py-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-base transition-all font-semibold placeholder:text-slate-400 placeholder:font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                  className="w-full px-3.5 py-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base transition-all font-semibold placeholder:text-slate-400 placeholder:font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                   placeholder="Describe the task objective..."
                 />
               </div>
@@ -4414,7 +4423,7 @@ export default function ProjectBoardPage() {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 dark:text-slate-300">Description</label>
                 <textarea
                   name="description"
-                  className="w-full px-3.5 py-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all font-medium placeholder:text-slate-400 text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                  className="w-full px-3.5 py-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all font-medium placeholder:text-slate-400 text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                   rows={5}
                   placeholder="Provide additional details or specifications..."
                 />
@@ -4435,7 +4444,7 @@ export default function ProjectBoardPage() {
                       { value: "subtask", label: "Subtask", icon: <Layers className="w-3.5 h-3.5 text-slate-400" /> },
                       { value: "improvement", label: "Improvement", icon: <TrendingUp className="w-3.5 h-3.5 text-orange-400" /> }
                     ]}
-                    buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
+                    buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -4450,7 +4459,7 @@ export default function ProjectBoardPage() {
                       { value: "high", label: "High", icon: <ChevronUp className="w-3.5 h-3.5 text-orange-500" /> },
                       { value: "critical", label: "Critical", icon: <ArrowUp className="w-3.5 h-3.5 text-red-500" /> }
                     ]}
-                    buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
+                    buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -4486,7 +4495,7 @@ export default function ProjectBoardPage() {
                         onChange={(values) => setCreateTaskAssignees(values)}
                         options={assigneeOptions}
                         placeholder="Select assignees..."
-                        buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
+                        buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
                       />
                     );
                   })()}
@@ -4508,7 +4517,7 @@ export default function ProjectBoardPage() {
                             label: `${t.taskNumber} - ${t.title}`
                           }))
                       ]}
-                      buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
+                      buttonClassName="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-semibold text-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-200"
                     />
                   </div>
                 )}
@@ -4520,7 +4529,7 @@ export default function ProjectBoardPage() {
                   <input
                     name="startDate"
                     type="date"
-                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -4528,7 +4537,7 @@ export default function ProjectBoardPage() {
                   <input
                     name="dueDate"
                     type="date"
-                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -4538,7 +4547,7 @@ export default function ProjectBoardPage() {
                     type="number"
                     min="0"
                     step="1"
-                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs font-medium text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                     placeholder="e.g., 5"
                   />
                 </div>
@@ -4552,7 +4561,7 @@ export default function ProjectBoardPage() {
                     type="number"
                     min="0"
                     step="0.5"
-                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs transition-all font-medium placeholder:text-slate-400 text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs transition-all font-medium placeholder:text-slate-400 text-slate-800 dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                     placeholder="e.g., 4"
                   />
                 </div>
@@ -4567,7 +4576,7 @@ export default function ProjectBoardPage() {
                     value={labelSearchQuery}
                     onChange={(e) => setLabelSearchQuery(e.target.value)}
                     placeholder="Search or create label..."
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:border-slate-700"
                   />
                   {labelSearchQuery && (
                     <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 dark:bg-slate-900 dark:border-slate-700">
@@ -4676,7 +4685,7 @@ export default function ProjectBoardPage() {
                 <CustomSelect
                   value={formData.taskType || "task"}
                   onChange={(val) => setFormData({ ...formData, taskType: val })}
-                  buttonClassName="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 cursor-pointer transition-all w-36"
+                  buttonClassName="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all w-36"
                   className="w-36 inline-block"
                   options={[
                     { value: "task",        icon: <CheckSquare className="w-3.5 h-3.5 text-blue-500" />,   label: "Task" },
@@ -4704,7 +4713,7 @@ export default function ProjectBoardPage() {
                     e.preventDefault();
                     handleUpdateTask();
                   }}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-xs"
                   title="Save changes"
                 >
                   <Save className="w-3.5 h-3.5" />
@@ -4734,7 +4743,7 @@ export default function ProjectBoardPage() {
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-base font-bold text-slate-800 transition-all dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base font-bold text-slate-800 transition-all dark:border-slate-700 dark:text-slate-200"
                     placeholder="Task title"
                     required
                   />
@@ -4746,7 +4755,7 @@ export default function ProjectBoardPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs text-slate-800 transition-all resize-none min-h-[350px] dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs text-slate-800 transition-all resize-none min-h-[350px] dark:border-slate-700 dark:text-slate-200"
                     placeholder="Add a description..."
                   />
                 </div>
@@ -4754,7 +4763,7 @@ export default function ProjectBoardPage() {
                 {/* Attachments */}
                 <div className="mb-6">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 dark:text-slate-300">Attachments</label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 hover:border-indigo-300 transition-colors dark:border-slate-700">
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 hover:border-primary/40 transition-colors dark:border-slate-700">
                     <input
                       type="file"
                       id="task-file-upload"
@@ -4774,8 +4783,8 @@ export default function ProjectBoardPage() {
                       htmlFor="task-file-upload"
                       className="flex flex-col items-center justify-center cursor-pointer"
                     >
-                      <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center mb-2 dark:bg-indigo-500/10">
-                        <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                        <FileText className="w-5 h-5 text-primary" />
                       </div>
                       <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
                         {uploadingFile ? 'Uploading...' : 'Click to upload files'}
@@ -5210,7 +5219,7 @@ export default function ProjectBoardPage() {
                                         href={attachment.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-indigo-300 transition-colors dark:bg-slate-900 dark:border-slate-700"
+                                        className="flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-primary/40 transition-colors dark:bg-slate-900 dark:border-slate-700"
                                       >
                                         <FileText className="w-3 h-3 text-slate-400" />
                                         <span className="text-[10px] text-slate-600 truncate max-w-[120px] dark:text-slate-400">{attachment.name}</span>
@@ -5316,7 +5325,7 @@ export default function ProjectBoardPage() {
                             value={newComment}
                             onChange={handleCommentChange}
                             placeholder="Add a comment... (Type @ to mention members)"
-                            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs transition-all resize-none dark:border-slate-700"
+                            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs transition-all resize-none dark:border-slate-700"
                             rows={3}
                           />
                         </div>
@@ -5486,7 +5495,7 @@ export default function ProjectBoardPage() {
                           })) || []
                         ) || []
                       ]}
-                      buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-indigo-300 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                      buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-primary/40 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                     />
                   </div>
 
@@ -5505,7 +5514,7 @@ export default function ProjectBoardPage() {
                             icon: <Zap className="w-3.5 h-3.5 text-indigo-500" />
                           }))
                         ]}
-                        buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-indigo-300 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-primary/40 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                       />
                     </div>
                   )}
@@ -5526,7 +5535,7 @@ export default function ProjectBoardPage() {
                               label: `${t.taskNumber} - ${t.title}`
                             }))
                         ]}
-                        buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-indigo-300 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-primary/40 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                       />
                     </div>
                   )}
@@ -5554,7 +5563,7 @@ export default function ProjectBoardPage() {
                           onChange={(values) => setFormData({ ...formData, assignedTo: values })}
                           options={assigneeOptions}
                           placeholder="Select assignees..."
-                          buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-indigo-300 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                          buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-primary/40 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                         />
                       );
                     })()}
@@ -5573,7 +5582,7 @@ export default function ProjectBoardPage() {
                           { value: "high",     icon: <ArrowUp className="w-3.5 h-3.5 text-orange-500" />,       label: "High" },
                           { value: "critical", icon: <AlertCircle className="w-3.5 h-3.5 text-red-500" />,      label: "Critical" }
                         ]}
-                        buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-indigo-300 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        buttonClassName="w-full px-3 py-2 border border-slate-200 bg-white font-semibold text-slate-800 cursor-pointer hover:border-primary/40 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                       />
                     </div>
 
@@ -5586,7 +5595,7 @@ export default function ProjectBoardPage() {
                           value={labelSearchQuery}
                           onChange={(e) => setLabelSearchQuery(e.target.value)}
                           placeholder="Search or create label..."
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:border-slate-700"
                         />
                         {labelSearchQuery && (
                           <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 dark:bg-slate-900 dark:border-slate-700">
@@ -5674,7 +5683,7 @@ export default function ProjectBoardPage() {
                         step="1"
                         value={formData.storyPoints}
                         onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 text-xs hover:border-indigo-300 transition-colors dark:border-slate-700 dark:text-slate-200"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-semibold text-slate-800 text-xs hover:border-primary/40 transition-colors dark:border-slate-700 dark:text-slate-200"
                         placeholder="e.g., 5"
                       />
                     </div>
@@ -5686,7 +5695,7 @@ export default function ProjectBoardPage() {
                         type="date"
                         value={formData.startDate}
                         onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 text-xs hover:border-indigo-300 transition-colors dark:border-slate-700 dark:text-slate-200"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-semibold text-slate-800 text-xs hover:border-primary/40 transition-colors dark:border-slate-700 dark:text-slate-200"
                       />
                     </div>
 
@@ -5697,7 +5706,7 @@ export default function ProjectBoardPage() {
                         type="date"
                         value={formData.dueDate}
                         onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 text-xs hover:border-indigo-300 transition-colors dark:border-slate-700 dark:text-slate-200"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-semibold text-slate-800 text-xs hover:border-primary/40 transition-colors dark:border-slate-700 dark:text-slate-200"
                       />
                     </div>
 
@@ -5711,7 +5720,7 @@ export default function ProjectBoardPage() {
                           onChange={(e) => setFormData({ ...formData, estimatedHours: e.target.value })}
                           min="0"
                           step="0.5"
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 text-xs hover:border-indigo-300 transition-colors dark:border-slate-700 dark:text-slate-200"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-semibold text-slate-800 text-xs hover:border-primary/40 transition-colors dark:border-slate-700 dark:text-slate-200"
                           placeholder="Hrs"
                         />
                       </div>
@@ -5723,7 +5732,7 @@ export default function ProjectBoardPage() {
                           onChange={(e) => setFormData({ ...formData, actualHours: e.target.value })}
                           min="0"
                           step="0.5"
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-semibold text-slate-800 text-xs hover:border-indigo-300 transition-colors dark:border-slate-700 dark:text-slate-200"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-semibold text-slate-800 text-xs hover:border-primary/40 transition-colors dark:border-slate-700 dark:text-slate-200"
                           placeholder="Hrs"
                         />
                       </div>
@@ -5753,7 +5762,7 @@ export default function ProjectBoardPage() {
                               href={attachment.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-all group dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-indigo-500/10"
+                              className="flex items-center gap-2 px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg hover:border-primary/40 hover:bg-indigo-50/50 transition-all group dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-indigo-500/10"
                             >
                               <FileText className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                               <span className="text-[10px] text-slate-600 truncate flex-1 group-hover:text-indigo-700 transition-colors dark:text-slate-400">{attachment.name}</span>
@@ -5836,7 +5845,7 @@ export default function ProjectBoardPage() {
                             updatedStatuses[idx].name = e.target.value;
                             setSelectedColumn({ ...selectedColumn, customStatuses: updatedStatuses });
                           }}
-                          className="flex-1 px-2 py-1 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:border-slate-700"
+                          className="flex-1 px-2 py-1 border border-slate-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:border-slate-700"
                           placeholder="Enter status name"
                         />
                         <button
@@ -5993,7 +6002,7 @@ export default function ProjectBoardPage() {
                           <button
                             key={customStatus.id}
                             onClick={() => handleCustomStatusSelect(customStatus)}
-                            className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-200 text-left group dark:border-slate-700 dark:hover:bg-indigo-500/10"
+                            className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-primary/40 hover:bg-indigo-50/30 transition-all duration-200 text-left group dark:border-slate-700 dark:hover:bg-indigo-500/10"
                           >
                             <div
                               className="w-3 h-3 rounded-full shrink-0"
@@ -6017,7 +6026,7 @@ export default function ProjectBoardPage() {
                     ) : (
                       <button
                         onClick={() => handleCustomStatusSelect(null)}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-200 text-left group dark:border-slate-700 dark:hover:bg-indigo-500/10"
+                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-primary/40 hover:bg-indigo-50/30 transition-all duration-200 text-left group dark:border-slate-700 dark:hover:bg-indigo-500/10"
                       >
                         <div className="w-3 h-3 rounded-full shrink-0 bg-slate-200 dark:bg-slate-700" />
                         <span className="text-xs font-medium text-slate-700 group-hover:text-indigo-700 transition-colors dark:text-slate-300">

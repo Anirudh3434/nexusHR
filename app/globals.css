@@ -498,17 +498,13 @@
 }
 
 /* ==========================================================================
-   FLIP-ZOOM CARD MODAL & POPUP ANIMATION
-   Animates every modal dialog and popup card from wherever the user clicks.
+   SMOOTH MODAL, DIALOG, POPUP & CARD TRANSITIONS
+   Polished, subtle animations whenever modals, dialogs or popups open.
    ========================================================================== */
 
 :root {
   --modal-origin-x: 50%;
   --modal-origin-y: 50%;
-  --modal-shift-x: 0px;
-  --modal-shift-y: 20px;
-  --modal-rot-x: -12deg;
-  --modal-rot-y: 6deg;
 }
 
 @keyframes modal-backdrop-fade-in {
@@ -520,39 +516,20 @@
   }
 }
 
-@keyframes modal-flip-zoom-in {
+@keyframes modal-subtle-zoom-in {
   0% {
     opacity: 0;
-    transform: perspective(1200px)
-      translate3d(var(--modal-shift-x, 0px), var(--modal-shift-y, 20px), -70px)
-      rotateX(var(--modal-rot-x, -12deg))
-      rotateY(var(--modal-rot-y, 6deg))
-      scale(0.62);
-    filter: blur(2px);
-  }
-  65% {
-    opacity: 1;
-    transform: perspective(1200px)
-      translate3d(calc(var(--modal-shift-x, 0px) * -0.05), calc(var(--modal-shift-y, 20px) * -0.05), 6px)
-      rotateX(calc(var(--modal-rot-x, -12deg) * -0.15))
-      rotateY(calc(var(--modal-rot-y, 6deg) * -0.15))
-      scale(1.02);
-    filter: blur(0px);
+    transform: scale(0.96) translateY(8px);
   }
   100% {
     opacity: 1;
-    transform: perspective(1200px)
-      translate3d(0, 0, 0)
-      rotateX(0deg)
-      rotateY(0deg)
-      scale(1);
-    filter: blur(0px);
+    transform: scale(1) translateY(0);
   }
 }
 
 /* Modal overlay backdrop fade in */
 div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) {
-  animation: modal-backdrop-fade-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: modal-backdrop-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Modal dialog cards inside full-screen fixed overlays */
@@ -563,10 +540,8 @@ div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div 
 .modal-flip-zoom,
 .flip-zoom-card,
 [data-modal-card] {
-  animation: modal-flip-zoom-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  animation: modal-subtle-zoom-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both !important;
   transform-origin: var(--modal-origin-x, 50%) var(--modal-origin-y, 50%);
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
   will-change: transform, opacity;
 }
 
@@ -578,17 +553,36 @@ div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[
 
 div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[class*="flex"]:not([class*="bg-"]):not([class*="rounded"]):not([class*="shadow"]):not([class*="border"]) > div:not([class*="absolute"]),
 div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div[class*="grid"]:not([class*="bg-"]):not([class*="rounded"]):not([class*="shadow"]):not([class*="border"]) > div:not([class*="absolute"]) {
-  animation: modal-flip-zoom-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  animation: modal-subtle-zoom-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both !important;
   transform-origin: var(--modal-origin-x, 50%) var(--modal-origin-y, 50%);
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
   will-change: transform, opacity;
+}
+
+/* Dropdown menus, selects, popovers opened through dashboard */
+@keyframes dropdown-slide-down {
+  0% {
+    opacity: 0;
+    transform: scale(0.97) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+[role="menu"],
+[data-radix-popper-content-wrapper] > div,
+.dropdown-menu-animated {
+  animation: dropdown-slide-down 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top;
 }
 
 @media (prefers-reduced-motion: reduce) {
   div[class*="fixed"][class*="inset-0"]:not([class*="pointer-events-none"]) > div,
   .modal-flip-zoom,
-  .flip-zoom-card {
+  .flip-zoom-card,
+  [role="menu"],
+  [data-radix-popper-content-wrapper] > div {
     animation: none !important;
   }
 }

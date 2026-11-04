@@ -196,7 +196,7 @@ export default function SuperAdminPage() {
                 ))}
                 {overview.companyDetails.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-4 text-[13px] text-muted-foreground">No workspaces yet.</td>
+                    <td colSpan={6} className="py-8 text-center text-[13px] text-muted-foreground">No workspaces yet.</td>
                   </tr>
                 )}
               </tbody>

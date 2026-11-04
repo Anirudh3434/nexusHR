@@ -269,7 +269,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                 
                 {/* Group Items - Accordion Content */}
                 {!collapsed && isExpanded && (
-                  <div className="ml-[18px] pl-3 border-l border-white/10 space-y-0.5 py-0.5">
+                  <div className="ml-[18px] pl-3 border-l border-white/10 space-y-0.5 py-0.5 animate-in fade-in-50 slide-in-from-top-1 duration-150">
                     {item.items.map((child) => {
                       const isChildActive = pathname === child.href || (pathname.startsWith(child.href) && child.href !== "/");
                       const childLocked = lockedFeatureFor(child.href);
