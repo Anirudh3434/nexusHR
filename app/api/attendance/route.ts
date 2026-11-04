@@ -21,37 +21,66 @@ export async function GET(req: Request) {
     const employeeId = searchParams.get('employeeId');
     const queryCompanyId = searchParams.get('companyId');
     const date = searchParams.get('date');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
-    if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
+    const rawCompanyId = queryCompanyId && queryCompanyId !== 'undefined' && queryCompanyId !== 'null' ? queryCompanyId : null;
+
+    let userCompanyId = auth.companyId;
+    if (!userCompanyId && !isSuperAdmin) {
+      const u = await User.findById(auth.userId).select('companyId');
+      if (u?.companyId) userCompanyId = u.companyId.toString();
+    }
+
+    if (rawCompanyId && !isSuperAdmin && userCompanyId && rawCompanyId !== userCompanyId.toString()) {
       return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
 
     let query: any = {};
     if (isSuperAdmin) {
-      if (queryCompanyId) query.companyId = queryCompanyId;
-      else if (auth.companyId) query.companyId = auth.companyId;
+      if (rawCompanyId) query.companyId = rawCompanyId;
+      else if (userCompanyId) query.companyId = userCompanyId;
     } else {
-      if (!auth.companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
-      query.companyId = auth.companyId;
+      if (!userCompanyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
+      query.companyId = userCompanyId;
     }
     if (isEmployee) {
       query.employeeId = auth.userId;
     } else if (employeeId) {
       query.employeeId = employeeId;
     }
-    if (date) query.date = date;
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      query.date = { $gte: start, $lte: end };
+    } else if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+      query.date = { $gte: start, $lte: end };
+    }
 
     const attendance = await Attendance.find(query)
-      .populate('employeeId', 'name department designation')
+      .populate({ path: 'employeeId', model: User, select: 'name department designation email' })
+      .populate({ path: 'editedBy', model: User, select: 'name email role' })
       .sort({ date: -1 });
 
     const formattedAttendance = attendance.map(record => {
       const rec = record.toObject();
+      const editorName = rec.editedBy?.name || rec.editedByName || (rec.editedBy ? 'Admin' : undefined);
       return {
         ...rec,
         id: record._id.toString(),
-        employeeName: rec.employeeId?.name || 'Unknown',
+        employeeName: rec.employeeId?.name || rec.employeeName || 'Unknown',
+        department: rec.employeeId?.department || rec.department || '',
+        designation: rec.employeeId?.designation || rec.designation || '',
         employeeId: rec.employeeId?._id?.toString() || rec.employeeId?.toString(),
+        isEdited: !!rec.isEdited,
+        editedByName: editorName,
+        editedAt: rec.editedAt,
         _id: undefined,
       };
     });
@@ -607,6 +636,13 @@ export async function PUT(req: Request) {
     }
 
     if (manualStatus) attendance.status = manualStatus;
+
+    // Track edit audit trail: who edited this record and when
+    const editor = await User.findById(auth.userId).select('name email');
+    attendance.isEdited = true;
+    attendance.editedBy = auth.userId;
+    attendance.editedByName = editor?.name || auth.email || 'Admin';
+    attendance.editedAt = new Date();
 
     await attendance.save();
     return NextResponse.json({ message: 'Attendance record updated successfully', id: attendance._id });

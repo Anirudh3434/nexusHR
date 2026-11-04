@@ -19,6 +19,10 @@ export interface AttendanceRecord {
   overtimeMinutes?: number;
   overtimeHours?: number;
   note?: string;
+  isEdited?: boolean;
+  editedBy?: string;
+  editedByName?: string;
+  editedAt?: string | Date;
 }
 
 export interface AttendanceInput {
@@ -45,15 +49,21 @@ export interface AttendanceResponse {
   overtimeMinutes?: number;
 }
 
-export const getAttendance = async (params?: { employeeId?: string; companyId?: string; date?: string }): Promise<AttendanceRecord[]> => {
+export const getAttendance = async (params?: { employeeId?: string; companyId?: string; date?: string; startDate?: string; endDate?: string }): Promise<AttendanceRecord[]> => {
   const url = new URL(API_URL, window.location.origin);
   if (params?.employeeId) url.searchParams.append('employeeId', params.employeeId);
-  if (params?.companyId) url.searchParams.append('companyId', params.companyId);
+  if (params?.companyId && typeof params.companyId === 'string' && params.companyId !== 'undefined') {
+    url.searchParams.append('companyId', params.companyId);
+  }
   if (params?.date) url.searchParams.append('date', params.date);
+  if (params?.startDate) url.searchParams.append('startDate', params.startDate);
+  if (params?.endDate) url.searchParams.append('endDate', params.endDate);
   
   const response = await fetch(url.toString());
   if (!response.ok) {
-    throw new Error('Failed to fetch attendance');
+    const errorData = await response.json().catch(() => ({}));
+    console.error('getAttendance error:', response.status, errorData);
+    throw new Error(errorData.message || 'Failed to fetch attendance');
   }
   return response.json();
 };

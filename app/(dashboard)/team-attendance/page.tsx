@@ -1,23 +1,63 @@
 "use client";
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
 import { PageHeader } from "../../../components/ui/PageHeader";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Loader2 } from "lucide-react";
+import { WeekWiseAttendanceTable } from "../../../components/attendance/WeekWiseAttendanceTable";
+import { getAttendance, AttendanceRecord } from "../../../services/attendanceService";
+import { getEmployees, Employee } from "../../../services/employeeService";
 
 export default function TeamAttendancePage() {
+  const { user, loading } = useAuth();
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.companyId) {
+      fetchTeamAttendance();
+    }
+  }, [user?.companyId]);
+
+  const fetchTeamAttendance = async () => {
+    try {
+      setDataLoading(true);
+      const [attData, empData] = await Promise.all([
+        getAttendance({ companyId: user?.companyId }),
+        getEmployees(user?.companyId).catch(() => []),
+      ]);
+      setAttendance(attData);
+      setEmployees(empData);
+    } catch (error) {
+      console.error("Failed to fetch team attendance:", error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  if (loading || dataLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <PageHeader icon={<CalendarClock />} title="Team Attendance" />
-      <Card>
-        <CardHeader>
-          <CardTitle>Team Attendance Logs</CardTitle>
-          <CardDescription>Track your team's daily check-ins and check-outs.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-500 italic dark:text-slate-400">Team attendance tracking UI coming soon...</p>
-        </CardContent>
-      </Card>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <PageHeader 
+        icon={<CalendarClock />} 
+        title="Team Attendance Matrix" 
+        description="Weekly cross-department attendance matrix and timesheet overview."
+      />
+      
+      <WeekWiseAttendanceTable
+        attendance={attendance}
+        employees={employees}
+        isAdminOrHr={true}
+        currentUser={user}
+      />
     </div>
   );
 }
