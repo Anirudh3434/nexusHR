@@ -84,18 +84,34 @@ export const SESSION_COOKIE_OPTIONS = {
 /**
  * Cookie domain for a portable session: one sign-in works on the root
  * domain and every company subdomain. Explicit SESSION_COOKIE_DOMAIN wins.
- * localhost keeps host-only cookies (browsers handle Domain=localhost
- * inconsistently), so dev subdomains stay separate login islands.
+ *
+ * IMPORTANT FOR VERCEL & PUBLIC SUFFIX DOMAINS:
+ * On Vercel (*.vercel.app), Railway, Heroku, etc., browsers strictly reject cookies
+ * with Domain=.vercel.app because vercel.app is on the Public Suffix List (PSL).
+ * Returning undefined causes browsers to treat the cookie as a host-only cookie,
+ * which is accepted and sent on all requests to that domain.
  */
 export function getSessionCookieDomain(host: string | null): string | undefined {
   const override = process.env.SESSION_COOKIE_DOMAIN;
   if (override) return override;
   const hostname = (host || "").split(":")[0].toLowerCase();
-  if (!hostname || hostname === "localhost" || hostname.endsWith(".localhost") || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+  if (
+    !hostname ||
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".vercel.app") ||
+    hostname.endsWith(".now.sh") ||
+    hostname.endsWith(".pages.dev") ||
+    hostname.endsWith(".netlify.app") ||
+    hostname.endsWith(".herokuapp.com") ||
+    hostname.endsWith(".railway.app") ||
+    hostname.endsWith(".onrender.com") ||
+    /^\d+\.\d+\.\d+\.\d+$/.test(hostname)
+  ) {
     return undefined;
   }
   const parts = hostname.split(".");
-  if (parts.length < 2) return undefined;
+  if (parts.length <= 2) return undefined;
   return "." + parts.slice(-2).join(".");
 }
 

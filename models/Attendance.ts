@@ -107,6 +107,20 @@ const AttendanceSchema = new Schema({
   note: {
     type: String,
   },
+  isEdited: {
+    type: Boolean,
+    default: false,
+  },
+  editedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  editedByName: {
+    type: String,
+  },
+  editedAt: {
+    type: Date,
+  },
 }, {
   timestamps: true,
 });

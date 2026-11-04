@@ -10,10 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users } from "lucide-react";
+import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users, CalendarDays, List } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { ModalPortal } from "../../../components/ui/ModalPortal";
+import { WeekWiseAttendanceTable } from "../../../components/attendance/WeekWiseAttendanceTable";
+import { getEmployees, Employee } from "../../../services/employeeService";
 
 // Helper to format date
 const formatDate = (dateStr: string): string => {
@@ -65,6 +67,8 @@ export default function AttendancePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [showCharts, setShowCharts] = useState(true);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [viewMode, setViewMode] = useState<'weekly' | 'daily'>('weekly');
 
   // Update current time every minute
   useEffect(() => {
@@ -97,9 +101,23 @@ export default function AttendancePage() {
         setUserShift(shift || null);
       }
       
-      // Admin/HR: fetch all attendance
+      // Admin/HR: fetch all attendance and company employees
       if (hasRole(["admin", "hr"])) {
-        const data = await getAttendance({ companyId: user?.companyId || undefined });
+        const [data, emps] = await Promise.all([
+          getAttendance({ companyId: typeof user?.companyId === 'string' ? user.companyId : undefined }).catch((err) => {
+            console.error("Error fetching attendance list:", err);
+            return [];
+          }),
+          getEmployees(typeof user?.companyId === 'string' ? user.companyId : undefined).catch(() => []),
+        ]);
+        setAttendance(data);
+        setEmployees(emps);
+      } else if (user?.id) {
+        // Employee: fetch their own attendance records
+        const data = await getAttendance({ employeeId: user.id }).catch((err) => {
+          console.error("Error fetching own attendance:", err);
+          return [];
+        });
         setAttendance(data);
       }
     } catch (error) {
@@ -242,36 +260,59 @@ export default function AttendancePage() {
     return matchesSearch && matchesDate;
   });
 
-  // Status badge component
-  const StatusBadge = ({ status, isLate, isOvertime }: { status?: string; isLate?: boolean; isOvertime?: boolean }) => {
-    if (isLate || status === 'Late') {
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/15 dark:border-destructive/30">
-          <AlertCircle className="h-3 w-3" />
-          Late
-        </span>
-      );
-    }
-    if (isOvertime) {
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400 dark:border-amber-500/30">
-          <Clock className="h-3 w-3" />
-          Overtime
-        </span>
-      );
-    }
-    if (status === 'On Time' || status === 'Present') {
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary border border-primary/20 dark:bg-primary/15 dark:border-primary/30">
-          <CheckCircle className="h-3 w-3" />
-          {status}
-        </span>
-      );
-    }
+  // Status badge component with edited indicator & hover tooltip
+  const StatusBadge = ({ 
+    status, 
+    isLate, 
+    isOvertime, 
+    isEdited, 
+    editedByName, 
+    editedAt 
+  }: { 
+    status?: string; 
+    isLate?: boolean; 
+    isOvertime?: boolean; 
+    isEdited?: boolean;
+    editedByName?: string;
+    editedAt?: string | Date;
+  }) => {
+    const editInfo = isEdited 
+      ? `Edited by ${editedByName || 'Admin'}${editedAt ? ' on ' + new Date(editedAt).toLocaleDateString() + ' ' + new Date(editedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}`
+      : '';
+
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-muted text-muted-foreground border border-border">
-        {status || 'Not Marked'}
-      </span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {isLate || status === 'Late' ? (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/15 dark:border-destructive/30">
+            <AlertCircle className="h-3 w-3" />
+            Late
+          </span>
+        ) : isOvertime ? (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400 dark:border-amber-500/30">
+            <Clock className="h-3 w-3" />
+            Overtime
+          </span>
+        ) : status === 'On Time' || status === 'Present' ? (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary border border-primary/20 dark:bg-primary/15 dark:border-primary/30">
+            <CheckCircle className="h-3 w-3" />
+            {status}
+          </span>
+        ) : (
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-muted text-muted-foreground border border-border">
+            {status || 'Not Marked'}
+          </span>
+        )}
+
+        {isEdited && (
+          <span 
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-sky-500/15 text-sky-700 border border-sky-500/30 dark:bg-sky-500/20 dark:text-sky-300 dark:border-sky-500/40 cursor-help transition-transform hover:scale-105"
+            title={editInfo}
+          >
+            <Edit className="h-2.5 w-2.5" />
+            Edited
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -324,18 +365,38 @@ export default function AttendancePage() {
         title="Attendance"
         description="Mark attendance, inspect punctuality metrics, and view check-in logs."
         actions={
-          hasRole(["admin", "hr"]) && (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowCharts(!showCharts)}>
-                <BarChart3 className="mr-1.5 h-4 w-4" />
-                {showCharts ? 'Hide Visuals' : 'Analytics & Charts'}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                <Download className="mr-1.5 h-4 w-4" />
-                Export CSV
-              </Button>
-            </div>
-          )
+          <div className="flex items-center gap-2">
+            <Button 
+              variant={viewMode === 'weekly' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setViewMode(viewMode === 'weekly' ? 'daily' : 'weekly')}
+              className="text-xs font-semibold gap-1.5"
+            >
+              {viewMode === 'weekly' ? (
+                <>
+                  <List className="h-3.5 w-3.5" />
+                  Switch to Daily Logs
+                </>
+              ) : (
+                <>
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  Week-Wise Tabular View
+                </>
+              )}
+            </Button>
+            {hasRole(["admin", "hr"]) && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setShowCharts(!showCharts)}>
+                  <BarChart3 className="mr-1.5 h-4 w-4" />
+                  {showCharts ? 'Hide Visuals' : 'Analytics & Charts'}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                  <Download className="mr-1.5 h-4 w-4" />
+                  Export CSV
+                </Button>
+              </>
+            )}
+          </div>
         }
       />
 
@@ -382,7 +443,13 @@ export default function AttendancePage() {
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-muted-foreground">Checked in at:</span>
                     <span className="font-mono font-semibold text-foreground">{todayAttendance.checkIn.time}</span>
-                    <StatusBadge status={todayAttendance.status} isLate={todayAttendance.isLate} />
+                    <StatusBadge 
+                      status={todayAttendance.status} 
+                      isLate={todayAttendance.isLate} 
+                      isEdited={todayAttendance.isEdited}
+                      editedByName={todayAttendance.editedByName}
+                      editedAt={todayAttendance.editedAt}
+                    />
                   </div>
                   
                   {!todayAttendance?.checkOut ? (
@@ -622,7 +689,63 @@ export default function AttendancePage() {
         </div>
       )}
 
-      <Card>
+      {/* View Switcher: Week-Wise Matrix vs Daily Log */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
+        <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border">
+          <button
+            type="button"
+            onClick={() => setViewMode('weekly')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === 'weekly'
+                ? 'bg-background text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <CalendarDays className="h-3.5 w-3.5 text-primary" />
+            Week-Wise Tabular View
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              viewMode === 'weekly' ? 'bg-primary/10 text-primary font-bold' : 'bg-muted text-muted-foreground'
+            }`}>
+              Matrix
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('daily')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === 'daily'
+                ? 'bg-background text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <List className="h-3.5 w-3.5" />
+            Daily Log Records
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              viewMode === 'daily' ? 'bg-primary/10 text-primary font-bold' : 'bg-muted text-muted-foreground'
+            }`}>
+              {filteredAttendance.length}
+            </span>
+          </button>
+        </div>
+
+        <span className="text-xs text-muted-foreground">
+          {viewMode === 'weekly' 
+            ? 'Timesheet matrix: Monday to Sunday breakdown' 
+            : 'Chronological check-in & check-out list'}
+        </span>
+      </div>
+
+      {viewMode === 'weekly' ? (
+        <WeekWiseAttendanceTable
+          attendance={attendance}
+          employees={employees}
+          isAdminOrHr={hasRole(["admin", "hr"])}
+          currentUser={user}
+          onEditRecord={(record) => setEditingRecord(record)}
+        />
+      ) : (
+        <Card>
         <CardHeader>
           <CardTitle>Daily Log</CardTitle>
           <CardDescription>Records for today and the previous days.</CardDescription>
@@ -674,7 +797,14 @@ export default function AttendancePage() {
                 <TableRow>
                   <TableCell className="font-medium">{formatDate(new Date().toISOString())}</TableCell>
                   <TableCell>
-                    <StatusBadge status={todayAttendance?.status} isLate={todayAttendance?.isLate} isOvertime={todayAttendance?.isOvertime} />
+                    <StatusBadge 
+                      status={todayAttendance?.status} 
+                      isLate={todayAttendance?.isLate} 
+                      isOvertime={todayAttendance?.isOvertime}
+                      isEdited={todayAttendance?.isEdited}
+                      editedByName={todayAttendance?.editedByName}
+                      editedAt={todayAttendance?.editedAt}
+                    />
                   </TableCell>
                   <TableCell>{todayAttendance?.checkIn?.time || '-'}</TableCell>
                   <TableCell className="text-muted-foreground">{todayAttendance?.shiftStartTime || userShift?.startTime || '-'}</TableCell>
@@ -712,7 +842,14 @@ export default function AttendancePage() {
                         </TableCell>
                       )}
                       <TableCell>
-                        <StatusBadge status={log.status} isLate={log.isLate} isOvertime={log.isOvertime} />
+                        <StatusBadge 
+                          status={log.status} 
+                          isLate={log.isLate} 
+                          isOvertime={log.isOvertime}
+                          isEdited={log.isEdited}
+                          editedByName={log.editedByName}
+                          editedAt={log.editedAt}
+                        />
                       </TableCell>
                       <TableCell>{checkInTime}</TableCell>
                       <TableCell className="text-muted-foreground">{log.shiftStartTime || '-'}</TableCell>
@@ -752,6 +889,7 @@ export default function AttendancePage() {
           </Table>
         </CardContent>
       </Card>
+      )}
 
             {/* Edit Modal */}
       {editingRecord && (
