@@ -401,7 +401,7 @@ export default function ProjectsManagementPage() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Completed</p>
               <h3 className="text-2xl font-bold text-slate-800 tracking-tight dark:text-slate-200">{completedProjects}</h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 flex items-center justify-center text-indigo-600 border border-indigo-100/30 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
               <CheckCircle className="w-5 h-5" />
             </div>
           </CardContent>
@@ -434,13 +434,13 @@ export default function ProjectsManagementPage() {
                   placeholder="Search by project name, code or description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm cursor-pointer text-slate-600 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400"
+                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm cursor-pointer text-slate-600 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400"
               >
                 <option value="">All Statuses</option>
                 {Object.entries(statusLabels).map(([value, label]) => (
@@ -450,7 +450,7 @@ export default function ProjectsManagementPage() {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm cursor-pointer text-slate-600 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400"
+                className="px-3.5 py-2 bg-slate-50/50 hover:bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm cursor-pointer text-slate-600 font-medium dark:bg-slate-800/70 dark:hover:bg-slate-800/70 dark:border-slate-700 dark:text-slate-400"
               >
                 <option value="">All Priorities</option>
                 {Object.entries(priorityLabels).map(([value, label]) => (
@@ -462,14 +462,14 @@ export default function ProjectsManagementPage() {
             <div className="flex items-center gap-1.5 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4 dark:border-slate-800">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 shadow-sm border border-indigo-100/40 dark:border-indigo-500/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-primary/10 text-primary shadow-xs border border-primary/20' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 title="Grid View"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 shadow-sm border border-indigo-100/40 dark:border-indigo-500/30' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-primary/10 text-primary shadow-xs border border-primary/20' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 title="List View"
               >
                 <List className="w-4 h-4" />
@@ -561,7 +561,7 @@ export default function ProjectsManagementPage() {
                   {/* Title and Badges */}
                   <div>
                     <h3 
-                      className="font-bold text-slate-800 text-base mb-2 hover:text-indigo-600 transition-colors cursor-pointer dark:text-slate-200" 
+                      className="font-bold text-slate-800 text-base mb-2 hover:text-primary transition-colors cursor-pointer dark:text-slate-200" 
                       onClick={() => { 
                         if (user?.role === 'employee') {
                           window.location.href = `/projects/${project._id}/board`;
@@ -661,7 +661,7 @@ export default function ProjectsManagementPage() {
                   {/* Footer / Expand Button */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : project._id)}
-                    className="w-full py-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-xl transition-all flex items-center justify-center gap-1 border border-indigo-100/20 dark:text-indigo-400 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/10"
+                    className="w-full py-1.5 text-[11px] font-bold text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 rounded-xl transition-all flex items-center justify-center gap-1 border border-primary/20"
                   >
                     {isExpanded ? (
                       <>
@@ -752,7 +752,7 @@ export default function ProjectsManagementPage() {
                     <tr key={project._id} className="hover:bg-slate-50/40 transition-colors dark:hover:bg-slate-800/70">
                       <td className="p-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-slate-800 hover:text-indigo-600 cursor-pointer transition-colors dark:text-slate-200" onClick={() => { setSelectedProject(project); setShowViewModal(true); }}>
+                          <span className="font-bold text-slate-800 hover:text-primary cursor-pointer transition-colors dark:text-slate-200" onClick={() => { setSelectedProject(project); setShowViewModal(true); }}>
                             {project.name}
                           </span>
                           <span className="text-[10px] text-slate-400 tracking-wider uppercase mt-0.5">

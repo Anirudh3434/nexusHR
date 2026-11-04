@@ -101,12 +101,12 @@ export function MultiSelect({
               {selectedOptions.slice(0, 3).map((option) => (
                 <span
                   key={option.value}
-                  className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md text-[10px] font-medium dark:bg-indigo-500/10 dark:text-indigo-300"
+                  className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[10px] font-medium"
                 >
                   {option.icon ? (
                     <span className="shrink-0">{option.icon}</span>
                   ) : (
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-white ${getAvatarColor(options.indexOf(option))}`}>
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-primary-foreground bg-primary">
                       {getInitials(option.label)}
                     </span>
                   )}
@@ -136,7 +136,7 @@ export function MultiSelect({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
-                  className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
             </div>
@@ -154,20 +154,20 @@ export function MultiSelect({
                     onClick={() => handleToggle(option.value)}
                     className={cn(
                       "w-full text-left px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors flex items-center justify-between font-medium disabled:opacity-50 disabled:pointer-events-none gap-2",
-                      isSelected && "bg-indigo-50/60 dark:bg-slate-800/60 text-indigo-600 dark:text-indigo-400 font-semibold"
+                      isSelected && "bg-primary/10 text-primary font-semibold"
                     )}
                   >
                     <span className="flex items-center gap-2 min-w-0">
                       <div className={cn(
                         "w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0",
-                        isSelected ? "bg-indigo-500 border-indigo-500" : "border-slate-300 dark:border-slate-600"
+                        isSelected ? "bg-primary border-primary text-primary-foreground" : "border-slate-300 dark:border-slate-600"
                       )}>
                         {isSelected && <Check className="h-2.5 w-2.5 text-white" />}
                       </div>
                       {option.icon ? (
                         <span className="shrink-0">{option.icon}</span>
                       ) : (
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${getAvatarColor(options.indexOf(option))}`}>
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-primary-foreground bg-primary">
                           {getInitials(option.label)}
                         </span>
                       )}

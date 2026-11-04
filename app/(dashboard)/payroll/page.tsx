@@ -519,7 +519,7 @@ export default function PayrollPage() {
           <Card className="w-full max-w-2xl shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
+                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold">
                   {viewingPayroll.employeeId?.name ? viewingPayroll.employeeId.name.charAt(0) : '?'}
                 </div>
                 <div>
@@ -630,7 +630,7 @@ export default function PayrollPage() {
 
               <div className="mt-6 flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setViewingPayroll(null)}>Close Window</Button>
-                <Button className="flex-1 gap-2 bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:border-blue-500/30" onClick={() => {
+                <Button className="flex-1 gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20" onClick={() => {
                   const p = viewingPayroll;
                   setViewingPayroll(null);
                   openEditModal(p);
@@ -646,7 +646,7 @@ export default function PayrollPage() {
       {/* Edit Modal */}
       {editingPayroll && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-          <Card className="w-full max-w-md shadow-2xl border-blue-500/20">
+          <Card className="w-full max-w-md shadow-2xl border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
               <div>
                 <CardTitle className="text-lg">Edit Payroll Record</CardTitle>
@@ -664,7 +664,7 @@ export default function PayrollPage() {
                     type="number" 
                     value={editFormData.bonus}
                     onChange={(e) => handleEditChange('bonus', e.target.value)}
-                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all"
                   />
                 </div>
                 <div className="space-y-2">
@@ -673,7 +673,7 @@ export default function PayrollPage() {
                     type="number" 
                     value={editFormData.otherDeductions}
                     onChange={(e) => handleEditChange('otherDeductions', e.target.value)}
-                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-red-600 dark:text-red-400"
+                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all text-red-600 dark:text-red-400"
                   />
                 </div>
               </div>
@@ -684,16 +684,16 @@ export default function PayrollPage() {
                   value={editFormData.note}
                   onChange={(e) => handleEditChange('note', e.target.value)}
                   placeholder="Reason for manual adjustment..."
-                  className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 min-h-[80px] focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+                  className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 min-h-[80px] focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all text-sm"
                 />
               </div>
 
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
+              <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="font-medium text-blue-800 dark:text-blue-300">Final Calculated Net Salary</span>
-                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">₹{editFormData.netSalary.toLocaleString()}</span>
+                  <span className="font-medium text-foreground">Final Calculated Net Salary</span>
+                  <span className="text-xl font-bold text-primary">₹{editFormData.netSalary.toLocaleString()}</span>
                 </div>
-                <p className="text-[10px] text-blue-500 mt-1 italic">
+                <p className="text-[10px] text-muted-foreground mt-1 italic">
                   * includes base salary, OT additions, and late/leave deductions.
                 </p>
               </div>
@@ -715,7 +715,7 @@ export default function PayrollPage() {
           <Card className="w-full max-w-sm shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2">
-                <SettingsIcon size={18} className="text-blue-600 dark:text-blue-400" />
+                <SettingsIcon size={18} className="text-primary" />
                 <CardTitle className="text-lg">Payroll Schedule</CardTitle>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setShowSettings(false)}>
@@ -731,7 +731,7 @@ export default function PayrollPage() {
                   <select 
                     value={payrollCycleDate}
                     onChange={(e) => setPayrollCycleDate(Number(e.target.value))}
-                    className="flex-1 p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="flex-1 p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
                   >
                     {[...Array(31)].map((_, i) => (
                       <option key={i+1} value={i+1}>{i+1}{i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} of the month</option>
@@ -755,7 +755,7 @@ export default function PayrollPage() {
                     max="5"
                     value={overtimeRate}
                     onChange={(e) => setOvertimeRate(Number(e.target.value))}
-                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
                   />
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed italic dark:text-slate-400">

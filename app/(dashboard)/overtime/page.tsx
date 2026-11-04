@@ -8,16 +8,11 @@ import {
   Calendar, 
   Plus, 
   Search, 
-  User, 
-  ChevronRight, 
-  ArrowUpRight,
-  Filter,
   RefreshCw,
   MoreVertical,
   X,
   History,
   CheckCircle2,
-  AlertCircle,
   Ban,
   RotateCcw,
   Palmtree
@@ -177,36 +172,36 @@ export default function OvertimePage() {
                 <Clock size={24} />
               </div>
               <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Hours</p>
-                <div className="text-2xl font-black text-blue-900 dark:text-blue-300">{totalOvertime.toFixed(1)}h</div>
+                <p className="text-sm font-medium text-primary">Total Hours</p>
+                <div className="text-2xl font-black text-foreground">{totalOvertime.toFixed(1)}h</div>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-none shadow-sm bg-purple-50 dark:bg-purple-900/10">
+        <Card className="border border-border shadow-xs bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
+              <div className="p-3 bg-muted rounded-xl text-foreground">
                 <History size={24} />
               </div>
               <div>
-                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Manual Entries</p>
-                <div className="text-2xl font-black text-purple-900 dark:text-purple-300">{manualCount} Records</div>
+                <p className="text-sm font-medium text-muted-foreground">Manual Entries</p>
+                <div className="text-2xl font-black text-foreground">{manualCount} Records</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-green-50 dark:bg-green-900/10">
+        <Card className="border border-emerald-500/20 shadow-xs bg-emerald-50/50 dark:bg-emerald-950/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400">
+              <div className="p-3 bg-emerald-500/15 rounded-xl text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 size={24} />
               </div>
               <div>
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">Period Total</p>
-                <div className="text-2xl font-black text-green-900 dark:text-green-300">{months[selectedMonth]} {selectedYear}</div>
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Period Total</p>
+                <div className="text-2xl font-black text-foreground">{months[selectedMonth]} {selectedYear}</div>
               </div>
             </div>
           </CardContent>
@@ -214,28 +209,35 @@ export default function OvertimePage() {
       </div>
 
       {/* Main Content */}
-      <Card className="border-none shadow-xl shadow-gray-200/50">
-        <CardHeader className="border-b bg-gray-50/50 dark:bg-slate-800/70">
+      <Card className="rounded-[14px] border border-border shadow-xs">
+        <CardHeader className="border-b border-border bg-muted/20">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center border rounded-xl px-3 py-1.5 bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-500 w-64 dark:bg-slate-900">
-                <Search size={16} className="text-gray-400" />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center border border-border rounded-xl px-3 py-1.5 bg-background shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary w-64">
+                <Search size={16} className="text-muted-foreground" />
                 <input 
                   type="text" 
                   placeholder="Search employee or dept..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none text-sm focus:ring-0 ml-2 w-full"
+                  className="bg-transparent border-none text-sm focus:ring-0 ml-2 w-full text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
-              <div className="flex items-center border rounded-xl px-3 py-1.5 bg-white shadow-sm dark:bg-slate-900">
-                <Calendar size={16} className="text-gray-400" />
+              <div className="flex items-center border border-border rounded-xl px-3 py-1.5 bg-background shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary">
+                <Calendar size={16} className="text-primary mr-1" />
                 <select 
                   value={selectedMonth} 
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer ml-1"
+                  className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer ml-1 text-foreground font-medium outline-none"
                 >
-                  {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                  {months.map((m, i) => <option key={m} value={i} className="bg-card text-foreground">{m}</option>)}
+                </select>
+                <select 
+                  value={selectedYear} 
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer ml-1 text-foreground font-medium outline-none border-l border-border pl-2"
+                >
+                  {[selectedYear - 1, selectedYear, selectedYear + 1].map((y) => <option key={y} value={y} className="bg-card text-foreground">{y}</option>)}
                 </select>
               </div>
             </div>
@@ -245,28 +247,28 @@ export default function OvertimePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50/50 text-gray-500 text-xs font-bold uppercase tracking-wider dark:bg-slate-800/70 dark:text-slate-400">
+                <tr className="border-b border-border bg-muted/20 text-muted-foreground text-xs font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Employee</th>
                   <th className="px-6 py-4">Date</th>
                   <th className="px-6 py-4 text-center">System OT</th>
                   <th className="px-6 py-4 text-center">Manual OT</th>
-                   <th className="px-6 py-4 text-center">Total OT</th>
+                  <th className="px-6 py-4 text-center">Total OT</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Note</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center">
-                      <RefreshCw className="animate-spin text-blue-600 mx-auto dark:text-blue-400" />
-                      <p className="text-gray-500 mt-2 text-sm font-medium dark:text-slate-400">Crunching the hours...</p>
+                    <td colSpan={8} className="py-20 text-center">
+                      <RefreshCw className="animate-spin text-primary mx-auto" />
+                      <p className="text-muted-foreground mt-2 text-sm font-medium">Crunching the hours...</p>
                     </td>
                   </tr>
                 ) : filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-0">
+                    <td colSpan={8} className="p-0">
                       <EmptyState
                         title="No overtime records found"
                         description="No overtime records for this period"
@@ -275,51 +277,51 @@ export default function OvertimePage() {
                   </tr>
                 ) : (
                   filteredRecords.map((record) => (
-                    <tr key={record._id} className="hover:bg-gray-50/80 transition-colors group dark:hover:bg-slate-800/70">
+                    <tr key={record._id} className="hover:bg-muted/15 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-md">
-                            {record.employeeId?.name.charAt(0)}
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs border border-primary/20 shadow-xs">
+                            {record.employeeId?.name ? record.employeeId.name.charAt(0).toUpperCase() : "E"}
                           </div>
                           <div>
-                            <div className="text-sm font-bold text-gray-900 dark:text-slate-100">{record.employeeId?.name}</div>
-                            <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{record.employeeId?.department}</div>
+                            <div className="text-sm font-bold text-foreground">{record.employeeId?.name}</div>
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{record.employeeId?.department}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600 font-medium dark:text-slate-400">
+                        <div className="text-sm text-muted-foreground font-medium">
                           {new Date(record.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="text-gray-500 text-sm dark:text-slate-400">{record.overtimeHours || 0}h</span>
+                        <span className="text-muted-foreground text-sm font-mono">{record.overtimeHours || 0}h</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="text-blue-600 font-bold text-sm bg-blue-50 px-2 py-0.5 rounded-lg dark:text-blue-400 dark:bg-blue-500/10">
+                        <span className="text-primary font-semibold text-xs bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md font-mono">
                           +{record.manualOvertimeHours || 0}h
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="text-sm font-black text-gray-900 dark:text-slate-100">
+                        <div className="text-sm font-bold text-foreground font-mono">
                           {((record.overtimeHours || 0) + (record.manualOvertimeHours || 0)).toFixed(1)}h
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           record.overtimeStatus === 'paid' 
-                            ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' 
+                            ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 dark:text-emerald-400' 
                             : record.overtimeStatus === 'comp_off'
-                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300'
+                              ? 'bg-primary/10 text-primary border border-primary/20'
                               : record.overtimeStatus === 'rejected'
-                                ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
-                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300'
+                                ? 'bg-destructive/10 text-destructive border border-destructive/20'
+                                : 'bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400'
                         }`}>
                           {record.overtimeStatus || 'pending'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-xs text-gray-500 italic max-w-xs truncate dark:text-slate-400">
+                        <div className="text-xs text-muted-foreground italic max-w-xs truncate">
                           {record.manualOvertimeNote || 'System Generated'}
                         </div>
                       </td>
@@ -329,7 +331,7 @@ export default function OvertimePage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400"
+                              className="h-8 w-8 text-primary hover:bg-primary/10"
                               onClick={() => handleStatusUpdate(record._id, 'pending')}
                               title="Restore to Pending"
                             >
@@ -340,7 +342,7 @@ export default function OvertimePage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400"
+                                className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
                                 onClick={() => handleStatusUpdate(record._id, 'comp_off')}
                                 title="Convert to Comp-Off Leave"
                               >
@@ -349,7 +351,7 @@ export default function OvertimePage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
                                 onClick={() => handleStatusUpdate(record._id, 'rejected')}
                                 title="Exclude from Payroll"
                               >
@@ -357,7 +359,7 @@ export default function OvertimePage() {
                               </Button>
                             </div>
                           ) : null}
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
                              <MoreVertical size={14} />
                           </Button>
                         </div>
@@ -374,10 +376,10 @@ export default function OvertimePage() {
       {/* Manual Entry Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-          <Card className="w-full max-w-lg shadow-2xl border-none">
-            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+          <Card className="w-full max-w-lg shadow-2xl border border-border bg-card">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
               <div>
-                <CardTitle className="text-xl font-black">Record Manual Overtime</CardTitle>
+                <CardTitle className="text-xl font-bold">Record Manual Overtime</CardTitle>
                 <CardDescription>Adjust working hours for a specific date</CardDescription>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setShowModal(false)} className="rounded-full">
@@ -387,11 +389,11 @@ export default function OvertimePage() {
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-gray-400">Select Employee</label>
+                  <label className="text-xs font-bold uppercase text-muted-foreground">Select Employee</label>
                   <select 
                     value={formData.employeeId}
                     onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
-                    className="w-full p-3 border rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
                     required
                   >
                     <option value="">Choose Employee...</option>
@@ -403,17 +405,17 @@ export default function OvertimePage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase text-gray-400">Date</label>
+                    <label className="text-xs font-bold uppercase text-muted-foreground">Date</label>
                     <input 
                       type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({...formData, date: e.target.value})}
-                      className="w-full p-3 border rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase text-gray-400">Extra Hours</label>
+                    <label className="text-xs font-bold uppercase text-muted-foreground">Extra Hours</label>
                     <input 
                       type="number"
                       step="0.5"
@@ -421,20 +423,20 @@ export default function OvertimePage() {
                       placeholder="e.g. 2.5"
                       value={formData.hours}
                       onChange={(e) => setFormData({...formData, hours: e.target.value})}
-                      className="w-full p-3 border rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-gray-400">Reason / Note</label>
+                  <label className="text-xs font-bold uppercase text-muted-foreground">Reason / Note</label>
                   <textarea 
                     rows={3}
                     placeholder="Project deadline, Late shift support, etc."
                     value={formData.note}
                     onChange={(e) => setFormData({...formData, note: e.target.value})}
-                    className="w-full p-3 border rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                    className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none resize-none"
                   />
                 </div>
 

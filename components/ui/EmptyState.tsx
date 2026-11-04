@@ -10,12 +10,14 @@ interface EmptyStateProps {
   className?: string;
   /** Tighter spacing for table cells, sidebars, and popovers. */
   compact?: boolean;
+  /** Text and layout alignment: defaults to "center" across the entire application. */
+  align?: "center" | "left";
 }
 
 /**
- * Single empty-state used everywhere a list, table, or card has no rows.
- * Left-aligned like the rows it replaces — never centered — so the
- * fallback reads as part of the ledger instead of a floating poster.
+ * Standard fallback / empty-state component used across all tables, lists, and card views.
+ * Center-aligned by default with balanced vertical padding, centered icon container,
+ * centered title and descriptive copy, and centered action buttons.
  */
 export const EmptyState = ({
   title,
@@ -24,43 +26,74 @@ export const EmptyState = ({
   action,
   className,
   compact = false,
-}: EmptyStateProps) => (
-  <div
-    className={cn(
-      "flex items-start gap-3.5 text-left",
-      compact ? "px-4 py-4" : "px-5 py-6",
-      className
-    )}
-    role="status"
-    aria-live="polite"
-  >
-    <div
-      aria-hidden
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary",
-        compact
-          ? "h-9 w-9 [&>svg]:h-4 [&>svg]:w-4"
-          : "h-11 w-11 [&>svg]:h-[18px] [&>svg]:w-[18px]"
-      )}
-    >
-      {icon ?? <Inbox />}
-    </div>
+  align = "center",
+}: EmptyStateProps) => {
+  const isCenter = align === "center";
 
-    <div className={cn("min-w-0 flex-1", compact ? "py-0" : "py-0.5")}>
-      <p className={cn("font-semibold text-foreground", compact ? "text-[13px]" : "text-sm")}>
-        {title}
-      </p>
-      {description && (
+  return (
+    <div
+      className={cn(
+        "flex w-full",
+        isCenter
+          ? "flex-col items-center justify-center text-center mx-auto"
+          : "items-start gap-3.5 text-left",
+        compact ? "px-4 py-6" : "px-6 py-12",
+        className
+      )}
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        aria-hidden
+        className={cn(
+          "flex shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 text-primary shadow-xs transition-transform duration-200 hover:scale-105",
+          isCenter && "mb-3.5",
+          compact
+            ? "h-10 w-10 [&>svg]:h-4 [&>svg]:w-4"
+            : "h-12 w-12 [&>svg]:h-5 [&>svg]:w-5"
+        )}
+      >
+        {icon ?? <Inbox />}
+      </div>
+
+      <div
+        className={cn(
+          "min-w-0",
+          isCenter ? "flex flex-col items-center max-w-md mx-auto" : "flex-1",
+          compact ? "py-0" : "py-0.5"
+        )}
+      >
         <p
           className={cn(
-            "mt-1 max-w-md leading-relaxed text-muted-foreground",
-            compact ? "text-xs" : "text-[13px]"
+            "font-semibold text-foreground tracking-tight",
+            isCenter && "text-center",
+            compact ? "text-[13px]" : "text-sm"
           )}
         >
-          {description}
+          {title}
         </p>
-      )}
-      {action && <div className="mt-4 flex flex-wrap items-center gap-2">{action}</div>}
+        {description && (
+          <p
+            className={cn(
+              "mt-1.5 leading-relaxed text-muted-foreground",
+              isCenter ? "text-center max-w-md" : "max-w-md",
+              compact ? "text-xs" : "text-[13px]"
+            )}
+          >
+            {description}
+          </p>
+        )}
+        {action && (
+          <div
+            className={cn(
+              "mt-4 flex flex-wrap items-center gap-2.5",
+              isCenter && "justify-center"
+            )}
+          >
+            {action}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
