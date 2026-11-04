@@ -2588,8 +2588,10 @@ export default function ProjectBoardPage() {
           </button>
           <div className="h-6 w-px bg-gray-300"></div>
           <PageHeader
+            size="sm"
             icon={<FolderKanban />}
-            title={project?.name}
+            title={project?.name ? (project.name.length > 28 ? `${project.name.slice(0, 28)}...` : project.name) : ""}
+            titleClassName="max-w-[260px] sm:max-w-[340px] md:max-w-[420px]"
             description={project?.projectNumber}
           />
         </div>

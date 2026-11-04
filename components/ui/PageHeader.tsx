@@ -11,35 +11,62 @@ interface PageHeaderProps {
   description?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
+  size?: "default" | "sm";
+  titleClassName?: string;
 }
 
 /**
  * Canonical dashboard page header.
- * Title: text-2xl bold tracking-tight. Subtitle: text-sm muted.
- * Icon: 24px, brand primary, aligned with the title on every screen.
- * Layout: stacked on mobile, title-left/actions-right on sm+.
- * Page side padding comes from app/(dashboard)/layout.tsx — do not add padding classes here.
+ * Title: text-2xl bold tracking-tight (or text-base/text-lg when size="sm"). Subtitle: text-sm (or text-xs).
+ * Icon: brand primary, aligned with the title on every screen.
+ * Supports auto-truncation and slicing with hover tooltips for long titles.
  */
-export function PageHeader({ title, icon, description, actions, className }: PageHeaderProps) {
+export function PageHeader({ 
+  title, 
+  icon, 
+  description, 
+  actions, 
+  className,
+  size = "default",
+  titleClassName 
+}: PageHeaderProps) {
+  const isSm = size === "sm";
+
   return (
-    <div className={cn("flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between", className)}>
-      <div className="min-w-0">
-        <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground">
+    <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0", className)}>
+      <div className="min-w-0 max-w-full">
+        <h1 className={cn(
+          "flex items-center gap-2 font-bold tracking-tight text-foreground min-w-0",
+          isSm ? "text-base sm:text-lg" : "text-xl sm:text-2xl"
+        )}>
           {icon ? (
             <span
               aria-hidden="true"
-              className="flex shrink-0 items-center text-primary [&>svg]:h-6 [&>svg]:w-6 [&>svg]:text-primary"
+              className={cn(
+                "flex shrink-0 items-center text-primary [&>svg]:text-primary",
+                isSm ? "[&>svg]:h-5 [&>svg]:w-5" : "[&>svg]:h-6 [&>svg]:w-6"
+              )}
             >
               {icon}
             </span>
           ) : null}
-          <span className="min-w-0">{title}</span>
+          <span 
+            className={cn("min-w-0 truncate block", titleClassName)}
+            title={typeof title === "string" ? title : undefined}
+          >
+            {title}
+          </span>
         </h1>
         {description ? (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className={cn(
+            "text-muted-foreground truncate",
+            isSm ? "mt-0.5 text-xs font-mono" : "mt-1 text-sm"
+          )}>
+            {description}
+          </p>
         ) : null}
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div> : null}
     </div>
   );
 }
