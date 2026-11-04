@@ -4,7 +4,14 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['unlit-scalded-throat.ngrok-free.dev', '*.ngrok-free.dev'],
   poweredByHeader: false,
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      'recharts',
+      'date-fns',
+      'clsx',
+      'tailwind-merge',
+    ],
   },
   async headers() {
     return [

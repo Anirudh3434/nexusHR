@@ -15,7 +15,7 @@ export default function CandidateLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { addToast } = useToast();
   const router = useRouter();
 
@@ -23,10 +23,11 @@ export default function CandidateLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    const result = await login(email, password);
+    const result = await login(email, password, { candidateOnly: true });
 
     if (result.success) {
       if (!result.user?.isCandidate) {
+        logout();
         addToast({ type: "error", title: "Wrong Portal", description: "This account is not a candidate account." });
         router.push("/login");
         setIsLoading(false);
