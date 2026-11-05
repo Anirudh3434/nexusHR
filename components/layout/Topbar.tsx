@@ -148,18 +148,6 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           <Menu size={20} />
         </button>
 
-        {/* Mobile Logo - only visible on small screens */}
-        <div className="flex items-center gap-2.5 md:hidden">
-          <SmartLogoBadge 
-            src={user.companyLogo || "/logo.png"} 
-            alt={user.companyName || 'Logo'} 
-            className="h-8 w-8 p-1 rounded-lg border border-border shrink-0 shadow-xs" 
-          />
-          <span className="font-display font-semibold text-foreground text-[15px] truncate max-w-[140px]">
-            {user.companyName || 'NexusHR'}
-          </span>
-        </div>
-
         {/* Dynamic Desktop Breadcrumb */}
         <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-sm text-muted-foreground">
           <Link
@@ -196,11 +184,11 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         <button
           type="button"
           onClick={() => setShowMcpModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/10 text-primary hover:bg-primary/15 transition-all text-xs font-semibold shadow-2xs group"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/10 text-primary hover:bg-primary/15 transition-all text-xs font-semibold shadow-2xs group"
           title="Connect NexusHR to Cursor, Claude Desktop, Antigravity, or other AI agents (MCP)"
         >
           <Plug className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-          <span className="hidden sm:inline">Connect AI</span>
+          <span>Connect AI</span>
         </button>
         <button
           onClick={toggleTheme}

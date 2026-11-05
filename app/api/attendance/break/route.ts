@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { action, reason } = body; // action: 'start' | 'end'
+    const { action, reason, location } = body; // action: 'start' | 'end', location?: { lat, lng }
 
     if (!action || (action !== 'start' && action !== 'end')) {
       return NextResponse.json({ message: 'Invalid action. Must be "start" or "end".' }, { status: 400 });
@@ -54,10 +54,26 @@ export async function POST(req: Request) {
 
       attendance.isOnBreak = true;
       if (!attendance.breaks) attendance.breaks = [];
+      
+      const startLocation = location?.lat && location?.lng ? {
+        lat: location.lat,
+        lng: location.lng
+      } : undefined;
+
       attendance.breaks.push({
         startTime: currentTime,
+        startLocation,
         reason: reason || 'General Break',
       });
+
+      if (startLocation) {
+        attendance.lastLocation = {
+          lat: startLocation.lat,
+          lng: startLocation.lng,
+          accuracy: 10,
+          updatedAt: new Date(),
+        };
+      }
 
       await attendance.save();
 
@@ -67,6 +83,7 @@ export async function POST(req: Request) {
           employeeId: auth.userId,
           employeeName: (auth as any).name || 'Employee',
           status: 'break',
+          location: startLocation,
           timestamp: new Date().toISOString(),
         });
       }
@@ -79,7 +96,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         success: true,
-        message: 'Break started. Location tracking paused.',
+        message: 'Break started. Break location logged and tracking paused.',
         isOnBreak: true,
         breaks: attendance.breaks,
       });
@@ -90,14 +107,29 @@ export async function POST(req: Request) {
       }
 
       attendance.isOnBreak = false;
+      const endLocation = location?.lat && location?.lng ? {
+        lat: location.lat,
+        lng: location.lng
+      } : undefined;
+
       if (attendance.breaks && attendance.breaks.length > 0) {
         const lastBreak = attendance.breaks[attendance.breaks.length - 1];
         if (!lastBreak.endTime) {
           lastBreak.endTime = currentTime;
+          lastBreak.endLocation = endLocation;
           const startM = timeToMinutes(lastBreak.startTime);
           const endM = timeToMinutes(currentTime);
           lastBreak.duration = Math.max(0, endM - startM);
         }
+      }
+
+      if (endLocation) {
+        attendance.lastLocation = {
+          lat: endLocation.lat,
+          lng: endLocation.lng,
+          accuracy: 10,
+          updatedAt: new Date(),
+        };
       }
 
       await attendance.save();
@@ -108,6 +140,7 @@ export async function POST(req: Request) {
           employeeId: auth.userId,
           employeeName: (auth as any).name || 'Employee',
           status: 'active',
+          location: endLocation,
           timestamp: new Date().toISOString(),
         });
       }

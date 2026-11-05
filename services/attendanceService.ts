@@ -153,14 +153,22 @@ export const updateAttendanceRecord = async (id: string, data: Partial<Attendanc
   return response.json();
 };
 
-// Toggle employee break (Start or End break)
-export const toggleAttendanceBreak = async (data: { action: 'start' | 'end'; reason?: string }): Promise<any> => {
+// Toggle employee break (Start or End break) with location snapshot
+export const toggleAttendanceBreak = async (data: { action: 'start' | 'end'; reason?: string; location?: { lat: number; lng: number } }): Promise<any> => {
+  let location = data.location;
+  if (!location) {
+    const locResult = await getCurrentLocation().catch(() => ({ coords: null, error: 'ERR' }));
+    if (locResult.coords) {
+      location = locResult.coords;
+    }
+  }
+
   const response = await fetch('/api/attendance/break', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, location }),
   });
 
   if (!response.ok) {

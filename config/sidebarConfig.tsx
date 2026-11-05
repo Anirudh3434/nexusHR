@@ -135,6 +135,7 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
         { name: "Projects", href: "/projects", icon: <FolderKanban size={20} /> },
       ]
     },
+    { name: "Payslips", href: "/payslips", icon: <CircleDollarSign size={20} /> },
   ],
   hr: [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },

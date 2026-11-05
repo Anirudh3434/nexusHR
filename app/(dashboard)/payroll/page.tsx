@@ -628,8 +628,11 @@ export default function PayrollPage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex gap-3">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setViewingPayroll(null)}>Close Window</Button>
+                <Button variant="outline" className="gap-2" onClick={() => window.print()}>
+                  <Printer size={16} /> Print Payslip
+                </Button>
                 <Button className="flex-1 gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20" onClick={() => {
                   const p = viewingPayroll;
                   setViewingPayroll(null);

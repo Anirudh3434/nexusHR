@@ -132,10 +132,18 @@ export default function FieldTrackingPage() {
         prev.map((w) => {
           if (w.employeeId === ping.employeeId) {
             const newState = ping.status === "break" ? "break" : ping.status === "completed" ? "completed" : "active";
+            const updatedLocation = ping.location && typeof ping.location.lat === "number" ? {
+              lat: ping.location.lat,
+              lng: ping.location.lng,
+              accuracy: 10,
+              updatedAt: ping.timestamp || new Date().toISOString(),
+            } : w.lastLocation;
+
             return {
               ...w,
               trackingState: newState,
               isOnBreak: ping.status === "break",
+              lastLocation: updatedLocation,
             };
           }
           return w;
@@ -163,6 +171,7 @@ export default function FieldTrackingPage() {
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" && w.trackingState === "active") ||
+        (statusFilter === "office" && w.trackingState === "office") ||
         (statusFilter === "break" && w.trackingState === "break") ||
         (statusFilter === "wfh" && w.trackingState === "wfh");
 
@@ -325,7 +334,7 @@ export default function FieldTrackingPage() {
                 </div>
 
                 <div className="flex items-center gap-1">
-                  {["all", "active", "break", "wfh"].map((tab) => (
+                  {["all", "active", "office", "break", "wfh"].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setStatusFilter(tab)}
@@ -335,7 +344,7 @@ export default function FieldTrackingPage() {
                           : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                       }`}
                     >
-                      {tab}
+                      {tab === "active" ? "Field" : tab}
                     </button>
                   ))}
                 </div>
@@ -373,15 +382,19 @@ export default function FieldTrackingPage() {
                                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                                 : worker.trackingState === "break"
                                 ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                                : worker.trackingState === "office"
+                                ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
                                 : worker.trackingState === "wfh"
                                 ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
                                 : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                             }`}
                           >
                             {worker.trackingState === "active"
-                              ? "Live Duty"
+                              ? "Live Field"
                               : worker.trackingState === "break"
                               ? "On Break"
+                              : worker.trackingState === "office"
+                              ? "Office Check-In"
                               : worker.trackingState === "wfh"
                               ? "WFH (Protected)"
                               : worker.trackingState}
@@ -399,6 +412,13 @@ export default function FieldTrackingPage() {
                               Accuracy ±{Math.round(worker.lastLocation.accuracy || 0)}m
                               {worker.lastLocation.speed ? ` • ${worker.lastLocation.speed} km/h` : ""}
                             </span>
+                          </div>
+                        )}
+
+                        {worker.trackingState === "office" && worker.lastLocation && (
+                          <div className="text-[10px] text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>GPS: ±{Math.round(worker.lastLocation.accuracy || 15)}m</span>
                           </div>
                         )}
 

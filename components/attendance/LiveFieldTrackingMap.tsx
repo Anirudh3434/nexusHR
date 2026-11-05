@@ -101,9 +101,13 @@ export default function LiveFieldTrackingMap({
             const isSelected = worker.employeeId === selectedWorkerId;
             const markerColor =
               worker.trackingState === "active"
-                ? "#10b981" // emerald
+                ? "#10b981" // emerald (field live)
+                : worker.trackingState === "office"
+                ? "#6366f1" // indigo (office live)
                 : worker.trackingState === "break"
-                ? "#f59e0b" // amber
+                ? "#f59e0b" // amber (break location)
+                : worker.trackingState === "wfh"
+                ? "#3b82f6" // blue (wfh current location)
                 : "#64748b"; // slate
 
             const icon = createCustomIcon(markerColor, worker.name || "U");
@@ -127,10 +131,20 @@ export default function LiveFieldTrackingMap({
                         className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                           worker.trackingState === "active"
                             ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-800"
+                            : worker.trackingState === "office"
+                            ? "bg-indigo-100 text-indigo-800"
+                            : worker.trackingState === "break"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {worker.trackingState === "active" ? "On Duty" : "On Break"}
+                        {worker.trackingState === "active"
+                          ? "Field (Live)"
+                          : worker.trackingState === "office"
+                          ? "Office (Live)"
+                          : worker.trackingState === "break"
+                          ? "On Break (Paused)"
+                          : "WFH (Current)"}
                       </span>
                     </div>
 
@@ -163,15 +177,19 @@ export default function LiveFieldTrackingMap({
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-          <span className="text-slate-600 dark:text-slate-300">Active on Field</span>
+          <span className="text-slate-600 dark:text-slate-300">Field (Live Tracking)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
+          <span className="text-slate-600 dark:text-slate-300">Office (Live Tracking)</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-          <span className="text-slate-600 dark:text-slate-300">On Break (Paused)</span>
+          <span className="text-slate-600 dark:text-slate-300">On Break (Break Point)</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
-          <span className="text-slate-600 dark:text-slate-300">WFH (Protected)</span>
+          <span className="text-slate-600 dark:text-slate-300">WFH (Current Location)</span>
         </div>
       </div>
     </div>

@@ -12,7 +12,8 @@ import {
   KeyRound, 
   SlidersHorizontal,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  FolderCode
 } from "lucide-react";
 
 interface ConnectMcpModalProps {
@@ -218,12 +219,12 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
       `}</style>
 
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/45 backdrop-blur-md animate-in fade-in duration-200"
+        className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/50 backdrop-blur-md animate-in fade-in duration-200"
         onClick={onClose}
       >
-        {/* Main Glassmorphic Card matching screenshot */}
+        {/* Main Glassmorphic Card */}
         <div 
-          className="relative w-full max-w-[530px] rounded-[32px] border border-white/40 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] overflow-hidden flex flex-col p-6 sm:p-7 max-h-[92vh] overflow-y-auto"
+          className="relative w-full max-w-[530px] rounded-[24px] sm:rounded-[32px] border border-white/40 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] overflow-hidden flex flex-col p-4 sm:p-7 max-h-[95vh] sm:max-h-[92vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Ambient blurred primary reflections */}
@@ -232,18 +233,18 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
           <div className="absolute -bottom-16 -right-16 w-56 h-56 bg-primary/15 rounded-full blur-[70px] pointer-events-none" />
 
           {/* Header Row */}
-          <div className="relative z-10 flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3.5">
+          <div className="relative z-10 flex items-start justify-between gap-2.5 sm:gap-3">
+            <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
               {/* Male Plug Icon in circular tint container */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/25 shadow-xs">
-                <Plug className="h-6 w-6 stroke-[2.2]" />
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/25 shadow-xs">
+                <Plug className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.2]" />
               </div>
-              <div className="leading-tight">
-                <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight flex items-center gap-1.5">
-                  Connect <span className="font-cursive text-2xl font-bold text-primary tracking-normal">intelligently</span> via MCP
+              <div className="min-w-0 leading-tight">
+                <h2 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                  Connect <span className="font-cursive text-xl sm:text-2xl font-bold text-primary tracking-normal inline-block">intelligently</span> via MCP
                 </h2>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-                  Plug your workspace <span className="font-cursive text-sm font-bold text-primary">seamlessly</span> into your AI.
+                <p className="text-[11px] sm:text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                  Plug your workspace <span className="font-cursive text-xs sm:text-sm font-bold text-primary inline-block">seamlessly</span> into your AI.
                 </p>
               </div>
             </div>
@@ -258,32 +259,32 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
             </button>
           </div>
 
-          {/* Role & Email Context Pill with Token Toggle */}
-          <div className="relative z-10 mt-5 flex items-center justify-between px-5 py-2.5 rounded-full bg-primary/[0.08] border border-primary/25 text-xs">
+          {/* Role & Email Context Pill with Responsive Layout */}
+          <div className="relative z-10 mt-3.5 sm:mt-5 flex flex-wrap items-center justify-between gap-1.5 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-full bg-primary/[0.08] border border-primary/25 text-xs">
             <span className="text-neutral-600 dark:text-neutral-300">
               Role: <strong className="font-bold text-neutral-900 dark:text-neutral-100 capitalize">{user.role}</strong>
             </span>
-            <span className="font-mono font-semibold text-primary text-[11px] sm:text-xs truncate max-w-[240px]">
+            <span className="font-mono font-semibold text-primary text-[11px] sm:text-xs truncate max-w-full sm:max-w-[240px]">
               {user.email}
             </span>
           </div>
 
-          {/* Granular Permission & Functions Controls (Collapsible or Expandable) */}
+          {/* Granular Permission & Functions Controls (Collapsible) */}
           <div className="relative z-10 mt-3 rounded-2xl bg-white/70 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/60 p-3 shadow-2xs">
             <div 
-              className="flex items-center justify-between cursor-pointer select-none"
+              className="flex items-center justify-between gap-2 cursor-pointer select-none"
               onClick={() => setShowPermissionsPanel(!showPermissionsPanel)}
             >
-              <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
-                <span>Token Scopes: <span className="font-cursive text-primary text-base font-bold normal-case">custom permissions</span></span>
-                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-primary/10 text-primary border border-primary/20">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-semibold text-neutral-800 dark:text-neutral-200 min-w-0">
+                <SlidersHorizontal className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>Token Scopes: <span className="font-cursive text-primary text-sm sm:text-base font-bold normal-case">custom permissions</span></span>
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
                   {selectedPermissions.join(" • ")}
                 </span>
               </div>
               <button 
                 type="button" 
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1"
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1 shrink-0"
                 aria-label="Toggle Permissions"
               >
                 {showPermissionsPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -298,7 +299,7 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
                   <label className="text-[10px] uppercase tracking-wider font-bold text-neutral-500 dark:text-neutral-400 block mb-1.5">
                     Action Permissions
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {(["read", "write", "delete"] as PermissionType[]).map((perm) => {
                       const isSelected = selectedPermissions.includes(perm);
                       return (
@@ -352,11 +353,11 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
                 </div>
 
                 {/* Authorization Token Preview */}
-                <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/70 dark:border-neutral-700/60 text-[11px]">
-                  <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/70 dark:border-neutral-700/60 text-[11px]">
+                  <div className="flex items-center gap-1.5 min-w-0 max-w-full">
                     <KeyRound className="h-3.5 w-3.5 text-primary shrink-0" />
                     <span className="text-neutral-500 font-mono text-[10px] shrink-0">AUTH_TOKEN:</span>
-                    <span className="font-mono text-neutral-800 dark:text-neutral-200 font-semibold truncate">
+                    <span className="font-mono text-neutral-800 dark:text-neutral-200 font-semibold truncate text-[10px] sm:text-xs">
                       {currentToken.slice(0, 24)}...
                     </span>
                   </div>
@@ -366,7 +367,7 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
                       navigator.clipboard.writeText(currentToken);
                       addToast({ type: "success", title: "Auth Token Copied!" });
                     }}
-                    className="px-2 py-0.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold text-neutral-700 dark:text-neutral-200 hover:text-primary transition-colors cursor-pointer shrink-0"
+                    className="self-end sm:self-auto px-2.5 py-1 rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold text-neutral-700 dark:text-neutral-200 hover:text-primary transition-colors cursor-pointer shrink-0"
                   >
                     Copy Token
                   </button>
@@ -375,18 +376,19 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
             )}
           </div>
 
-          {/* "SELECT assistant" Row */}
-          <div className="relative z-10 mt-4 flex items-center justify-between px-1">
-            <div className="text-[11px] font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+          {/* "SELECT assistant" Row with No Collisions */}
+          <div className="relative z-10 mt-3.5 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-1">
+            <div className="text-[11px] font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200 flex items-center gap-1">
               SELECT <span className="font-cursive lowercase text-primary text-base font-bold tracking-normal">assistant</span>
             </div>
-            <div className="font-mono text-[10px] sm:text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 truncate max-w-[260px]">
-              {currentClient.configPath}
+            <div className="font-mono text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-full sm:max-w-[270px] bg-neutral-100/70 dark:bg-neutral-800/60 px-2 py-0.5 rounded-md flex items-center gap-1 self-start sm:self-auto">
+              <FolderCode className="h-3 w-3 shrink-0 text-primary/70" />
+              <span className="truncate">{currentClient.configPath}</span>
             </div>
           </div>
 
-          {/* Horizontal Assistant Selection Grid matching screenshot */}
-          <div className="relative z-10 mt-2 grid grid-cols-6 gap-2">
+          {/* Responsive Assistant Selection Grid (3 cols on mobile, 6 on sm+) */}
+          <div className="relative z-10 mt-2 grid grid-cols-3 sm:grid-cols-6 gap-2">
             {CLIENTS.map((client) => {
               const isActive = activeClient === client.id;
               return (
@@ -394,7 +396,7 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
                   key={client.id}
                   type="button"
                   onClick={() => setActiveClient(client.id)}
-                  className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer ${
+                  className={`relative flex flex-col items-center justify-center py-2 sm:py-2.5 px-1.5 rounded-xl sm:rounded-2xl transition-all cursor-pointer ${
                     isActive
                       ? "bg-primary/[0.12] border-2 border-primary/45 shadow-sm"
                       : "bg-white/80 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 hover:bg-white dark:hover:bg-neutral-800 shadow-2xs hover:shadow-xs"
@@ -405,14 +407,14 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
                     <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-white dark:ring-neutral-900 shadow-xs" />
                   )}
 
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center p-0.5">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center p-0.5">
                     <img 
                       src={client.image} 
                       alt={client.name} 
                       className="w-full h-full object-contain" 
                     />
                   </div>
-                  <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 mt-1 truncate max-w-full">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 dark:text-neutral-200 mt-1 truncate max-w-full text-center">
                     {client.name}
                   </span>
                 </button>
@@ -420,12 +422,12 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
             })}
           </div>
 
-          {/* Dark Syntax Highlighted Code Box matching screenshot */}
-          <div className="relative z-10 mt-4 rounded-2xl bg-[#36363c] dark:bg-[#25252a] p-4 text-xs font-mono shadow-inner border border-white/10 overflow-hidden">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                <span className="text-white font-medium text-xs">
+          {/* Dark Syntax Highlighted Code Box */}
+          <div className="relative z-10 mt-3.5 sm:mt-4 rounded-2xl bg-[#36363c] dark:bg-[#25252a] p-3 sm:p-4 text-xs font-mono shadow-inner border border-white/10 overflow-hidden">
+            <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] shrink-0" />
+                <span className="text-white font-medium text-xs truncate">
                   {currentClient.name} config
                 </span>
               </div>
@@ -434,15 +436,15 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
               <button
                 type="button"
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary hover:opacity-95 text-white text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-primary hover:opacity-95 text-white text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
               >
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
             </div>
 
-            {/* Syntax-highlighted code matching screenshot */}
-            <div className="pt-3 overflow-x-auto text-[11px] sm:text-xs leading-relaxed text-zinc-300 font-mono max-h-[170px] scrollbar-thin">
+            {/* Syntax-highlighted code with scroll support */}
+            <div className="pt-2.5 sm:pt-3 overflow-x-auto text-[10px] sm:text-xs leading-relaxed text-zinc-300 font-mono max-h-[140px] sm:max-h-[170px] scrollbar-thin">
               {activeClient === "devin" ? (
                 <pre>
                   <span className="text-white">&#123;</span>
@@ -516,15 +518,15 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
           </div>
 
           {/* Footer Row matching screenshot */}
-          <div className="relative z-10 mt-5 flex items-center justify-between">
-            <span className="text-xs text-neutral-600 dark:text-neutral-400">
+          <div className="relative z-10 mt-4 sm:mt-5 flex items-center justify-between gap-3">
+            <span className="text-[11px] sm:text-xs text-neutral-600 dark:text-neutral-400">
               Active with <span className="font-cursive text-sm font-bold text-primary">{selectedPermissions.length === 3 ? "full" : selectedPermissions.join("+")}</span> permission scope
             </span>
 
             <button
               type="button"
               onClick={onClose}
-              className="px-7 py-2 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              className="px-6 sm:px-7 py-2 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
             >
               Done
             </button>

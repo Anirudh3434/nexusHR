@@ -8,10 +8,10 @@ import { useEntitlements } from "../../context/EntitlementsContext";
 import { sidebarConfig, SidebarGroup, SidebarRoute, Role } from "../../config/sidebarConfig";
 import { cn } from "../../lib/utils";
 import { featureForPath, type Feature } from "../../lib/entitlements";
-import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock, LogOut, Sun, Moon } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock, LogOut, Sun, Moon, Plug } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { Avatar } from "../ui/Avatar";
 import { SmartLogoBadge } from "../ui/SmartLogoBadge";
+import { ConnectMcpModal } from "../mcp/ConnectMcpModal";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ interface SidebarProps {
 
 export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [showMcpModal, setShowMcpModal] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Recruitment": true,
     "Employee": true,
@@ -350,7 +351,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
           
           // Handle Single Item
           const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/");
-          const pendingCount = (item.name.includes("Approval") || item.name.includes("Leave")) ? 3 : 0;
+          const pendingCount = (item as any).badge || 0;
           const itemFeature = lockedFeatureFor(item.href);
 
           if (itemFeature) {
@@ -432,25 +433,29 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
       <div className="border-t border-white/10 p-3 space-y-2 bg-black/20">
         {!collapsed && (
           <>
-            {/* User Profile Card */}
-            <Link
-              href="/profile"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors group"
-            >
-              <Avatar name={user.name} src={user.avatar} size="sm" bordered />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-white truncate group-hover:text-primary transition-colors">
-                  {user.name}
-                </p>
-                <p className="text-[11px] text-slate-400 capitalize truncate">
-                  {user.designation || user.role}
-                </p>
-              </div>
-            </Link>
+            {/* Mobile-only Connect AI button */}
+            <div className="md:hidden pb-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  setShowMcpModal(true);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-all text-xs font-semibold shadow-2xs group"
+                title="Connect NexusHR to AI Agents (Cursor, Claude, Antigravity)"
+              >
+                <div className="flex items-center gap-2">
+                  <Plug className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                  <span>Connect AI (MCP)</span>
+                </div>
+                <span className="text-[10px] font-medium bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                  AI Link
+                </span>
+              </button>
+            </div>
 
             {/* Quick Actions: Theme & Logout */}
-            <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+            <div className="flex items-center gap-2 pt-1 border-t border-white/5 md:border-t-0">
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -500,6 +505,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         )}
       </div>
     </div>
+    <ConnectMcpModal isOpen={showMcpModal} onClose={() => setShowMcpModal(false)} />
     </>
   );
 };

@@ -150,7 +150,7 @@ export const PERMISSION_MATRIX: Record<Role, Record<Module, Permission[]>> = {
     attendance: ["view"], // Team only
     leave: ["view", "approve"], // Team only
     leave_types: ["view"],
-    payroll: [],
+    payroll: ["view"], // Own payslip only
     expenses: ["view", "approve"], // Team only
     tickets: ["view"],
     resignations: ["view"], // Team only
