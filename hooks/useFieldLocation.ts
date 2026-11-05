@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Socket } from "socket.io-client";
+import { Capacitor } from "@capacitor/core";
+import { Geolocation } from "@capacitor/geolocation";
 
 interface UseFieldLocationProps {
   socket: Socket | null;
@@ -21,6 +23,7 @@ export interface FieldLocationState {
   lastPingTime: Date | null;
   gpsError: string | null;
   wakeLockActive: boolean;
+  isNative: boolean;
 }
 
 export function useFieldLocation({
@@ -35,12 +38,14 @@ export function useFieldLocation({
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState(false);
 
-  const watchIdRef = useRef<number | null>(null);
+  const isNative = typeof window !== "undefined" && Capacitor.isNativePlatform();
+  const webWatchIdRef = useRef<number | null>(null);
+  const capWatchIdRef = useRef<string | null>(null);
   const wakeLockSentinelRef = useRef<any>(null);
   const lastEmitTimeRef = useRef<number>(0);
 
-  // Privacy condition: Tracking only runs when shift is active, workMode is field, and NOT on break
-  const shouldTrack = isShiftActive && workMode === "field" && !isOnBreak;
+  // Both Field and Office modes have continuous live tracking (except while on break)
+  const shouldTrack = isShiftActive && (workMode === "field" || workMode === "office") && !isOnBreak;
 
   // 1. Wake Lock management: Keeps the phone screen on to prevent mobile OS throttling
   const acquireWakeLock = useCallback(async () => {
@@ -83,41 +88,47 @@ export function useFieldLocation({
     };
   }, [shouldTrack, acquireWakeLock]);
 
-  // 2. Geolocation Watch management with strict Privacy enforcement
+  // 2. Geolocation Watch management (Capacitor Native + Web Hybrid)
   useEffect(() => {
-    if (!shouldTrack) {
-      // Clear any active watch immediately
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
+    let isSubscribed = true;
+
+    const stopTracking = async () => {
+      // Clear web watch
+      if (webWatchIdRef.current !== null && typeof window !== "undefined") {
+        navigator.geolocation.clearWatch(webWatchIdRef.current);
+        webWatchIdRef.current = null;
+      }
+      // Clear Capacitor native watch
+      if (capWatchIdRef.current) {
+        try {
+          await Geolocation.clearWatch({ id: capWatchIdRef.current });
+        } catch {}
+        capWatchIdRef.current = null;
       }
       releaseWakeLock();
+    };
+
+    if (!shouldTrack) {
+      stopTracking();
       return;
     }
 
-    if (!navigator.geolocation) {
-      setGpsError("Geolocation is not supported by your browser");
-      return;
-    }
-
-    // Acquire wake lock for active field shift
     acquireWakeLock();
     setGpsError(null);
 
-    const handleSuccess = (position: GeolocationPosition) => {
-      const { latitude, longitude, accuracy, speed, heading } = position.coords;
+    const handleCoords = (latitude: number, longitude: number, accuracy: number, speed: number | null, heading: number | null) => {
+      if (!isSubscribed) return;
 
       const newCoords = {
         lat: latitude,
         lng: longitude,
         accuracy: Math.round(accuracy),
-        speed: speed !== null ? Math.round(speed * 3.6) : null, // Convert m/s to km/h
+        speed: speed !== null ? Math.round(speed * 3.6) : null,
         heading: heading !== null ? Math.round(heading) : null,
       };
 
       setCoords(newCoords);
 
-      // Throttle WebSocket emits to preserve mobile battery & data
       const now = Date.now();
       if (now - lastEmitTimeRef.current >= pingIntervalMs) {
         lastEmitTimeRef.current = now;
@@ -126,46 +137,76 @@ export function useFieldLocation({
         if (socket && socket.connected) {
           socket.emit("field-location-update", {
             ...newCoords,
+            workMode,
             timestamp: new Date().toISOString(),
           });
         }
       }
     };
 
-    const handleError = (error: GeolocationPositionError) => {
-      let errorMsg = "Unable to retrieve location";
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          errorMsg = "Location permission denied. Please allow GPS access in browser settings.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          errorMsg = "Location information is unavailable.";
-          break;
-        case error.TIMEOUT:
-          errorMsg = "Location request timed out.";
-          break;
+    const startTracking = async () => {
+      if (isNative) {
+        try {
+          const perm = await Geolocation.requestPermissions();
+          if (perm.location !== "granted") {
+            setGpsError("Native GPS permission not granted. Please allow location access.");
+            return;
+          }
+
+          const watchId = await Geolocation.watchPosition(
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 },
+            (position, err) => {
+              if (err) {
+                setGpsError(err.message || "Native GPS error");
+                return;
+              }
+              if (position?.coords) {
+                handleCoords(
+                  position.coords.latitude,
+                  position.coords.longitude,
+                  position.coords.accuracy,
+                  position.coords.speed,
+                  position.coords.heading
+                );
+              }
+            }
+          );
+          capWatchIdRef.current = watchId;
+        } catch (err: any) {
+          setGpsError(err?.message || "Failed to start native geolocation");
+        }
+      } else {
+        // Standard Web Geolocation fallback
+        if (typeof window === "undefined" || !navigator.geolocation) {
+          setGpsError("Geolocation is not supported by your browser");
+          return;
+        }
+
+        webWatchIdRef.current = navigator.geolocation.watchPosition(
+          (pos) => {
+            handleCoords(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              pos.coords.accuracy,
+              pos.coords.speed,
+              pos.coords.heading
+            );
+          },
+          (err) => {
+            setGpsError(err.message || "Web GPS error");
+          },
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 25000 }
+        );
       }
-      setGpsError(errorMsg);
     };
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
-      {
-        enableHighAccuracy: true,
-        maximumAge: 10000,
-        timeout: 25000,
-      }
-    );
+    startTracking();
 
     return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
-      releaseWakeLock();
+      isSubscribed = false;
+      stopTracking();
     };
-  }, [shouldTrack, pingIntervalMs, socket, acquireWakeLock, releaseWakeLock]);
+  }, [shouldTrack, pingIntervalMs, socket, acquireWakeLock, releaseWakeLock, isNative, workMode]);
 
   return {
     isTracking: shouldTrack && !gpsError,
@@ -173,6 +214,8 @@ export function useFieldLocation({
     lastPingTime,
     gpsError,
     wakeLockActive,
+    isNative,
   };
 }
+
 

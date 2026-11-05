@@ -175,13 +175,14 @@ app.prepare().then(() => {
       if (!uid) return;
       const companyId = (socket as any).data?.companyId;
       const name = (socket as any).data?.name;
-      const { status } = data || {};
+      const { status, location } = data || {};
 
       const room = `field-tracking:${companyId || "global"}`;
       io.to(room).emit("employee-status-ping", {
         employeeId: uid,
-        name: name || "Field Worker",
+        name: name || "Worker",
         status: status || "active",
+        location: location || null,
         timestamp: new Date().toISOString(),
       });
     });

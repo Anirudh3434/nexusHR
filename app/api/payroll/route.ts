@@ -20,33 +20,42 @@ export async function GET(req: Request) {
     await connectDB();
     const auth = await getAuthInfo();
     if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr'])) {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-    }
+
+    const isSuperAdmin = auth.role === 'super_admin';
+    const isPrivileged = hasRole(auth.role, ['super_admin', 'admin', 'hr']);
+
     const { searchParams } = new URL(req.url);
     const month = parseInt(searchParams.get('month') || '-1');
     const year = parseInt(searchParams.get('year') || '-1');
     const employeeId = searchParams.get('employeeId');
+    const payrollId = searchParams.get('id');
     const queryCompanyId = searchParams.get('companyId');
 
-    if (queryCompanyId && auth.role !== 'super_admin' && queryCompanyId !== auth.companyId) {
+    if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
       return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
     }
     // companyId ALWAYS from session (super_admin may pass explicit filter)
-    const companyId = auth.role === 'super_admin' ? (queryCompanyId || auth.companyId) : auth.companyId;
+    const companyId = isSuperAdmin ? (queryCompanyId || auth.companyId) : auth.companyId;
     if (!companyId) return NextResponse.json({ message: 'Company scope required' }, { status: 403 });
 
     let query: any = { companyId };
+    if (payrollId) query._id = payrollId;
     if (month !== -1) query.month = month;
     if (year !== -1) query.year = year;
-    if (employeeId) query.employeeId = employeeId;
+
+    if (!isPrivileged) {
+      // Employees and managers can only view their own payroll records
+      query.employeeId = auth.userId;
+    } else if (employeeId) {
+      query.employeeId = employeeId;
+    }
 
     // --- AUTO-GENERATION TRIGGER (Lazy Cron) ---
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
-    if (companyId && month === currentMonth && year === currentYear && !employeeId) {
+    if (isPrivileged && companyId && month === currentMonth && year === currentYear && !employeeId && !payrollId) {
       const existingCount = await Payroll.countDocuments({ companyId, month, year });
       
       if (existingCount === 0) {
@@ -62,7 +71,8 @@ export async function GET(req: Request) {
 
     const payrolls = await Payroll.find(query)
       .populate('employeeId', 'name department designation email')
-      .sort({ createdAt: -1 })
+      .populate('companyId', 'name logo address phone email website')
+      .sort({ year: -1, month: -1, createdAt: -1 })
       .lean();
 
     return NextResponse.json(payrolls);

@@ -55,10 +55,37 @@ export async function GET() {
           trackingState = 'wfh';
         } else if (isField && isActive) {
           trackingState = 'active';
+        } else if (isActive) {
+          trackingState = 'office';
         }
 
-        // Privacy rule: If on break or WFH, do NOT reveal live coords
-        const canExposeCoords = isField && isActive && !isOnBreak;
+        // Determine coordinates from lastLocation or fallback to checkIn location
+        let rawLocation = (rec.lastLocation && typeof rec.lastLocation.lat === 'number')
+          ? rec.lastLocation
+          : (rec.checkIn?.location && typeof rec.checkIn.location.lat === 'number')
+          ? {
+              lat: rec.checkIn.location.lat,
+              lng: rec.checkIn.location.lng,
+              accuracy: 15,
+              updatedAt: rec.updatedAt || rec.createdAt,
+            }
+          : null;
+
+        // If on break, show where break was taken
+        if (isOnBreak && rec.breaks && rec.breaks.length > 0) {
+          const currentBreak = rec.breaks[rec.breaks.length - 1];
+          if (currentBreak.startLocation && typeof currentBreak.startLocation.lat === 'number') {
+            rawLocation = {
+              lat: currentBreak.startLocation.lat,
+              lng: currentBreak.startLocation.lng,
+              accuracy: 10,
+              updatedAt: rec.updatedAt,
+            };
+          }
+        }
+
+        // Expose coordinates for Field (live), Office (live), WFH (current location), and Break (break location)
+        const canExposeCoords = (isActive || isOnBreak) && !!rawLocation;
 
         return {
           attendanceId: rec._id.toString(),
@@ -74,14 +101,15 @@ export async function GET() {
           checkOutTime: rec.checkOut?.time,
           isOnBreak,
           trackingState,
-          lastLocation: canExposeCoords && rec.lastLocation ? {
-            lat: rec.lastLocation.lat,
-            lng: rec.lastLocation.lng,
-            accuracy: rec.lastLocation.accuracy,
-            speed: rec.lastLocation.speed,
-            heading: rec.lastLocation.heading,
-            updatedAt: rec.lastLocation.updatedAt,
+          lastLocation: canExposeCoords && rawLocation ? {
+            lat: rawLocation.lat,
+            lng: rawLocation.lng,
+            accuracy: rawLocation.accuracy || 15,
+            speed: rawLocation.speed || null,
+            heading: rawLocation.heading || null,
+            updatedAt: rawLocation.updatedAt,
           } : null,
+          breaks: rec.breaks || [],
           breaksCount: rec.breaks?.length || 0,
         };
       });

@@ -99,7 +99,15 @@ const AttendanceSchema = new Schema({
   breaks: [
     {
       startTime: String,
+      startLocation: {
+        lat: Number,
+        lng: Number,
+      },
       endTime: String,
+      endLocation: {
+        lat: Number,
+        lng: Number,
+      },
       duration: Number, // in minutes
       reason: String,
     }

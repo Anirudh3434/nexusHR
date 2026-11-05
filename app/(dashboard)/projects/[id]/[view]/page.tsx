@@ -153,6 +153,7 @@ export default function ProjectBoardPage() {
 
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
+  const [showMoreTabs, setShowMoreTabs] = useState(false);
   const [activeFilterDropdown, setActiveFilterDropdown] = useState<string | null>(null);
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -2187,289 +2188,210 @@ export default function ProjectBoardPage() {
     const remainingCount = members.length - maxAvatars;
 
     return (
-      <div className="flex flex-col gap-2 w-full">
-        <div className={`${widthClass} h-[66px] bg-slate-50/40 border border-slate-200/60 rounded-xl p-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex items-center gap-3 w-full dark:bg-slate-800/70 dark:border-slate-700`}>
-          {/* Unified Intelligent Search Form */}
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 flex-1 min-w-[280px]">
-            <div className="relative flex-1">
-              {/* Sparkles Mode Indicator / Manual Toggle Button */}
+      <div className="flex flex-col gap-2.5 w-full">
+        {/* Search Input Box matching user mockup */}
+        <form onSubmit={handleSearchSubmit} className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 sm:p-2 shadow-sm flex items-center gap-2">
+          <div className="relative flex-1 flex items-center pl-2">
+            <button
+              type="button"
+              onClick={toggleAiMode}
+              className={`p-1 rounded transition-colors ${
+                aiMode
+                  ? 'text-indigo-600 bg-indigo-50 animate-pulse dark:text-indigo-400 dark:bg-indigo-500/10'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+              title={aiMode ? "AI Mode Active (Click to switch to simple search)" : "Simple Search Active (Click to switch to AI search)"}
+            >
+              <Sparkles className="w-4 h-4 text-slate-400" />
+            </button>
+            <input
+              type="text"
+              placeholder={aiMode ? 'Ask AI (e.g. "today tasks to me")' : 'Search tasks by name or description...'}
+              value={searchVal}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              disabled={aiLoading}
+              className="w-full pl-2 pr-6 py-1.5 text-xs sm:text-sm bg-transparent focus:outline-none text-slate-700 dark:text-slate-200 placeholder-slate-400 font-medium"
+            />
+            {(searchVal || aiActive) && (
               <button
                 type="button"
-                onClick={toggleAiMode}
-                className={`absolute left-3 top-1/2 transform -translate-y-1/2 p-0.5 rounded transition-all duration-200 ${
-                  aiMode 
-                    ? 'text-indigo-600 hover:text-indigo-800 bg-indigo-50 animate-pulse dark:text-indigo-400 dark:bg-indigo-500/10' 
-                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
-                title={aiMode ? "AI Mode Active (Click to switch to simple search)" : "Simple Search Active (Click to switch to AI search)"}
+                onClick={handleClearSearch}
+                className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 rounded"
+                title="Clear search"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <X className="w-3.5 h-3.5" />
               </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={aiLoading || !searchVal.trim()}
+            className="px-4 py-2 sm:py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm bg-[#f87171] hover:bg-[#ef4444] disabled:opacity-50 text-white shrink-0"
+          >
+            {aiLoading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : aiMode ? (
+              <Sparkles className="w-3.5 h-3.5" />
+            ) : (
+              <Search className="w-3.5 h-3.5" />
+            )}
+            <span>{aiMode ? 'Ask AI' : 'Search'}</span>
+          </button>
+        </form>
 
-              <input
-                type="text"
-                placeholder={
-                  aiMode 
-                    ? 'Ask AI (e.g. "today tasks to me in progress")' 
-                    : 'Search tasks by name or description...'
-                }
-                value={searchVal}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                disabled={aiLoading}
-                className={`pl-10 pr-10 py-2.5 w-full text-xs bg-white dark:bg-slate-900 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
-                  aiMode 
-                    ? 'border-2 border-indigo-400 focus:ring-indigo-400/20 text-indigo-900 dark:text-indigo-200 placeholder-indigo-400 dark:placeholder-indigo-300' 
-                    : 'border border-slate-200 focus:border-primary focus:ring-primary/20 text-slate-700 placeholder-slate-400 dark:border-slate-700 dark:text-slate-300'
-                }`}
-              />
+        {/* Quick Filter Row matching user mockup: Teal Avatars + Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5 w-full">
+          {/* Member Avatars */}
+          {visibleMembers.length > 0 && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              {visibleMembers.map((member) => {
+                const user = member.employeeId;
+                if (!user) return null;
+                const isSelected = filters.assignee.includes(user._id);
+                const name = user.name || 'User';
+                const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
 
-              {(searchVal || aiActive) && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded"
-                  title="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                return (
+                  <button
+                    key={user._id}
+                    onClick={() => {
+                      setFilters(prev => ({
+                        ...prev,
+                        assignee: prev.assignee.includes(user._id)
+                          ? prev.assignee.filter(a => a !== user._id)
+                          : [...prev.assignee, user._id]
+                      }));
+                    }}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform shrink-0 ${
+                      isSelected
+                        ? 'ring-2 ring-teal-500 ring-offset-2 scale-105 bg-teal-700 text-white'
+                        : 'bg-[#14b8a6] hover:bg-[#0d9488] text-white hover:scale-105'
+                    }`}
+                    title={name}
+                  >
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <span>{initials}</span>
+                    )}
+                  </button>
+                );
+              })}
+              {remainingCount > 0 && (
+                <div className="w-7 h-7 rounded-full bg-[#0d9488] text-white flex items-center justify-center text-[10px] font-bold shadow-sm shrink-0">
+                  +{remainingCount}
+                </div>
               )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={aiLoading || !searchVal.trim()}
-              className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
-                aiMode
-                  ? 'bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground'
-                  : 'bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground'
-              }`}
-            >
-              {aiLoading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : aiMode ? (
-                <Sparkles className="w-3.5 h-3.5" />
-              ) : (
-                <Search className="w-3.5 h-3.5" />
-              )}
-              {aiMode ? 'Ask AI' : 'Search'}
-            </button>
-          </form>
-
-        {/* Overlapping Assignees/Members list */}
-        <div className="flex -space-x-1.5 items-center shrink-0 mx-2">
-          {visibleMembers.map((member) => {
-            const user = member.employeeId;
-            if (!user) return null;
-            
-            const isSelected = filters.assignee.includes(user._id);
-            const hasAnySelected = filters.assignee.length > 0;
-            
-            const stateClass = hasAnySelected
-              ? isSelected
-                ? 'ring-2 ring-primary ring-offset-2 z-10 scale-105 opacity-100'
-                : 'opacity-40 hover:opacity-80 scale-95'
-              : 'opacity-100 hover:scale-105 hover:z-10';
-              
-            const name = user.name || 'User';
-            const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-            
-            const getAvatarBg = (val: string) => {
-              const list = [
-                'bg-indigo-600 text-white',
-                'bg-blue-600 text-white',
-                'bg-emerald-600 text-white',
-                'bg-amber-600 text-white',
-                'bg-rose-600 text-white',
-                'bg-violet-600 text-white',
-                'bg-sky-600 text-white'
-              ];
-              let h = 0;
-              for (let i = 0; i < val.length; i++) {
-                h = val.charCodeAt(i) + ((h << 5) - h);
-              }
-              return list[Math.abs(h) % list.length];
-            };
-
-            return (
-              <button
-                key={user._id}
-                onClick={() => {
-                  setFilters(prev => ({
-                    ...prev,
-                    assignee: prev.assignee.includes(user._id)
-                      ? prev.assignee.filter(a => a !== user._id)
-                      : [...prev.assignee, user._id]
-                  }));
-                }}
-                className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm transition-all duration-200 focus:outline-none shrink-0 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-primary/15 text-primary hover:bg-primary/25 border-primary/20'} ${stateClass}`}
-                title={name}
-              >
-                {user.avatar ? (
-                  <img src={user.avatar} alt={name} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <span>{initials}</span>
-                )}
-              </button>
-            );
-          })}
-          {remainingCount > 0 && (
-            <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shadow-sm shrink-0 z-10 dark:bg-slate-800 dark:text-slate-400">
-              +{remainingCount}
             </div>
           )}
-        </div>
 
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {/* Epic Filter */}
-          <div className="relative" data-filter-dropdown="epic">
-            <button
-              onClick={() => {
-                setActiveFilterDropdown(activeFilterDropdown === 'epic' ? null : 'epic');
-                setFilterSearchQuery('');
-              }}
-              className={`px-2 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1 transition-colors ${
-                activeFilterDropdown === 'epic' || filters.epic.length > 0
-                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300'
-                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
-              }`}
-            >
-              Epic {filters.epic.length > 0 && `(${filters.epic.length})`}
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {activeFilterDropdown === 'epic' && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-slate-200 z-50 dark:bg-slate-900 dark:border-slate-700">
-                <div className="p-2">
-                  <input
-                    type="text"
-                    placeholder="Search epics..."
-                    value={filterSearchQuery}
-                    onChange={(e) => setFilterSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-700"
-                    autoFocus
-                  />
+          {/* Filter Dropdown Pills */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Epic Filter */}
+            <div className="relative shrink-0" data-filter-dropdown="epic">
+              <button
+                onClick={() => {
+                  setActiveFilterDropdown(activeFilterDropdown === 'epic' ? null : 'epic');
+                  setFilterSearchQuery('');
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 shadow-sm transition-all ${
+                  activeFilterDropdown === 'epic' || filters.epic.length > 0
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300'
+                    : 'bg-white border-slate-200/80 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <span>Epic</span>
+                {filters.epic.length > 0 && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1 rounded-full font-bold">({filters.epic.length})</span>}
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+              {activeFilterDropdown === 'epic' && (
+                <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 dark:bg-slate-900 dark:border-slate-700">
+                  <div className="p-2">
+                    <input
+                      type="text"
+                      placeholder="Search epics..."
+                      value={filterSearchQuery}
+                      onChange={(e) => setFilterSearchQuery(e.target.value)}
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-700"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {epicTasks.length > 0 ? (
+                      epicTasks.filter(epic => 
+                        epic.title.toLowerCase().includes(filterSearchQuery.toLowerCase())
+                      ).map(epic => (
+                        <button
+                          key={epic._id}
+                          onClick={() => {
+                            setFilters(prev => ({
+                              ...prev,
+                              epic: prev.epic.includes(epic._id)
+                                ? prev.epic.filter(e => e !== epic._id)
+                                : [...prev.epic, epic._id]
+                            }));
+                          }}
+                          className={`w-full px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between ${
+                            filters.epic.includes(epic._id) ? 'bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <span className="truncate flex-1 pr-2">{epic.title}</span>
+                          <span className="text-[10px] text-slate-400 shrink-0">{epic.taskNumber}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-xs text-slate-400 italic">No epics in this project</div>
+                    )}
+                  </div>
                 </div>
-                <div className="max-h-48 overflow-y-auto">
-                  {epicTasks.length > 0 ? (
-                    epicTasks.filter(epic => 
-                      epic.title.toLowerCase().includes(filterSearchQuery.toLowerCase())
-                    ).map(epic => (
-                      <button
-                        key={epic._id}
-                        onClick={() => {
-                          setFilters(prev => ({
-                            ...prev,
-                            epic: prev.epic.includes(epic._id)
-                              ? prev.epic.filter(e => e !== epic._id)
-                              : [...prev.epic, epic._id]
-                          }));
-                        }}
-                        className={`w-full px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between ${
-                          filters.epic.includes(epic._id) ? 'bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        <span className="truncate flex-1 pr-2">{epic.title}</span>
-                        <span className="text-[10px] text-slate-400 shrink-0">{epic.taskNumber}</span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-2 text-xs text-slate-400 italic">No epics in this project</div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Task Type Filter */}
-          <div className="relative" data-filter-dropdown="taskType">
-            <button
-              onClick={() => {
-                setActiveFilterDropdown(activeFilterDropdown === 'taskType' ? null : 'taskType');
-                setFilterSearchQuery('');
-              }}
-              className={`px-2 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1 transition-colors ${
-                activeFilterDropdown === 'taskType' || filters.taskType.length > 0
-                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300'
-                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
-              }`}
-            >
-              Type {filters.taskType.length > 0 && `(${filters.taskType.length})`}
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {activeFilterDropdown === 'taskType' && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-slate-200 z-50 dark:bg-slate-900 dark:border-slate-700">
-                <div className="p-2">
-                  <input
-                    type="text"
-                    placeholder="Search type..."
-                    value={filterSearchQuery}
-                    onChange={(e) => setFilterSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-700"
-                    autoFocus
-                  />
-                </div>
-                <div className="max-h-48 overflow-y-auto">
-                  {Object.entries(taskTypeLabels).filter(([key, label]) => 
-                    label.toLowerCase().includes(filterSearchQuery.toLowerCase())
-                  ).map(([key, label]) => (
-                    <button
-                      key={key}
-                      onClick={() => {
-                        setFilters(prev => ({
-                          ...prev,
-                          taskType: prev.taskType.includes(key)
-                            ? prev.taskType.filter(t => t !== key)
-                            : [...prev.taskType, key]
-                        }));
-                      }}
-                      className={`w-full px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
-                        filters.taskType.includes(key) ? 'bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* More Filter */}
-          <div className="relative" data-filter-dropdown="more">
-            <button
-              onClick={() => {
-                setActiveFilterDropdown(activeFilterDropdown === 'more' ? null : 'more');
-                setFilterSearchQuery('');
-              }}
-              className={`px-2 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1 transition-colors ${
-                activeFilterDropdown === 'more' || filters.status.length > 0 || filters.priority.length > 0 || filters.labels.length > 0 || filters.storyPoints || filters.dueDate
-                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300'
-                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
-              }`}
-            >
-              More
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {activeFilterDropdown === 'more' && (
-              <div className="absolute top-full right-0 mt-1 w-72 bg-white rounded-lg shadow-xl border border-slate-200 z-50 p-3 space-y-4 max-h-[400px] overflow-y-auto dark:bg-slate-900 dark:border-slate-700">
-                {/* Status Option */}
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Status</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(statusLabels).map(([key, label]) => (
+            {/* Type Filter */}
+            <div className="relative shrink-0" data-filter-dropdown="taskType">
+              <button
+                onClick={() => {
+                  setActiveFilterDropdown(activeFilterDropdown === 'taskType' ? null : 'taskType');
+                  setFilterSearchQuery('');
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 shadow-sm transition-all ${
+                  activeFilterDropdown === 'taskType' || filters.taskType.length > 0
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300'
+                    : 'bg-white border-slate-200/80 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <span>Type</span>
+                {filters.taskType.length > 0 && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1 rounded-full font-bold">({filters.taskType.length})</span>}
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+              {activeFilterDropdown === 'taskType' && (
+                <div className="absolute top-full left-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-50 dark:bg-slate-900 dark:border-slate-700">
+                  <div className="p-2">
+                    <input
+                      type="text"
+                      placeholder="Search type..."
+                      value={filterSearchQuery}
+                      onChange={(e) => setFilterSearchQuery(e.target.value)}
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-slate-700"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {Object.entries(taskTypeLabels).filter(([key, label]) => 
+                      label.toLowerCase().includes(filterSearchQuery.toLowerCase())
+                    ).map(([key, label]) => (
                       <button
                         key={key}
                         onClick={() => {
                           setFilters(prev => ({
                             ...prev,
-                            status: prev.status.includes(key)
-                              ? prev.status.filter(s => s !== key)
-                              : [...prev.status, key]
+                            taskType: prev.taskType.includes(key)
+                              ? prev.taskType.filter(t => t !== key)
+                              : [...prev.taskType, key]
                           }));
                         }}
-                        className={`px-2 py-1 rounded text-[10px] font-semibold border transition-all ${
-                          filters.status.includes(key)
-                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
-                            : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                        className={`w-full px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
+                          filters.taskType.includes(key) ? 'bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         {label}
@@ -2477,113 +2399,161 @@ export default function ProjectBoardPage() {
                     ))}
                   </div>
                 </div>
+              )}
+            </div>
 
-                {/* Priority Option */}
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Priority</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['low', 'medium', 'high', 'critical'].map((prio) => (
-                      <button
-                        key={prio}
-                        onClick={() => {
-                          setFilters(prev => ({
-                            ...prev,
-                            priority: prev.priority.includes(prio)
-                              ? prev.priority.filter(p => p !== prio)
-                              : [...prev.priority, prio]
-                          }));
-                        }}
-                        className={`px-2 py-1 rounded text-[10px] font-semibold border capitalize transition-all ${
-                          filters.priority.includes(prio)
-                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
-                            : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        {prio}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Story Points Filter */}
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Story Points (Min)</span>
-                  <input
-                    type="number"
-                    placeholder="Min points..."
-                    value={filters.storyPoints}
-                    onChange={(e) => setFilters(prev => ({ ...prev, storyPoints: e.target.value }))}
-                    className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-slate-700"
-                  />
-                </div>
-
-                {/* Due Date Filter */}
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Due Date (Before)</span>
-                  <input
-                    type="date"
-                    value={filters.dueDate}
-                    onChange={(e) => setFilters(prev => ({ ...prev, dueDate: e.target.value }))}
-                    className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-slate-700"
-                  />
-                </div>
-
-                {/* Labels Filter */}
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Labels</span>
-                  <div className="flex flex-wrap gap-1">
-                    {allLabels.map((label) => {
-                      const isSelected = filters.labels.includes(label._id);
-                      return (
+            {/* More Filter */}
+            <div className="relative shrink-0" data-filter-dropdown="more">
+              <button
+                onClick={() => {
+                  setActiveFilterDropdown(activeFilterDropdown === 'more' ? null : 'more');
+                  setFilterSearchQuery('');
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 shadow-sm transition-all ${
+                  activeFilterDropdown === 'more' || filters.status.length > 0 || filters.priority.length > 0 || filters.labels.length > 0 || filters.storyPoints || filters.dueDate
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:text-indigo-300'
+                    : 'bg-white border-slate-200/80 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <span>More</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+              {activeFilterDropdown === 'more' && (
+                <div className="absolute top-full right-0 mt-1.5 w-72 bg-white rounded-xl shadow-xl border border-slate-200 z-50 p-3 space-y-4 max-h-[400px] overflow-y-auto dark:bg-slate-900 dark:border-slate-700">
+                  {/* Status Option */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Status</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {Object.entries(statusLabels).map(([key, label]) => (
                         <button
-                          key={label._id}
+                          key={key}
                           onClick={() => {
                             setFilters(prev => ({
                               ...prev,
-                              labels: prev.labels.includes(label._id)
-                                ? prev.labels.filter(l => l !== label._id)
-                                : [...prev.labels, label._id]
+                              status: prev.status.includes(key)
+                                ? prev.status.filter(s => s !== key)
+                                : [...prev.status, key]
                             }));
                           }}
                           className={`px-2 py-1 rounded text-[10px] font-semibold border transition-all ${
-                            isSelected
-                              ? 'text-white border-transparent'
+                            filters.status.includes(key)
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
                               : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
                           }`}
-                          style={{
-                            backgroundColor: isSelected ? label.color : undefined,
-                          }}
                         >
-                          {label.name}
+                          {label}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Priority Option */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Priority</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['low', 'medium', 'high', 'critical'].map((prio) => (
+                        <button
+                          key={prio}
+                          onClick={() => {
+                            setFilters(prev => ({
+                              ...prev,
+                              priority: prev.priority.includes(prio)
+                                ? prev.priority.filter(p => p !== prio)
+                                : [...prev.priority, prio]
+                            }));
+                          }}
+                          className={`px-2 py-1 rounded text-[10px] font-semibold border capitalize transition-all ${
+                            filters.priority.includes(prio)
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-semibold dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
+                              : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                          }`}
+                        >
+                          {prio}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Story Points Filter */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Story Points (Min)</span>
+                    <input
+                      type="number"
+                      placeholder="Min points..."
+                      value={filters.storyPoints}
+                      onChange={(e) => setFilters(prev => ({ ...prev, storyPoints: e.target.value }))}
+                      className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-slate-700"
+                    />
+                  </div>
+
+                  {/* Due Date Filter */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Due Date (Before)</span>
+                    <input
+                      type="date"
+                      value={filters.dueDate}
+                      onChange={(e) => setFilters(prev => ({ ...prev, dueDate: e.target.value }))}
+                      className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-slate-700"
+                    />
+                  </div>
+
+                  {/* Labels Filter */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Labels</span>
+                    <div className="flex flex-wrap gap-1">
+                      {allLabels.map((label) => {
+                        const isSelected = filters.labels.includes(label._id);
+                        return (
+                          <button
+                            key={label._id}
+                            onClick={() => {
+                              setFilters(prev => ({
+                                ...prev,
+                                labels: prev.labels.includes(label._id)
+                                  ? prev.labels.filter(l => l !== label._id)
+                                  : [...prev.labels, label._id]
+                              }));
+                            }}
+                            className={`px-2 py-1 rounded text-[10px] font-semibold border transition-all ${
+                              isSelected
+                                ? 'text-white border-transparent'
+                                : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                            }`}
+                            style={{
+                              backgroundColor: isSelected ? label.color : undefined,
+                            }}
+                          >
+                            {label.name}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+            </div>
+
+            {/* Clear Filters Button */}
+            {(filters.assignee.length > 0 || filters.taskType.length > 0 || filters.status.length > 0 || filters.priority.length > 0 || filters.labels.length > 0 || filters.storyPoints || filters.dueDate || filters.epic.length > 0) && (
+              <button
+                onClick={() => setFilters({ taskType: [], status: [], priority: [], assignee: [], dueDate: '', storyPoints: '', labels: [], epic: [] })}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
+              >
+                Clear
+              </button>
             )}
           </div>
+        </div>
 
-          {/* Clear Filters */}
-          {(filters.assignee.length > 0 || filters.taskType.length > 0 || filters.status.length > 0 || filters.priority.length > 0 || filters.labels.length > 0 || filters.storyPoints || filters.dueDate || filters.epic.length > 0) && (
-            <button
-              onClick={() => setFilters({ taskType: [], status: [], priority: [], assignee: [], dueDate: '', storyPoints: '', labels: [], epic: [] })}
-              className="px-2 py-1.5 rounded-lg text-xs font-semibold text-red-650 hover:bg-red-50 transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </div>
+        {aiActive && aiExplanation && (
+          <div className="text-[10.5px] text-indigo-700 bg-indigo-50/60 border border-indigo-100 rounded-lg px-3 py-1.5 flex items-center gap-1.5 w-full mt-1 dark:text-indigo-300 dark:bg-indigo-500/10 dark:border-indigo-500/30">
+            <span className="font-bold">AI Query:</span>
+            <span className="italic">{aiExplanation}</span>
+          </div>
+        )}
       </div>
-      {aiActive && aiExplanation && (
-        <div className="text-[10.5px] text-indigo-700 bg-indigo-50/60 border border-indigo-100 rounded-lg px-3 py-1.5 flex items-center gap-1.5 w-full mt-1 dark:text-indigo-300 dark:bg-indigo-500/10 dark:border-indigo-500/30">
-          <span className="font-bold">AI Query:</span>
-          <span className="italic">{aiExplanation}</span>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  };
 
   if (loading) {
     return <BoardSkeleton />;
@@ -2592,55 +2562,98 @@ export default function ProjectBoardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 min-w-0">
+      <div className="flex flex-col gap-3">
+        {/* Top Back and Project Title row */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => router.push('/projects')}
-            className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors dark:text-slate-400 shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-slate-100 transition-colors dark:text-slate-400 dark:hover:bg-slate-800 shrink-0"
+            title="Back to Projects"
+            aria-label="Back to Projects"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-xs sm:text-sm font-medium">Back to Projects</span>
           </button>
-          <div className="hidden sm:block h-6 w-px bg-gray-300 dark:bg-slate-700"></div>
+          <div className="h-4 sm:h-5 w-px bg-gray-300 dark:bg-slate-700"></div>
           <PageHeader
             size="sm"
             icon={<FolderKanban />}
-            title={project?.name ? (project.name.length > 28 ? `${project.name.slice(0, 28)}...` : project.name) : ""}
-            titleClassName="max-w-[180px] sm:max-w-[340px] md:max-w-[420px]"
+            title={project?.name || ""}
+            titleClassName="max-w-[260px] sm:max-w-[420px] md:max-w-none truncate"
             description={project?.projectNumber}
           />
         </div>
-        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-2.5 w-full lg:w-auto">
-          {/* View Mode Selector - labeled */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 overflow-x-auto max-w-full scrollbar-none dark:bg-slate-800">
+
+        {/* View Mode Tabs & Create Button matching mockup */}
+        <div className="flex items-center justify-between gap-2 w-full">
+          {/* View Mode Selector */}
+          <div className="flex items-center bg-gray-100/90 dark:bg-slate-800 rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none max-w-full">
             {[
               { view: 'board',    icon: KanbanSquare, label: 'Board' },
               { view: 'list',     icon: List,         label: 'List' },
               { view: 'backlog',  icon: LayoutList,   label: 'Backlog' },
               { view: 'timeline', icon: CalendarIcon, label: 'Timeline' },
-              { view: 'docs',     icon: Vault,        label: 'Vault' },
-              { view: 'rules',    icon: Settings,     label: 'Automation' },
-              { view: 'ai-chat',  icon: Sparkles,     label: 'AI Chat' },
             ].map(({ view, icon: Icon, label }) => (
               <button
                 key={view}
                 onClick={() => router.push(`/projects/${projectId}/${view}`)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                   viewMode === view
                     ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50 dark:text-slate-400'
+                    : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
                 }`}
-                title={`${label} view`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{label}</span>
               </button>
             ))}
+
+            {/* More Tabs dropdown (...) */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setShowMoreTabs(!showMoreTabs)}
+                className={`flex items-center justify-center w-8 h-7 rounded-lg text-xs font-semibold transition-all ${
+                  ['docs', 'rules', 'ai-chat'].includes(viewMode)
+                    ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                    : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
+                }`}
+                title="More views"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              {showMoreTabs && (
+                <div className="absolute top-full right-0 mt-1.5 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  {[
+                    { view: 'docs',     icon: Vault,    label: 'Vault' },
+                    { view: 'rules',    icon: Settings, label: 'Automation' },
+                    { view: 'ai-chat',  icon: Sparkles, label: 'AI Chat' },
+                  ].map(({ view, icon: Icon, label }) => (
+                    <button
+                      key={view}
+                      onClick={() => {
+                        setShowMoreTabs(false);
+                        router.push(`/projects/${projectId}/${view}`);
+                      }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
+                        viewMode === view ? 'text-primary font-bold bg-primary/5' : 'text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <Button size="sm" onClick={() => handleOpenCreateModal(viewMode === 'backlog' ? 'backlog' : 'to_do')}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create
+          {/* Coral Create Button matching user mockup */}
+          <Button
+            size="sm"
+            onClick={() => handleOpenCreateModal(viewMode === 'backlog' ? 'backlog' : 'to_do')}
+            className="bg-[#f87171] hover:bg-[#ef4444] text-white rounded-xl shadow-sm px-3.5 h-8.5 shrink-0 font-semibold text-xs flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Create</span>
           </Button>
         </div>
       </div>
@@ -2650,16 +2663,9 @@ export default function ProjectBoardPage() {
         <>
           {/* Sprints and Filter Row */}
           {sprints.length > 0 ? (
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 mb-6 w-full">
-              {/* Sprint Display (30%) */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full">
+              {/* Sprint Display */}
               {(() => {
-                const formatDatePeriod = (startStr: string | Date, endStr: string | Date) => {
-                  const start = new Date(startStr);
-                  const end = new Date(endStr);
-                  const formatOption: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-                  return `${start.toLocaleDateString('en-US', formatOption)} - ${end.toLocaleDateString('en-US', formatOption)}`;
-                };
-
                 const sprintOptions = [
                   { 
                     value: "", 
@@ -2680,7 +2686,7 @@ export default function ProjectBoardPage() {
                 ];
 
                 return (
-                  <div className="w-full lg:w-[30%] shrink-0 min-h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
+                  <div className="w-full lg:w-[30%] shrink-0 min-h-[56px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-primary shadow-sm shrink-0 dark:bg-indigo-500/10">
                         <Zap className="w-4 h-4 fill-indigo-100" />
@@ -2717,141 +2723,127 @@ export default function ProjectBoardPage() {
                 );
               })()}
 
-              {/* Filter Container (70%) */}
+              {/* Filter Container */}
               {renderFilterBar("w-full lg:w-[70%] shrink-0")}
             </div>
           ) : (
-            <div className="w-full mb-6">
+            <div className="w-full mb-4 sm:mb-6">
               {renderFilterBar("w-full")}
             </div>
           )}
 
-          <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-6 scrollbar-thin scroll-smooth -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
-          {columns.map((column) => {
-          const theme = statusThemes[column.status] || statusThemes.backlog;
-          const activeColor = column.color || (
-            column.status === 'to_do' ? '#3B82F6' :
-            column.status === 'in_progress' ? '#F59E0B' :
-            column.status === 'in_review' || column.status === 'qa' ? '#8B5CF6' :
-            column.status === 'completed' || column.status === 'stage' ? '#10B981' :
-            '#64748B'
-          );
-          const columnTasks = filteredTasks.filter(t => {
-            const matchesStatus = t.status === column.status;
-            const taskSprintId = (t.sprintId as any)?._id || t.sprintId;
-            // When no sprint is selected (All Sprints), show all tasks
-            // When a sprint is selected, show only tasks from that sprint
-            const matchesSprint = !selectedSprintId || taskSprintId === selectedSprintId;
-            return matchesStatus && matchesSprint;
-          });
-          const taskCount = columnTasks.length;
-          const wipLimit = column.wipLimit;
-          const isOverWip = wipLimit ? taskCount > wipLimit : false;
+          {/* 2-Column Grid on Mobile matching user mockup, Flex on Large Screens */}
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:flex lg:flex-row lg:overflow-x-auto lg:pb-6 scrollbar-thin scroll-smooth -mx-1 px-1 sm:mx-0 sm:px-0">
+            {columns.map((column) => {
+              const theme = statusThemes[column.status] || statusThemes.backlog;
+              const activeColor = column.color || (
+                column.status === 'to_do' ? '#3B82F6' :
+                column.status === 'in_progress' ? '#F59E0B' :
+                column.status === 'in_review' || column.status === 'qa' ? '#8B5CF6' :
+                column.status === 'completed' || column.status === 'stage' ? '#10B981' :
+                '#64748B'
+              );
+              const columnTasks = filteredTasks.filter(t => {
+                const matchesStatus = t.status === column.status;
+                const taskSprintId = (t.sprintId as any)?._id || t.sprintId;
+                const matchesSprint = !selectedSprintId || taskSprintId === selectedSprintId;
+                return matchesStatus && matchesSprint;
+              });
+              const taskCount = columnTasks.length;
+              const wipLimit = column.wipLimit;
+              const isOverWip = wipLimit ? taskCount > wipLimit : false;
 
-          return (
-            <div
-              key={column.id}
-              onDragOver={(e) => handleDragOver(e, column.status)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, column.status)}
-              style={{
-                backgroundColor: dragOverColumn === column.status ? undefined : (isOverWip ? undefined : `${activeColor}0D`),
-                borderTop: `3px solid ${activeColor}`,
-                boxShadow: `0 4px 16px -2px ${activeColor}15`
-              }}
-              className={`w-[85vw] sm:w-[320px] md:w-[300px] lg:flex-1 min-w-[270px] max-w-[340px] shrink-0 sm:shrink rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
-                dragOverColumn === column.status 
-                  ? 'border-primary bg-primary/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)]' 
-                  : isOverWip
-                    ? 'border-rose-200 bg-rose-50/20 dark:border-rose-500/30 dark:bg-rose-500/10'
-                    : 'border-slate-200/60 dark:border-slate-700'
-              }`}
-            >
-              {/* Column Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: activeColor }} />
-                  <h3 className="font-bold text-sm text-slate-800 truncate dark:text-slate-200">{column.name}</h3>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {user?.role !== 'employee' && (
-                    <button
-                      onClick={() => {
-                        setSelectedColumn(column);
-                        setShowColumnSettings(true);
-                      }}
-                      className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-primary transition-all dark:text-slate-400"
-                      title="Column settings"
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleOpenCreateModal(column.status)}
-                    className="w-5 h-5 rounded-md hover:bg-slate-200/80 border border-transparent hover:border-slate-300/40 flex items-center justify-center text-slate-500 hover:text-primary transition-all dark:text-slate-400"
-                    title={`Create task in ${column.name}`}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                  {wipLimit ? (
-                    <Badge
-                      variant={taskCount >= wipLimit ? "destructive" : "outline"}
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        taskCount >= wipLimit
-                          ? 'bg-rose-50 border-rose-200 text-rose-700 animate-pulse dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-300'
-                          : 'bg-white border-slate-200 text-slate-500 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400'
-                      }`}
-                    >
-                      WIP: {taskCount}/{wipLimit}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border-slate-200 text-slate-500 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400">
-                      {taskCount}
-                    </Badge>
-                  )}
-                </div>
-              </div>
+              // Soft pastel background style matching mockup
+              const pastelBg = column.status === 'to_do' ? 'bg-[#eff6ff]/70 border-blue-200/70 dark:bg-blue-950/20 dark:border-blue-800/40' :
+                column.status === 'in_progress' ? 'bg-[#fffbeb]/80 border-amber-200/70 dark:bg-amber-950/20 dark:border-amber-800/40' :
+                column.status === 'in_review' ? 'bg-[#faf5ff]/80 border-purple-200/70 dark:bg-purple-950/20 dark:border-purple-800/40' :
+                'bg-[#f0fdf4]/70 border-emerald-200/70 dark:bg-emerald-950/20 dark:border-emerald-800/40';
 
-              {/* Cards Container */}
-              <div className="space-y-3 min-h-[350px] overflow-y-auto pr-0.5 scrollbar-thin relative">
-                {tasksLoading && (
-                  <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-xl z-20 dark:bg-slate-900">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  </div>
-                )}
-                {taskCount === 0 ? (
-                  <button
-                    onClick={() => handleOpenCreateModal(column.status)}
-                    className="w-full border border-dashed border-slate-250/80 rounded-xl p-8 text-center bg-white/40 flex flex-col items-center justify-center space-y-2 hover:bg-white hover:border-slate-350 transition-all duration-200 group dark:bg-slate-900 dark:hover:bg-slate-800"
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${theme.lightBg} text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-all`}>
-                      <Plus className="w-4 h-4 text-slate-550" />
+              return (
+                <div
+                  key={column.id}
+                  id={`column-${column.id}`}
+                  onDragOver={(e) => handleDragOver(e, column.status)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, column.status)}
+                  className={`w-full lg:w-[320px] lg:flex-1 lg:min-w-[270px] lg:max-w-[340px] lg:shrink-0 rounded-2xl border p-2.5 sm:p-3.5 transition-all duration-200 flex flex-col space-y-2.5 sm:space-y-3 ${pastelBg} ${
+                    dragOverColumn === column.status
+                      ? 'ring-2 ring-primary bg-primary/10'
+                      : isOverWip
+                        ? 'border-rose-300 bg-rose-50/40 dark:border-rose-500/30 dark:bg-rose-500/10'
+                        : ''
+                  }`}
+                >
+                  {/* Column Header matching user mockup */}
+                  <div className="flex items-center justify-between pb-1.5 sm:pb-2 border-b border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: activeColor }} />
+                      <h3 className="font-bold text-xs sm:text-sm text-slate-800 truncate dark:text-slate-200">{column.name}</h3>
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors">Create task</p>
-                  </button>
-                ) : (
-                  <>
-                    {columnTasks.map((task) => (
-                      <Card
-                        key={task._id}
-                        draggable
-                        onDragStart={() => handleDragStart(task)}
-                        onClick={() => handleOpenEditModal(task)}
-                        className="cursor-grab active:cursor-grabbing hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] border border-slate-200/80 hover:border-slate-350 rounded-xl bg-white transition-all duration-200 select-none group dark:border-slate-700 dark:bg-slate-900"
+                    <div className="flex items-center gap-1 shrink-0">
+                      {user?.role !== 'employee' && (
+                        <button
+                          onClick={() => {
+                            setSelectedColumn(column);
+                            setShowColumnSettings(true);
+                          }}
+                          className="w-4 h-4 sm:w-5 sm:h-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                          title="Column settings"
+                        >
+                          <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleOpenCreateModal(column.status)}
+                        className="w-4 h-4 sm:w-5 sm:h-5 rounded flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                        title={`Create task in ${column.name}`}
                       >
-                        <CardContent className="p-3.5 space-y-3">
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 shrink-0 dark:bg-slate-800/50 dark:border-slate-800">
+                        <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      </button>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-slate-500 dark:text-slate-400 shadow-sm">
+                        {taskCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Cards Container */}
+                  <div className="space-y-2 sm:space-y-2.5 min-h-[140px] sm:min-h-[300px] overflow-y-auto pr-0.5 scrollbar-thin relative">
+                    {tasksLoading && (
+                      <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-xl z-20 dark:bg-slate-900">
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      </div>
+                    )}
+                    {taskCount === 0 ? (
+                      <button
+                        onClick={() => handleOpenCreateModal(column.status)}
+                        className="w-full border border-dashed border-slate-300/80 dark:border-slate-700 rounded-xl p-4 sm:p-6 text-center bg-white/50 dark:bg-slate-900/40 flex flex-col items-center justify-center space-y-1.5 hover:bg-white dark:hover:bg-slate-900 transition-all group"
+                      >
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <Plus className="w-3.5 h-3.5" />
+                        </div>
+                        <p className="text-[9px] font-bold text-slate-400 group-hover:text-primary transition-colors">Create task</p>
+                      </button>
+                    ) : (
+                      <>
+                        {columnTasks.map((task) => (
+                          <div
+                            key={task._id}
+                            draggable
+                            onDragStart={() => handleDragStart(task)}
+                            onClick={() => handleOpenEditModal(task)}
+                            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 shadow-[0_1px_3px_rgba(0,0,0,0.03)] hover:shadow-md transition-all space-y-2 cursor-pointer select-none group"
+                          >
+                            {/* Card Top: Task Number + Priority Icon */}
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-[9px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-300 px-2 py-0.5 rounded-full shrink-0">
                                 {task.taskNumber}
                               </span>
-                              {/* Priority Badge */}
                               {task.priority && (
                                 <div
                                   className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                                    task.priority === 'critical' ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400' :
-                                    task.priority === 'high' ? 'bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-400' :
-                                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-500/15 dark:text-yellow-400' :
+                                    task.priority === 'critical' ? 'bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400' :
+                                    task.priority === 'high' ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/60 dark:text-orange-400' :
+                                    task.priority === 'medium' ? 'bg-yellow-50 text-yellow-600 dark:bg-yellow-950/60 dark:text-yellow-400' :
                                     'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                                   }`}
                                   title={task.priority}
@@ -2863,126 +2855,88 @@ export default function ProjectBoardPage() {
                                 </div>
                               )}
                             </div>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <GripVertical className="w-3.5 h-3.5 text-slate-350" />
+
+                            {/* Card Title */}
+                            <div>
+                              <h4 className="font-bold text-slate-800 text-[11px] sm:text-xs line-clamp-2 leading-tight group-hover:text-primary transition-colors dark:text-slate-100">
+                                {task.title}
+                              </h4>
                             </div>
-                          </div>
 
-                          <div>
-                            <h4 className="font-bold text-slate-800 text-xs line-clamp-2 leading-relaxed group-hover:text-primary transition-colors dark:text-slate-200">
-                              {task.title}
-                            </h4>
-                          </div>
-
-                          {/* Status Badge */}
-                          <div className="flex items-center gap-1.5">
-                            {(task as any).customStatus ? (
-                              <span
-                                className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                                style={{
-                                  backgroundColor: `${(task as any).customStatus.color}15`,
-                                  color: (task as any).customStatus.color
-                                }}
-                              >
-                                {(task as any).customStatus.name}
-                              </span>
-                            ) : (
-                              /* Broad Column Status Badge (shown when no custom status) */
-                              <span
-                                className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                                style={{
-                                  backgroundColor: getStatusColor(task.status).bg,
-                                  color: getStatusColor(task.status).text
-                                }}
-                              >
-                                {getStatusLabel(task.status)}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Labels */}
-                          {task.labels && task.labels.length > 0 && (
-                            <div className="flex flex-wrap gap-1 pt-1">
-                              {task.labels.slice(0, 3).map((label: any) => (
+                            {/* Status Badge */}
+                            <div className="flex items-center gap-1.5">
+                              {(task as any).customStatus ? (
                                 <span
-                                  key={label._id}
-                                  className="px-1.5 py-0.5 rounded text-[9px] font-bold border"
+                                  className="text-[9px] font-bold px-2 py-0.5 rounded-full inline-block"
                                   style={{
-                                    backgroundColor: `${label.color}15`,
-                                    borderColor: `${label.color}35`,
-                                    color: label.color
+                                    backgroundColor: `${(task as any).customStatus.color}15`,
+                                    color: (task as any).customStatus.color
                                   }}
                                 >
-                                  {label.name}
+                                  {(task as any).customStatus.name}
                                 </span>
-                              ))}
-                              {task.labels.length > 3 && (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400">
-                                  +{task.labels.length - 3}
+                              ) : (
+                                <span
+                                  className={`text-[9px] font-bold px-2 py-0.5 rounded-full inline-block ${
+                                    task.status === 'to_do' ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300' :
+                                    task.status === 'in_progress' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' :
+                                    task.status === 'completed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' :
+                                    'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
+                                  }`}
+                                >
+                                  {getStatusLabel(task.status)}
                                 </span>
                               )}
                             </div>
-                          )}
 
-                          {/* Mini Progress Bar */}
-                          {task.progressPercentage > 0 && (
-                            <div className="space-y-1 pt-0.5">
-                              <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                                <span>Progress</span>
-                                <span>{task.progressPercentage}%</span>
+                            {/* Progress Bar (if percentage > 0) */}
+                            {task.progressPercentage > 0 && (
+                              <div className="space-y-1 pt-0.5">
+                                <div className="flex justify-between text-[9px] font-medium text-slate-400">
+                                  <span>Progress</span>
+                                  <span>{task.progressPercentage}%</span>
+                                </div>
+                                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+                                  <div className="h-full bg-rose-500 rounded-full transition-all" style={{ width: `${task.progressPercentage}%` }} />
+                                </div>
                               </div>
-                              <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden dark:bg-slate-800">
-                                <div className="h-1 bg-primary rounded-full transition-all" style={{ width: `${task.progressPercentage}%` }} />
-                              </div>
-                            </div>
-                          )}
+                            )}
 
-                          {/* Footer */}
-                          <div className="flex items-center justify-between pt-1">
-                            <div className="flex items-center gap-2 text-[9px] font-medium text-slate-400">
-                              {task.dueDate && (
-                                <div className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  <span>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            {/* Card Footer: Due Date & Red Assignee Avatar */}
+                            <div className="flex items-center justify-between pt-0.5">
+                              <div className="flex items-center gap-1 text-[9px] font-medium text-slate-400">
+                                {task.dueDate && (
+                                  <>
+                                    <Clock className="w-3 h-3 text-slate-400" />
+                                    <span>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                  </>
+                                )}
+                              </div>
+                              {task.assignedTo && Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
+                                <div className="flex -space-x-1.5 shrink-0 ml-auto">
+                                  {task.assignedTo.slice(0, 2).map((assignee: any, idx: number) => (
+                                    <div
+                                      key={idx}
+                                      className="w-5 h-5 rounded-full bg-[#f87171] text-white flex items-center justify-center text-[9px] font-bold border border-white shadow-sm shrink-0"
+                                      title={assignee.name}
+                                    >
+                                      {getInitials(assignee.name)}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                             </div>
-                            {task.assignedTo && Array.isArray(task.assignedTo) && task.assignedTo.length > 0 && (
-                              <div className="flex -space-x-1.5 shrink-0 ml-auto">
-                                {task.assignedTo.slice(0, 3).map((assignee: any, idx: number) => {
-                                  return (
-                                    <button
-                                      key={idx}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleInsertMentionFromBadge(assignee.name);
-                                      }}
-                                      className={`w-6 h-6 rounded-full ${getAvatarColor(idx)} text-white flex items-center justify-center text-[9px] font-bold border border-white shadow-sm hover:scale-110 transition-transform cursor-pointer shrink-0`}
-                                      title={`Click to mention @${assignee.name}`}
-                                    >
-                                      {getInitials(assignee.name)}
-                                    </button>
-                                  );
-                                })}
-                                {task.assignedTo.length > 3 && (
-                                  <div className="w-6 h-6 rounded-full bg-slate-100 border border-white shadow-sm text-slate-600 flex items-center justify-center text-[9px] font-bold shrink-0 z-10 dark:bg-slate-800 dark:text-slate-400">
-                                    +{task.assignedTo.length - 3}
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-        </>)}
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {viewMode === 'list' && (
         <div className="space-y-6">
@@ -4247,7 +4201,7 @@ export default function ProjectBoardPage() {
 
       {/* Create Sprint Modal */}
       {showCreateSprintModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-700">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between dark:border-slate-800">
               <div className="flex items-center gap-2">
@@ -4350,7 +4304,7 @@ export default function ProjectBoardPage() {
 
       {/* Sprint Move Alert Modal */}
       {showSprintMoveAlert && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-700">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between dark:border-slate-800">
               <div className="flex items-center gap-2">
@@ -4397,7 +4351,7 @@ export default function ProjectBoardPage() {
 
       {/* Create Task Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/20 dark:border-slate-800 dark:bg-slate-800/70">
               <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider dark:text-slate-200">Create New Task</h2>
@@ -4451,7 +4405,7 @@ export default function ProjectBoardPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 dark:text-slate-300">Type</label>
                   <CustomSelect
@@ -4696,10 +4650,10 @@ export default function ProjectBoardPage() {
 
       {/* Edit Task Modal - Comprehensive Jira Style */}
       {showEditModal && selectedTask && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
             {/* Header */}
-            <div className="p-4 border-b flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/70">
+            <div className="p-3 sm:p-4 border-b flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 bg-slate-50/50 dark:bg-slate-800/70">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg dark:text-slate-400 dark:bg-slate-800 dark:border-slate-700">
                   {selectedTask.taskNumber}
@@ -4707,8 +4661,8 @@ export default function ProjectBoardPage() {
                 <CustomSelect
                   value={formData.taskType || "task"}
                   onChange={(val) => setFormData({ ...formData, taskType: val })}
-                  buttonClassName="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all w-36"
-                  className="w-36 inline-block"
+                  buttonClassName="px-2.5 sm:px-3 py-1 sm:py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all w-28 sm:w-36"
+                  className="w-28 sm:w-36 inline-block"
                   options={[
                     { value: "task",        icon: <CheckSquare className="w-3.5 h-3.5 text-blue-500" />,   label: "Task" },
                     { value: "story",       icon: <BookOpen className="w-3.5 h-3.5 text-emerald-500" />,   label: "Story" },
@@ -4735,7 +4689,7 @@ export default function ProjectBoardPage() {
                     e.preventDefault();
                     handleUpdateTask();
                   }}
-                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-xs"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2 shadow-xs shrink-0"
                   title="Save changes"
                 >
                   <Save className="w-3.5 h-3.5" />
@@ -4755,9 +4709,9 @@ export default function ProjectBoardPage() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto flex">
+            <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row">
               {/* Left Content */}
-              <div className="flex-1 p-6 overflow-y-auto">
+              <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto min-w-0">
                 {/* Title */}
                 <div className="mb-6">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 dark:text-slate-300">Summary *</label>
@@ -4777,7 +4731,7 @@ export default function ProjectBoardPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs text-slate-800 transition-all resize-none min-h-[350px] dark:border-slate-700 dark:text-slate-200"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs text-slate-800 transition-all resize-none min-h-[160px] sm:min-h-[300px] dark:border-slate-700 dark:text-slate-200"
                     placeholder="Add a description..."
                   />
                 </div>
@@ -5453,7 +5407,7 @@ export default function ProjectBoardPage() {
               </div>
 
               {/* Right Sidebar */}
-              <div className="w-80 border-l bg-white overflow-y-auto dark:bg-slate-900">
+              <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l bg-white overflow-y-auto dark:bg-slate-900 shrink-0">
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-end dark:border-slate-800 dark:bg-slate-800/70">
                   {isAutoSaving ? (
                     <div className="relative flex items-center justify-center">
@@ -5804,7 +5758,7 @@ export default function ProjectBoardPage() {
 
       {/* Column Settings Modal */}
       {showColumnSettings && selectedColumn && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-lg w-full animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -5933,7 +5887,7 @@ export default function ProjectBoardPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedTask && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-md w-full animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -5993,7 +5947,7 @@ export default function ProjectBoardPage() {
 
       {/* Custom Status Selection Modal */}
       {showCustomStatusModal && selectedTaskForCustomStatus && targetColumnForCustomStatus && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white border border-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.12)] rounded-2xl max-w-md w-full animate-in scale-in-95 duration-200 dark:bg-slate-900 dark:border-slate-800">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/20 dark:border-slate-800 dark:bg-slate-800/70">
               <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider dark:text-slate-200">Select Status</h2>

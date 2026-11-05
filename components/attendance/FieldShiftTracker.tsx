@@ -102,11 +102,24 @@ export function FieldShiftTracker() {
       const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       const dateStr = now.toISOString().split("T")[0];
 
+      // Capture GPS location for all modes (Field, Office, and WFH checkpoint)
+      let punchLocation: { lat: number; lng: number } | null = coords ? { lat: coords.lat, lng: coords.lng } : null;
+      if (!punchLocation && typeof window !== "undefined" && navigator.geolocation) {
+        punchLocation = await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            () => resolve(null),
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        });
+      }
+
       await logAttendance({
         employeeId: user.id,
         date: dateStr,
         checkIn: timeStr,
         workMode,
+        location: punchLocation || undefined,
       });
 
       await loadStatus();
@@ -117,17 +130,35 @@ export function FieldShiftTracker() {
     }
   };
 
-  // Handle Break Toggle
+  // Handle Break Toggle (captures break start and break end locations)
   const handleToggleBreak = async () => {
     try {
       setActionLoading(true);
       setErrorMsg(null);
       const action = isOnBreak ? "end" : "start";
-      const result = await toggleAttendanceBreak({ action, reason: "Employee Break" });
+
+      // Snapshot location where break started or ended
+      let breakLocation: { lat: number; lng: number } | null = coords ? { lat: coords.lat, lng: coords.lng } : null;
+      if (!breakLocation && typeof window !== "undefined" && navigator.geolocation) {
+        breakLocation = await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            () => resolve(null),
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        });
+      }
+
+      const result = await toggleAttendanceBreak({ 
+        action, 
+        reason: "Employee Break",
+        location: breakLocation || undefined 
+      });
 
       if (socket && socket.connected) {
         socket.emit("field-status-update", {
           status: action === "start" ? "break" : "active",
+          location: breakLocation || undefined,
         });
       }
 

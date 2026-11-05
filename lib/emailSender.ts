@@ -1,6 +1,8 @@
 import EmailConfig from '../models/EmailConfig';
 import CompanyContentConfig, { EmailTemplateOverride, EmailTemplateKey } from '../models/CompanyContentConfig';
 import { encryptToken, decryptToken } from './email-token';
+import { sendMail } from './nodemailer';
+export { sendMail };
 
 export interface EmailOverrides {
   subject?: string;
@@ -187,17 +189,44 @@ async function sendViaOutlook(config: EmailConfigDoc, input: SendEmailInput, tok
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const config = await getConfig(input.companyId);
+
+  // If no DB config exists, use Nodemailer with global SMTP / Gmail app password if configured
   if (!config) {
+    if (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASSWORD) {
+      const res = await sendMail({
+        to: input.to,
+        subject: input.subject,
+        html: input.html,
+        text: input.text,
+      });
+      if (res.success) {
+        return { ok: true, sentAt: new Date(), provider: 'nodemailer-smtp' };
+      }
+      return { ok: false, error: res.error || 'Failed to send email via SMTP.' };
+    }
     return { ok: false, error: 'No email configuration found for this company.' };
   }
 
+  // Handle custom SMTP provider
   if (config.provider === 'other') {
-    // SMTP sending requires the nodemailer dependency. Gmail/Outlook OAuth (Mail.Send)
-    // is the supported path; fall back to a clear error so the caller can prompt HR.
-    return {
-      ok: false,
-      error: 'Email sending via SMTP is not supported. Connect Gmail or Outlook in Email Settings.',
-    };
+    const res = await sendMail(
+      {
+        to: input.to,
+        subject: input.subject,
+        html: input.html,
+        text: input.text,
+        from: config.careerEmail,
+      },
+      {
+        host: config.smtpHost,
+        port: config.smtpPort,
+        secure: config.smtpSecure,
+      }
+    );
+    if (res.success) {
+      return { ok: true, sentAt: new Date(), provider: 'nodemailer-smtp' };
+    }
+    return { ok: false, error: res.error || 'Failed to send email via custom SMTP.' };
   }
 
   const provider = config.provider as 'gmail' | 'outlook';
@@ -205,21 +234,37 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   if (!token) {
     token = await refreshToken(config, provider);
   }
-  if (!token) {
-    return { ok: false, error: 'Email not connected. Reconnect your email in Email Settings.' };
+
+  let sent = false;
+  if (token) {
+    sent = provider === 'gmail'
+      ? await sendViaGmail(config, input, token)
+      : await sendViaOutlook(config, input, token);
+
+    if (!sent) {
+      token = await refreshToken(config, provider);
+      if (token) {
+        sent = provider === 'gmail'
+          ? await sendViaGmail(config, input, token)
+          : await sendViaOutlook(config, input, token);
+      }
+    }
   }
 
-  let sent = provider === 'gmail'
-    ? await sendViaGmail(config, input, token)
-    : await sendViaOutlook(config, input, token);
-
-  if (!sent) {
-    token = await refreshToken(config, provider);
-    if (token) {
-      sent = provider === 'gmail'
-        ? await sendViaGmail(config, input, token)
-        : await sendViaOutlook(config, input, token);
+  // If OAuth failed or token wasn't available, gracefully fall back to Nodemailer SMTP
+  if (!sent && (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASSWORD)) {
+    console.log('[EmailSender] Falling back to Nodemailer SMTP for delivery');
+    const fallbackRes = await sendMail({
+      to: input.to,
+      subject: input.subject,
+      html: input.html,
+      text: input.text,
+      from: config.careerEmail || undefined,
+    });
+    if (fallbackRes.success) {
+      return { ok: true, sentAt: new Date(), provider: 'nodemailer-smtp-fallback' };
     }
+    return { ok: false, error: fallbackRes.error || 'Failed to send email via SMTP fallback.' };
   }
 
   if (!sent) {

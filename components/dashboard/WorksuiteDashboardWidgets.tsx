@@ -101,7 +101,7 @@ export const WorksuiteHeader = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 py-1.5 pr-1.5 pl-4">
+        <div className="flex w-full sm:w-auto items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 py-1.5 pr-1.5 pl-4">
           <div className="pr-1 text-right">
             <p className="tabular text-[15px] font-semibold text-foreground">
               {activeShift ? elapsedTime : currentTime || "--:--:--"}
