@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const isApi = pathname.startsWith('/api')
-  const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers')
+  const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers') || pathname === '/landing'
 
   // Verified session (signature-checked). This is the only identity
   // the server trusts; the old unsigned `user` cookie is ignored.
@@ -147,9 +147,21 @@ export async function middleware(request: NextRequest) {
     // Already signed in? Skip the company-code gateway bounce and go home.
     // (switch=true is honored so "Switch Organization" keeps working.)
     if (session && pathname.startsWith('/login') && request.nextUrl.searchParams.get('switch') !== 'true') {
-      return NextResponse.redirect(new URL(session.isCandidate ? '/candidate/dashboard' : '/dashboard', request.url))
+      const destination = session.role === 'super_admin' ? '/super-admin' : session.isCandidate ? '/candidate/dashboard' : '/dashboard'
+      return NextResponse.redirect(new URL(destination, request.url))
     }
     return NextResponse.next()
+  }
+
+  // Root path ("/") routing:
+  // If already authenticated -> redirect directly to dashboard
+  // If not authenticated -> redirect directly to login page
+  if (pathname === '/') {
+    if (session && request.nextUrl.searchParams.get('switch') !== 'true') {
+      const destination = session.role === 'super_admin' ? '/super-admin' : session.isCandidate ? '/candidate/dashboard' : '/dashboard'
+      return NextResponse.redirect(new URL(destination, request.url))
+    }
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Check if user is logged in for protected routes
@@ -216,6 +228,9 @@ export async function middleware(request: NextRequest) {
         )
       : isRouteAccessible(role, pathname)
     if (!routeAllowed) {
+      if (request.nextUrl.searchParams.get('switch') === 'true') {
+        return NextResponse.next()
+      }
       // Redirect to dashboard if not authorized
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
