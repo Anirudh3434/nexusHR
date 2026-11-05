@@ -83,10 +83,6 @@ next-env.d.ts
 
 # dotenv environment variable files
 .env*.local
-.env
-.env.local
-.env.production
-.env.development
 !.env.example
 
 # parcel-bundler cache (https://parceljs.org/)

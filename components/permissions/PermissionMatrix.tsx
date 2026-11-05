@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/Card";
 import type { Module, Permission } from "../../lib/permissions";
+import { ArrowRightLeft } from "lucide-react";
 
 export const PERMISSION_COLUMNS: { key: Permission; label: string }[] = [
   { key: "view", label: "View" },
@@ -79,22 +80,37 @@ export function PermissionMatrix({
   return (
     <>
       {groups.map((group) => (
-        <Card key={group.name}>
-          <CardHeader>
-            <CardTitle className="text-base">{group.name}</CardTitle>
-            <CardDescription>
-              {group.modules.filter((m) => isCustom(m)).length} of {group.modules.length} customized
-            </CardDescription>
+        <Card key={group.name} className="overflow-hidden border-border/80 shadow-sm">
+          <CardHeader className="p-4 sm:p-6 pb-2.5 sm:pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <CardTitle className="text-base font-bold">{group.name}</CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {group.modules.filter((m) => isCustom(m)).length} of {group.modules.length} customized
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground sm:hidden font-medium bg-muted/60 px-2 py-0.5 rounded-full shrink-0">
+                <ArrowRightLeft size={11} className="text-primary" />
+                <span>Swipe for all</span>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-sm">
+          <CardContent className="p-0 sm:p-6 sm:pt-0 overflow-x-auto scrollbar-thin">
+            <table className="w-full min-w-[500px] border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="py-2 pr-4 text-left font-semibold text-muted-foreground">Module</th>
+                <tr className="border-b border-border/70 bg-muted/30 sm:bg-transparent">
+                  {/* Sticky left module column on mobile & desktop */}
+                  <th className="sticky left-0 z-20 bg-card py-2.5 px-3 sm:px-4 text-left font-semibold text-muted-foreground border-r border-border/60 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[125px] sm:min-w-[150px]">
+                    Module
+                  </th>
                   {PERMISSION_COLUMNS.map((col) => (
-                    <th key={col.key} className="px-2 py-2 text-center font-semibold text-muted-foreground">{col.label}</th>
+                    <th key={col.key} className="px-1.5 sm:px-2 py-2.5 text-center font-semibold text-muted-foreground text-xs whitespace-nowrap min-w-[44px]">
+                      {col.label}
+                    </th>
                   ))}
-                  <th className="py-2 pl-2 text-right font-semibold text-muted-foreground">Row</th>
+                  <th className="py-2.5 px-3 text-right font-semibold text-muted-foreground text-xs whitespace-nowrap min-w-[85px]">
+                    Row
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -105,11 +121,12 @@ export function PermissionMatrix({
                   const basePerms = getBasePerms ? getBasePerms(module) : undefined;
                   return (
                     <tr key={module} className="border-b border-border/60 last:border-0 hover:bg-muted/40 transition-colors">
-                      <td className="py-2.5 pr-4">
-                        <span className="inline-flex items-center gap-2 font-medium text-foreground">
+                      {/* Sticky module cell anchored on the left */}
+                      <td className="sticky left-0 z-10 bg-card py-2 px-3 sm:px-4 border-r border-border/60 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                        <span className="inline-flex items-center gap-1.5 font-medium text-foreground truncate max-w-[115px] sm:max-w-none text-xs sm:text-sm">
                           {prettyModule(module)}
-                          {custom && <span className="h-1.5 w-1.5 rounded-full bg-primary" title={`Differs from ${customNoun}`} />}
-                          {dirty && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Unsaved changes" />}
+                          {custom && <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" title={`Differs from ${customNoun}`} />}
+                          {dirty && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" title="Unsaved changes" />}
                         </span>
                       </td>
                       {PERMISSION_COLUMNS.map((col) => {
@@ -117,7 +134,7 @@ export function PermissionMatrix({
                         const inherits = basePerms ? basePerms.includes(col.key) : false;
                         const differsFromBase = basePerms !== undefined && on !== inherits;
                         return (
-                          <td key={col.key} className="px-2 py-2 text-center">
+                          <td key={col.key} className="px-1.5 sm:px-2 py-2 text-center whitespace-nowrap min-w-[44px]">
                             <button
                               onClick={() => onToggle(module, col.key)}
                               aria-pressed={on}
@@ -128,14 +145,14 @@ export function PermissionMatrix({
                                   : `${on ? "Revoke" : "Grant"} ${col.label}` +
                                     (differsFromBase ? ` — differs from role` : "")
                               }
-                              className={`relative inline-flex h-6 min-w-6 items-center justify-center rounded-md border px-1.5 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              className={`relative inline-flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg sm:rounded-md border text-xs sm:text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer ${
                                 on
                                   ? col.key === "manage"
                                     ? "border-violet-500/40 bg-violet-500/15 text-violet-700 dark:text-violet-300"
                                     : col.key === "delete"
                                       ? "border-red-500/40 bg-red-500/15 text-red-700 dark:text-red-300"
                                       : "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                                  : "border-border text-muted-foreground/50 hover:border-muted-foreground hover:text-muted-foreground"
+                                  : "border-border text-muted-foreground/40 hover:border-muted-foreground hover:text-muted-foreground"
                               }`}
                             >
                               {on ? "●" : "○"}
@@ -146,23 +163,23 @@ export function PermissionMatrix({
                           </td>
                         );
                       })}
-                      <td className="py-2 pl-2 text-right whitespace-nowrap">
+                      <td className="py-2 px-3 text-right whitespace-nowrap min-w-[85px]">
                         <button
                           onClick={() => onSetRow(module, ["view", "create", "edit", "delete", "approve", "manage"])}
-                          className="mr-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                          className="mr-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           All
                         </button>
                         <button
                           onClick={() => onSetRow(module, [])}
-                          className="mr-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                          className="mr-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           None
                         </button>
                         {(custom || dirty) && (
                           <button
                             onClick={() => onReset(module)}
-                            className="text-[11px] font-semibold text-muted-foreground hover:text-destructive"
+                            className="text-[11px] font-semibold text-muted-foreground hover:text-destructive cursor-pointer"
                           >
                             Reset
                           </button>

@@ -128,107 +128,134 @@ export default function MyLeavesPage() {
       />
 
       {/* Overview Cards - Dynamic Data */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Annual Leave Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : balances.annual.remaining}
-              <span className="text-sm font-normal text-gray-500 ml-1 dark:text-slate-400">days</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-1">Used: {balances.annual.used} / {balances.annual.total}</p>
-          </CardContent>
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+        <Card className="p-3 sm:p-4 border-border/80 bg-card/60 backdrop-blur-sm">
+          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">Annual Leave</p>
+          <div className="text-xl sm:text-2xl font-black text-foreground mt-0.5 sm:mt-1">
+            {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : balances.annual.remaining}
+            <span className="text-xs font-normal text-muted-foreground ml-1">days</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-0.5 hidden xs:block">Used: {balances.annual.used}/{balances.annual.total}</p>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Sick Leave Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : balances.sick.remaining}
-              <span className="text-sm font-normal text-gray-500 ml-1 dark:text-slate-400">days</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-1">Used: {balances.sick.used} / {balances.sick.total}</p>
-          </CardContent>
+        <Card className="p-3 sm:p-4 border-border/80 bg-card/60 backdrop-blur-sm">
+          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">Sick Leave</p>
+          <div className="text-xl sm:text-2xl font-black text-foreground mt-0.5 sm:mt-1">
+            {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : balances.sick.remaining}
+            <span className="text-xs font-normal text-muted-foreground ml-1">days</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-0.5 hidden xs:block">Used: {balances.sick.used}/{balances.sick.total}</p>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 dark:text-slate-400">Pending Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-              {dataLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : pendingCount}
-            </div>
-          </CardContent>
+        <Card className="p-3 sm:p-4 border-border/80 bg-card/60 backdrop-blur-sm">
+          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">Pending</p>
+          <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-0.5 sm:mt-1">
+            {dataLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : pendingCount}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-0.5 hidden xs:block">Awaiting review</p>
         </Card>
       </div>
 
       {/* History Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Leave History</CardTitle>
-          <CardDescription>Your past and upcoming leave requests awaiting approval.</CardDescription>
+      <Card className="border-border/80 shadow-sm overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/60">
+          <CardTitle className="text-base sm:text-lg">Leave History</CardTitle>
+          <CardDescription className="text-xs">Your past and upcoming leave requests awaiting approval.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Leave Type</TableHead>
-                <TableHead>From Date</TableHead>
-                <TableHead>To Date</TableHead>
-                <TableHead>Days</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {dataLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
-                  </TableCell>
-                </TableRow>
-              ) : leaves.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="p-0">
-                    <EmptyState
-                      title="No leave requests found."
-                      description="Your requests will appear here once you apply."
-                      icon={<Calendar size={18} />}
-                    />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                leaves.map((leave: LeaveRequest) => (
-                  <TableRow key={leave.id}>
-                    <TableCell className="font-medium">{leave.type} Leave</TableCell>
-                    <TableCell>{formatDate(leave.startDate)}</TableCell>
-                    <TableCell>{formatDate(leave.endDate)}</TableCell>
-                    <TableCell>{leave.totalDays || calculateDays(leave.startDate, leave.endDate)}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium 
-                        ${leave.status === 'Approved' ? 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300' 
-                        : leave.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300' 
-                        : 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300'}`}>
+        <CardContent className="p-0">
+          {dataLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : leaves.length === 0 ? (
+            <div className="p-6">
+              <EmptyState
+                title="No leave requests found."
+                description="Your requests will appear here once you apply."
+                icon={<Calendar size={18} />}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card List (< 768px) */}
+              <div className="divide-y divide-border/60 md:hidden">
+                {leaves.map((leave: LeaveRequest) => (
+                  <div key={leave.id} className="p-4 space-y-2.5 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-bold text-sm text-foreground">
+                          {leave.type} Leave
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                          <Calendar className="h-3 w-3 text-primary shrink-0" />
+                          <span>{formatDate(leave.startDate)} → {formatDate(leave.endDate)}</span>
+                        </div>
+                      </div>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        leave.status === 'Approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                        : leave.status === 'Pending' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
+                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                      }`}>
                         {leave.status}
                       </span>
-                    </TableCell>
-                    <TableCell className="text-right">
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
+                      <span>Duration: <strong className="text-foreground">{leave.totalDays || calculateDays(leave.startDate, leave.endDate)} day(s)</strong></span>
                       {leave.status === "Pending" ? (
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:border-red-500/30">
+                        <Button variant="outline" size="sm" className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30">
                           Cancel
                         </Button>
                       ) : (
-                        <span className="text-gray-400 text-sm">--</span>
+                        <span className="text-[11px]">Processed</span>
                       )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (>= 768px) */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table className="min-w-[650px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Leave Type</TableHead>
+                      <TableHead>From Date</TableHead>
+                      <TableHead>To Date</TableHead>
+                      <TableHead>Days</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leaves.map((leave: LeaveRequest) => (
+                      <TableRow key={leave.id}>
+                        <TableCell className="font-semibold text-foreground">{leave.type} Leave</TableCell>
+                        <TableCell className="text-muted-foreground whitespace-nowrap">{formatDate(leave.startDate)}</TableCell>
+                        <TableCell className="text-muted-foreground whitespace-nowrap">{formatDate(leave.endDate)}</TableCell>
+                        <TableCell className="font-medium">{leave.totalDays || calculateDays(leave.startDate, leave.endDate)}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            leave.status === 'Approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                            : leave.status === 'Pending' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
+                            : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'}`}>
+                            {leave.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {leave.status === "Pending" ? (
+                            <Button variant="outline" size="sm" className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30 font-semibold">
+                              Cancel
+                            </Button>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">--</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

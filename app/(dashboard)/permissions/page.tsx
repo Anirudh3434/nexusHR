@@ -472,7 +472,7 @@ export default function PermissionsPage() {
         ) : (
           <>
             {/* Role tabs */}
-            <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Roles">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2" role="tablist" aria-label="Roles">
               {roles.map((role) => {
                 const customCount = Object.values(customized[role] || {}).filter(Boolean).length;
                 const roleDirty = roleDirtyKeys.filter((k) => k.startsWith(`${role}:`)).length;
@@ -482,13 +482,13 @@ export default function PermissionsPage() {
                     role="tab"
                     aria-selected={activeRole === role}
                     onClick={() => setActiveRole(role)}
-                    className={`inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-lg border px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       activeRole === role
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border bg-card text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <ShieldAlert size={15} />
+                    <ShieldAlert size={14} />
                     {ROLE_LABELS[role] || role}
                     {customCount > 0 && (
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular ${activeRole === role ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"}`}>
@@ -499,8 +499,8 @@ export default function PermissionsPage() {
                   </button>
                 );
               })}
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3.5 py-2 text-sm text-muted-foreground" title="Platform role — managed by NexusHR, not customizable">
-                <Lock size={14} /> Super Admin · locked
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm text-muted-foreground" title="Platform role — managed by NexusHR, not customizable">
+                <Lock size={13} /> Super Admin · locked
               </span>
             </div>
 
@@ -512,18 +512,18 @@ export default function PermissionsPage() {
                   value={copyFrom}
                   onChange={(e) => setCopyFrom(e.target.value)}
                   aria-label="Copy permissions from role"
-                  className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="h-10 rounded-md border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring flex-1 sm:flex-initial"
                 >
                   <option value="">Copy from…</option>
                   {roles.filter((r) => r !== activeRole).map((r) => (
                     <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
                   ))}
                 </select>
-                <Button variant="outline" size="sm" onClick={copyRole} disabled={!copyFrom} className="h-10">
+                <Button variant="outline" size="sm" onClick={copyRole} disabled={!copyFrom} className="h-10 shrink-0">
                   <Copy size={15} />
                   <span className="ml-2 hidden sm:inline">Apply</span>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => resetRole(activeRole)} className="h-10 text-muted-foreground hover:text-destructive">
+                <Button variant="ghost" size="sm" onClick={() => resetRole(activeRole)} className="h-10 text-muted-foreground hover:text-destructive shrink-0">
                   <RotateCcw size={15} />
                   <span className="ml-2 hidden sm:inline">Reset role</span>
                 </Button>
