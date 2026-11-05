@@ -83,7 +83,8 @@ export default function LiveFieldTrackingMap({
         center={defaultCenter}
         zoom={activeWorkerWithCoords ? 15 : 5}
         scrollWheelZoom={true}
-        className="h-full w-full z-0 min-h-[450px]"
+        className="h-full w-full z-0 min-h-[500px]"
+        style={{ height: "100%", minHeight: "500px", width: "100%" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

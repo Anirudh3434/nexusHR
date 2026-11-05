@@ -328,6 +328,7 @@ export function isRouteAccessibleWith(
     "/designations": "designations",
     "/shifts": "attendance",
     "/attendance": "attendance",
+    "/field-tracking": "attendance",
     "/leaves": "leave",
     "/leave-types": "leave_types",
     "/leave-entitlements": "leave_types",
