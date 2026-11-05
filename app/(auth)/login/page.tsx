@@ -45,8 +45,21 @@ export default function CompanyPortalLogin() {
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { addToast } = useToast();
-  const { logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
+
+  // 0. If user is already signed in, directly forward to their dashboard
+  useEffect(() => {
+    if (!authLoading && user && typeof window !== "undefined" && !window.location.search.includes("switch")) {
+      const destination = 
+        (user.role as string) === "super_admin" 
+          ? "/super-admin" 
+          : user.isCandidate 
+            ? "/candidate/dashboard" 
+            : "/dashboard";
+      router.replace(destination);
+    }
+  }, [user, authLoading, router]);
 
   // 1. On Mount: Check cookie / localStorage for saved 6-character Company ID and recent list
   useEffect(() => {
@@ -532,6 +545,9 @@ export default function CompanyPortalLogin() {
                 <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold dark:border-slate-800">
                   <Link href="/candidate-login" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400">
                     <ArrowLeft className="h-3 w-3" /> Candidate Portal
+                  </Link>
+                  <Link href="/landing" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400">
+                    Overview
                   </Link>
                   <Link href="/register" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 hover:underline transition-colors dark:text-indigo-400">
                     Register Company <ArrowRight className="h-3 w-3" />
