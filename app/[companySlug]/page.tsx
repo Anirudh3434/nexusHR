@@ -30,9 +30,22 @@ export default function CompanyLoginPage() {
   const params = useParams();
   const router = useRouter();
   const companySlug = params.companySlug as string;
-  const { login, logout } = useAuth();
+  const { user, loading: authLoading, login, logout } = useAuth();
   const { addToast } = useToast();
   const { theme, toggleTheme, mounted } = useTheme();
+
+  // If user is already authenticated and not switching companies, bounce straight to dashboard
+  useEffect(() => {
+    if (!authLoading && user && typeof window !== "undefined" && !window.location.search.includes("switch")) {
+      const destination = 
+        (user.role as string) === "super_admin" 
+          ? "/super-admin" 
+          : user.isCandidate 
+            ? "/candidate/dashboard" 
+            : "/dashboard";
+      router.replace(destination);
+    }
+  }, [user, authLoading, router]);
   
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);

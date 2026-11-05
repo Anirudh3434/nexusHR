@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -15,9 +15,16 @@ export default function CandidateLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, logout } = useAuth();
+  const { user, loading: authLoading, login, logout } = useAuth();
   const { addToast } = useToast();
   const router = useRouter();
+
+  // If already logged in as candidate, bounce to candidate dashboard
+  useEffect(() => {
+    if (!authLoading && user && user.isCandidate) {
+      router.replace(user.mustChangePassword ? "/candidate/change-password" : "/candidate/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
