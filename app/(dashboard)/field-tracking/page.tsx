@@ -20,13 +20,23 @@ import {
   Home, 
   Building2, 
   CheckCircle2, 
-  AlertTriangle 
+  AlertTriangle,
+  Loader2,
+  Smartphone
 } from "lucide-react";
+import { FieldShiftTracker } from "@/components/attendance/FieldShiftTracker";
 
 // Dynamically import Leaflet Map to ensure no SSR errors
 const LiveFieldTrackingMap = dynamic(
   () => import("@/components/attendance/LiveFieldTrackingMap"),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full min-h-[500px] bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl flex items-center justify-center">
+        <span className="text-sm text-slate-400 font-medium">Loading live map engine...</span>
+      </div>
+    )
+  }
 );
 
 interface WorkerItem {
@@ -55,7 +65,7 @@ interface WorkerItem {
 }
 
 export default function FieldTrackingPage() {
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, loading: authLoading } = useAuth();
   const { socket, isConnected } = useSocket(user?.id);
 
   const [workers, setWorkers] = useState<WorkerItem[]>([]);
@@ -178,14 +188,24 @@ export default function FieldTrackingPage() {
       }));
   }, [workers]);
 
+  if (authLoading) {
+    return (
+      <div className="p-12 flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+        <span className="text-sm text-slate-500 font-medium">Loading session...</span>
+      </div>
+    );
+  }
+
+  // If regular employee visits /field-tracking on their phone:
   if (!isAuthorized) {
     return (
-      <div className="p-8 text-center">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Access Restricted</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Only CEOs, Admins, and HR Managers can view live field tracking maps.
-        </p>
+      <div className="space-y-6 max-w-2xl mx-auto py-2">
+        <PageHeader
+          title="Field Duty & Shift Tracker"
+          description="Start your field shift, take breaks with guaranteed privacy, and transmit live GPS coordinates to management."
+        />
+        <FieldShiftTracker />
       </div>
     );
   }
