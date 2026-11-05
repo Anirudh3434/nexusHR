@@ -83,7 +83,7 @@ export async function GET(req: Request) {
       .populate('approverId', 'name email')
       .populate('approvedBy', 'name email')
       .populate('reimbursedBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     // Calculate stats
     const stats = {

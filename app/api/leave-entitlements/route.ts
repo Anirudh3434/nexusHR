@@ -49,7 +49,7 @@ export async function GET(req: Request) {
 
     const entitlements = await LeaveEntitlement.find(query)
       .populate('leaveTypeId', 'name code color isPaid')
-      .sort({ minYears: 1 });
+      .sort({ minYears: 1 }).lean();
 
     return NextResponse.json(entitlements);
   } catch (error: any) {

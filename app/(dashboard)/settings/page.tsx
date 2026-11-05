@@ -13,7 +13,8 @@ import {
   FileText,
   Globe,
   ChevronRight,
-  Home
+  Home,
+  Plug
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -23,8 +24,9 @@ import { AttendanceSection } from "../../../components/settings/AttendanceSectio
 import { EmailSection } from "../../../components/settings/EmailSection";
 import { EmailTemplatesSection } from "../../../components/settings/EmailTemplatesSection";
 import { CareersSection } from "../../../components/settings/CareersSection";
+import { McpSection } from "../../../components/settings/McpSection";
 
-type TabType = 'branding' | 'attendance' | 'email' | 'email-templates' | 'careers';
+type TabType = 'branding' | 'attendance' | 'email' | 'email-templates' | 'careers' | 'mcp';
 
 function SettingsContent() {
   const { user, hasRole, updateUser } = useAuth();
@@ -182,6 +184,7 @@ function SettingsContent() {
     { id: 'email', label: 'Email', icon: Mail },
     { id: 'email-templates', label: 'Email Templates', icon: FileText },
     { id: 'careers', label: 'Careers Page', icon: Globe },
+    { id: 'mcp', label: 'MCP & AI Agent', icon: Plug },
   ];
 
   return (
@@ -269,6 +272,10 @@ function SettingsContent() {
               companyId={user.companyId || ''}
               companyName={companyName}
             />
+          )}
+
+          {tab === 'mcp' && (
+            <McpSection />
           )}
 
           {tab === 'careers' && (

@@ -477,8 +477,8 @@ ${requirements}
         ) : (
           filteredPositions.map((position) => (
             <Card key={position._id} className="hover:shadow-sm transition-all duration-200 border-gray-200 dark:border-slate-700">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Header: Title + Badges */}
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -545,7 +545,7 @@ ${requirements}
                   </div>
                   
                   {/* Actions */}
-                  <div className="flex items-start gap-1">
+                  <div className="flex items-center justify-between sm:justify-end gap-1.5 pt-3 sm:pt-0 border-t sm:border-t-0 border-border/40 shrink-0">
                     {position.jobId && (
                       <Button 
                         variant="ghost" 

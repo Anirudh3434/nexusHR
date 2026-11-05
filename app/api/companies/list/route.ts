@@ -18,11 +18,11 @@ export async function GET() {
 
     const companies = await Company.find(query)
       .select('name code email phone onboardingComplete isActive createdAt')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({
       count: companies.length,
-      companies: companies.map(c => ({
+      companies: companies.map((c: any) => ({
         id: c._id.toString(),
         name: c.name,
         code: c.code,

@@ -30,7 +30,8 @@ export async function GET(req: Request) {
 
     const users = await User.find(query)
       .select('name email department role companyId')
-      .sort({ name: 1 });
+      .sort({ name: 1 })
+      .lean();
 
     return NextResponse.json({ users });
   } catch (error: any) {

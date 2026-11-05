@@ -35,7 +35,7 @@ export async function GET(req: Request) {
     }
     if (department) query.department = department;
 
-    const designations = await Designation.find(query).sort({ name: 1 });
+    const designations = await Designation.find(query).sort({ name: 1 }).lean();
     return NextResponse.json(designations);
   } catch (error: any) {
     return NextResponse.json({ message: 'Error fetching designations', error: error.message }, { status: 500 });

@@ -8,7 +8,9 @@ import { useEntitlements } from "../../context/EntitlementsContext";
 import { sidebarConfig, SidebarGroup, SidebarRoute, Role } from "../../config/sidebarConfig";
 import { cn } from "../../lib/utils";
 import { featureForPath, type Feature } from "../../lib/entitlements";
-import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock, LogOut, Sun, Moon } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
+import { Avatar } from "../ui/Avatar";
 import { SmartLogoBadge } from "../ui/SmartLogoBadge";
 
 interface SidebarProps {
@@ -29,6 +31,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, updateUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { has } = useEntitlements();
   const pmsEnabled = has("pms");
 
@@ -425,12 +428,74 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         })}
       </nav>
 
-      {/* Bottom App Info */}
-      <div className="border-t border-white/10 p-3 pb-6">
+      {/* Bottom Footer: User Profile, Theme Switcher & Logout */}
+      <div className="border-t border-white/10 p-3 space-y-2 bg-black/20">
         {!collapsed && (
-          <div className="flex items-center justify-between px-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-medium">Mobile app</span>
-            <span className="tabular text-[11px]">v6.0.13</span>
+          <>
+            {/* User Profile Card */}
+            <Link
+              href="/profile"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors group"
+            >
+              <Avatar name={user.name} src={user.avatar} size="sm" bordered />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-white truncate group-hover:text-primary transition-colors">
+                  {user.name}
+                </p>
+                <p className="text-[11px] text-slate-400 capitalize truncate">
+                  {user.designation || user.role}
+                </p>
+              </div>
+            </Link>
+
+            {/* Quick Actions: Theme & Logout */}
+            <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+              >
+                {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
+                <span>{theme === "light" ? "Dark" : "Light"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={logout}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+              >
+                <LogOut size={14} />
+                <span>Log out</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between px-2 pt-1 text-[10px] text-slate-500 dark:text-slate-400">
+              <span className="font-medium">NexusHR Workspace</span>
+              <span className="tabular">v6.0.13</span>
+            </div>
+          </>
+        )}
+
+        {collapsed && (
+          <div className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+              title="Log out"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         )}
       </div>

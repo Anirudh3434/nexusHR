@@ -68,7 +68,8 @@ export async function GET(req: Request) {
       .populate('managerId', 'name email department')
       .populate('members.employeeId', 'name email department')
       .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json({ projects });
   } catch (error: any) {

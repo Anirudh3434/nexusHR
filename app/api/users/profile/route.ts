@@ -50,6 +50,7 @@ export async function GET(req: Request) {
       employeeId: user.employeeId,
       companyId: user.companyId?.toString(),
       avatar: user.avatar,
+      coverImage: user.coverImage,
       dob: user.dob,
       phone: user.phone,
       address: user.address,
@@ -99,7 +100,7 @@ export async function PATCH(req: Request) {
     }
 
     // Only allow updating specific fields (not email, role, department, designation)
-    const allowedFields = ['name', 'dob', 'phone', 'address', 'bio', 'github', 'linkedin', 'website', 'twitter', 'avatar'];
+    const allowedFields = ['name', 'dob', 'phone', 'address', 'bio', 'github', 'linkedin', 'website', 'twitter', 'avatar', 'coverImage'];
     const filteredUpdate: any = {};
 
     allowedFields.forEach(field => {
@@ -132,6 +133,7 @@ export async function PATCH(req: Request) {
         designation: user.designation,
         companyId: user.companyId?.toString(),
         avatar: user.avatar,
+        coverImage: user.coverImage,
         dob: user.dob,
         phone: user.phone,
         address: user.address,

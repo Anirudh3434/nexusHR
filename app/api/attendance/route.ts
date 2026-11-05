@@ -66,10 +66,11 @@ export async function GET(req: Request) {
     const attendance = await Attendance.find(query)
       .populate({ path: 'employeeId', model: User, select: 'name department designation email' })
       .populate({ path: 'editedBy', model: User, select: 'name email role' })
-      .sort({ date: -1 });
+      .sort({ date: -1 })
+      .lean();
 
-    const formattedAttendance = attendance.map(record => {
-      const rec = record.toObject();
+    const formattedAttendance = attendance.map((record: any) => {
+      const rec = record;
       const editorName = rec.editedBy?.name || rec.editedByName || (rec.editedBy ? 'Admin' : undefined);
       return {
         ...rec,
@@ -331,8 +332,8 @@ export async function POST(req: Request) {
       existingAttendance: !!attendance
     });
 
-    // Validate geo-fencing on check-in (Skip if Work From Home)
-    if (formattedCheckIn && (!attendance || !attendance.checkIn?.time) && workMode !== 'wfh') {
+    // Validate geo-fencing on check-in (Skip if Work From Home or Field Work)
+    if (formattedCheckIn && (!attendance || !attendance.checkIn?.time) && workMode !== 'wfh' && workMode !== 'field') {
       if (location?.lat && location?.lng) {
         console.log('[Attendance] Validating geo-fencing...');
         const geoCheck = await validateGeoFencing(employeeId, location.lat, location.lng);

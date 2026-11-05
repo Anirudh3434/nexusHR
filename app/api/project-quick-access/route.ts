@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     const access = await requireProjectAccess(projectId, auth);
     if ('error' in access) return NextResponse.json({ message: access.error }, { status: access.status });
 
-    const items = await ProjectQuickAccess.find({ projectId }).sort({ createdAt: 1 });
+    const items = await ProjectQuickAccess.find({ projectId }).sort({ createdAt: 1 }).lean();
     return NextResponse.json({ items }, { status: 200 });
   } catch (error) {
     console.error('Error fetching quick access items:', error);

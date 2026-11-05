@@ -140,7 +140,8 @@ export async function GET(req: Request) {
       .populate('blocks', 'taskNumber title status')
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .lean();
 
     return NextResponse.json({ tasks });
   } catch (error: any) {

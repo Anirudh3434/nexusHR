@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     if (isPinned === 'true') query.isPinned = true;
 
     const notes = await ProjectNote.find(query)
-      .sort({ isPinned: -1, updatedAt: -1 });
+      .sort({ isPinned: -1, updatedAt: -1 }).lean();
 
     return NextResponse.json({ notes }, { status: 200 });
   } catch (error) {

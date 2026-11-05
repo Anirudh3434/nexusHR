@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
     const sprints = await Sprint.find(filter)
       .populate('projectId', 'name projectNumber')
       .populate('createdBy', 'name email')
-      .sort({ startDate: -1 });
+      .sort({ startDate: -1 })
+      .lean();
 
     return NextResponse.json({ sprints }, { status: 200 });
   } catch (error) {

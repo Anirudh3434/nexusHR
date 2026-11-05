@@ -84,7 +84,7 @@ export async function GET(req: Request) {
     const surveys = await Survey.find(query)
       .populate('createdBy', 'name email')
       .populate('targetEmployees', 'name email department')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ surveys });
   } catch (error: any) {

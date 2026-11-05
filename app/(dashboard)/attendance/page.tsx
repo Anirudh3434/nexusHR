@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users, CalendarDays, List } from "lucide-react";
+import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users, CalendarDays, List, MapPin } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { TableSkeleton } from "../../../components/ui/Skeleton";
 import { ModalPortal } from "../../../components/ui/ModalPortal";
 import { WeekWiseAttendanceTable } from "../../../components/attendance/WeekWiseAttendanceTable";
 import { getEmployees, Employee } from "../../../services/employeeService";
@@ -351,11 +352,7 @@ export default function AttendancePage() {
   const maxDayTotal = Math.max(...trendDays.map(t => t.total), 1);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <TableSkeleton rows={6} cols={6} />;
   }
 
   return (
@@ -365,7 +362,7 @@ export default function AttendancePage() {
         title="Attendance"
         description="Mark attendance, inspect punctuality metrics, and view check-in logs."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button 
               variant={viewMode === 'weekly' ? 'default' : 'outline'} 
               size="sm" 
@@ -394,6 +391,15 @@ export default function AttendancePage() {
                   <Download className="mr-1.5 h-4 w-4" />
                   Export CSV
                 </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => router.push('/field-tracking')}
+                  className="border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 gap-1.5"
+                >
+                  <MapPin className="h-4 w-4" />
+                  Live Field Tracking
+                </Button>
               </>
             )}
           </div>
@@ -402,7 +408,7 @@ export default function AttendancePage() {
 
       {/* Self Check-in Card */}
       <Card className="rounded-[14px] border border-border bg-card shadow-xs">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
@@ -428,7 +434,7 @@ export default function AttendancePage() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {!todayAttendance?.checkIn ? (
                 <Button 
                   onClick={handleCheckIn} 
@@ -439,7 +445,7 @@ export default function AttendancePage() {
                   Check In
                 </Button>
               ) : (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-muted-foreground">Checked in at:</span>
                     <span className="font-mono font-semibold text-foreground">{todayAttendance.checkIn.time}</span>

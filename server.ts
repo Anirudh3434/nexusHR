@@ -1,4 +1,5 @@
 import { createServer } from "http";
+import compression from "compression";
 import { parse } from "url";
 import next from "next";
 import { Server } from "socket.io";
@@ -29,9 +30,12 @@ const corsOrigin: true | string[] =
   envOrigins.length > 0 ? envOrigins : dev ? true : ["http://localhost:3000"];
 
 app.prepare().then(() => {
+  const compress = compression();
   const httpServer = createServer((req, res) => {
+    compress(req as any, res as any, () => {
     const parsedUrl = parse(req.url!, true);
-    handle(req, res, parsedUrl);
+      handle(req, res, parsedUrl);
+    });
   });
 
   const io = new Server(httpServer, {
@@ -56,6 +60,8 @@ app.prepare().then(() => {
       (socket as any).data = (socket as any).data || {};
       (socket as any).data.userId = decoded.id;
       (socket as any).data.role = decoded.role;
+      (socket as any).data.companyId = decoded.companyId;
+      (socket as any).data.name = decoded.name;
       nextFn();
     } catch {
       nextFn(new Error("Unauthorized"));
@@ -122,6 +128,62 @@ app.prepare().then(() => {
       console.log(`Attendance update for user ${userId}:`, attendance);
       // Broadcast to all dashboard clients in the user's room
       io.to(userId).emit("attendance-updated", attendance);
+    });
+
+    // Join field tracking room for management (CEO, Admin, HR, Manager)
+    socket.on("join-field-tracking", () => {
+      const role = (socket as any).data?.role;
+      const companyId = (socket as any).data?.companyId;
+      const allowedRoles = ["super_admin", "admin", "hr", "manager"];
+      if (!allowedRoles.includes(role)) {
+        console.warn(`Unauthorized join-field-tracking attempt by ${socket.id} (role: ${role})`);
+        return;
+      }
+      const room = `field-tracking:${companyId || "global"}`;
+      socket.join(room);
+      console.log(`Supervisor ${socket.id} (role: ${role}) joined ${room}`);
+    });
+
+    // Handle real-time field worker GPS location updates
+    socket.on("field-location-update", (data) => {
+      const uid = ownId();
+      if (!uid) return;
+      const companyId = (socket as any).data?.companyId;
+      const name = (socket as any).data?.name;
+      const role = (socket as any).data?.role;
+
+      const { lat, lng, accuracy, speed, heading, timestamp } = data || {};
+      if (typeof lat !== 'number' || typeof lng !== 'number') return;
+
+      const room = `field-tracking:${companyId || "global"}`;
+      io.to(room).emit("employee-location-ping", {
+        employeeId: uid,
+        name: name || "Field Worker",
+        role: role || "employee",
+        lat,
+        lng,
+        accuracy: accuracy || 0,
+        speed: speed || null,
+        heading: heading || null,
+        timestamp: timestamp || new Date().toISOString(),
+      });
+    });
+
+    // Handle worker status change (break / resume / end)
+    socket.on("field-status-update", (data) => {
+      const uid = ownId();
+      if (!uid) return;
+      const companyId = (socket as any).data?.companyId;
+      const name = (socket as any).data?.name;
+      const { status } = data || {};
+
+      const room = `field-tracking:${companyId || "global"}`;
+      io.to(room).emit("employee-status-ping", {
+        employeeId: uid,
+        name: name || "Field Worker",
+        status: status || "active",
+        timestamp: new Date().toISOString(),
+      });
     });
 
     socket.on("disconnect", () => {

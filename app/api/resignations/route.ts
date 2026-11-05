@@ -62,7 +62,7 @@ export async function GET(req: Request) {
       .populate('employeeId', 'name firstName lastName email employeeId department designation')
       .populate('submittedBy', 'name email')
       .populate('approvedBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ resignations });
   } catch (error: any) {

@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: 'Company ID required' }, { status: 400 });
     }
 
-    const shifts = await WorkShift.find({ companyId }).sort({ createdAt: -1 });
+    const shifts = await WorkShift.find({ companyId }).sort({ createdAt: -1 }).lean();
     return NextResponse.json(shifts);
   } catch (error) {
     console.error('Error fetching shifts:', error);

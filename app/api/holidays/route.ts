@@ -36,10 +36,10 @@ export async function GET(req: Request) {
       },
     })
       .populate('createdBy', 'name')
-      .sort({ date: 1 });
+      .sort({ date: 1 }).lean();
 
-    const formattedHolidays = holidays.map(holiday => ({
-      ...holiday.toObject(),
+    const formattedHolidays = holidays.map((holiday: any) => ({
+      ...holiday,
       id: holiday._id.toString(),
       _id: undefined,
       createdBy: holiday.createdBy ? {

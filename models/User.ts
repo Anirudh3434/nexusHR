@@ -131,6 +131,9 @@ const UserSchema = new Schema({
   avatar: {
     type: String,
   },
+  coverImage: {
+    type: String,
+  },
   isActive: {
     type: Boolean,
     default: true,

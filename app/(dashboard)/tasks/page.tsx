@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 import { 
   KanbanSquare, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
@@ -665,11 +666,7 @@ export default function TasksManagementPage() {
   });
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
-      </div>
-    );
+    return <TableSkeleton rows={7} cols={6} />;
   }
 
   return (
@@ -717,7 +714,7 @@ export default function TasksManagementPage() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
               <input
@@ -861,7 +858,7 @@ export default function TasksManagementPage() {
       </div>
       ) : (
         /* Board View */
-        <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-thin">
+        <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-6 scrollbar-thin scroll-smooth -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
           {Object.entries(boardStatusLabels).map(([status, label]) => {
             const theme = statusThemes[status] || statusThemes.backlog;
             const columnTasks = filteredTasks.filter(t => t.status === status);
@@ -876,7 +873,7 @@ export default function TasksManagementPage() {
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, status)}
-                className={`flex-shrink-0 w-80 rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
+                className={`w-[85vw] sm:w-80 flex-shrink-0 rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
                   dragOverColumn === status 
                     ? 'border-indigo-500 bg-indigo-50/30 shadow-[inset_0_2px_8px_rgba(99,102,241,0.05)] dark:bg-indigo-500/10' 
                     : isOverWip

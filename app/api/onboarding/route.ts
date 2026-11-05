@@ -50,7 +50,7 @@ export async function GET(req: Request) {
 
     const records = await Onboarding.find(query)
       .populate('employeeId', 'name email role isActive')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ onboarding: records });
   } catch (error: any) {

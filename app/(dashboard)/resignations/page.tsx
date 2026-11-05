@@ -201,7 +201,7 @@ export default function ResignationsPage() {
   }
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <PageHeader
         icon={<LogOut />}
@@ -210,7 +210,7 @@ export default function ResignationsPage() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {[
           { label: 'Total', value: stats.total, icon: Users, color: 'blue' },
           { label: 'Pending', value: stats.pending, icon: Clock, color: 'yellow' },
@@ -219,7 +219,7 @@ export default function ResignationsPage() {
           { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'red' },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-gray-200 dark:border-slate-700">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3">
               <div className={`p-2 rounded-md bg-${color}-50`}>
                 <Icon className={`h-4 w-4 text-${color}-600`} />
               </div>
@@ -233,7 +233,7 @@ export default function ResignationsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input

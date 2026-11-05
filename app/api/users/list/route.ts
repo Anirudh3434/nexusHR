@@ -28,11 +28,12 @@ export async function GET(req: Request) {
 
     const users = await User.find(query)
       .select('name email role department companyId isActive createdAt')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json({
       count: users.length,
-      users: users.map(u => ({
+      users: users.map((u: any) => ({
         id: u._id.toString(),
         name: u.name,
         email: u.email,

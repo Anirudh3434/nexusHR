@@ -53,7 +53,7 @@ export async function GET(req: Request) {
     const responses = await SurveyResponse.find(query)
       .populate('surveyId', 'title type isAnonymous')
       .populate('employeeId', 'name email department')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ responses });
   } catch (error: any) {

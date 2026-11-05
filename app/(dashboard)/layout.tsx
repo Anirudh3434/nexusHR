@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/layout/Sidebar";
 import { Topbar } from "../../components/layout/Topbar";
 import { EntitlementsProvider } from "../../context/EntitlementsContext";
+import { DashboardShellSkeleton } from "../../components/ui/Skeleton";
 import type { SubscriptionState } from "../../lib/subscription";
 
 const BILLING_EXEMPT = ["/billing", "/change-password"];
@@ -22,6 +22,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
+  const lastSubscriptionFetchRef = useRef<number>(0);
 
   // Close sidebar on navigation change (for mobile)
   useEffect(() => {
@@ -35,16 +36,30 @@ export default function DashboardLayout({
   }, [user, loading, router]);
 
   // Trial enforcement: expired workspaces land on billing (hard block).
+  // Caches subscription check for 3 minutes to avoid blocking rapid page navigation with repeat network requests.
   useEffect(() => {
     if (loading || !user || !user.companyId) return;
+
+    if (subscription?.status === "expired" && !BILLING_EXEMPT.some((p) => pathname.startsWith(p))) {
+      router.push("/billing");
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastSubscriptionFetchRef.current < 180000 && subscription !== null) {
+      return;
+    }
+
     if (BILLING_EXEMPT.some((p) => pathname.startsWith(p))) return;
     let cancelled = false;
+    lastSubscriptionFetchRef.current = now;
+
     fetch("/api/subscription/status")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: SubscriptionState | null) => {
         if (cancelled || !data) return;
         setSubscription(data);
-        if (data.status === "expired") {
+        if (data.status === "expired" && !BILLING_EXEMPT.some((p) => pathname.startsWith(p))) {
           router.push("/billing");
         }
       })
@@ -52,14 +67,10 @@ export default function DashboardLayout({
     return () => {
       cancelled = true;
     };
-  }, [loading, user?.companyId, pathname, router]);
+  }, [loading, user?.companyId, pathname, router, subscription]);
 
   if (loading || !user) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" aria-label="Loading workspace" />
-      </div>
-    );
+    return <DashboardShellSkeleton />;
   }
 
   const showTrialBanner =
@@ -90,18 +101,9 @@ export default function DashboardLayout({
             </div>
           )}
           <main className="flex-1 overflow-y-auto bg-background">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={pathname}
-                initial={{ opacity: 0, y: 7 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6"
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
+            <div className="mx-auto w-full max-w-[1280px] px-3.5 py-4 sm:px-6 sm:py-6">
+              {children}
+            </div>
           </main>
         </div>
       </div>
