@@ -9,6 +9,7 @@ import { History, Calendar, FileDown, Loader2, CalendarClock, CalendarDays, List
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { WeekWiseAttendanceTable } from "../../../components/attendance/WeekWiseAttendanceTable";
+import { FieldShiftTracker } from "../../../components/attendance/FieldShiftTracker";
 
 interface AttendanceLog {
   id: string;
@@ -128,6 +129,9 @@ export default function MyAttendancePage() {
           </div>
         }
       />
+
+      {/* Live Mobile Field Shift & Break Tracker */}
+      <FieldShiftTracker />
 
       {/* View Switcher Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">

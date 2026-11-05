@@ -8,7 +8,10 @@ export interface AttendanceRecord {
   status: 'Present' | 'Absent' | 'On Leave' | 'Half Day' | 'Late' | 'On Time' | 'Holiday';
   checkIn?: { time: string; ip?: string; location?: { lat: number; lng: number } };
   checkOut?: { time: string; ip?: string; location?: { lat: number; lng: number } };
-  workMode?: 'office' | 'wfh';
+  workMode?: 'office' | 'wfh' | 'field';
+  isOnBreak?: boolean;
+  breaks?: Array<{ startTime: string; endTime?: string; duration?: number; reason?: string }>;
+  lastLocation?: { lat: number; lng: number; accuracy?: number; speed?: number; heading?: number; updatedAt?: string | Date };
   isLate?: boolean;
   lateMinutes?: number;
   shiftStartTime?: string;
@@ -33,7 +36,7 @@ export interface AttendanceInput {
   checkIn?: string;
   checkOut?: string;
   companyId?: string;
-  workMode?: 'office' | 'wfh';
+  workMode?: 'office' | 'wfh' | 'field';
   note?: string;
   location?: { lat: number; lng: number };
 }
@@ -146,6 +149,33 @@ export const updateAttendanceRecord = async (id: string, data: Partial<Attendanc
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || errorData.error || 'Failed to update attendance');
+  }
+  return response.json();
+};
+
+// Toggle employee break (Start or End break)
+export const toggleAttendanceBreak = async (data: { action: 'start' | 'end'; reason?: string }): Promise<any> => {
+  const response = await fetch('/api/attendance/break', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || errorData.error || 'Failed to toggle break');
+  }
+  return response.json();
+};
+
+// Fetch live field attendance for managers (CEO, Admin, HR)
+export const getLiveFieldAttendance = async (): Promise<any[]> => {
+  const response = await fetch('/api/attendance/field-tracking');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch field tracking records');
   }
   return response.json();
 };

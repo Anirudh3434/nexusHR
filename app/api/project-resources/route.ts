@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     if (isFavorite === 'true') query.isFavorite = true;
 
     const resources = await ProjectResource.find(query)
-      .sort({ isFavorite: -1, updatedAt: -1 });
+      .sort({ isFavorite: -1, updatedAt: -1 }).lean();
 
     return NextResponse.json({ resources }, { status: 200 });
   } catch (error) {

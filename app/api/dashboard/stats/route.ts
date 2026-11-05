@@ -160,7 +160,7 @@ async function getCommonTaskProjectTicketData(userId: string, companyId: string 
     Leave.find({
       status: 'Approved',
       endDate: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7) }
-    }).populate('employeeId', 'name designation avatar').limit(10)
+    }).populate('employeeId', 'name designation avatar').limit(10).lean()
   ]);
 
   const tasksToUse = userTasks;
@@ -220,7 +220,7 @@ async function getCommonTaskProjectTicketData(userId: string, companyId: string 
       title: l.employeeId?.name || 'On Leave',
       employeeName: l.employeeId?.name,
       avatar: l.employeeId?.avatar,
-      date: new Date(l.startDate).toISOString().split('T')[0],
+      date: l.startDate && !isNaN(new Date(l.startDate).getTime()) ? new Date(l.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       isAllDay: true
     });
   });
@@ -230,7 +230,7 @@ async function getCommonTaskProjectTicketData(userId: string, companyId: string 
       id: h._id.toString(),
       type: 'holiday',
       title: h.name,
-      date: new Date(h.date).toISOString().split('T')[0],
+      date: h.date && !isNaN(new Date(h.date).getTime()) ? new Date(h.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       isAllDay: true
     });
   });
@@ -295,7 +295,7 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
       status: 'Approved',
       startDate: { $lte: today },
       endDate: { $gte: today }
-    }).populate('employeeId', 'name department designation avatar employeeId'),
+    }).populate('employeeId', 'name department designation avatar employeeId').lean(),
     getCommonTaskProjectTicketData(userId, companyId, 'admin')
   ]);
 
@@ -305,14 +305,14 @@ async function getAdminStats(baseStats: any, companyId: string | null, userId: s
   const todayStart = new Date(today.setHours(0, 0, 0, 0));
   const todayEnd = new Date(today.setHours(23, 59, 59, 999));
   const joiningToday = allEmployees.filter(emp => {
-    if (!emp.joiningDate) return false;
+    if (!emp.joiningDate || isNaN(new Date(emp.joiningDate).getTime())) return false;
     const jDate = new Date(emp.joiningDate);
     return jDate >= todayStart && jDate <= todayEnd;
   });
 
   // Work Anniversaries
   const anniversaries = allEmployees.filter(emp => {
-    if (!emp.joiningDate) return false;
+    if (!emp.joiningDate || isNaN(new Date(emp.joiningDate).getTime())) return false;
     const joinStr = new Date(emp.joiningDate).toISOString().slice(5, 10);
     const years = today.getFullYear() - new Date(emp.joiningDate).getFullYear();
     return joinStr === todayMonthDay && years > 0;
@@ -428,17 +428,18 @@ async function getEmployeeStats(baseStats: any, companyId: string | null, userId
   ] = await Promise.all([
     User.findById(userId)
       .select('name department designation employeeId joiningDate workShiftId companyId avatar')
-      .populate('workShiftId', 'name startTime endTime'),
+      .populate('workShiftId', 'name startTime endTime')
+      .lean(),
     LinkedDevice.findOne({ userId, isActive: true })
       .select('deviceName platform lastActive model batteryLevel batteryState networkType'),
-    User.find({ ...query, isActive: true }).select('name dob department designation avatar employeeId joiningDate'),
+    User.find({ ...query, isActive: true }).select('name dob department designation avatar employeeId joiningDate').lean(),
     Leave.find({
       ...query,
       status: 'Approved',
       startDate: { $lte: today },
       endDate: { $gte: today }
-    }).populate('employeeId', 'name department designation avatar employeeId'),
-    Attendance.findOne({ employeeId: userId, date: todayStr }),
+    }).populate('employeeId', 'name department designation avatar employeeId').lean(),
+    Attendance.findOne({ employeeId: userId, date: todayStr }).lean(),
     getCommonTaskProjectTicketData(userId, companyId, 'employee')
   ]);
 
@@ -448,19 +449,19 @@ async function getEmployeeStats(baseStats: any, companyId: string | null, userId
   const todayStart = new Date(today.setHours(0, 0, 0, 0));
   const todayEnd = new Date(today.setHours(23, 59, 59, 999));
   const joiningToday = allEmployees.filter(emp => {
-    if (!emp.joiningDate) return false;
+    if (!emp.joiningDate || isNaN(new Date(emp.joiningDate).getTime())) return false;
     const jDate = new Date(emp.joiningDate);
     return jDate >= todayStart && jDate <= todayEnd;
   });
 
   // Work Anniversaries
   const anniversaries = allEmployees.filter(emp => {
-    if (!emp.joiningDate) return false;
+    if (!emp.joiningDate || isNaN(new Date(emp.joiningDate).getTime())) return false;
     const joinStr = new Date(emp.joiningDate).toISOString().slice(5, 10);
     const years = today.getFullYear() - new Date(emp.joiningDate).getFullYear();
     return joinStr === todayMonthDay && years > 0;
   }).map(emp => ({
-    ...emp.toObject(),
+    ...(typeof (emp as any).toObject === 'function' ? (emp as any).toObject() : emp),
     years: today.getFullYear() - new Date(emp.joiningDate!).getFullYear()
   }));
 

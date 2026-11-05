@@ -35,10 +35,10 @@ export async function GET(req: Request) {
     const notices = await Notice.find(query)
       .populate('postedBy', 'name role')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit));
+      .limit(parseInt(limit)).lean();
 
-    const formattedNotices = notices.map(notice => ({
-      ...notice.toObject(),
+    const formattedNotices = notices.map((notice: any) => ({
+      ...notice,
       id: notice._id.toString(),
       _id: undefined,
       postedBy: notice.postedBy ? {

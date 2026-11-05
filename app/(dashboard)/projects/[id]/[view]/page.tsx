@@ -17,9 +17,28 @@ import {
   List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { BoardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { useParams, useRouter } from "next/navigation";
-import TransitionErrorPopup from "@/components/projects/TransitionErrorPopup";
-import TimelineView from "@/components/projects/TimelineView";
+import dynamic from "next/dynamic";
+
+const TransitionErrorPopup = dynamic(
+  () => import("@/components/projects/TransitionErrorPopup"),
+  { ssr: false }
+);
+const TimelineView = dynamic(
+  () => import("@/components/projects/TimelineView"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-64 w-full items-center justify-center rounded-xl border border-dashed border-border bg-card/40">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          Loading timeline view...
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface TaskItem {
   _id: string;
@@ -2567,37 +2586,33 @@ export default function ProjectBoardPage() {
 };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <BoardSkeleton />;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 min-w-0">
           <button
             onClick={() => router.push('/projects')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors dark:text-slate-400"
+            className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors dark:text-slate-400 shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back to Projects</span>
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-medium">Back to Projects</span>
           </button>
-          <div className="h-6 w-px bg-gray-300"></div>
+          <div className="hidden sm:block h-6 w-px bg-gray-300 dark:bg-slate-700"></div>
           <PageHeader
             size="sm"
             icon={<FolderKanban />}
             title={project?.name ? (project.name.length > 28 ? `${project.name.slice(0, 28)}...` : project.name) : ""}
-            titleClassName="max-w-[260px] sm:max-w-[340px] md:max-w-[420px]"
+            titleClassName="max-w-[180px] sm:max-w-[340px] md:max-w-[420px]"
             description={project?.projectNumber}
           />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-2.5 w-full lg:w-auto">
           {/* View Mode Selector - labeled */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 dark:bg-slate-800">
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 overflow-x-auto max-w-full scrollbar-none dark:bg-slate-800">
             {[
               { view: 'board',    icon: KanbanSquare, label: 'Board' },
               { view: 'list',     icon: List,         label: 'List' },
@@ -2635,7 +2650,7 @@ export default function ProjectBoardPage() {
         <>
           {/* Sprints and Filter Row */}
           {sprints.length > 0 ? (
-            <div className="flex items-center gap-4 mb-6 w-full">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 mb-6 w-full">
               {/* Sprint Display (30%) */}
               {(() => {
                 const formatDatePeriod = (startStr: string | Date, endStr: string | Date) => {
@@ -2665,7 +2680,7 @@ export default function ProjectBoardPage() {
                 ];
 
                 return (
-                  <div className="w-[30%] shrink-0 h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
+                  <div className="w-full lg:w-[30%] shrink-0 min-h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-primary shadow-sm shrink-0 dark:bg-indigo-500/10">
                         <Zap className="w-4 h-4 fill-indigo-100" />
@@ -2703,7 +2718,7 @@ export default function ProjectBoardPage() {
               })()}
 
               {/* Filter Container (70%) */}
-              {renderFilterBar("w-[70%] shrink-0")}
+              {renderFilterBar("w-full lg:w-[70%] shrink-0")}
             </div>
           ) : (
             <div className="w-full mb-6">
@@ -2711,7 +2726,7 @@ export default function ProjectBoardPage() {
             </div>
           )}
 
-          <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-thin">
+          <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-6 scrollbar-thin scroll-smooth -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
           {columns.map((column) => {
           const theme = statusThemes[column.status] || statusThemes.backlog;
           const activeColor = column.color || (
@@ -2744,7 +2759,7 @@ export default function ProjectBoardPage() {
                 borderTop: `3px solid ${activeColor}`,
                 boxShadow: `0 4px 16px -2px ${activeColor}15`
               }}
-              className={`flex-1 min-w-[270px] max-w-[340px] rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
+              className={`w-[85vw] sm:w-[320px] md:w-[300px] lg:flex-1 min-w-[270px] max-w-[340px] shrink-0 sm:shrink rounded-2xl border p-4 transition-all duration-200 flex flex-col space-y-4 ${
                 dragOverColumn === column.status 
                   ? 'border-primary bg-primary/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)]' 
                   : isOverWip
@@ -2996,7 +3011,7 @@ export default function ProjectBoardPage() {
                 ];
 
                 return (
-                  <div className="w-[30%] shrink-0 h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
+                  <div className="w-full lg:w-[30%] shrink-0 min-h-[66px] bg-white border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.03)] rounded-2xl p-3 flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-slate-700">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-primary shadow-sm shrink-0 dark:bg-indigo-500/10">
                         <Zap className="w-4 h-4 fill-indigo-100" />
@@ -3034,7 +3049,7 @@ export default function ProjectBoardPage() {
               })()}
 
               {/* Filter Container */}
-              {renderFilterBar("w-[70%] shrink-0")}
+              {renderFilterBar("w-full lg:w-[70%] shrink-0")}
             </div>
           ) : (
             <div className="w-full">
@@ -3063,15 +3078,20 @@ export default function ProjectBoardPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200 relative dark:divide-slate-700">
                     {tasksLoading ? (
-                      <tr>
-                        <td colSpan={7} className="px-4 py-8 text-center text-gray-500 text-sm dark:text-slate-400">
-                          <div className="flex items-center justify-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin text-blue-650" />
-                            <span>Loading tasks...</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <tr key={i} className="animate-pulse">
+          <td className="px-4 py-3"><div className="h-4 w-20 bg-muted/60 rounded" /></td>
+          <td className="px-4 py-3"><div className="h-4 w-48 bg-muted/60 rounded" /></td>
+          <td className="px-4 py-3"><div className="h-5 w-20 bg-muted/60 rounded-full" /></td>
+          <td className="px-4 py-3"><div className="h-5 w-16 bg-muted/60 rounded-full" /></td>
+          <td className="px-4 py-3"><div className="h-6 w-6 bg-muted/60 rounded-full" /></td>
+          <td className="px-4 py-3"><div className="h-4 w-24 bg-muted/60 rounded" /></td>
+          <td className="px-4 py-3"><div className="h-4 w-12 bg-muted/60 rounded" /></td>
+        </tr>
+      ))}
+    </>
+  ) : (
                       (() => {
                         const displayTasks = filteredTasks.filter(t => {
                           if (!selectedSprintId) return true;

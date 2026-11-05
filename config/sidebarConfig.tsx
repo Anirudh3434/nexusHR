@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Building, Users, ShieldAlert, FileBarChart2, Settings,
   UserSquare2, CalendarClock, CircleDollarSign, ActivitySquare, ShieldCheck, 
   UserPlus2, FileClock, Search, Megaphone, Calendar, Clock, Wallet, UserCheck, Briefcase, Palmtree, Award, Mail, FolderOpen, UserPlus, ChevronDown, LogOut, Ticket, UserX, Receipt, Sparkles, FileText, BarChart3, FolderKanban, KanbanSquare, CheckSquare, Brain, TrendingUp, BarChart, CreditCard, Crown
-, GitFork } from "lucide-react";
+, GitFork, MapPin } from "lucide-react";
 import React from "react";
 
 export type Role = "super_admin" | "admin" | "manager" | "hr" | "employee";
@@ -64,6 +64,7 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
       icon: <CalendarClock size={20} />,
       items: [
         { name: "Attendance", href: "/attendance", icon: <CalendarClock size={20} /> },
+        { name: "Live Field Tracking", href: "/field-tracking", icon: <MapPin size={20} /> },
         { name: "Today Task & EOD", href: "/today-tasks", icon: <CheckSquare size={20} /> },
         { name: "Overtime Mgmt", href: "/overtime", icon: <Clock size={20} /> },
         { name: "Leave Mgmt", href: "/leaves", icon: <FileClock size={20} /> },
@@ -166,6 +167,7 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
       icon: <CalendarClock size={20} />,
       items: [
         { name: "Attendance", href: "/attendance", icon: <CalendarClock size={20} /> },
+        { name: "Live Field Tracking", href: "/field-tracking", icon: <MapPin size={20} /> },
         { name: "Overtime Mgmt", href: "/overtime", icon: <Clock size={20} /> },
         { name: "Leave Mgmt", href: "/leaves", icon: <FileClock size={20} /> },
         { name: "Leave Types", href: "/leave-types", icon: <Palmtree size={20} /> },

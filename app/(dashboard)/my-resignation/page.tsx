@@ -213,7 +213,7 @@ export default function MyResignationPage() {
   }
 
   return (
-    <div className="p-5 space-y-5 max-w-3xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-3xl mx-auto">
       {/* Header */}
       <PageHeader
         icon={<LogOut />}

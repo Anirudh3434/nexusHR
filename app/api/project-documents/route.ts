@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
     else query.isDeleted = false;
 
     const documents = await ProjectDocument.find(query)
-      .sort({ isFavorite: -1, updatedAt: -1 });
+      .sort({ isFavorite: -1, updatedAt: -1 }).lean();
 
     return NextResponse.json({ documents }, { status: 200 });
   } catch (error) {

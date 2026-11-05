@@ -28,10 +28,12 @@ import {
   Clock, 
   Award,
   ExternalLink,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Plug
 } from "lucide-react";
 import { uploadImage } from "../../../services/uploadService";
 import { cn } from "../../../lib/utils";
+import { ConnectMcpModal } from "../../../components/mcp/ConnectMcpModal";
 
 interface ProfileData {
   name: string;
@@ -55,6 +57,7 @@ interface ProfileData {
   website?: string;
   twitter?: string;
   avatar?: string;
+  coverImage?: string;
   joiningDate?: string;
   probationStatus?: 'on_probation' | 'confirmed' | null;
   probationStartDate?: string;
@@ -64,15 +67,17 @@ interface ProfileData {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { addToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [activeTab, setActiveTab] = useState<'personal' | 'work' | 'address' | 'social'>('personal');
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [formData, setFormData] = useState<Partial<ProfileData>>({});
+  const [showMcpModal, setShowMcpModal] = useState(false);
 
   useEffect(() => {
     if (user) fetchProfile();
@@ -140,13 +145,134 @@ export default function ProfilePage() {
     setIsUploading(true);
     try {
       const result = await uploadImage(file, 'hrm');
-      setFormData({ ...formData, avatar: result.secure_url });
-      addToast({ type: 'success', title: 'Avatar Uploaded', description: 'Click "Save Changes" to apply.' });
+      const newAvatar = result.secure_url;
+
+      if (isEditing) {
+        setFormData((prev) => ({ ...prev, avatar: newAvatar }));
+        addToast({ type: 'success', title: 'Photo Uploaded', description: 'Click "Save Changes" to apply.' });
+      } else {
+        const res = await fetch('/api/users/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user?.id, avatar: newAvatar }),
+        });
+        if (!res.ok) throw new Error('Failed to save profile picture');
+        const data = await res.json();
+        setProfile(data.user);
+        setFormData(data.user);
+        if (user && updateUser) {
+          updateUser({ ...user, avatar: newAvatar });
+        }
+        addToast({ type: 'success', title: 'Profile Photo Updated', description: 'Your new picture has been saved.' });
+      }
     } catch (error: any) {
-      console.error('Upload error:', error);
+      console.error('Avatar upload error:', error);
       addToast({ type: 'error', title: 'Upload Failed', description: error.message || 'Failed to upload image' });
     } finally {
       setIsUploading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (isEditing) {
+      setFormData((prev) => ({ ...prev, avatar: '' }));
+      addToast({ type: 'info', title: 'Photo Removed', description: 'Click "Save Changes" to apply.' });
+    } else {
+      setIsUploading(true);
+      try {
+        const res = await fetch('/api/users/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user?.id, avatar: '' }),
+        });
+        if (!res.ok) throw new Error('Failed to remove photo');
+        const data = await res.json();
+        setProfile(data.user);
+        setFormData(data.user);
+        if (user && updateUser) {
+          updateUser({ ...user, avatar: undefined });
+        }
+        addToast({ type: 'success', title: 'Photo Removed', description: 'Reverted to default avatar.' });
+      } catch (error: any) {
+        addToast({ type: 'error', title: 'Error', description: error.message || 'Failed to remove photo' });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      addToast({ type: 'error', title: 'Invalid File', description: 'Please select an image file.' });
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      addToast({ type: 'error', title: 'File Too Large', description: 'Cover image must be less than 8MB.' });
+      return;
+    }
+
+    setIsUploadingCover(true);
+    try {
+      const result = await uploadImage(file, 'hrm');
+      const newCover = result.secure_url;
+
+      if (isEditing) {
+        setFormData((prev) => ({ ...prev, coverImage: newCover }));
+        addToast({ type: 'success', title: 'Cover Uploaded', description: 'Click "Save Changes" to apply.' });
+      } else {
+        const res = await fetch('/api/users/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user?.id, coverImage: newCover }),
+        });
+        if (!res.ok) throw new Error('Failed to save cover image');
+        const data = await res.json();
+        setProfile(data.user);
+        setFormData(data.user);
+        if (user && updateUser) {
+          updateUser({ ...user, coverImage: newCover });
+        }
+        addToast({ type: 'success', title: 'Cover Updated', description: 'Your new cover image is now active.' });
+      }
+    } catch (error: any) {
+      console.error('Cover upload error:', error);
+      addToast({ type: 'error', title: 'Upload Failed', description: error.message || 'Failed to upload cover' });
+    } finally {
+      setIsUploadingCover(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleRemoveCover = async () => {
+    if (isEditing) {
+      setFormData((prev) => ({ ...prev, coverImage: '' }));
+      addToast({ type: 'info', title: 'Cover Removed', description: 'Click "Save Changes" to apply.' });
+    } else {
+      setIsUploadingCover(true);
+      try {
+        const res = await fetch('/api/users/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user?.id, coverImage: '' }),
+        });
+        if (!res.ok) throw new Error('Failed to remove cover');
+        const data = await res.json();
+        setProfile(data.user);
+        setFormData(data.user);
+        if (user && updateUser) {
+          updateUser({ ...user, coverImage: undefined });
+        }
+        addToast({ type: 'success', title: 'Cover Removed', description: 'Reverted to default background.' });
+      } catch (error: any) {
+        addToast({ type: 'error', title: 'Error', description: error.message || 'Failed to remove cover' });
+      } finally {
+        setIsUploadingCover(false);
+      }
     }
   };
 
@@ -171,8 +297,10 @@ export default function ProfilePage() {
     );
   }
 
-  const storedAvatar = formData.avatar || profile?.avatar;
-  const currentAvatar = isGeneratedAvatar(storedAvatar) ? undefined : storedAvatar;
+  const storedAvatar = formData.avatar !== undefined ? formData.avatar : profile?.avatar;
+  const currentAvatar = isGeneratedAvatar(storedAvatar) ? undefined : (storedAvatar || undefined);
+  const rawCover = formData.coverImage !== undefined ? formData.coverImage : profile?.coverImage;
+  const currentCoverImage = rawCover || undefined;
   const displayName = profile?.name || user?.name || "Employee";
   const displayRole = profile?.designation || profile?.role || "Software Developer";
   const displayEmpId = profile?.employeeId || (user as any)?.employeeId || "—";
@@ -190,12 +318,63 @@ export default function ProfilePage() {
       {/* 1. Profile Hero Card */}
       <div className="rounded-[14px] overflow-hidden border border-border bg-card text-card-foreground shadow-xs">
         
-        {/* Refined Harbor & Pine Architectural Banner */}
-        <div className="relative h-36 sm:h-44 w-full bg-[#0b1220] overflow-hidden border-b border-border">
-          {/* Ambient Pine Radial Wash */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-10%,rgba(15,118,110,0.35),transparent)]" />
-          {/* Subtle Ledger Grid */}
-          <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
+        {/* Refined Harbor & Pine Architectural Banner / Custom Cover Photo */}
+        <div className="relative h-40 sm:h-52 w-full bg-[#0b1220] overflow-hidden border-b border-border group">
+          {currentCoverImage ? (
+            <img 
+              src={currentCoverImage} 
+              alt="Profile Cover" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+            />
+          ) : (
+            <>
+              {/* Ambient Pine Radial Wash */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-10%,rgba(15,118,110,0.35),transparent)]" />
+              {/* Subtle Ledger Grid */}
+              <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
+            </>
+          )}
+
+          {/* Contrast scrim */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+
+          {/* Cover Photo Action Buttons */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => document.getElementById('coverUploadInput')?.click()}
+              disabled={isUploadingCover}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md text-xs font-medium border border-white/20 shadow-md transition-all active:scale-95 cursor-pointer"
+              title={currentCoverImage ? "Change Cover Image" : "Add Cover Image"}
+            >
+              {isUploadingCover ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Camera size={13} />
+              )}
+              <span>{currentCoverImage ? "Change Cover" : "Add Cover"}</span>
+            </button>
+
+            {currentCoverImage && (
+              <button
+                type="button"
+                onClick={handleRemoveCover}
+                disabled={isUploadingCover}
+                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-black/60 hover:bg-destructive text-white backdrop-blur-md flex items-center justify-center border border-white/20 shadow-md transition-all active:scale-95 cursor-pointer"
+                title="Remove Cover Image"
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
+
+            <input
+              id="coverUploadInput"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverUpload}
+            />
+          </div>
         </div>
 
         {/* Profile Identity & Action Bar */}
@@ -207,32 +386,30 @@ export default function ProfilePage() {
               
               {/* Avatar Container */}
               <div className="relative group shrink-0 -mt-14 sm:-mt-16">
-                <div className="p-1 rounded-full bg-card ring-1 ring-border shadow-md">
+                <div className="p-1 rounded-full bg-card ring-2 ring-border shadow-lg">
                   <Avatar name={displayName} src={currentAvatar} size="xl" />
                 </div>
 
-                {/* Camera upload trigger button */}
-                <div className={cn(
-                  "absolute bottom-0 right-0 flex gap-1 transition-all",
-                  isEditing ? "opacity-100 scale-100" : "opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100"
-                )}>
+                {/* Camera & Delete Photo Action Trigger */}
+                <div className="absolute bottom-0 right-0 flex items-center gap-1 z-10">
                   <button
                     type="button"
                     onClick={() => document.getElementById('avatarUploadInput')?.click()}
                     disabled={isUploading}
-                    className="h-7 w-7 bg-primary hover:opacity-90 active:scale-95 text-primary-foreground rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer"
-                    title="Change Photo"
+                    className="h-7 w-7 sm:h-8 sm:w-8 bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground rounded-full flex items-center justify-center shadow-md ring-2 ring-card transition-all cursor-pointer"
+                    title={currentAvatar ? "Change Photo" : "Upload Photo"}
                   >
                     {isUploading ? <Loader2 size={13} className="animate-spin" /> : <Camera size={13} />}
                   </button>
-                  {currentAvatar && isEditing && (
+                  {currentAvatar && (
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, avatar: undefined })}
-                      className="h-7 w-7 bg-destructive hover:opacity-90 active:scale-95 text-destructive-foreground rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer"
+                      onClick={handleRemoveAvatar}
+                      disabled={isUploading}
+                      className="h-7 w-7 sm:h-8 sm:w-8 bg-destructive hover:bg-destructive/90 active:scale-95 text-destructive-foreground rounded-full flex items-center justify-center shadow-md ring-2 ring-card transition-all cursor-pointer"
                       title="Remove Photo"
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={12} />
                     </button>
                   )}
                 </div>
@@ -295,6 +472,16 @@ export default function ProfilePage() {
 
             {/* Right: Edit Profile / Save Changes CTA */}
             <div className="flex items-center justify-center sm:justify-end gap-2 pb-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMcpModal(true)}
+                className="gap-1.5 font-medium border-primary/30 text-primary hover:bg-primary/10 rounded-full"
+                title="Connect NexusHR to Cursor, Claude Desktop, Antigravity, or other AI agents (MCP)"
+              >
+                <Plug size={14} />
+                <span>Connect AI</span>
+              </Button>
               {!isEditing ? (
                 <Button
                   onClick={() => setIsEditing(true)}
@@ -748,6 +935,7 @@ export default function ProfilePage() {
 
       </div>
 
+      <ConnectMcpModal isOpen={showMcpModal} onClose={() => setShowMcpModal(false)} />
     </div>
   );
 }

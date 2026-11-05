@@ -77,7 +77,7 @@ export async function GET(req: Request) {
       .populate('initiatedBy', 'name email')
       .populate('approverId', 'name email')
       .populate('approvedBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ terminations });
   } catch (error: any) {

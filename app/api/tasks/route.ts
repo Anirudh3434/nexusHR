@@ -190,7 +190,8 @@ export async function GET(req: Request) {
       .populate('parentId', 'taskNumber title status')
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .lean();
 
     console.log('GET tasks - sample task with customStatus:', tasks[0] ? JSON.stringify(tasks[0].customStatus, null, 2) : 'No tasks');
 
@@ -640,7 +641,7 @@ export async function PATCH(req: Request) {
         // Find assigned user names for {{assignee}} variable
         let assigneeNames = 'Unassigned';
         if (task.assignedTo && task.assignedTo.length > 0) {
-          const assignees = await User.find({ _id: { $in: task.assignedTo } }).select('name');
+          const assignees = await User.find({ _id: { $in: task.assignedTo } }).select('name').lean();
           assigneeNames = assignees.map(a => `@${a.name}`).join(', ') || 'Unassigned';
         }
 

@@ -45,10 +45,11 @@ export async function GET(req: Request) {
     const leaves = await Leave.find(query)
       .populate('employeeId', 'name department')
       .populate('approvedBy', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    const formattedLeaves = leaves.map(leave => ({
-      ...leave.toObject(),
+    const formattedLeaves = leaves.map((leave: any) => ({
+      ...leave,
       id: leave._id.toString(),
       _id: undefined,
       employeeName: (leave.employeeId as any)?.name,

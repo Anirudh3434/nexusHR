@@ -33,7 +33,7 @@ export async function GET(req: Request) {
       query.companyId = auth.companyId;
     }
 
-    const departments = await Department.find(query).sort({ name: 1 });
+    const departments = await Department.find(query).sort({ name: 1 }).lean();
     return NextResponse.json(departments);
   } catch (error: any) {
     return NextResponse.json({ message: 'Error fetching departments', error: error.message }, { status: 500 });

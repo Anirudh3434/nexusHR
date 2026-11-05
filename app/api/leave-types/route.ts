@@ -33,7 +33,7 @@ export async function GET(req: Request) {
       query.companyId = auth.companyId;
     }
 
-    const leaveTypes = await LeaveType.find(query).sort({ name: 1 });
+    const leaveTypes = await LeaveType.find(query).sort({ name: 1 }).lean();
     return NextResponse.json(leaveTypes);
   } catch (error: any) {
     return NextResponse.json({ message: 'Error fetching leave types', error: error.message }, { status: 500 });

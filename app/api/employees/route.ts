@@ -28,11 +28,12 @@ export async function GET(req: Request) {
     
     const employees = await User.find(query)
       .select('-password')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     
     // Transform _id to id for frontend parity
-    const formattedEmployees = employees.map(emp => ({
-      ...emp.toObject(),
+    const formattedEmployees = employees.map((emp: any) => ({
+      ...emp,
       id: emp._id.toString(),
       _id: undefined,
       password: undefined,

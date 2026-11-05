@@ -62,7 +62,8 @@ export async function GET(req: Request) {
 
     const payrolls = await Payroll.find(query)
       .populate('employeeId', 'name department designation email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json(payrolls);
   } catch (error: any) {
@@ -75,7 +76,7 @@ async function generatePayrollThunk(month: number, year: number, companyId: stri
   const startDate = new Date(Date.UTC(year, month, 1));
   const endDate = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
 
-  const users = await User.find({ companyId, isActive: true });
+  const users = await User.find({ companyId, isActive: true }).lean();
   const company = await Company.findById(companyId).select('overtimeRate');
   const otRate = company?.overtimeRate || 1.5;
 
@@ -86,7 +87,7 @@ async function generatePayrollThunk(month: number, year: number, companyId: stri
     const attendance = await Attendance.find({
       employeeId: user._id,
       date: { $gte: startDate, $lte: endDate }
-    });
+    }).lean();
 
     let totalLateMinutes = 0, totalOvertimeHours = 0;
     attendance.forEach(record => {
@@ -101,7 +102,7 @@ async function generatePayrollThunk(month: number, year: number, companyId: stri
       employeeId: user._id,
       type: 'Unpaid', status: 'Approved',
       startDate: { $lte: endDate }, endDate: { $gte: startDate }
-    });
+    }).lean();
     let totalUnpaidDays = 0;
     unpaidLeaves.forEach(l => totalUnpaidDays += (l.totalDays || 0));
 
@@ -184,7 +185,7 @@ export async function POST(req: Request) {
 
     const usersQuery: any = { companyId, isActive: true };
     if (employeeId) usersQuery._id = employeeId;
-    const users = await User.find(usersQuery);
+    const users = await User.find(usersQuery).lean();
 
     const company = await Company.findById(companyId).select('overtimeRate');
     const otRate = company?.overtimeRate || 1.5;
@@ -195,7 +196,7 @@ export async function POST(req: Request) {
       const attendance = await Attendance.find({
         employeeId: user._id,
         date: { $gte: startDate, $lte: endDate }
-      });
+      }).lean();
 
       let totalLateMinutes = 0, totalOvertimeHours = 0;
       attendance.forEach(record => {
@@ -210,7 +211,7 @@ export async function POST(req: Request) {
         employeeId: user._id,
         type: 'Unpaid', status: 'Approved',
         startDate: { $lte: endDate }, endDate: { $gte: startDate }
-      });
+      }).lean();
 
       let totalUnpaidDays = 0;
       unpaidLeaves.forEach(leave => totalUnpaidDays += (leave.totalDays || 0));
@@ -352,7 +353,7 @@ export async function PATCH(req: Request) {
       const attendance = await Attendance.find({
         employeeId: user._id,
         date: { $gte: startDate, $lte: endDate }
-      });
+      }).lean();
 
       let totalLateMinutes = 0, totalOvertimeHours = 0;
       attendance.forEach(record => {
@@ -367,7 +368,7 @@ export async function PATCH(req: Request) {
         employeeId: user._id,
         type: 'Unpaid', status: 'Approved',
         startDate: { $lte: endDate }, endDate: { $gte: startDate }
-      });
+      }).lean();
       let totalUnpaidDays = 0;
       unpaidLeaves.forEach(l => totalUnpaidDays += (l.totalDays || 0));
 

@@ -81,6 +81,8 @@ io.use((socket, next) => {
     socket.data = socket.data || {};
     socket.data.userId = decoded.id;
     socket.data.role = decoded.role;
+    socket.data.companyId = decoded.companyId;
+    socket.data.name = decoded.name;
     next();
   } catch (err) {
     next(new Error("Unauthorized"));
@@ -129,6 +131,62 @@ io.on("connection", (socket) => {
   socket.on("attendance-update", (data) => {
     if (!data?.userId || data.userId !== ownId()) return;
     io.to(data.userId).emit("attendance-updated", data.attendance);
+  });
+
+  // Join field tracking room for management (CEO, Admin, HR, Manager)
+  socket.on("join-field-tracking", () => {
+    const role = socket.data && socket.data.role;
+    const companyId = socket.data && socket.data.companyId;
+    const allowedRoles = ["super_admin", "admin", "hr", "manager"];
+    if (!allowedRoles.includes(role)) {
+      console.warn(`[Socket] Unauthorized join-field-tracking attempt by ${socket.id} (role: ${role})`);
+      return;
+    }
+    const room = `field-tracking:${companyId || "global"}`;
+    socket.join(room);
+    console.log(`[Socket] Supervisor ${socket.id} (role: ${role}) joined ${room}`);
+  });
+
+  // Handle real-time field worker GPS location updates
+  socket.on("field-location-update", (data) => {
+    const uid = ownId();
+    if (!uid) return;
+    const companyId = socket.data && socket.data.companyId;
+    const name = socket.data && socket.data.name;
+    const role = socket.data && socket.data.role;
+
+    const { lat, lng, accuracy, speed, heading, timestamp } = data || {};
+    if (typeof lat !== "number" || typeof lng !== "number") return;
+
+    const room = `field-tracking:${companyId || "global"}`;
+    io.to(room).emit("employee-location-ping", {
+      employeeId: uid,
+      name: name || "Field Worker",
+      role: role || "employee",
+      lat,
+      lng,
+      accuracy: accuracy || 0,
+      speed: speed || null,
+      heading: heading || null,
+      timestamp: timestamp || new Date().toISOString(),
+    });
+  });
+
+  // Handle worker status change (break / resume / end)
+  socket.on("field-status-update", (data) => {
+    const uid = ownId();
+    if (!uid) return;
+    const companyId = socket.data && socket.data.companyId;
+    const name = socket.data && socket.data.name;
+    const { status } = data || {};
+
+    const room = `field-tracking:${companyId || "global"}`;
+    io.to(room).emit("employee-status-ping", {
+      employeeId: uid,
+      name: name || "Field Worker",
+      status: status || "active",
+      timestamp: new Date().toISOString(),
+    });
   });
 
   socket.on("disconnect", (reason) => {

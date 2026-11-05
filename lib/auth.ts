@@ -55,6 +55,11 @@ export function getJwtSecret(): string {
   return secret;
 }
 
+export async function getCurrentUser() {
+  const { getAuthInfo } = await import("./auth-util");
+  return getAuthInfo();
+}
+
 export function signSession(payload: SessionPayload, expiresIn: string = "1d"): string {
   return jwt.sign(payload, getJwtSecret(), { expiresIn } as jwt.SignOptions);
 }

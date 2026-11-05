@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, LogOut, Sun, Moon } from "lucide-react";
+import { Menu, LogOut, Sun, Moon, Plug } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { Button } from "../ui/Button";
 import { SmartLogoBadge } from "../ui/SmartLogoBadge";
 import { Avatar } from "../ui/Avatar";
 import { NotificationBell } from "../notifications/NotificationBell";
+import { ConnectMcpModal } from "../mcp/ConnectMcpModal";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -91,6 +92,7 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme, mounted } = useTheme();
   const pathname = usePathname();
+  const [showMcpModal, setShowMcpModal] = useState(false);
 
   const breadcrumbs = useMemo(() => {
     if (!pathname || pathname === "/" || pathname === "/dashboard") {
@@ -151,7 +153,7 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           <SmartLogoBadge 
             src={user.companyLogo || "/logo.png"} 
             alt={user.companyName || 'Logo'} 
-            className="h-9 w-9 p-1 border border-slate-200 shrink-0 shadow-sm dark:border-slate-700" 
+            className="h-8 w-8 p-1 rounded-lg border border-border shrink-0 shadow-xs" 
           />
           <span className="font-display font-semibold text-foreground text-[15px] truncate max-w-[140px]">
             {user.companyName || 'NexusHR'}
@@ -192,8 +194,17 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
 
       <div className="flex items-center gap-1.5 md:gap-3">
         <button
+          type="button"
+          onClick={() => setShowMcpModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/10 text-primary hover:bg-primary/15 transition-all text-xs font-semibold shadow-2xs group"
+          title="Connect NexusHR to Cursor, Claude Desktop, Antigravity, or other AI agents (MCP)"
+        >
+          <Plug className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+          <span className="hidden sm:inline">Connect AI</span>
+        </button>
+        <button
           onClick={toggleTheme}
-          className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none transition-colors"
+          className="hidden md:flex rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none transition-colors"
           aria-label={!mounted ? "Toggle theme" : theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
           title={!mounted ? "Toggle theme" : theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
         >
@@ -208,7 +219,7 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
 
         <NotificationBell />
 
-        <div className="flex items-center gap-2 md:gap-3 border-l border-border pl-2 md:pl-4">
+        <div className="flex items-center gap-2 md:gap-3 md:border-l md:border-border md:pl-4">
           <div className="hidden sm:flex flex-col text-right leading-tight">
             <span
               className="text-sm font-semibold text-foreground truncate max-w-[140px]"
@@ -224,19 +235,22 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
             </span>
           </div>
           
-          <Avatar name={user.name} src={user.avatar} size="sm" bordered />
+          <Link href="/profile" className="focus:outline-none transition-transform active:scale-95">
+            <Avatar name={user.name} src={user.avatar} size="sm" bordered />
+          </Link>
 
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={logout} 
-            className="ml-1 md:ml-2 px-2 h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            className="hidden md:flex ml-1 md:ml-2 px-2 h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             <LogOut size={17} />
             <span className="hidden lg:inline ml-2">Log out</span>
           </Button>
         </div>
       </div>
+      <ConnectMcpModal isOpen={showMcpModal} onClose={() => setShowMcpModal(false)} />
     </header>
   );
 };

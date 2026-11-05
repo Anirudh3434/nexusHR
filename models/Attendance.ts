@@ -89,8 +89,28 @@ const AttendanceSchema = new Schema({
   },
     workMode: {
     type: String,
-    enum: ['office', 'wfh'],
+    enum: ['office', 'wfh', 'field'],
     default: 'office',
+  },
+  isOnBreak: {
+    type: Boolean,
+    default: false,
+  },
+  breaks: [
+    {
+      startTime: String,
+      endTime: String,
+      duration: Number, // in minutes
+      reason: String,
+    }
+  ],
+  lastLocation: {
+    lat: Number,
+    lng: Number,
+    accuracy: Number,
+    speed: Number,
+    heading: Number,
+    updatedAt: Date,
   },
   sessions: [
     {

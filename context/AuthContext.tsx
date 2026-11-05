@@ -13,6 +13,7 @@ export interface User {
   designation?: string;
   status?: string;
   avatar?: string;
+  coverImage?: string;
   companyId?: string;
   companyLogo?: string;
   companyName?: string;

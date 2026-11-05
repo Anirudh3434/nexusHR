@@ -49,7 +49,8 @@ export async function GET(req: Request) {
 
     const records = await Attendance.find(query)
       .populate('employeeId', 'name department designation email')
-      .sort({ date: -1 });
+      .sort({ date: -1 })
+      .lean();
 
     return NextResponse.json(records);
   } catch (error: any) {
