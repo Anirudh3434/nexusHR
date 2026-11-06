@@ -46,7 +46,7 @@ export function registerAttendanceTools(server: McpServer) {
           record.status = record.status || 'Present';
         }
 
-        await record.save();
+        await record.save({ validateModifiedOnly: true });
 
         return {
           content: [
@@ -89,7 +89,7 @@ export function registerAttendanceTools(server: McpServer) {
         }
 
         record.checkOut = { time: timeStr };
-        await record.save();
+        await record.save({ validateModifiedOnly: true });
 
         return {
           content: [
