@@ -124,7 +124,12 @@ export default function CandidateLoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">Password</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">Password</label>
+                    <Link href="/forgot-password" className="text-xs font-semibold text-purple-600 hover:underline dark:text-purple-400">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative group/input">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/input:text-purple-600 transition-colors" />
                     <Input

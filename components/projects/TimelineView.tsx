@@ -497,18 +497,21 @@ export default function TimelineView({
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2 py-1 dark:border-slate-700">
-            <Layers className="h-3.5 w-3.5 text-slate-400" />
-            <select
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value as GroupBy)}
-              className="bg-transparent text-xs font-medium text-slate-600 outline-none dark:text-slate-300"
-            >
-              <option value="none">No grouping</option>
-              <option value="status">Group: Status</option>
-              <option value="assignee">Group: Assignee</option>
-              <option value="sprint">Group: Sprint</option>
-            </select>
+          <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2 py-1 bg-white dark:border-slate-700 dark:bg-slate-900">
+            <Layers className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <div className="relative flex items-center">
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as GroupBy)}
+                className="appearance-none bg-transparent text-xs font-medium text-slate-600 pr-4 outline-none cursor-pointer dark:text-slate-300"
+              >
+                <option value="none">No grouping</option>
+                <option value="status">Group: Status</option>
+                <option value="assignee">Group: Assignee</option>
+                <option value="sprint">Group: Sprint</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-0 h-3 w-3 text-slate-400" />
+            </div>
           </div>
 
           <button

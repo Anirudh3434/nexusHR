@@ -546,9 +546,6 @@ export default function CompanyPortalLogin() {
                   <Link href="/candidate-login" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400">
                     <ArrowLeft className="h-3 w-3" /> Candidate Portal
                   </Link>
-                  <Link href="/landing" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400">
-                    Overview
-                  </Link>
                   <Link href="/register" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 hover:underline transition-colors dark:text-indigo-400">
                     Register Company <ArrowRight className="h-3 w-3" />
                   </Link>

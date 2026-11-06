@@ -144,6 +144,14 @@ const UserSchema = new Schema({
     type: Number,
     default: 0,
   },
+  resetPasswordToken: {
+    type: String,
+    select: false,
+  },
+  resetPasswordExpires: {
+    type: Date,
+    select: false,
+  },
   // Temporary/temp-created portal accounts must set their own password at first login
   mustChangePassword: {
     type: Boolean,

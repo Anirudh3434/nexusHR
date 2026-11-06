@@ -387,7 +387,7 @@ export function isRouteAccessibleWith(
   }
 
   // Allow access to root and auth routes
-  if (route === "/" || route.startsWith("/auth") || route.startsWith("/api")) {
+  if (route === "/" || route.startsWith("/auth") || route.startsWith("/api") || route === "/forgot-password" || route === "/reset-password") {
     return true;
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { getAuthInfo } from '@/lib/auth-util';
 import User from '@/models/User';
+import SuperAdmin from '@/models/SuperAdmin';
 import Company from '@/models/Company';
 import Settings from '@/models/Settings';
 
@@ -15,6 +16,22 @@ export async function GET() {
     }
 
     const { userId } = auth;
+
+    if (auth.role === 'super_admin') {
+      const superAdmin = await SuperAdmin.findById(userId).select('-password');
+      if (!superAdmin || !superAdmin.isActive) {
+        return NextResponse.json({ message: 'Super admin not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        id: superAdmin._id.toString(),
+        name: superAdmin.name,
+        email: superAdmin.email,
+        role: 'super_admin',
+        mustChangePassword: !!superAdmin.mustChangePassword,
+      });
+    }
+
     const user = await User.findById(userId).select('-password');
 
     if (!user) {

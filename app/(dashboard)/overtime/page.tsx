@@ -156,7 +156,7 @@ export default function OvertimePage() {
         actions={
           <Button
             onClick={() => setShowModal(true)}
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
           >
             <Plus size={18} /> Record Manual OT
           </Button>
@@ -164,44 +164,44 @@ export default function OvertimePage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border border-primary/20 shadow-xs bg-primary/5 dark:bg-primary/10">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/15 rounded-xl text-primary">
-                <Clock size={24} />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
+        <Card className="col-span-1 border border-primary/20 shadow-xs bg-primary/5 dark:bg-primary/10">
+          <CardContent className="p-3.5 sm:p-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-primary/15 rounded-xl text-primary shrink-0">
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-primary">Total Hours</p>
-                <div className="text-2xl font-black text-foreground">{totalOvertime.toFixed(1)}h</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-primary truncate">Total Hours</p>
+                <div className="text-lg sm:text-2xl font-black text-foreground">{totalOvertime.toFixed(1)}h</div>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border border-border shadow-xs bg-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-muted rounded-xl text-foreground">
-                <History size={24} />
+        <Card className="col-span-1 border border-border shadow-xs bg-card">
+          <CardContent className="p-3.5 sm:p-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-muted rounded-xl text-foreground shrink-0">
+                <History className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Manual Entries</p>
-                <div className="text-2xl font-black text-foreground">{manualCount} Records</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Manual Entries</p>
+                <div className="text-lg sm:text-2xl font-black text-foreground">{manualCount} Records</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-emerald-500/20 shadow-xs bg-emerald-50/50 dark:bg-emerald-950/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-emerald-500/15 rounded-xl text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 size={24} />
+        <Card className="col-span-2 md:col-span-1 border border-emerald-500/20 shadow-xs bg-emerald-50/50 dark:bg-emerald-950/20">
+          <CardContent className="p-3.5 sm:p-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-emerald-500/15 rounded-xl text-emerald-600 dark:text-emerald-400 shrink-0">
+                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Period Total</p>
-                <div className="text-2xl font-black text-foreground">{months[selectedMonth]} {selectedYear}</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400 truncate">Period Total</p>
+                <div className="text-lg sm:text-2xl font-black text-foreground">{months[selectedMonth]} {selectedYear}</div>
               </div>
             </div>
           </CardContent>
@@ -210,105 +210,76 @@ export default function OvertimePage() {
 
       {/* Main Content */}
       <Card className="rounded-[14px] border border-border shadow-xs">
-        <CardHeader className="border-b border-border bg-muted/20">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center border border-border rounded-xl px-3 py-1.5 bg-background shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary w-64">
-                <Search size={16} className="text-muted-foreground" />
-                <input 
-                  type="text" 
-                  placeholder="Search employee or dept..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none text-sm focus:ring-0 ml-2 w-full text-foreground outline-none placeholder:text-muted-foreground"
-                />
-              </div>
-              <div className="flex items-center border border-border rounded-xl px-3 py-1.5 bg-background shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary">
-                <Calendar size={16} className="text-primary mr-1" />
+        <CardHeader className="p-3.5 sm:p-4 border-b border-border bg-muted/20">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 w-full">
+            <div className="flex items-center border border-border rounded-xl px-3 py-1.5 bg-background shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary w-full sm:flex-1">
+              <Search size={16} className="text-muted-foreground shrink-0" />
+              <input 
+                type="text" 
+                placeholder="Search employee or dept..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent border-none text-xs sm:text-sm focus:ring-0 ml-2 w-full text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </div>
+            <div className="flex items-center justify-between sm:justify-start border border-border rounded-xl px-3 py-1.5 bg-background shadow-xs transition-all focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary w-full sm:w-auto">
+              <div className="flex items-center">
+                <Calendar size={16} className="text-primary mr-1 shrink-0" />
                 <select 
                   value={selectedMonth} 
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer ml-1 text-foreground font-medium outline-none"
+                  className="bg-transparent border-none text-xs sm:text-sm focus:ring-0 cursor-pointer ml-1 text-foreground font-medium outline-none"
                 >
                   {months.map((m, i) => <option key={m} value={i} className="bg-card text-foreground">{m}</option>)}
                 </select>
-                <select 
-                  value={selectedYear} 
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer ml-1 text-foreground font-medium outline-none border-l border-border pl-2"
-                >
-                  {[selectedYear - 1, selectedYear, selectedYear + 1].map((y) => <option key={y} value={y} className="bg-card text-foreground">{y}</option>)}
-                </select>
               </div>
+              <select 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="bg-transparent border-none text-xs sm:text-sm focus:ring-0 cursor-pointer ml-1 text-foreground font-medium outline-none border-l border-border pl-2"
+              >
+                {[selectedYear - 1, selectedYear, selectedYear + 1].map((y) => <option key={y} value={y} className="bg-card text-foreground">{y}</option>)}
+              </select>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-border bg-muted/20 text-muted-foreground text-xs font-bold uppercase tracking-wider">
-                  <th className="px-6 py-4">Employee</th>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4 text-center">System OT</th>
-                  <th className="px-6 py-4 text-center">Manual OT</th>
-                  <th className="px-6 py-4 text-center">Total OT</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Note</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {loading ? (
-                  <tr>
-                    <td colSpan={8} className="py-20 text-center">
-                      <RefreshCw className="animate-spin text-primary mx-auto" />
-                      <p className="text-muted-foreground mt-2 text-sm font-medium">Crunching the hours...</p>
-                    </td>
-                  </tr>
-                ) : filteredRecords.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-0">
-                      <EmptyState
-                        title="No overtime records found"
-                        description="No overtime records for this period"
-                      />
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRecords.map((record) => (
-                    <tr key={record._id} className="hover:bg-muted/15 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs border border-primary/20 shadow-xs">
+          {loading ? (
+            <div className="py-20 text-center">
+              <RefreshCw className="animate-spin text-primary mx-auto h-6 w-6" />
+              <p className="text-muted-foreground mt-2 text-sm font-medium">Crunching the hours...</p>
+            </div>
+          ) : filteredRecords.length === 0 ? (
+            <EmptyState
+              title="No overtime records found"
+              description="No overtime records for this period"
+            />
+          ) : (
+            <>
+              {/* Mobile Card View (< md) */}
+              <div className="space-y-3 p-3.5 md:hidden">
+                {filteredRecords.map((record) => {
+                  const totalHrs = ((record.overtimeHours || 0) + (record.manualOvertimeHours || 0)).toFixed(1);
+
+                  return (
+                    <div
+                      key={record._id}
+                      className="rounded-lg border border-border bg-card p-3.5 space-y-3 shadow-xs transition-colors hover:border-border/80"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs border border-primary/20">
                             {record.employeeId?.name ? record.employeeId.name.charAt(0).toUpperCase() : "E"}
                           </div>
-                          <div>
-                            <div className="text-sm font-bold text-foreground">{record.employeeId?.name}</div>
-                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{record.employeeId?.department}</div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground text-sm truncate">{record.employeeId?.name || "Employee"}</p>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
+                              {record.employeeId?.department || "General"}
+                            </p>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-muted-foreground font-medium">
-                          {new Date(record.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-muted-foreground text-sm font-mono">{record.overtimeHours || 0}h</span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-primary font-semibold text-xs bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md font-mono">
-                          +{record.manualOvertimeHours || 0}h
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="text-sm font-bold text-foreground font-mono">
-                          {((record.overtimeHours || 0) + (record.manualOvertimeHours || 0)).toFixed(1)}h
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                           record.overtimeStatus === 'paid' 
                             ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 dark:text-emerald-400' 
                             : record.overtimeStatus === 'comp_off'
@@ -319,64 +290,196 @@ export default function OvertimePage() {
                         }`}>
                           {record.overtimeStatus || 'pending'}
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-xs text-muted-foreground italic max-w-xs truncate">
-                          {record.manualOvertimeNote || 'System Generated'}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        <span>{new Date(record.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      </div>
+
+                      {/* 3-Col Stats Grid */}
+                      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/30 text-xs text-center">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">System</p>
+                          <p className="font-mono font-semibold text-foreground mt-0.5">{record.overtimeHours || 0}h</p>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">Manual</p>
+                          <p className="font-mono font-semibold text-primary mt-0.5">+{record.manualOvertimeHours || 0}h</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">Total OT</p>
+                          <p className="font-mono font-bold text-foreground mt-0.5">{totalHrs}h</p>
+                        </div>
+                      </div>
+
+                      {record.manualOvertimeNote && (
+                        <p className="text-xs text-muted-foreground italic bg-muted/20 px-2.5 py-1.5 rounded-md break-words">
+                          "{record.manualOvertimeNote}"
+                        </p>
+                      )}
+
+                      {/* Action buttons row */}
+                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
+                        <span className="text-[11px] text-muted-foreground">Actions</span>
+                        <div className="flex items-center gap-2">
                           {record.overtimeStatus === 'rejected' || record.overtimeStatus === 'comp_off' ? (
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-primary hover:bg-primary/10"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs text-primary gap-1"
                               onClick={() => handleStatusUpdate(record._id, 'pending')}
-                              title="Restore to Pending"
                             >
-                              <RotateCcw size={14} />
+                              <RotateCcw size={12} />
+                              <span>Restore</span>
                             </Button>
                           ) : record.overtimeStatus === 'pending' || !record.overtimeStatus ? (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5">
                               <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 gap-1"
                                 onClick={() => handleStatusUpdate(record._id, 'comp_off')}
-                                title="Convert to Comp-Off Leave"
                               >
-                                <Palmtree size={14} />
+                                <Palmtree size={12} />
+                                <span>Comp-Off</span>
                               </Button>
                               <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 gap-1"
                                 onClick={() => handleStatusUpdate(record._id, 'rejected')}
-                                title="Exclude from Payroll"
                               >
-                                <Ban size={14} />
+                                <Ban size={12} />
+                                <span>Exclude</span>
                               </Button>
                             </div>
                           ) : null}
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                             <MoreVertical size={14} />
-                          </Button>
                         </div>
-                      </td>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left min-w-[750px]">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/20 text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                      <th className="px-6 py-4">Employee</th>
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4 text-center">System OT</th>
+                      <th className="px-6 py-4 text-center">Manual OT</th>
+                      <th className="px-6 py-4 text-center">Total OT</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Note</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredRecords.map((record) => (
+                      <tr key={record._id} className="hover:bg-muted/15 transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xs border border-primary/20 shadow-xs">
+                              {record.employeeId?.name ? record.employeeId.name.charAt(0).toUpperCase() : "E"}
+                            </div>
+                            <div>
+                              <div className="text-sm font-bold text-foreground">{record.employeeId?.name}</div>
+                              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{record.employeeId?.department}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-muted-foreground font-medium">
+                            {new Date(record.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-muted-foreground text-sm font-mono">{record.overtimeHours || 0}h</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-primary font-semibold text-xs bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md font-mono">
+                            +{record.manualOvertimeHours || 0}h
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="text-sm font-bold text-foreground font-mono">
+                            {((record.overtimeHours || 0) + (record.manualOvertimeHours || 0)).toFixed(1)}h
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            record.overtimeStatus === 'paid' 
+                              ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 dark:text-emerald-400' 
+                              : record.overtimeStatus === 'comp_off'
+                                ? 'bg-primary/10 text-primary border border-primary/20'
+                                : record.overtimeStatus === 'rejected'
+                                  ? 'bg-destructive/10 text-destructive border border-destructive/20'
+                                  : 'bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:text-amber-400'
+                          }`}>
+                            {record.overtimeStatus || 'pending'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-xs text-muted-foreground italic max-w-xs truncate">
+                            {record.manualOvertimeNote || 'System Generated'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {record.overtimeStatus === 'rejected' || record.overtimeStatus === 'comp_off' ? (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-primary hover:bg-primary/10"
+                                onClick={() => handleStatusUpdate(record._id, 'pending')}
+                                title="Restore to Pending"
+                              >
+                                <RotateCcw size={14} />
+                              </Button>
+                            ) : record.overtimeStatus === 'pending' || !record.overtimeStatus ? (
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
+                                  onClick={() => handleStatusUpdate(record._id, 'comp_off')}
+                                  title="Convert to Comp-Off Leave"
+                                >
+                                  <Palmtree size={14} />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                  onClick={() => handleStatusUpdate(record._id, 'rejected')}
+                                  title="Exclude from Payroll"
+                                >
+                                  <Ban size={14} />
+                                </Button>
+                              </div>
+                            ) : null}
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                               <MoreVertical size={14} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
       {/* Manual Entry Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-          <Card className="w-full max-w-lg shadow-2xl border border-border bg-card">
+          <Card className="w-full max-w-lg shadow-2xl border border-border bg-card max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
               <div>
                 <CardTitle className="text-xl font-bold">Record Manual Overtime</CardTitle>
