@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import mongoose from 'mongoose';
 import { resolveUserContext, checkPermission } from '../auth';
 import Task from '../../models/Task';
 import Project from '../../models/Project';
@@ -128,21 +129,34 @@ export function registerTaskTools(server: McpServer) {
   // Tool: update_task_status
   server.tool(
     'update_task_status',
-    'Update task status (e.g., to_do, in_progress, completed). Assignees or users with edit permission can update.',
+    'Update task status (e.g., to_do, in_progress, completed). Supports querying by ObjectId or Task Number (e.g. TSK26110001). Assignees or users with edit permission can update.',
     {
-      taskId: z.string().describe('The Task ObjectId'),
+      taskId: z.string().describe('The Task ObjectId or Task Number (e.g., TSK26110001)'),
       status: z.enum(['backlog', 'to_do', 'in_progress', 'in_review', 'completed', 'cancelled']).describe('New status'),
       comment: z.string().optional().describe('Optional comment on the status change'),
     },
     async ({ taskId, status, comment }) => {
       try {
         const user = await resolveUserContext();
-        const task = await Task.findById(taskId);
+        
+        let task: any = null;
+        if (mongoose.Types.ObjectId.isValid(taskId) && taskId.length === 24) {
+          task = await Task.findById(taskId);
+        }
         if (!task) {
-          return { content: [{ type: 'text', text: `Task ${taskId} not found.` }], isError: true };
+          task = await Task.findOne({
+            $or: [
+              { taskNumber: taskId },
+              { taskNumber: taskId.toUpperCase() },
+              { taskNumber: taskId.trim() },
+            ],
+          });
+        }
+        if (!task) {
+          return { content: [{ type: 'text', text: `Task "${taskId}" not found.` }], isError: true };
         }
 
-        const isAssigned = (task.assignedTo || []).some(id => id.toString() === user.id);
+        const isAssigned = (task.assignedTo || []).some((id: any) => id.toString() === user.id);
         const hasEditPerm = checkPermission(user, 'tasks', 'edit').allowed;
 
         if (!isAssigned && !hasEditPerm) {
@@ -150,6 +164,14 @@ export function registerTaskTools(server: McpServer) {
             content: [{ type: 'text', text: `Permission Denied: You are not assigned to this task and do not have edit permissions for tasks.` }],
             isError: true,
           };
+        }
+
+        // Backfill legacy creator if missing to ensure schema integrity
+        if (!task.createdBy) {
+          task.createdBy = task.assignedBy || (user.id as any);
+        }
+        if (!task.assignedBy) {
+          task.assignedBy = (user.id as any);
         }
 
         task.status = status;
@@ -163,7 +185,7 @@ export function registerTaskTools(server: McpServer) {
           } as any);
         }
 
-        await task.save();
+        await task.save({ validateModifiedOnly: true });
 
         return {
           content: [
@@ -172,6 +194,7 @@ export function registerTaskTools(server: McpServer) {
               text: JSON.stringify({
                 message: `Task ${task.taskNumber} updated to ${status}`,
                 taskId: task._id.toString(),
+                taskNumber: task.taskNumber,
                 status: task.status,
               }, null, 2),
             },
