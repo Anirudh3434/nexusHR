@@ -192,7 +192,7 @@ const TaskSchema = new Schema<ITask>({
   assignedBy: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
   },
   startDate: {
     type: Date,
@@ -285,7 +285,7 @@ const TaskSchema = new Schema<ITask>({
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
   },
   createdAt: {
     type: Date,
