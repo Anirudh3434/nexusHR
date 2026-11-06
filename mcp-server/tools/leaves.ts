@@ -148,7 +148,7 @@ export function registerLeaveTools(server: McpServer) {
           leave.rejectionReason = rejectionReason || 'Rejected by approver';
         }
 
-        await leave.save();
+        await leave.save({ validateModifiedOnly: true });
 
         return {
           content: [
