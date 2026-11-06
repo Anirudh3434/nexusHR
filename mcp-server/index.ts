@@ -9,10 +9,18 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env'), quiet: true });
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local'), quiet: true });
 dotenv.config({ path: path.resolve(process.cwd(), '.env'), quiet: true });
 
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import connectDB from '../lib/mongodb';
 import { resolveUserContext } from './auth';
 import { createNexusMcpServer } from './factory';
+
+import { registerProfileTools } from './tools/profile';
+import { registerTaskTools } from './tools/tasks';
+import { registerLeaveTools } from './tools/leaves';
+import { registerAttendanceTools } from './tools/attendance';
+import { registerEmployeeTools } from './tools/employees';
+import { registerNoticeTools } from './tools/notices';
 
 async function main() {
   // Ensure database is connected
@@ -24,8 +32,21 @@ async function main() {
     console.error(`[NexusHR MCP Warning] DB Connection / Auth init: ${err.message}`);
   }
 
+  // Initialize MCP Server
+  const server = new McpServer({
+    name: 'nexushr-mcp',
+    version: '1.0.0',
+  });
   // Initialize MCP Server with all tools
   const server = createNexusMcpServer();
+
+  // Register all permission-aware tools
+  registerProfileTools(server);
+  registerTaskTools(server);
+  registerLeaveTools(server);
+  registerAttendanceTools(server);
+  registerEmployeeTools(server);
+  registerNoticeTools(server);
 
   // Connect stdio transport
   const transport = new StdioServerTransport();
