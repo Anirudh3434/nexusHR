@@ -10,6 +10,7 @@ import {
   KeyRound,
   SlidersHorizontal,
   ChevronDown,
+  ChevronUp
   ChevronUp,
   Globe,
   Terminal
@@ -85,6 +86,7 @@ export function McpSection() {
   const [transportMode, setTransportMode] = useState<"remote" | "local">("remote");
   const [origin, setOrigin] = useState("https://nexus-hr-udh9.vercel.app");
 
+  const serverPath = process.env.NEXT_PUBLIC_MCP_SERVER_PATH || "<path_to_nexusHR>/mcp-server/index.ts";
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.origin) {
       setOrigin(window.location.origin);
@@ -213,6 +215,7 @@ export function McpSection() {
           mcp_servers: [
             {
               name: "nexushr",
+              command: `npx -y tsx "${serverPath}"`,
               command: `npx -y ${serverPath}`,
               env: envObj,
             },
@@ -228,6 +231,7 @@ export function McpSection() {
         mcpServers: {
           nexushr: {
             command: "npx",
+            args: ["-y", "tsx", serverPath],
             args: ["-y", serverPath],
             env: envObj,
           },
@@ -484,11 +488,13 @@ export function McpSection() {
       </div>
 
       {/* Dark Syntax Highlighted Code Box */}
+      <div className="relative z-10 mt-4 rounded-2xl bg-[#36363c] dark:bg-[#25252a] p-4 text-xs font-mono shadow-inner border border-white/10 overflow-hidden">
       <div className="relative z-10 mt-2.5 rounded-2xl bg-[#36363c] dark:bg-[#25252a] p-4 text-xs font-mono shadow-inner border border-white/10 overflow-hidden">
         <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
             <span className="text-white font-medium text-xs">
+              {current.name} config
               {current.name} · {transportMode === "remote" ? "Remote HTTPS/SSE (Zero Local Paths)" : "Local CLI Transport"}
             </span>
           </div>
@@ -504,6 +510,7 @@ export function McpSection() {
         </div>
 
         <div className="pt-3 overflow-x-auto text-[11px] sm:text-xs leading-relaxed text-zinc-300 font-mono max-h-[160px] scrollbar-thin">
+          {activeClient === "devin" ? (
           {transportMode === "remote" ? (
             activeClient === "devin" ? (
               <pre>
@@ -584,6 +591,7 @@ export function McpSection() {
               <br />
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#38bdf8]">&quot;name&quot;</span>: <span className="text-[#34d399]">&quot;nexushr&quot;</span>,
               <br />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#38bdf8]">&quot;command&quot;</span>: <span className="text-[#34d399]">&quot;npx -y tsx {serverPath}&quot;</span>,
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#38bdf8]">&quot;command&quot;</span>: <span className="text-[#34d399]">&quot;npx -y {serverPath}&quot;</span>,
               <br />
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#38bdf8]">&quot;env&quot;</span>: <span className="text-white">&#123;</span>
@@ -617,6 +625,8 @@ export function McpSection() {
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#38bdf8]">&quot;args&quot;</span>: <span className="text-white">[</span>
               <br />
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#34d399]">&quot;-y&quot;</span>,
+              <br />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#34d399]">&quot;tsx&quot;</span>,
               <br />
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-[#34d399]">&quot;{serverPath}&quot;</span>
               <br />

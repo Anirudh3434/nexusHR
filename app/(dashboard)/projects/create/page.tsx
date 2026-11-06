@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -37,7 +37,7 @@ const predefinedColumns: BoardColumn[] = [
   { id: 'done', name: 'Done', status: 'completed', color: '#10B981', position: 4, wipLimit: null, isDefault: true },
 ];
 
-export default function CreateProjectPage() {
+function CreateProjectForm() {
   const { user } = useAuth();
   const { addToast } = useToast();
   const searchParams = useSearchParams();
@@ -992,4 +992,18 @@ export default function CreateProjectPage() {
     </div>
   </div>
 );
+}
+
+export default function CreateProjectPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <CreateProjectForm />
+    </Suspense>
+  );
 }

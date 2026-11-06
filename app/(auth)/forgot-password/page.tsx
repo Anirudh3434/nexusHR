@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +22,7 @@ import {
 
 type Step = "request" | "verify" | "success";
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
   const searchParams = useSearchParams();
   const isSuperAdmin = searchParams.get("type") === "superadmin";
 
@@ -416,5 +416,22 @@ export default function ForgotPasswordPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#070b14] flex flex-col justify-center items-center px-4 py-12">
+          <div className="flex items-center gap-2 text-teal-400 text-sm">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading verification portal...</span>
+          </div>
+        </div>
+      }
+    >
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }
