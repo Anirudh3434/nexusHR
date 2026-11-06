@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
-import { Building2, Plus, Pencil, Trash2, Loader2, X, Upload } from "lucide-react";
+import { Building2, Plus, Pencil, Trash2, Loader2, X, Upload, Calendar } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { ModalPortal } from "../../../components/ui/ModalPortal";
@@ -93,6 +93,16 @@ export default function DepartmentsPage() {
     setFormData({ name: '', description: '' });
   };
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   if (!user || !hasRole(["admin", "hr"])) return null;
 
   return (
@@ -103,13 +113,13 @@ export default function DepartmentsPage() {
         description="Manage organization departments for employee onboarding."
         actions={
           canManage && (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setShowImportModal(true)}>
-                <Upload className="mr-2 h-4 w-4" />
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto text-xs sm:text-sm px-3" onClick={() => setShowImportModal(true)}>
+                <Upload className="mr-1.5 sm:mr-2 h-4 w-4" />
                 Import CSV
               </Button>
-              <Button onClick={() => setShowModal(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button className="w-full sm:w-auto text-xs sm:text-sm px-3" onClick={() => setShowModal(true)}>
+                <Plus className="mr-1.5 sm:mr-2 h-4 w-4" />
                 Add Department
               </Button>
             </div>
@@ -118,11 +128,11 @@ export default function DepartmentsPage() {
       />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>All Departments</CardTitle>
           <CardDescription>These departments will appear in employee onboarding dropdown.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -134,39 +144,116 @@ export default function DepartmentsPage() {
               description="Create one to use in employee onboarding."
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Department Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Created</TableHead>
-                  {canManage && <TableHead className="w-24 text-right">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile Card View (< md) */}
+              <div className="space-y-3 md:hidden">
                 {departments.map((dept) => (
-                  <TableRow key={dept._id}>
-                    <TableCell className="font-medium">{dept.name}</TableCell>
-                    <TableCell className="text-gray-500 dark:text-gray-400">{dept.description || '-'}</TableCell>
-                    <TableCell className="text-gray-400 dark:text-gray-500 text-sm">
-                      {new Date(dept.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    {canManage && (
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button variant="ghost" size="sm" onClick={() => openEditModal(dept)}>
+                  <div
+                    key={dept._id}
+                    className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-xs transition-colors hover:border-border/80"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                            <Building2 className="h-4 w-4" />
+                          </div>
+                          <h4 className="font-semibold text-foreground text-base truncate">
+                            {dept.name}
+                          </h4>
+                        </div>
+                      </div>
+                      {canManage && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            onClick={() => openEditModal(dept)}
+                            aria-label={`Edit ${dept.name}`}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(dept._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:text-red-400"
+                            onClick={() => handleDelete(dept._id)}
+                            aria-label={`Delete ${dept.name}`}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </TableCell>
+                      )}
+                    </div>
+
+                    {dept.description ? (
+                      <p className="text-sm text-muted-foreground leading-relaxed break-words">
+                        {dept.description}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground/60 italic">
+                        No description provided
+                      </p>
                     )}
-                  </TableRow>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-2.5 border-t border-border/40">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>Created {formatDate(dept.createdAt)}</span>
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                        Active
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">Department Name</TableHead>
+                      <TableHead className="min-w-[260px]">Description</TableHead>
+                      <TableHead className="min-w-[130px]">Created</TableHead>
+                      {canManage && <TableHead className="w-24 text-right">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {departments.map((dept) => (
+                      <TableRow key={dept._id}>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-primary shrink-0" />
+                            <span>{dept.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground max-w-md break-words">
+                          {dept.description || '—'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                          {formatDate(dept.createdAt)}
+                        </TableCell>
+                        {canManage && (
+                          <TableCell className="text-right">
+                            <div className="flex gap-1 justify-end">
+                              <Button variant="ghost" size="sm" onClick={() => openEditModal(dept)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDelete(dept._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

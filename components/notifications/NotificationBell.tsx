@@ -135,7 +135,7 @@ export function NotificationBell() {
   // Click outside and ESC handlers
   useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (
         panelRef.current &&
         !panelRef.current.contains(e.target as Node) &&
@@ -149,9 +149,11 @@ export function NotificationBell() {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
@@ -234,7 +236,7 @@ export function NotificationBell() {
       {open && (
         <div
           ref={panelRef}
-          className="absolute right-0 top-full mt-2 w-[360px] sm:w-[420px] rounded-2xl border border-border bg-card text-card-foreground shadow-2xl backdrop-blur-lg z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150"
+          className="fixed left-3 right-3 top-[68px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-[420px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-border bg-card text-card-foreground shadow-2xl backdrop-blur-lg z-50 overflow-hidden flex flex-col max-h-[calc(100dvh-5.5rem)] animate-in fade-in-0 zoom-in-95 duration-150"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border/80 px-4 py-3 bg-muted/30">

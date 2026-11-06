@@ -2240,7 +2240,7 @@ export default function ProjectBoardPage() {
         </form>
 
         {/* Quick Filter Row matching user mockup: Teal Avatars + Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5 w-full">
+        <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden scrollbar-hide scrollbar-none py-0.5 w-full">
           {/* Member Avatars */}
           {visibleMembers.length > 0 && (
             <div className="flex items-center gap-1.5 shrink-0">
@@ -2584,34 +2584,37 @@ export default function ProjectBoardPage() {
         </div>
 
         {/* View Mode Tabs & Create Button matching mockup */}
-        <div className="flex items-center justify-between gap-2 w-full">
-          {/* View Mode Selector */}
-          <div className="flex items-center bg-gray-100/90 dark:bg-slate-800 rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none max-w-full">
-            {[
-              { view: 'board',    icon: KanbanSquare, label: 'Board' },
-              { view: 'list',     icon: List,         label: 'List' },
-              { view: 'backlog',  icon: LayoutList,   label: 'Backlog' },
-              { view: 'timeline', icon: CalendarIcon, label: 'Timeline' },
-            ].map(({ view, icon: Icon, label }) => (
-              <button
-                key={view}
-                onClick={() => router.push(`/projects/${projectId}/${view}`)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  viewMode === view
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
-                    : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{label}</span>
-              </button>
-            ))}
+        <div className="flex items-center justify-between gap-2 w-full min-w-0">
+          {/* View Mode Selector with responsive scrollable tabs and pinned More dropdown */}
+          <div className="flex items-center bg-gray-100/90 dark:bg-slate-800 rounded-xl p-1 gap-1 min-w-0 flex-1 sm:flex-initial">
+            {/* Scrollable Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden scrollbar-hide scrollbar-none min-w-0 flex-1">
+              {[
+                { view: 'board',    icon: KanbanSquare, label: 'Board' },
+                { view: 'list',     icon: List,         label: 'List' },
+                { view: 'backlog',  icon: LayoutList,   label: 'Backlog' },
+                { view: 'timeline', icon: CalendarIcon, label: 'Timeline' },
+              ].map(({ view, icon: Icon, label }) => (
+                <button
+                  key={view}
+                  onClick={() => router.push(`/projects/${projectId}/${view}`)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
+                    viewMode === view
+                      ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
 
-            {/* More Tabs dropdown (...) */}
+            {/* More Tabs dropdown (...) placed outside the scrollable tab container so it never triggers scrollbars and its menu is not clipped */}
             <div className="relative shrink-0">
               <button
                 onClick={() => setShowMoreTabs(!showMoreTabs)}
-                className={`flex items-center justify-center w-8 h-7 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center justify-center w-8 h-7 rounded-lg text-xs font-semibold transition-all shrink-0 ${
                   ['docs', 'rules', 'ai-chat'].includes(viewMode)
                     ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
                     : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
@@ -2650,7 +2653,7 @@ export default function ProjectBoardPage() {
           <Button
             size="sm"
             onClick={() => handleOpenCreateModal(viewMode === 'backlog' ? 'backlog' : 'to_do')}
-            className="bg-[#f87171] hover:bg-[#ef4444] text-white rounded-xl shadow-sm px-3.5 h-8.5 shrink-0 font-semibold text-xs flex items-center gap-1"
+            className="bg-[#f87171] hover:bg-[#ef4444] text-white rounded-xl shadow-sm px-3 sm:px-3.5 h-8.5 shrink-0 font-semibold text-xs flex items-center gap-1"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Create</span>
@@ -4043,60 +4046,75 @@ export default function ProjectBoardPage() {
       )}
       
       {viewMode === 'ai-chat' && (
-        <div className="flex-1 bg-[#FAF9FC] dark:bg-slate-950 border border-slate-200/80 rounded-2xl flex flex-col h-[calc(100vh-180px)] shadow-[0_10px_30px_rgba(79,70,229,0.04)] overflow-hidden relative dark:border-slate-700">
-          {/* Glowing background orbs for visual depth */}
-          <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full bg-indigo-200/10 dark:bg-indigo-500/10 blur-[100px] pointer-events-none z-0" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-purple-200/10 dark:bg-purple-500/10 blur-[120px] pointer-events-none z-0" />
+        <div className="relative w-full rounded-[24px] sm:rounded-[32px] border border-white/50 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[calc(100vh-180px)]">
+          <style jsx global>{`
+            @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+            .font-cursive {
+              font-family: 'Caveat', cursive, sans-serif;
+            }
+          `}</style>
+
+          {/* Ambient blurred primary reflections matching MCP container */}
+          <div className="absolute -top-16 -left-16 w-60 h-60 bg-primary/25 rounded-full blur-[75px] pointer-events-none" />
+          <div className="absolute top-1/3 -left-12 w-44 h-44 bg-primary/20 rounded-full blur-[65px] pointer-events-none" />
+          <div className="absolute -bottom-16 -right-16 w-56 h-56 bg-primary/15 rounded-full blur-[70px] pointer-events-none" />
 
           {/* Header */}
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/70 backdrop-blur-md shrink-0 z-10 relative dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-150">
-                <Sparkles className="w-4.5 h-4.5 animate-pulse" />
+          <div className="p-4 sm:p-5 border-b border-white/40 dark:border-white/10 flex items-center justify-between bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl shrink-0 z-10 relative">
+            <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/25 shadow-xs">
+                <Sparkles className="h-5 w-5 stroke-[2.2] animate-pulse" />
               </div>
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm dark:text-slate-200">NexusAI Workspace Assistant</h3>
-                <p className="text-[10px] text-slate-400 font-medium">Agentic PM Chat interface with full access to project tasks</p>
+              <div className="min-w-0 leading-tight">
+                <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                  NexusAI <span className="font-cursive text-lg sm:text-xl font-bold text-primary tracking-normal inline-block">Workspace Assistant</span>
+                </h3>
+                <p className="text-[10px] sm:text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 truncate">
+                  Agentic PM Chat interface with <span className="font-cursive text-xs sm:text-sm font-bold text-primary inline-block">full access</span> to project tasks.
+                </p>
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setChatMessages([
                 { sender: 'ai', text: 'Hi! I am **NexusAI**, your agentic assistant. I can answer questions about your tasks or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*', timestamp: new Date() }
               ])}
-              className="text-slate-500 hover:text-indigo-700 dark:text-slate-400 dark:hover:text-indigo-300 px-3 py-1.5 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800 text-[10px] font-bold border border-slate-200/60 bg-white shadow-sm transition-all cursor-pointer dark:border-slate-700 dark:bg-slate-900"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-neutral-800/70 hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 text-xs font-semibold border border-neutral-200/70 dark:border-neutral-700/60 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
               title="Clear conversation history"
             >
-              Clear Chat History
+              <span>Clear Chat History</span>
             </button>
           </div>
 
           {/* Chat Messages / Welcome Dashboard */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin bg-transparent font-sans z-10 relative">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 scrollbar-thin bg-transparent font-sans z-10 relative">
             {chatMessages.length <= 1 ? (
-              <div className="max-w-2xl mx-auto py-12 px-4 text-center space-y-8 animate-in fade-in slide-in-from-bottom duration-300">
+              <div className="max-w-2xl mx-auto py-8 sm:py-12 px-2 sm:px-4 text-center space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom duration-300">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="w-16 h-16 rounded-[24px] bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-indigo-200/60 hover:scale-105 transition-all duration-300 relative group cursor-pointer">
-                    <div className="absolute inset-0 rounded-[24px] bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 blur-md opacity-40 group-hover:opacity-75 transition-opacity" />
-                    <Sparkles className="w-8 h-8 text-white relative z-10" />
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 rounded-[28px] bg-primary/30 blur-xl opacity-75 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-[24px] sm:rounded-[28px] bg-gradient-to-tr from-primary via-primary/90 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-primary/30 border border-white/20 transition-transform group-hover:scale-105 duration-300">
+                      <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-pulse" />
+                    </div>
                   </div>
                   <div>
-                    <h2 className="text-lg font-extrabold text-slate-800 tracking-tight dark:text-slate-200">
-                      NexusAI Orchestration Center
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                      NexusAI <span className="font-cursive text-2xl sm:text-3xl font-bold text-primary tracking-normal">Orchestration Center</span>
                     </h2>
-                    <p className="text-xs text-slate-400 font-medium max-w-sm mt-1.5 mx-auto leading-relaxed">
+                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-md mx-auto leading-relaxed mt-1.5">
                       Your intelligent agentic assistant. Instantly query databases, update status tags, assign owners, and command workflows.
                     </p>
                   </div>
                 </div>
 
                 {/* Quick Start Suggestions Grid */}
-                <div className="grid grid-cols-2 gap-3.5 max-w-lg mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
                   {[
                     {
                       title: "List In Progress Tasks",
                       desc: "Shows what's actively being worked on",
                       query: "Give task id which assign to me and in in-progress",
-                      icon: <List className="w-4 h-4 text-indigo-500" />
+                      icon: <List className="w-4 h-4 text-primary" />
                     },
                     {
                       title: "High Priority Bugs",
@@ -4120,14 +4138,18 @@ export default function ProjectBoardPage() {
                     <button
                       key={idx}
                       onClick={() => setChatInput(item.query)}
-                      className="p-4 bg-white/80 border border-slate-205 rounded-2xl text-left hover:border-primary/40 dark:hover:border-indigo-500/40 hover:bg-white hover:shadow-md transition-all duration-200 group flex gap-3 cursor-pointer dark:bg-slate-900 dark:hover:bg-slate-800"
+                      className="p-3.5 sm:p-4 bg-white/70 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/60 rounded-2xl text-left hover:border-primary/50 dark:hover:border-primary/50 hover:bg-white dark:hover:bg-neutral-800 shadow-2xs hover:shadow-md transition-all duration-200 group flex items-start gap-3 cursor-pointer"
                     >
-                      <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors dark:bg-slate-800/50 dark:border-slate-800 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30">
+                      <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
                         {item.icon}
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="text-[11px] font-bold text-slate-800 tracking-wide group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors dark:text-slate-200">{item.title}</h4>
-                        <p className="text-[9px] text-slate-400 truncate mt-0.5">{item.desc}</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-tight group-hover:text-primary dark:group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h4>
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                          {item.desc}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -4141,10 +4163,10 @@ export default function ProjectBoardPage() {
                     msg.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
                   }`}
                 >
-                  <div className={`p-3.5 rounded-2xl text-xs relative group ${
+                  <div className={`p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm relative group leading-relaxed ${
                     msg.sender === 'user' 
-                      ? 'bg-indigo-600 text-white rounded-br-none shadow-md shadow-indigo-100/50 border border-indigo-700/10' 
-                      : 'bg-white/95 text-slate-800 rounded-bl-none border border-slate-200 shadow-sm backdrop-blur-sm dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700'
+                      ? 'bg-primary text-white rounded-br-none shadow-md shadow-primary/25 border border-primary/40 font-medium' 
+                      : 'bg-white/80 dark:bg-neutral-850/90 text-neutral-900 dark:text-neutral-100 rounded-bl-none border border-neutral-200/70 dark:border-neutral-700/60 shadow-sm backdrop-blur-md'
                   }`}>
                     {msg.sender === 'ai' ? (
                       <div className="space-y-1.5 pr-6 leading-relaxed">
@@ -4157,43 +4179,44 @@ export default function ProjectBoardPage() {
                     {msg.sender === 'ai' && (
                       <button
                         onClick={() => copyToClipboard(msg.text)}
-                        className="absolute top-2.5 right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded cursor-pointer"
+                        className="absolute top-2.5 right-2.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                         title="Copy to clipboard"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-                  <span className="text-[9px] text-slate-400 mt-1.5 px-1.5 font-medium">
+                  <span className="text-[9px] text-neutral-400 dark:text-neutral-500 mt-1.5 px-1.5 font-medium">
                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
               ))
             )}
             {chatLoading && (
-              <div className="flex items-center gap-2 mr-auto max-w-[80%] p-3.5 bg-white text-slate-500 rounded-2xl rounded-bl-none border border-slate-200/60 text-xs shadow-sm dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700">
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-600 dark:text-indigo-400" />
+              <div className="flex items-center gap-2 mr-auto max-w-[80%] p-3.5 bg-white/80 dark:bg-neutral-850/90 text-neutral-600 dark:text-neutral-300 rounded-2xl rounded-bl-none border border-neutral-200/70 dark:border-neutral-700/60 text-xs shadow-sm backdrop-blur-md">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 <span className="font-medium">NexusAI is orchestrating changes...</span>
               </div>
             )}
           </div>
 
           {/* Input Form */}
-          <form onSubmit={handleSendChatMessage} className="p-4 border-t border-slate-100 flex items-center gap-3 bg-white/80 backdrop-blur-md shrink-0 z-10 relative dark:border-slate-800 dark:bg-slate-900">
+          <form onSubmit={handleSendChatMessage} className="p-3 sm:p-4 border-t border-white/40 dark:border-white/10 flex items-center gap-2 sm:gap-3 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl shrink-0 z-10 relative">
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="Ask a question or type a command (e.g., 'Move TSK26070010 to in progress and assign to Tarun')..."
               disabled={chatLoading}
-              className="flex-1 px-4 py-3 text-xs border border-slate-200/80 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 rounded-2xl focus:outline-none text-slate-700 bg-white placeholder-slate-405 transition-all shadow-inner font-medium h-11 dark:border-slate-700 dark:text-slate-300 dark:bg-slate-900"
+              className="flex-1 px-4 py-2.5 sm:py-3 text-xs sm:text-sm border border-neutral-200/80 dark:border-neutral-700/80 focus:border-primary focus:ring-2 focus:ring-primary/15 rounded-2xl focus:outline-none text-neutral-800 dark:text-neutral-100 bg-white/90 dark:bg-neutral-800/90 placeholder-neutral-400 font-medium h-11 sm:h-12 shadow-inner transition-all"
             />
             <button
               type="submit"
               disabled={chatLoading || !chatInput.trim()}
-              className="w-11 h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-750 disabled:bg-indigo-300 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all cursor-pointer hover:scale-102"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary hover:opacity-95 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-lg shadow-primary/30 transition-all cursor-pointer active:scale-95"
+              title="Send command"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </button>
           </form>
         </div>

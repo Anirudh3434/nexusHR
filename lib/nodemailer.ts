@@ -24,6 +24,7 @@ export interface SendMailOptions {
     content?: string | Buffer;
     path?: string;
     contentType?: string;
+    cid?: string;
   }>;
 }
 

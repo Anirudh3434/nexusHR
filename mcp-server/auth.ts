@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 // Ensure environment variables are loaded (with quiet: true so stdout is pure JSON-RPC)
 dotenv.config({ path: path.resolve(__dirname, '..', '.env.local'), quiet: true });
@@ -28,13 +29,26 @@ export interface UserContext {
   allowedModules: string[];
 }
 
+export interface McpRequestContext {
+  token?: string;
+  userContext?: UserContext;
+}
+
+export const mcpContextStorage = new AsyncLocalStorage<McpRequestContext>();
+
 /**
  * Resolves current user context from environment variables (token or email).
  */
 export async function resolveUserContext(explicitUserOrToken?: string): Promise<UserContext> {
+  const store = mcpContextStorage.getStore();
+  if (store?.userContext) {
+    return store.userContext;
+  }
+
   await connectDB();
 
   const rawToken = explicitUserOrToken || 
+    store?.token ||
     process.env.NEXUS_MCP_TOKEN || 
     process.env.NEXUS_AUTH_TOKEN || 
     process.env.NEXUSHR_TOKEN || 

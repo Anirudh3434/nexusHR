@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users, CalendarDays, List, MapPin } from "lucide-react";
+import { Loader2, Clock, LogIn, LogOut, AlertCircle, CheckCircle, Edit, Trash2, X, Filter, Search, Download, BarChart3, PieChart as PieChartIcon, Users, CalendarDays, List, MapPin, Calendar } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { TableSkeleton } from "../../../components/ui/Skeleton";
@@ -362,43 +362,43 @@ export default function AttendancePage() {
         title="Attendance"
         description="Mark attendance, inspect punctuality metrics, and view check-in logs."
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Button 
               variant={viewMode === 'weekly' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode(viewMode === 'weekly' ? 'daily' : 'weekly')}
-              className="text-xs font-semibold gap-1.5"
+              className="text-xs font-semibold gap-1.5 flex-1 sm:flex-initial"
             >
               {viewMode === 'weekly' ? (
                 <>
                   <List className="h-3.5 w-3.5" />
-                  Switch to Daily Logs
+                  <span>Daily Logs</span>
                 </>
               ) : (
                 <>
                   <CalendarDays className="h-3.5 w-3.5" />
-                  Week-Wise Tabular View
+                  <span>Week Matrix</span>
                 </>
               )}
             </Button>
             {hasRole(["admin", "hr"]) && (
               <>
-                <Button variant="outline" size="sm" onClick={() => setShowCharts(!showCharts)}>
-                  <BarChart3 className="mr-1.5 h-4 w-4" />
-                  {showCharts ? 'Hide Visuals' : 'Analytics & Charts'}
+                <Button variant="outline" size="sm" onClick={() => setShowCharts(!showCharts)} className="text-xs flex-1 sm:flex-initial">
+                  <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
+                  <span>{showCharts ? 'Hide Visuals' : 'Analytics'}</span>
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                  <Download className="mr-1.5 h-4 w-4" />
-                  Export CSV
+                <Button variant="outline" size="sm" onClick={handleExportCSV} className="text-xs flex-1 sm:flex-initial">
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  <span>Export CSV</span>
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => router.push('/field-tracking')}
-                  className="border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 gap-1.5"
+                  className="border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 gap-1.5 text-xs w-full sm:w-auto"
                 >
-                  <MapPin className="h-4 w-4" />
-                  Live Field Tracking
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>Live Field Tracking</span>
                 </Button>
               </>
             )}
@@ -409,7 +409,7 @@ export default function AttendancePage() {
       {/* Self Check-in Card */}
       <Card className="rounded-[14px] border border-border bg-card shadow-xs">
         <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
                 <Clock className="h-5 w-5" />
@@ -434,21 +434,23 @@ export default function AttendancePage() {
               </div>
             </div>
             
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               {!todayAttendance?.checkIn ? (
                 <Button 
                   onClick={handleCheckIn} 
                   disabled={isCheckingIn}
-                  className="gap-2 font-medium"
+                  className="gap-2 font-medium w-full sm:w-auto"
                 >
                   {isCheckingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
                   Check In
                 </Button>
               ) : (
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-muted-foreground">Checked in at:</span>
-                    <span className="font-mono font-semibold text-foreground">{todayAttendance.checkIn.time}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+                  <div className="flex items-center justify-between sm:justify-start gap-2 text-sm w-full sm:w-auto">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground">In:</span>
+                      <span className="font-mono font-semibold text-foreground">{todayAttendance.checkIn.time}</span>
+                    </div>
                     <StatusBadge 
                       status={todayAttendance.status} 
                       isLate={todayAttendance.isLate} 
@@ -463,7 +465,7 @@ export default function AttendancePage() {
                       onClick={handleCheckOut} 
                       disabled={isCheckingOut}
                       variant="outline"
-                      className="border-destructive/30 text-destructive hover:bg-destructive/10 dark:border-destructive/30 gap-1.5"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/10 dark:border-destructive/30 gap-1.5 w-full sm:w-auto"
                     >
                       {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
                       Check Out
@@ -662,28 +664,30 @@ export default function AttendancePage() {
                 <CardDescription>Shift punctuality over recent workdays</CardDescription>
               </CardHeader>
               <CardContent className="pt-2">
-                <div className="h-36 w-full flex items-end gap-2 border-b border-border pb-2 pt-2">
-                  {trendDays.map((day) => {
-                    const pH = (day.present / maxDayTotal) * 100;
-                    const lH = (day.late / maxDayTotal) * 100;
-                    const hH = (day.halfDay / maxDayTotal) * 100;
-                    return (
-                      <div 
-                        key={day.date} 
-                        className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer" 
-                        title={`${day.displayDate}: ${day.present} Present, ${day.late} Late, ${day.halfDay} Half Day`}
-                      >
-                        <div className="w-full flex flex-col-reverse rounded-t overflow-hidden transition-all group-hover:opacity-80" style={{ height: '100%' }}>
-                          <div style={{ height: `${pH}%` }} className="bg-emerald-500"></div>
-                          <div style={{ height: `${lH}%` }} className="bg-amber-500"></div>
-                          <div style={{ height: `${hH}%` }} className="bg-indigo-500"></div>
+                <div className="overflow-x-auto pb-1">
+                  <div className="h-36 min-w-[320px] sm:min-w-0 w-full flex items-end gap-1.5 sm:gap-2 border-b border-border pb-2 pt-2">
+                    {trendDays.map((day) => {
+                      const pH = (day.present / maxDayTotal) * 100;
+                      const lH = (day.late / maxDayTotal) * 100;
+                      const hH = (day.halfDay / maxDayTotal) * 100;
+                      return (
+                        <div 
+                          key={day.date} 
+                          className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer" 
+                          title={`${day.displayDate}: ${day.present} Present, ${day.late} Late, ${day.halfDay} Half Day`}
+                        >
+                          <div className="w-full flex flex-col-reverse rounded-t overflow-hidden transition-all group-hover:opacity-80" style={{ height: '100%' }}>
+                            <div style={{ height: `${pH}%` }} className="bg-emerald-500"></div>
+                            <div style={{ height: `${lH}%` }} className="bg-amber-500"></div>
+                            <div style={{ height: `${hH}%` }} className="bg-indigo-500"></div>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground mt-1 truncate max-w-full font-mono">
+                            {day.displayDate.split(' ')[0]}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground mt-1 truncate max-w-full font-mono">
-                          {day.displayDate.split(' ')[0]}
-                        </span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
                   <span>Daily Shift Volume (Max {maxDayTotal} records/day)</span>
@@ -697,19 +701,19 @@ export default function AttendancePage() {
 
       {/* View Switcher: Week-Wise Matrix vs Daily Log */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
-        <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setViewMode('weekly')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               viewMode === 'weekly'
                 ? 'bg-background text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <CalendarDays className="h-3.5 w-3.5 text-primary" />
-            Week-Wise Tabular View
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+            <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="truncate">Week Matrix</span>
+            <span className={`hidden sm:inline-block text-[10px] px-1.5 py-0.2 rounded-full ${
               viewMode === 'weekly' ? 'bg-primary/10 text-primary font-bold' : 'bg-muted text-muted-foreground'
             }`}>
               Matrix
@@ -719,14 +723,14 @@ export default function AttendancePage() {
           <button
             type="button"
             onClick={() => setViewMode('daily')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               viewMode === 'daily'
                 ? 'bg-background text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <List className="h-3.5 w-3.5" />
-            Daily Log Records
+            <List className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Daily Logs</span>
             <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
               viewMode === 'daily' ? 'bg-primary/10 text-primary font-bold' : 'bg-muted text-muted-foreground'
             }`}>
@@ -735,7 +739,7 @@ export default function AttendancePage() {
           </button>
         </div>
 
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground hidden sm:block">
           {viewMode === 'weekly' 
             ? 'Timesheet matrix: Monday to Sunday breakdown' 
             : 'Chronological check-in & check-out list'}
@@ -752,17 +756,17 @@ export default function AttendancePage() {
         />
       ) : (
         <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>Daily Log</CardTitle>
           <CardDescription>Records for today and the previous days.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search by employee name..." 
-                className="pl-10"
+                className="pl-10 h-9 text-xs sm:text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -772,82 +776,88 @@ export default function AttendancePage() {
                 type="date" 
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
+                className="h-9 text-xs sm:text-sm"
               />
             </div>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                {hasRole(["admin", "hr"]) && <TableHead>Employee</TableHead>}
-                <TableHead>Status</TableHead>
-                <TableHead>Check In</TableHead>
-                <TableHead>Shift Start</TableHead>
-                <TableHead>Check Out</TableHead>
-                <TableHead className="text-right">Hours</TableHead>
-                {hasRole(["admin", "hr"]) && <TableHead className="text-right">Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {dataLoading ? (
-                <TableRow>
-                  <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="text-center py-8">
-                    <div className="flex justify-center items-center">
-                      <Loader2 className="animate-spin h-5 w-5 text-muted-foreground" />
-                      <span className="ml-2 text-muted-foreground">Loading...</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : !hasRole(["admin", "hr"]) ? (
-                // Employee view - show their own records
-                <TableRow>
-                  <TableCell className="font-medium">{formatDate(new Date().toISOString())}</TableCell>
-                  <TableCell>
-                    <StatusBadge 
-                      status={todayAttendance?.status} 
-                      isLate={todayAttendance?.isLate} 
-                      isOvertime={todayAttendance?.isOvertime}
-                      isEdited={todayAttendance?.isEdited}
-                      editedByName={todayAttendance?.editedByName}
-                      editedAt={todayAttendance?.editedAt}
-                    />
-                  </TableCell>
-                  <TableCell>{todayAttendance?.checkIn?.time || '-'}</TableCell>
-                  <TableCell className="text-muted-foreground">{todayAttendance?.shiftStartTime || userShift?.startTime || '-'}</TableCell>
-                  <TableCell>{todayAttendance?.checkOut?.time || '-'}</TableCell>
-                  <TableCell className="text-right">
-                    {todayAttendance?.isOvertime ? (
-                      <span className="text-amber-700 font-medium dark:text-amber-400">{todayAttendance?.totalHours} hrs (+{todayAttendance?.overtimeHours} OT)</span>
-                    ) : (
-                      <span>{todayAttendance?.totalHours || '-'} hrs</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ) : filteredAttendance.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={hasRole(["admin", "hr"]) ? 8 : 6} className="p-0">
-                    <EmptyState
-                      title="No attendance records found."
-                      description="Records appear here once employees check in."
-                      icon={<Clock size={18} />}
-                    />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                // Admin/HR view - show all records
-                filteredAttendance.map((log: any) => {
+
+          {dataLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="animate-spin h-6 w-6 text-primary" />
+              <span className="ml-2 text-sm text-muted-foreground">Loading attendance records...</span>
+            </div>
+          ) : !hasRole(["admin", "hr"]) ? (
+            /* Employee View */
+            <div className="space-y-3">
+              <div className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-foreground text-sm">{formatDate(new Date().toISOString())}</span>
+                  <StatusBadge 
+                    status={todayAttendance?.status} 
+                    isLate={todayAttendance?.isLate} 
+                    isOvertime={todayAttendance?.isOvertime}
+                    isEdited={todayAttendance?.isEdited}
+                    editedByName={todayAttendance?.editedByName}
+                    editedAt={todayAttendance?.editedAt}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/30 text-xs">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">In</p>
+                    <p className="font-mono font-semibold text-foreground mt-0.5">{todayAttendance?.checkIn?.time || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Out</p>
+                    <p className="font-mono font-semibold text-foreground mt-0.5">{todayAttendance?.checkOut?.time || '-'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-muted-foreground uppercase font-medium">Total Hours</p>
+                    <p className="font-mono font-semibold text-foreground mt-0.5">
+                      {todayAttendance?.isOvertime ? (
+                        <span className="text-amber-700 dark:text-amber-400">
+                          {todayAttendance?.totalHours}h (+{todayAttendance?.overtimeHours} OT)
+                        </span>
+                      ) : (
+                        <span>{todayAttendance?.totalHours || '-'} hrs</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground pt-1 border-t border-border/40">
+                  <span>Shift: <span className="font-mono text-foreground">{todayAttendance?.shiftStartTime || userShift?.startTime || '09:00'}</span></span>
+                </div>
+              </div>
+            </div>
+          ) : filteredAttendance.length === 0 ? (
+            <EmptyState
+              title="No attendance records found."
+              description="Records appear here once employees check in."
+              icon={<Clock size={18} />}
+            />
+          ) : (
+            <>
+              {/* Mobile Card View (< md) */}
+              <div className="space-y-3 md:hidden">
+                {filteredAttendance.map((log: any) => {
                   const checkInTime = log.checkIn?.time || log.checkIn || '-';
                   const checkOutTime = log.checkOut?.time || log.checkOut || '-';
+                  const totalHrs = log.totalHours ? `${log.totalHours} hrs` : calculateHours(checkInTime, checkOutTime);
+
                   return (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-medium">{formatDate(log.date)}</TableCell>
-                      {hasRole(["admin", "hr"]) && (
-                        <TableCell>
-                          <div className="font-medium text-foreground">{log.employeeName}</div>
-                          <div className="text-xs text-muted-foreground">{log.department}</div>
-                        </TableCell>
-                      )}
-                      <TableCell>
+                    <div
+                      key={log.id}
+                      className="rounded-lg border border-border bg-card p-3.5 space-y-3 shadow-xs transition-colors hover:border-border/80"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs">
+                            {(log.employeeName || "E").charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground text-sm truncate">{log.employeeName}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{log.department || "General"}</p>
+                          </div>
+                        </div>
                         <StatusBadge 
                           status={log.status} 
                           isLate={log.isLate} 
@@ -856,43 +866,138 @@ export default function AttendancePage() {
                           editedByName={log.editedByName}
                           editedAt={log.editedAt}
                         />
-                      </TableCell>
-                      <TableCell>{checkInTime}</TableCell>
-                      <TableCell className="text-muted-foreground">{log.shiftStartTime || '-'}</TableCell>
-                      <TableCell>{checkOutTime}</TableCell>
-                      <TableCell className="text-right">
-                        {log.isOvertime ? (
-                          <span className="text-amber-700 font-medium dark:text-amber-400">{log.totalHours} hrs (+{log.overtimeHours} OT)</span>
-                        ) : (
-                          <span>{log.totalHours ? `${log.totalHours} hrs` : calculateHours(checkInTime, checkOutTime)}</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span>{formatDate(log.date)}</span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted/30 text-xs">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">Check In</p>
+                          <p className="font-mono font-semibold text-foreground mt-0.5">{checkInTime}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">Check Out</p>
+                          <p className="font-mono font-semibold text-foreground mt-0.5">{checkOutTime}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">Duration</p>
+                          <p className="font-mono font-semibold text-foreground mt-0.5">
+                            {log.isOvertime ? (
+                              <span className="text-amber-600 dark:text-amber-400">+{log.overtimeHours}h OT</span>
+                            ) : (
+                              totalHrs
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs text-muted-foreground">
+                        <span>Shift start: <span className="font-mono text-foreground">{log.shiftStartTime || '-'}</span></span>
+                        <div className="flex items-center gap-1">
                           <Button 
                             variant="ghost" 
                             size="sm" 
                             className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                             onClick={() => setEditingRecord(log)}
+                            aria-label={`Edit ${log.employeeName}'s attendance`}
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-3.5 w-3.5" />
                           </Button>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:text-red-400"
                             onClick={() => handleDeleteRecord(log.id)}
+                            aria-label={`Delete ${log.employeeName}'s attendance`}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   );
-                })
-              )}
-            </TableBody>
-          </Table>
+                })}
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">Date</TableHead>
+                      {hasRole(["admin", "hr"]) && <TableHead className="min-w-[180px]">Employee</TableHead>}
+                      <TableHead className="min-w-[130px]">Status</TableHead>
+                      <TableHead className="min-w-[90px]">Check In</TableHead>
+                      <TableHead className="min-w-[90px]">Shift Start</TableHead>
+                      <TableHead className="min-w-[90px]">Check Out</TableHead>
+                      <TableHead className="min-w-[110px] text-right">Hours</TableHead>
+                      {hasRole(["admin", "hr"]) && <TableHead className="w-24 text-right">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAttendance.map((log: any) => {
+                      const checkInTime = log.checkIn?.time || log.checkIn || '-';
+                      const checkOutTime = log.checkOut?.time || log.checkOut || '-';
+                      return (
+                        <TableRow key={log.id}>
+                          <TableCell className="font-medium whitespace-nowrap">{formatDate(log.date)}</TableCell>
+                          {hasRole(["admin", "hr"]) && (
+                            <TableCell>
+                              <div className="font-medium text-foreground">{log.employeeName}</div>
+                              <div className="text-xs text-muted-foreground">{log.department}</div>
+                            </TableCell>
+                          )}
+                          <TableCell>
+                            <StatusBadge 
+                              status={log.status} 
+                              isLate={log.isLate} 
+                              isOvertime={log.isOvertime}
+                              isEdited={log.isEdited}
+                              editedByName={log.editedByName}
+                              editedAt={log.editedAt}
+                            />
+                          </TableCell>
+                          <TableCell className="font-mono">{checkInTime}</TableCell>
+                          <TableCell className="text-muted-foreground font-mono">{log.shiftStartTime || '-'}</TableCell>
+                          <TableCell className="font-mono">{checkOutTime}</TableCell>
+                          <TableCell className="text-right">
+                            {log.isOvertime ? (
+                              <span className="text-amber-700 font-medium dark:text-amber-400">{log.totalHours} hrs (+{log.overtimeHours} OT)</span>
+                            ) : (
+                              <span>{log.totalHours ? `${log.totalHours} hrs` : calculateHours(checkInTime, checkOutTime)}</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                onClick={() => setEditingRecord(log)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:text-red-400"
+                                onClick={() => handleDeleteRecord(log.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
       )}

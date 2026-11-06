@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
-import { Briefcase, Plus, Pencil, Trash2, Loader2, X, Upload } from "lucide-react";
+import { Briefcase, Plus, Pencil, Trash2, Loader2, X, Upload, Building2 } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { ModalPortal } from "../../../components/ui/ModalPortal";
@@ -113,13 +113,13 @@ export default function DesignationsPage() {
         description="Manage job designations linked to departments."
         actions={
           canManage && (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setShowImportModal(true)}>
-                <Upload className="mr-2 h-4 w-4" />
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto text-xs sm:text-sm px-3" onClick={() => setShowImportModal(true)}>
+                <Upload className="mr-1.5 sm:mr-2 h-4 w-4" />
                 Import CSV
               </Button>
-              <Button onClick={() => setShowModal(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button className="w-full sm:w-auto text-xs sm:text-sm px-3" onClick={() => setShowModal(true)}>
+                <Plus className="mr-1.5 sm:mr-2 h-4 w-4" />
                 Add Designation
               </Button>
             </div>
@@ -128,11 +128,11 @@ export default function DesignationsPage() {
       />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>All Designations</CardTitle>
           <CardDescription>These designations will appear in employee onboarding dropdown.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -144,45 +144,126 @@ export default function DesignationsPage() {
               description="Create one to use in employee onboarding."
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Designation</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Description</TableHead>
-                  {canManage && <TableHead className="w-24 text-right">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile Card View (< md) */}
+              <div className="space-y-3 md:hidden">
                 {designations.map((desig) => (
-                  <TableRow key={desig._id}>
-                    <TableCell className="font-medium">{desig.name}</TableCell>
-                    <TableCell>
-                      {desig.department ? (
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded dark:bg-blue-500/15 dark:text-blue-300">
-                          {desig.department}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 dark:text-gray-500">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-gray-500 dark:text-gray-400">{desig.description || '-'}</TableCell>
-                    {canManage && (
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button variant="ghost" size="sm" onClick={() => openEditModal(desig)}>
+                  <div
+                    key={desig._id}
+                    className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-xs transition-colors hover:border-border/80"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            <Briefcase className="h-4 w-4" />
+                          </div>
+                          <h4 className="font-semibold text-foreground text-base truncate">
+                            {desig.name}
+                          </h4>
+                        </div>
+                      </div>
+                      {canManage && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            onClick={() => openEditModal(desig)}
+                            aria-label={`Edit ${desig.name}`}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(desig._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:text-red-400"
+                            onClick={() => handleDelete(desig._id)}
+                            aria-label={`Delete ${desig.name}`}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </TableCell>
+                      )}
+                    </div>
+
+                    {desig.description ? (
+                      <p className="text-sm text-muted-foreground leading-relaxed break-words">
+                        {desig.description}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground/60 italic">
+                        No description provided
+                      </p>
                     )}
-                  </TableRow>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-2.5 border-t border-border/40">
+                      {desig.department ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+                          <Building2 className="h-3 w-3" />
+                          <span>{desig.department}</span>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/50">No department</span>
+                      )}
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                        Active
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">Designation</TableHead>
+                      <TableHead className="min-w-[160px]">Department</TableHead>
+                      <TableHead className="min-w-[260px]">Description</TableHead>
+                      {canManage && <TableHead className="w-24 text-right">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {designations.map((desig) => (
+                      <TableRow key={desig._id}>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-4 w-4 text-primary shrink-0" />
+                            <span>{desig.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {desig.department ? (
+                            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded dark:bg-blue-500/15 dark:text-blue-300">
+                              {desig.department}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-500">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground max-w-md break-words">
+                          {desig.description || '—'}
+                        </TableCell>
+                        {canManage && (
+                          <TableCell className="text-right">
+                            <div className="flex gap-1 justify-end">
+                              <Button variant="ghost" size="sm" onClick={() => openEditModal(desig)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDelete(desig._id)} className="text-red-600 hover:text-red-700 dark:text-red-400">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

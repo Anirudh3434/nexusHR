@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const isApi = pathname.startsWith('/api')
-  const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers') || pathname === '/landing'
+  const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers') || pathname === '/landing' || pathname === '/forgot-password' || pathname === '/reset-password'
 
   // Verified session (signature-checked). This is the only identity
   // the server trusts; the old unsigned `user` cookie is ignored.
@@ -213,6 +213,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
       return NextResponse.next()
+    }
+
+    // Platform super_admin sessions belong in /super-admin, not tenant company workspaces
+    if (role === 'super_admin' && (pathname === '/dashboard' || pathname.startsWith('/dashboard/'))) {
+      return NextResponse.redirect(new URL('/super-admin', request.url))
     }
 
     // Temporary portal accounts must set their own password before using the app

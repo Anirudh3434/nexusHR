@@ -32,6 +32,8 @@ export default function DashboardLayout({
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
+    } else if (!loading && user && (user.role as string) === "super_admin") {
+      router.push("/super-admin");
     }
   }, [user, loading, router]);
 

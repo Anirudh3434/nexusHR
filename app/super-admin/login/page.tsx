@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -88,6 +89,11 @@ export default function SuperAdminLoginPage() {
                 className="h-11 pl-10"
                 required
               />
+            </div>
+            <div className="flex items-center justify-end">
+              <Link href="/forgot-password?type=superadmin" className="text-xs text-slate-500 hover:text-teal-400 transition-colors">
+                Forgot password?
+              </Link>
             </div>
             <Button type="submit" className="h-11 w-full" disabled={busy !== null}>
               {busy === "password" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}

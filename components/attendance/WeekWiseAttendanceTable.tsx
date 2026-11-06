@@ -528,7 +528,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
       <div className="space-y-4">
         {/* Weekly Header & Controls */}
         <Card className="rounded-xl border border-border bg-card shadow-xs">
-          <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
                 <CalendarDays className="h-4 w-4" />
@@ -539,15 +539,15 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <Button variant="outline" size="sm" onClick={handlePrevWeek} className="h-8 px-2">
+            <div className="flex items-center justify-between sm:justify-start gap-1.5 w-full sm:w-auto">
+              <Button variant="outline" size="sm" onClick={handlePrevWeek} className="h-8 px-2 flex-1 sm:flex-initial">
                 <ChevronLeft className="h-4 w-4 mr-0.5" />
                 Prev
               </Button>
-              <Button variant="outline" size="sm" onClick={handleThisWeek} className="h-8 px-2.5 text-xs font-medium">
+              <Button variant="outline" size="sm" onClick={handleThisWeek} className="h-8 px-2.5 text-xs font-medium flex-1 sm:flex-initial">
                 This Week
               </Button>
-              <Button variant="outline" size="sm" onClick={handleNextWeek} className="h-8 px-2">
+              <Button variant="outline" size="sm" onClick={handleNextWeek} className="h-8 px-2 flex-1 sm:flex-initial">
                 Next
                 <ChevronRight className="h-4 w-4 ml-0.5" />
               </Button>
@@ -556,7 +556,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
         </Card>
 
         {/* Weekly Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
           <div className="p-3 rounded-lg border border-border bg-card shadow-xs">
             <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Hours Logged</p>
             <p className="text-lg font-bold text-foreground mt-0.5">
@@ -586,8 +586,114 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
           </div>
         </div>
 
-        {/* Individual Weekly Detailed Table */}
-        <Card className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
+        {/* Mobile View: 7-Day Card Stack (< md) */}
+        <div className="space-y-2.5 md:hidden">
+          {myRecords.map(({ day, record }) => {
+            const checkInTime = typeof record?.checkIn === "object" ? record?.checkIn?.time : record?.checkIn;
+            const checkOutTime = typeof record?.checkOut === "object" ? record?.checkOut?.time : record?.checkOut;
+            const hours = record ? (record.totalHours || calculateHoursBetween(checkInTime, checkOutTime)) : 0;
+            const isLate = Boolean(record?.isLate || record?.status === "Late");
+            const isOvertime = Boolean(record?.isOvertime && record?.overtimeHours && record.overtimeHours > 0);
+            const isHalfDay = record?.status === "Half Day";
+
+            return (
+              <div
+                key={day.dateKey}
+                className={`rounded-lg border p-3.5 space-y-2.5 transition-colors shadow-xs ${
+                  day.isToday
+                    ? "border-primary/40 bg-primary/5"
+                    : day.isWeekend
+                    ? "border-border/60 bg-muted/10"
+                    : "border-border bg-card"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-foreground text-sm">{day.dayName}</span>
+                    <span className="text-xs text-muted-foreground font-mono">({day.formatted})</span>
+                    {day.isToday && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] bg-primary/20 text-primary font-bold">
+                        Today
+                      </span>
+                    )}
+                  </div>
+                  {record ? (
+                    <div className="flex items-center gap-1">
+                      {isLate ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/15 text-amber-700 border border-amber-500/30 dark:text-amber-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                          Late
+                        </span>
+                      ) : isHalfDay ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/15 text-indigo-700 border border-indigo-500/30 dark:text-indigo-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                          Half Day
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 dark:text-emerald-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          Present
+                        </span>
+                      )}
+                      {record.isEdited && (
+                        <span 
+                          className="inline-flex items-center p-0.5 text-sky-600 dark:text-sky-400"
+                          title={`Edited by ${record.editedByName || "Admin"}`}
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </span>
+                      )}
+                    </div>
+                  ) : day.isWeekend ? (
+                    <span className="text-xs font-medium text-muted-foreground/60">Off</span>
+                  ) : day.isPast ? (
+                    <span className="text-xs font-semibold text-muted-foreground/60 bg-muted/40 px-2 py-0.5 rounded">Absent</span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/40">—</span>
+                  )}
+                </div>
+
+                {record && (
+                  <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-muted/30 text-xs">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase font-medium">In</p>
+                      <p className={`font-mono font-semibold mt-0.5 ${isLate ? "text-amber-600" : "text-foreground"}`}>
+                        {checkInTime || "—"}
+                        {isLate && record.lateMinutes ? (
+                          <span className="text-[10px] ml-1 text-amber-600 font-sans">
+                            (+{record.lateMinutes}m)
+                          </span>
+                        ) : null}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase font-medium">Out</p>
+                      <p className="font-mono font-semibold text-foreground mt-0.5">{checkOutTime || "—"}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-muted-foreground uppercase font-medium">Hours</p>
+                      <p className="font-mono font-semibold text-foreground mt-0.5">
+                        {hours > 0 ? `${hours}h` : "—"}
+                        {isOvertime && (
+                          <span className="text-[10px] ml-1 text-amber-600">
+                            (+{record.overtimeHours}h OT)
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono pt-1 border-t border-border/30">
+                  <span>Shift: {record?.shiftStartTime ? `${record.shiftStartTime} - ${record.shiftEndTime || ""}` : "09:00 - 18:00"}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Individual Weekly Detailed Table (>= md) */}
+        <Card className="rounded-xl border border-border bg-card shadow-xs overflow-hidden hidden md:block">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -718,7 +824,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
         <CardContent className="p-3 sm:p-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* Week Navigator */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
               <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border">
                 <Button 
                   variant="ghost" 
@@ -755,8 +861,8 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
             </div>
 
             {/* Quick Actions & Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative min-w-[140px] sm:min-w-[180px]">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div className="relative col-span-2 sm:col-span-1 w-full sm:w-auto min-w-[140px] sm:min-w-[180px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   placeholder="Filter employee..."
@@ -770,7 +876,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
                 <select
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="h-8 px-2 py-0.5 text-xs rounded-md border border-border bg-background text-foreground outline-none focus:ring-1 focus:ring-primary"
+                  className="h-8 px-2 py-0.5 text-xs rounded-md border border-border bg-background text-foreground outline-none focus:ring-1 focus:ring-primary w-full sm:w-auto"
                 >
                   <option value="all">All Depts ({distinctEmployees.length})</option>
                   {departments.map((dept) => (
@@ -784,7 +890,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
               <select
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="h-8 px-2 py-0.5 text-xs rounded-md border border-border bg-background text-foreground outline-none focus:ring-1 focus:ring-primary"
+                className="h-8 px-2 py-0.5 text-xs rounded-md border border-border bg-background text-foreground outline-none focus:ring-1 focus:ring-primary w-full sm:w-auto"
               >
                 <option value="all">All Status</option>
                 <option value="late">Has Late Arrival</option>
@@ -797,7 +903,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
                 variant={isCompactView ? "default" : "outline"}
                 size="sm"
                 onClick={() => setIsCompactView(!isCompactView)}
-                className="h-8 text-xs px-2.5 gap-1"
+                className="h-8 text-xs px-2.5 gap-1 w-full sm:w-auto justify-center"
                 title={isCompactView ? "Show in/out times" : "Minimalist view"}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -808,7 +914,7 @@ Check In: ${checkInTime || "--:--"} | Check Out: ${checkOutTime || "--:--"}${isO
                 variant="outline" 
                 size="sm" 
                 onClick={handleExportWeekCSV}
-                className="h-8 text-xs gap-1 px-2.5 shrink-0"
+                className="h-8 text-xs gap-1 px-2.5 shrink-0 w-full sm:w-auto justify-center"
               >
                 <Download className="h-3.5 w-3.5" />
                 Export CSV

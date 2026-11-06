@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from "react";
 
-type Role = 'admin' | 'hr' | 'manager' | 'employee';
+export type Role = 'super_admin' | 'admin' | 'hr' | 'manager' | 'employee';
 
 export interface User {
   id: string;
@@ -59,11 +59,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem("user");
       }
     }
-    setLoading(false);
 
     // Sync latest user details (designation, department, company name)
     fetch('/api/auth/me')
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (res.status === 401 || res.status === 404) {
+          // If session expired or invalid on server, clear stale local state
+          setUser(null);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          return null;
+        }
+        return res.ok ? res.json() : null;
+      })
       .then((freshUser) => {
         if (freshUser && freshUser.id) {
           setUser((prev) => {
@@ -73,7 +81,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const login = useCallback(async (email: string, password: string, options?: LoginOptions): Promise<{ success: boolean; error?: string; user?: User }> => {

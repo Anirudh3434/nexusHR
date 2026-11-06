@@ -59,14 +59,14 @@ export function PageHeader({
         </h1>
         {description ? (
           <p className={cn(
-            "text-muted-foreground truncate",
+            "text-muted-foreground break-words",
             isSm ? "mt-0.5 text-xs font-mono" : "mt-1 text-sm"
           )}>
             {description}
           </p>
         ) : null}
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">{actions}</div> : null}
     </div>
   );
 }

@@ -555,7 +555,7 @@ export default function ApplicantsPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         {[
           { label: 'Total', value: stats.total, icon: Users },
           { label: 'New', value: stats.new, icon: UserCheck },
@@ -564,14 +564,14 @@ export default function ApplicantsPage() {
           { label: 'Hired', value: stats.hired, icon: PartyPopper },
           { label: 'Rejected', value: stats.rejected, icon: ThumbsDown },
         ].map(({ label, value, icon: Icon }) => (
-          <Card key={label} className="rounded-[14px] border border-border bg-card shadow-xs">
-            <CardContent className="p-4 flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
-                <Icon className="h-4 w-4 text-primary" />
+          <Card key={label} className="rounded-[12px] sm:rounded-[14px] border border-border bg-card shadow-xs">
+            <CardContent className="p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3.5">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
+                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold tracking-tight text-foreground font-display">{value}</p>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">{label}</p>
+                <p className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-display leading-tight">{value}</p>
+                <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -579,72 +579,75 @@ export default function ApplicantsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-2.5">
+        <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, email, position, or Job ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10 text-sm border-border bg-card"
+            className="pl-10 h-10 text-sm border-border bg-card w-full"
           />
         </div>
         
-        {uniqueJobIds.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:items-center gap-2">
+          {uniqueJobIds.length > 0 && (
+            <select
+              className="h-9.5 rounded-lg border border-border bg-card text-foreground px-2.5 text-xs sm:text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs w-full lg:w-auto"
+              value={filterJobId}
+              onChange={(e) => setFilterJobId(e.target.value)}
+            >
+              <option value="">All Job IDs</option>
+              {uniqueJobIds.map(jobId => (
+                <option key={jobId} value={jobId}>{jobId}</option>
+              ))}
+            </select>
+          )}
+          
           <select
-            className="h-10 rounded-lg border border-border bg-card text-foreground px-3 text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs"
-            value={filterJobId}
-            onChange={(e) => setFilterJobId(e.target.value)}
+            className="h-9.5 rounded-lg border border-border bg-card text-foreground px-2.5 text-xs sm:text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs w-full lg:w-auto"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="">All Job IDs</option>
-            {uniqueJobIds.map(jobId => (
-              <option key={jobId} value={jobId}>{jobId}</option>
-            ))}
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="under_review">Under Review</option>
+            <option value="considered">Considered</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="interview">Interview</option>
+            <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
+            <option value="spam">Spam</option>
           </select>
-        )}
-        
-        <select
-          className="h-10 rounded-lg border border-border bg-card text-foreground px-3 text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="">All Status</option>
-          <option value="new">New</option>
-          <option value="under_review">Under Review</option>
-          <option value="considered">Considered</option>
-          <option value="shortlisted">Shortlisted</option>
-          <option value="interview">Interview</option>
-          <option value="hired">Hired</option>
-          <option value="rejected">Rejected</option>
-          <option value="spam">Spam</option>
-        </select>
-        
-        <select
-          className="h-10 rounded-lg border border-border bg-card text-foreground px-3 text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs"
-          value={filterSource}
-          onChange={(e) => setFilterSource(e.target.value)}
-        >
-          <option value="">All Sources</option>
-          <option value="website">Online (Careers Page)</option>
-          <option value="email">Email</option>
-        </select>
+          
+          <select
+            className="h-9.5 rounded-lg border border-border bg-card text-foreground px-2.5 text-xs sm:text-sm font-medium focus:ring-1 focus:ring-primary shadow-xs w-full lg:w-auto"
+            value={filterSource}
+            onChange={(e) => setFilterSource(e.target.value)}
+          >
+            <option value="">All Sources</option>
+            <option value="website">Online (Careers)</option>
+            <option value="email">Email</option>
+          </select>
 
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 h-10 shadow-xs">
-          <input 
-            type="checkbox" 
-            id="showGeneral" 
-            checked={showGeneral}
-            onChange={(e) => setShowGeneral(e.target.checked)}
-            className="h-4 w-4 rounded border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-          />
-          <label htmlFor="showGeneral" className="text-sm font-medium text-muted-foreground whitespace-nowrap cursor-pointer select-none">
-            Show General Inquiries
+          <label
+            htmlFor="showGeneral"
+            className="flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 h-9.5 shadow-xs cursor-pointer select-none text-xs sm:text-sm font-medium text-muted-foreground w-full lg:w-auto hover:bg-muted/30"
+          >
+            <input 
+              type="checkbox" 
+              id="showGeneral" 
+              checked={showGeneral}
+              onChange={(e) => setShowGeneral(e.target.checked)}
+              className="h-4 w-4 rounded border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            />
+            <span className="truncate">General Inquiries</span>
           </label>
         </div>
       </div>
 
-      {/* Applicants Table */}
-      <Card className="rounded-[14px] border border-border bg-card shadow-xs">
+      {/* Applicants Table & Mobile Cards */}
+      <Card className="rounded-[14px] border border-border bg-card shadow-xs overflow-hidden">
         <CardContent className="p-0">
           {filteredApplicants.length === 0 ? (
             <EmptyState
@@ -665,94 +668,92 @@ export default function ApplicantsPage() {
               }
             />
           ) : (
-            <table className="w-full">
-              <thead className="bg-muted/40">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Candidate</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Job ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Source</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Position</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Experience</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
+            <>
+              {/* MOBILE VIEW: Cards */}
+              <div className="block lg:hidden divide-y divide-border">
                 {filteredApplicants.map((applicant) => (
-                  <tr 
+                  <div 
                     key={applicant._id}
-                    className="hover:bg-muted/60 cursor-pointer"
                     onClick={() => setSelectedApplicant(applicant)}
+                    className="p-3.5 space-y-2.5 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer"
                   >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
+                    {/* Top Row: Avatar + Name + Badges */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
                           {applicant.candidateName?.charAt(0).toUpperCase() || 'U'}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-gray-900 dark:text-slate-100">{applicant.candidateName || 'Unknown'}</p>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-semibold text-sm text-foreground truncate">
+                              {applicant.candidateName || 'Unknown'}
+                            </p>
                             {applicant.hasAttachments && (
                               <span title="Has attachments">
-                                <Paperclip className="h-3 w-3 text-primary" />
+                                <Paperclip className="h-3 w-3 text-primary shrink-0" />
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">{applicant.fromEmail}</p>
+                          <p className="text-xs text-muted-foreground truncate">{applicant.fromEmail}</p>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {applicant.jobId ? (
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono text-xs">
-                          {applicant.jobId}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge className={`text-xs ${getSourceColor(applicant.source)}`}>
-                        {getSourceLabel(applicant.source)}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-gray-900 dark:text-slate-100">{applicant.appliedPosition || 'N/A'}</p>
-                      {applicant.currentDesignation && (
-                        <p className="text-xs text-gray-500 dark:text-slate-400">Current: {applicant.currentDesignation}</p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-gray-900 dark:text-slate-100">{applicant.experience || 'N/A'}</p>
-                      {applicant.noticePeriod && (
-                        <p className="text-xs text-gray-500 dark:text-slate-400">Notice: {applicant.noticePeriod}</p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <Badge className={`text-xs ${getStatusColor(applicant.status)}`}>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {applicant.jobId && (
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono text-[11px] px-1.5 py-0.5">
+                            {applicant.jobId}
+                          </Badge>
+                        )}
+                        <Badge className={`text-[11px] px-2 py-0.5 ${getStatusColor(applicant.status)}`}>
                           {getStatusLabel(applicant.status)}
                         </Badge>
-                        {applicant.portalAccessSentAt && (
-                          <span title={`Portal credentials sent on ${new Date(applicant.portalAccessSentAt).toLocaleString()}`}>
-                            <Mail className="h-3.5 w-3.5 text-primary" />
-                          </span>
-                        )}
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
-                      {new Date(applicant.receivedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1">
+                    </div>
+
+                    {/* Middle: Details Grid */}
+                    <div className="bg-muted/40 rounded-lg p-2.5 text-xs space-y-1 border border-border/50">
+                      <div className="flex justify-between items-center text-muted-foreground">
+                        <span>Position:</span>
+                        <span className="font-medium text-foreground text-right truncate max-w-[200px]">
+                          {applicant.appliedPosition || 'N/A'}
+                        </span>
+                      </div>
+                      {applicant.experience && (
+                        <div className="flex justify-between items-center text-muted-foreground">
+                          <span>Experience:</span>
+                          <span className="font-medium text-foreground">{applicant.experience}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-muted-foreground pt-0.5 border-t border-border/30">
+                        <span>Source & Date:</span>
+                        <div className="flex items-center gap-1.5 font-medium text-foreground">
+                          <Badge className={`text-[10px] px-1.5 py-0 ${getSourceColor(applicant.source)}`}>
+                            {getSourceLabel(applicant.source)}
+                          </Badge>
+                          <span>{new Date(applicant.receivedAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Actions Row */}
+                    <div className="flex items-center justify-between pt-0.5" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10"
+                        onClick={() => setSelectedApplicant(applicant)}
+                      >
+                        <Eye className="h-3.5 w-3.5 mr-1" /> View Details
+                      </Button>
+
+                      <div className="flex items-center gap-1">
                         {applicant.status !== 'hired' && (
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
-                            onClick={(e) => { e.stopPropagation(); openHireModal(applicant); }}
-                            title="Hire & send portal access"
+                            className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400"
+                            onClick={() => openHireModal(applicant)}
+                            title="Hire Candidate"
                           >
                             <UserPlus2 className="h-4 w-4" />
                           </Button>
@@ -761,7 +762,7 @@ export default function ApplicantsPage() {
                           variant="ghost" 
                           size="sm" 
                           className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
-                          onClick={(e) => { e.stopPropagation(); handleConsider(applicant); }}
+                          onClick={() => handleConsider(applicant)}
                           title="Consider"
                         >
                           <ThumbsUp className="h-4 w-4" />
@@ -770,7 +771,7 @@ export default function ApplicantsPage() {
                           variant="ghost" 
                           size="sm" 
                           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
-                          onClick={(e) => { e.stopPropagation(); handleReject(applicant); }}
+                          onClick={() => handleReject(applicant)}
                           title="Reject"
                         >
                           <ThumbsDown className="h-4 w-4" />
@@ -778,35 +779,164 @@ export default function ApplicantsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-8 p-0"
-                          onClick={(e) => { e.stopPropagation(); setSelectedApplicant(applicant); }}
-                          title="View Details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
                           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
-                          onClick={(e) => { e.stopPropagation(); handleDelete(applicant); }}
+                          onClick={() => handleDelete(applicant)}
                           title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              {/* DESKTOP VIEW: Full Data Table with horizontal scroll container */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full min-w-[850px]">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Candidate</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Job ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Source</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Position</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Experience</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredApplicants.map((applicant) => (
+                      <tr 
+                        key={applicant._id}
+                        className="hover:bg-muted/60 cursor-pointer"
+                        onClick={() => setSelectedApplicant(applicant)}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
+                              {applicant.candidateName?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-gray-900 dark:text-slate-100">{applicant.candidateName || 'Unknown'}</p>
+                                {applicant.hasAttachments && (
+                                  <span title="Has attachments">
+                                    <Paperclip className="h-3 w-3 text-primary" />
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-slate-400">{applicant.fromEmail}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {applicant.jobId ? (
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-mono text-xs">
+                              {applicant.jobId}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge className={`text-xs ${getSourceColor(applicant.source)}`}>
+                            {getSourceLabel(applicant.source)}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-900 dark:text-slate-100">{applicant.appliedPosition || 'N/A'}</p>
+                          {applicant.currentDesignation && (
+                            <p className="text-xs text-gray-500 dark:text-slate-400">Current: {applicant.currentDesignation}</p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-900 dark:text-slate-100">{applicant.experience || 'N/A'}</p>
+                          {applicant.noticePeriod && (
+                            <p className="text-xs text-gray-500 dark:text-slate-400">Notice: {applicant.noticePeriod}</p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <Badge className={`text-xs ${getStatusColor(applicant.status)}`}>
+                              {getStatusLabel(applicant.status)}
+                            </Badge>
+                            {applicant.portalAccessSentAt && (
+                              <span title={`Portal credentials sent on ${new Date(applicant.portalAccessSentAt).toLocaleString()}`}>
+                                <Mail className="h-3.5 w-3.5 text-primary" />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
+                          {new Date(applicant.receivedAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-1">
+                            {applicant.status !== 'hired' && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                                onClick={(e) => { e.stopPropagation(); openHireModal(applicant); }}
+                                title="Hire & send portal access"
+                              >
+                                <UserPlus2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                              onClick={(e) => { e.stopPropagation(); handleConsider(applicant); }}
+                              title="Consider"
+                            >
+                              <ThumbsUp className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
+                              onClick={(e) => { e.stopPropagation(); handleReject(applicant); }}
+                              title="Reject"
+                            >
+                              <ThumbsDown className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => { e.stopPropagation(); setSelectedApplicant(applicant); }}
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
+                              onClick={(e) => { e.stopPropagation(); handleDelete(applicant); }}
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Applicant Detail Modal */}
       {selectedApplicant && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-3xl max-h-[90vh] overflow-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4">
+          <Card className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-[14px]">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Applicant Details</span>
@@ -1099,10 +1229,10 @@ export default function ApplicantsPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="grid grid-cols-2 sm:flex gap-2.5 pt-4 border-t border-border">
                 {selectedApplicant.status !== 'hired' && (
                   <Button 
-                    className="flex-1"
+                    className="col-span-2 sm:flex-1"
                     onClick={() => { openHireModal(selectedApplicant); }}
                   >
                     <UserPlus2 className="h-4 w-4 mr-2" />
@@ -1111,7 +1241,7 @@ export default function ApplicantsPage() {
                 )}
                 <Button 
                   variant="outline"
-                  className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+                  className="sm:flex-1 border-primary/30 text-primary hover:bg-primary/10"
                   onClick={() => { handleConsider(selectedApplicant); setSelectedApplicant(null); }}
                 >
                   <ThumbsUp className="h-4 w-4 mr-2" />
@@ -1119,7 +1249,7 @@ export default function ApplicantsPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
+                  className="sm:flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
                   onClick={() => { handleReject(selectedApplicant); setSelectedApplicant(null); }}
                 >
                   <ThumbsDown className="h-4 w-4 mr-2" />
@@ -1127,7 +1257,7 @@ export default function ApplicantsPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
+                  className="col-span-2 sm:flex-1 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-500/30"
                   onClick={() => { handleDelete(selectedApplicant); }}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -1141,8 +1271,8 @@ export default function ApplicantsPage() {
 
       {/* Hire Modal */}
       {showHireModal && selectedApplicant && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-lg max-h-[90vh] overflow-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4">
+          <Card className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-[14px]">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
