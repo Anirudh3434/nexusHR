@@ -14,7 +14,7 @@ import { format } from "date-fns";
 import { 
   KanbanSquare, Plus, Settings, GripVertical, User, Clock, 
   ArrowLeft, MoreHorizontal, Filter, Search, CheckCircle, Trash2, Edit,
-  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban
+  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban, RotateCcw
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BoardSkeleton, Skeleton } from "@/components/ui/Skeleton";
@@ -182,6 +182,18 @@ export default function ProjectBoardPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [activeFilterDropdown]);
+
+  // Close AI Chat and return to board on Escape
+  useEffect(() => {
+    if (viewMode !== 'ai-chat') return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        router.push(`/projects/${projectId}/board`);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewMode, projectId, router]);
 
   // Labels state
   const [availableLabels, setAvailableLabels] = useState<Array<{ _id: string; name: string; color: string }>>([]);
@@ -4074,16 +4086,30 @@ export default function ProjectBoardPage() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setChatMessages([
-                { sender: 'ai', text: 'Hi! I am **NexusAI**, your agentic assistant. I can answer questions about your tasks or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*', timestamp: new Date() }
-              ])}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-neutral-800/70 hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 text-xs font-semibold border border-neutral-200/70 dark:border-neutral-700/60 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
-              title="Clear conversation history"
-            >
-              <span>Clear Chat History</span>
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setChatMessages([
+                  { sender: 'ai', text: 'Hi! I am **NexusAI**, your agentic assistant. I can answer questions about your tasks or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*', timestamp: new Date() }
+                ])}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-neutral-800/70 hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 text-xs font-semibold border border-neutral-200/70 dark:border-neutral-700/60 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
+                title="Clear conversation history"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Clear Chat History</span>
+                <span className="sm:hidden">Clear</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push(`/projects/${projectId}/board`)}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+                title="Close AI Assistant & Return to Board (Esc)"
+                aria-label="Close AI Assistant"
+              >
+                <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Close</span>
+              </button>
+            </div>
           </div>
 
           {/* Chat Messages / Welcome Dashboard */}

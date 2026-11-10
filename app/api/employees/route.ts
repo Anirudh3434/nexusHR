@@ -145,13 +145,27 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: 'Employee ID required' }, { status: 400 });
     }
 
-    // NEVER role/salary/companyId/password via PATCH
-    if ('role' in updateData || 'salary' in updateData || 'companyId' in updateData || 'password' in updateData) {
-      return NextResponse.json({ message: 'role, salary, companyId and password cannot be updated via PATCH' }, { status: 400 });
+    // NEVER role/companyId/password via PATCH
+    if ('role' in updateData || 'companyId' in updateData || 'password' in updateData) {
+      return NextResponse.json({ message: 'role, companyId and password cannot be updated via PATCH' }, { status: 400 });
     }
 
     // Strict allowlist
-    const allowedFields = ['name', 'phone', 'department', 'designation', 'workShiftId', 'joiningDate', 'isActive', 'status', 'avatar'];
+    const allowedFields = [
+      'name', 
+      'phone', 
+      'department', 
+      'designation', 
+      'workShiftId', 
+      'salary', 
+      'joiningDate', 
+      'isActive', 
+      'status', 
+      'avatar',
+      'isGeoFencingExempt',
+      'geoFencingExemptUntil',
+      'overtimePreference'
+    ];
     const sanitized: any = {};
     for (const key of allowedFields) {
       if (key in updateData && updateData[key] !== undefined) sanitized[key] = updateData[key];
@@ -162,6 +176,15 @@ export async function PATCH(req: Request) {
       delete sanitized.workShiftId;
     }
     if (sanitized.joiningDate) sanitized.joiningDate = new Date(sanitized.joiningDate);
+    if (sanitized.salary !== undefined) {
+      const num = Number(sanitized.salary);
+      sanitized.salary = Number.isNaN(num) ? 0 : num;
+    }
+    if (sanitized.geoFencingExemptUntil) {
+      sanitized.geoFencingExemptUntil = new Date(sanitized.geoFencingExemptUntil);
+    } else if (sanitized.geoFencingExemptUntil === '') {
+      delete sanitized.geoFencingExemptUntil;
+    }
 
     const employee = await User.findById(id);
     if (!employee) {

@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const isApi = pathname.startsWith('/api')
-  const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers') || pathname === '/landing' || pathname === '/forgot-password' || pathname === '/reset-password'
+  const isPublic = pathname.startsWith('/auth') || pathname.startsWith('/_next') || pathname.startsWith('/login') || pathname === '/candidate-login' || pathname.startsWith('/careers') || pathname.startsWith('/landing') || pathname === '/' || pathname === '/forgot-password' || pathname === '/reset-password'
 
   // Verified session (signature-checked). This is the only identity
   // the server trusts; the old unsigned `user` cookie is ignored.
@@ -151,17 +151,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(destination, request.url))
     }
     return NextResponse.next()
-  }
-
-  // Root path ("/") routing:
-  // If already authenticated -> redirect directly to dashboard
-  // If not authenticated -> redirect directly to login page
-  if (pathname === '/') {
-    if (session && request.nextUrl.searchParams.get('switch') !== 'true') {
-      const destination = session.role === 'super_admin' ? '/super-admin' : session.isCandidate ? '/candidate/dashboard' : '/dashboard'
-      return NextResponse.redirect(new URL(destination, request.url))
-    }
-    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Check if user is logged in for protected routes
