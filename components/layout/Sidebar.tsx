@@ -462,7 +462,20 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                 className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
                 title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
               >
-                {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
+                <span className="relative w-3.5 h-3.5 flex items-center justify-center">
+                  <Sun
+                    size={14}
+                    className={`transition-all duration-300 absolute ${
+                      theme === "dark" ? "rotate-0 scale-100 opacity-100 text-amber-400" : "-rotate-90 scale-0 opacity-0"
+                    }`}
+                  />
+                  <Moon
+                    size={14}
+                    className={`transition-all duration-300 absolute ${
+                      theme === "light" ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"
+                    }`}
+                  />
+                </span>
                 <span>{theme === "light" ? "Dark" : "Light"}</span>
               </button>
 
@@ -491,7 +504,20 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
               className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
               title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
             >
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+              <span className="relative w-4 h-4 flex items-center justify-center">
+                <Sun
+                  size={16}
+                  className={`transition-all duration-300 absolute ${
+                    theme === "dark" ? "rotate-0 scale-100 opacity-100 text-amber-400" : "-rotate-90 scale-0 opacity-0"
+                  }`}
+                />
+                <Moon
+                  size={16}
+                  className={`transition-all duration-300 absolute ${
+                    theme === "light" ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"
+                  }`}
+                />
+              </span>
             </button>
             <button
               type="button"

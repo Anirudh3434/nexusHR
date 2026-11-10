@@ -5,7 +5,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { 
-  Plug, 
   Copy, 
   Check, 
   X, 
@@ -300,9 +299,27 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
           {/* Header Row */}
           <div className="relative z-10 flex items-start justify-between gap-2.5 sm:gap-3">
             <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-              {/* Male Plug Icon in circular tint container */}
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/25 shadow-xs">
-                <Plug className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.2]" />
+              {/* Nexi MCP Mascot Avatar with 3D Popout */}
+              <div className="relative group shrink-0 w-11 h-11 sm:w-13 sm:h-13 flex items-end justify-center select-none" aria-hidden="true">
+                <div className="absolute inset-0 rounded-full bg-primary/25 blur-md opacity-80 pointer-events-none" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/25 via-indigo-600/20 to-violet-600/30 border border-primary/35 shadow-xs pointer-events-none" />
+                <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                  <img
+                    src="/images/mascot/nexi_mcp_avatar.png"
+                    alt="Nexi MCP"
+                    className="absolute inset-0 w-full h-full object-cover object-top scale-125 -translate-y-1 drop-shadow-xs select-none pointer-events-none transition-transform duration-200 group-hover:scale-130 group-hover:-translate-y-1.5"
+                  />
+                </div>
+                <div
+                  className="absolute inset-0 pointer-events-none z-10"
+                  style={{ clipPath: 'polygon(-50% -100%, 150% -100%, 150% 50%, -50% 50%)' }}
+                >
+                  <img
+                    src="/images/mascot/nexi_mcp_avatar.png"
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover object-top scale-125 -translate-y-1 drop-shadow-sm select-none pointer-events-none transition-transform duration-200 group-hover:scale-130 group-hover:-translate-y-1.5"
+                  />
+                </div>
               </div>
               <div className="min-w-0 leading-tight">
                 <h2 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">

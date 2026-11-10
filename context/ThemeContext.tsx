@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { flushSync } from "react-dom";
 
 type Theme = "light" | "dark";
 
@@ -8,8 +9,15 @@ interface ThemeContextProps {
   theme: Theme;
   resolvedTheme: Theme;
   mounted: boolean;
-  setTheme: (t: Theme) => void;
-  toggleTheme: () => void;
+  setTheme: (t: Theme, event?: React.MouseEvent | MouseEvent) => void;
+  toggleTheme: (event?: React.MouseEvent | MouseEvent) => void;
+}
+
+interface DocumentWithViewTransition extends Document {
+  startViewTransition?: (updateCallback: () => Promise<void> | void) => {
+    ready: Promise<void>;
+    finished: Promise<void>;
+  };
 }
 
 const STORAGE_KEY = "hrm-theme";
@@ -49,6 +57,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // The mounted flag guards the toggle icon against hydration mismatch.
   useEffect(() => {
     const initial = getInitialTheme();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Client mount sync to avoid SSR hydration mismatch
     setThemeState(initial);
     applyTheme(initial);
     setMounted(true);
@@ -65,17 +74,87 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only; theme sync lives in the effect below
   }, []);
 
   useEffect(() => {
     if (mounted) applyTheme(theme);
   }, [theme, mounted]);
 
-  const setTheme = (next: Theme) => setThemeState(next);
+  const switchTheme = (next: Theme, event?: React.MouseEvent | MouseEvent) => {
+    if (next === theme) return;
 
-  const toggleTheme = () => {
-    setThemeState((prev) => (prev === "light" ? "dark" : "light"));
+    const isReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const doc = typeof document !== "undefined" ? (document as DocumentWithViewTransition) : null;
+    if (!doc || typeof doc.startViewTransition !== "function" || isReducedMotion) {
+      setThemeState(next);
+      applyTheme(next);
+      return;
+    }
+
+    // Determine circular ripple origin coordinate (viewport relative)
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+
+    if (event && typeof event.clientX === "number" && (event.clientX !== 0 || event.clientY !== 0)) {
+      x = event.clientX;
+      y = event.clientY;
+    } else {
+      const target =
+        (event && "currentTarget" in event && (event.currentTarget as HTMLElement)) ||
+        (doc.activeElement as HTMLElement | null);
+      if (target && typeof target.getBoundingClientRect === "function") {
+        const rect = target.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          x = rect.left + rect.width / 2;
+          y = rect.top + rect.height / 2;
+        }
+      }
+    }
+
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = doc.startViewTransition(() => {
+      flushSync(() => {
+        setThemeState(next);
+        applyTheme(next);
+      });
+    });
+
+    transition.ready
+      .then(() => {
+        const clipPath = [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`,
+        ];
+        document.documentElement.animate(
+          {
+            clipPath,
+          },
+          {
+            duration: 450,
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+            pseudoElement: "::view-transition-new(root)",
+          } as KeyframeAnimationOptions
+        );
+      })
+      .catch(() => {
+        /* Transition was aborted by a rapid subsequent toggle */
+      });
+  };
+
+  const setTheme = (next: Theme, event?: React.MouseEvent | MouseEvent) => {
+    switchTheme(next, event);
+  };
+
+  const toggleTheme = (event?: React.MouseEvent | MouseEvent) => {
+    const next: Theme = theme === "light" ? "dark" : "light";
+    switchTheme(next, event);
   };
 
   return (

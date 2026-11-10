@@ -198,10 +198,23 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         >
           {!mounted ? (
             <span className="block w-[18px] h-[18px]" aria-hidden />
-          ) : theme === "light" ? (
-            <Moon className="w-[18px] h-[18px]" />
           ) : (
-            <Sun className="w-[18px] h-[18px]" />
+            <span className="relative w-[18px] h-[18px] flex items-center justify-center">
+              <Sun
+                className={`w-[18px] h-[18px] transition-all duration-300 absolute ${
+                  theme === "dark"
+                    ? "rotate-0 scale-100 opacity-100 text-amber-400"
+                    : "-rotate-90 scale-0 opacity-0 text-muted-foreground"
+                }`}
+              />
+              <Moon
+                className={`w-[18px] h-[18px] transition-all duration-300 absolute ${
+                  theme === "light"
+                    ? "rotate-0 scale-100 opacity-100 text-muted-foreground"
+                    : "rotate-90 scale-0 opacity-0 text-muted-foreground"
+                }`}
+              />
+            </span>
           )}
         </button>
 

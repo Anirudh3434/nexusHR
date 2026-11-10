@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, ThumbsUp, ThumbsDown, Sparkles, FileText, RotateCcw } from 'lucide-react';
+import { X, Send, ThumbsUp, ThumbsDown, FileText, RotateCcw } from 'lucide-react';
 
 export type ActionPose = 
   | 'welcoming' 
@@ -43,12 +43,12 @@ const actionMap: Record<ActionPose, string> = {
   welcoming: '/images/mascot/nexi_welcoming_avatar.png',
   thinking: '/images/mascot/nexi_thinking_avatar.png',
   success: '/images/mascot/nexi_success_avatar.png',
-  working: '/images/mascot/nexi_working_avatar.png',
-  idea: '/images/mascot/nexi_idea_avatar.png',
-  support: '/images/mascot/nexi_support_avatar.png',
-  celebration: '/images/mascot/nexi_celebration_avatar.png',
+  working: '/images/mascot/nexi_working_trans.png',
+  idea: '/images/mascot/nexi_idea_trans.png',
+  support: '/images/mascot/nexi_support_trans.png',
+  celebration: '/images/mascot/nexi_celebration_trans.png',
   security: '/images/mascot/nexi_security_avatar.png',
-  shrug: '/images/mascot/nexi_shrug_avatar.png',
+  shrug: '/images/mascot/nexi_thinking_avatar.png',
 };
 
 const suggestedQuestions = [
@@ -84,20 +84,35 @@ function AssistantAvatar({
   }
 
   return (
-    <div className="relative group cursor-pointer inline-flex items-center justify-center" aria-hidden>
+    <div className="relative group cursor-pointer inline-flex items-center justify-center select-none" aria-hidden>
       {/* 3D Volumetric Spherical Glow */}
-      <div className="absolute w-28 h-28 rounded-full bg-gradient-to-tr from-primary/35 via-indigo-500/25 to-violet-500/35 blur-xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+      <div className="absolute w-28 h-28 rounded-full bg-gradient-to-tr from-primary/35 via-indigo-500/25 to-violet-500/35 blur-xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 pointer-events-none" />
       
-      {/* 3D Sphere Container - Perfectly Circular with Volumetric Light & Curvature Shadow */}
-      <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-white/60 dark:border-white/20 shadow-[0_14px_32px_-6px_rgba(79,70,229,0.45),inset_0_-10px_20px_rgba(30,27,75,0.35),inset_0_4px_12px_rgba(255,255,255,0.6)] transition-all group-hover:scale-105 duration-300 bg-gradient-to-b from-indigo-300/30 via-primary/20 to-violet-600/35 backdrop-blur-md flex items-end justify-center">
+      {/* 3D Sphere Container with Popout Avatar */}
+      <div className="relative w-28 h-28 rounded-full border-2 border-white/60 dark:border-white/20 shadow-[0_14px_32px_-6px_rgba(79,70,229,0.45),inset_0_-10px_20px_rgba(30,27,75,0.35),inset_0_4px_12px_rgba(255,255,255,0.6)] transition-all group-hover:scale-105 duration-300 bg-gradient-to-b from-indigo-300/30 via-primary/20 to-violet-600/35 backdrop-blur-md flex items-end justify-center">
         {/* Soft top specular curve highlight */}
-        <div className="absolute -top-3 inset-x-4 h-10 rounded-full bg-gradient-to-b from-white/45 to-transparent pointer-events-none" />
+        <div className="absolute -top-3 inset-x-4 h-10 rounded-full bg-gradient-to-b from-white/45 to-transparent pointer-events-none z-0" />
         
-        <img 
-          src={src} 
-          alt={`Nexi (${action})`} 
-          className="w-full h-full object-cover object-top scale-115 translate-y-1.5 drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-300 group-hover:scale-120" 
-        />
+        {/* Lower body clipped cleanly to sphere boundary */}
+        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+          <img 
+            src={src} 
+            alt="" 
+            className="w-full h-full object-cover object-top scale-120 -translate-y-2 drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-300 group-hover:scale-125 group-hover:-translate-y-2.5" 
+          />
+        </div>
+
+        {/* Upper body / head & hand overflowing above the sphere */}
+        <div 
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{ clipPath: 'polygon(-50% -100%, 150% -100%, 150% 50%, -50% 50%)' }}
+        >
+          <img 
+            src={src} 
+            alt={`Nexi (${action})`} 
+            className="w-full h-full object-cover object-top scale-120 -translate-y-2 drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-300 group-hover:scale-125 group-hover:-translate-y-2.5" 
+          />
+        </div>
       </div>
     </div>
   );
@@ -301,7 +316,7 @@ export default function HRChatbot() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -355,15 +370,41 @@ export default function HRChatbot() {
           onClick={() => setIsOpen(true)}
           aria-label="Open HR assistant chat"
           title="Chat with Nexi — NexusHR Assistant"
-          className="relative group rounded-full w-16 h-16 sm:w-[72px] sm:h-[72px] flex items-end justify-center bg-gradient-to-tr from-primary via-indigo-600 to-violet-600 text-white shadow-xl shadow-primary/40 hover:shadow-2xl hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/40 overflow-hidden cursor-pointer"
+          className="relative group w-16 h-16 sm:w-[72px] sm:h-[72px] cursor-pointer select-none transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 rounded-full"
         >
-          <div className="absolute inset-0 rounded-full bg-primary/30 blur-md opacity-75 group-hover:opacity-100 transition-opacity" />
-          <img
-            src="/images/mascot/nexi_welcoming_avatar.png"
-            alt="Nexi - NexusHR AI Mascot"
-            className="w-full h-full object-cover object-top scale-115 translate-y-1.5 relative z-10 transition-transform group-hover:scale-125 duration-200 drop-shadow-md select-none pointer-events-none"
-          />
-          <span className="absolute bottom-1 right-1 z-20 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900 shadow-xs">
+          {/* Extended hit-area covering the avatar head overflow */}
+          <span className="absolute -top-3 inset-x-0 bottom-0 pointer-events-auto" aria-hidden="true" />
+
+          {/* 3D Volumetric Glow */}
+          <div className="absolute inset-0 rounded-full bg-primary/40 blur-lg opacity-75 group-hover:opacity-100 group-hover:blur-xl transition-all duration-300 pointer-events-none" />
+
+          {/* Circular Base Pod */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary via-indigo-600 to-violet-600 border-2 border-white/50 shadow-xl shadow-primary/40 group-hover:shadow-2xl group-hover:shadow-primary/50 transition-all duration-200 pointer-events-none" />
+
+          {/* Layer 1: Avatar body clipped cleanly to circle's lower boundary */}
+          <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+            <img
+              src="/images/mascot/nexi_welcoming_avatar.png"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover object-top scale-125 -translate-y-2 drop-shadow-md select-none pointer-events-none transition-transform duration-200 group-hover:scale-130 group-hover:-translate-y-2.5"
+            />
+          </div>
+
+          {/* Layer 2: Avatar head and waving hand overflowing outside the circle */}
+          <div
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{ clipPath: 'polygon(-50% -100%, 150% -100%, 150% 50%, -50% 50%)' }}
+          >
+            <img
+              src="/images/mascot/nexi_welcoming_avatar.png"
+              alt="Nexi - NexusHR AI Mascot"
+              className="absolute inset-0 w-full h-full object-cover object-top scale-125 -translate-y-2 drop-shadow-lg select-none pointer-events-none transition-transform duration-200 group-hover:scale-130 group-hover:-translate-y-2.5"
+            />
+          </div>
+
+          {/* Green dot (online status indicator) - fully circular, unclipped, positioned on bottom-right rim */}
+          <span className="absolute bottom-0.5 right-0.5 z-20 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900 shadow-md pointer-events-none">
             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
           </span>
         </button>
@@ -542,7 +583,7 @@ export default function HRChatbot() {
             ref={inputRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Ask about HR policies..."
             aria-label="Ask the HR assistant"
             disabled={isLoading}

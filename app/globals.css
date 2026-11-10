@@ -228,8 +228,30 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Dark-mode polish: smooth cross-fade + native control affordances    */
+/* Dark-mode polish: smooth circular transition + native affordances  */
 /* ------------------------------------------------------------------ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   body {
     transition: background-color 0.25s ease, color 0.25s ease;

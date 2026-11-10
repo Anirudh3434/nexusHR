@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { 
-  Plug, 
   Copy, 
   Check, 
   KeyRound,
@@ -83,13 +82,12 @@ export function McpSection() {
   const [token, setToken] = useState<string>("");
   const [showPermissionsPanel, setShowPermissionsPanel] = useState<boolean>(false);
   const [transportMode, setTransportMode] = useState<"remote" | "local">("remote");
-  const [origin, setOrigin] = useState("https://nexus-hr-udh9.vercel.app");
-
-  useEffect(() => {
+  const [origin] = useState(() => {
     if (typeof window !== "undefined" && window.location.origin) {
-      setOrigin(window.location.origin);
+      return window.location.origin;
     }
-  }, []);
+    return "https://nexus-hr-udh9.vercel.app";
+  });
 
   const endpointUrl = `${origin}/api/mcp`;
   const serverPath = process.env.NEXT_PUBLIC_MCP_SERVER_PATH || "nexushr-mcp";
@@ -114,9 +112,12 @@ export function McpSection() {
 
   useEffect(() => {
     if (user) {
-      fetchToken(selectedPermissions, selectedModules);
+      const loadToken = async () => {
+        await fetchToken(selectedPermissions, selectedModules);
+      };
+      loadToken();
     }
-  }, [user]);
+  }, [user, fetchToken, selectedPermissions, selectedModules]);
 
   const togglePermission = (perm: PermissionType) => {
     let next: PermissionType[];
@@ -268,8 +269,27 @@ export function McpSection() {
       {/* Header */}
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/25 shadow-xs">
-            <Plug className="h-6 w-6 stroke-[2.2]" />
+          {/* Nexi MCP Mascot Avatar with 3D Popout */}
+          <div className="relative group shrink-0 w-12 h-12 sm:w-14 sm:h-14 flex items-end justify-center select-none" aria-hidden="true">
+            <div className="absolute inset-0 rounded-full bg-primary/25 blur-md opacity-80 pointer-events-none" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/25 via-indigo-600/20 to-violet-600/30 border border-primary/35 shadow-xs pointer-events-none" />
+            <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+              <img
+                src="/images/mascot/nexi_mcp_avatar.png"
+                alt="Nexi MCP"
+                className="absolute inset-0 w-full h-full object-cover object-top scale-125 -translate-y-1 drop-shadow-xs select-none pointer-events-none transition-transform duration-200 group-hover:scale-130 group-hover:-translate-y-1.5"
+              />
+            </div>
+            <div
+              className="absolute inset-0 pointer-events-none z-10"
+              style={{ clipPath: 'polygon(-50% -100%, 150% -100%, 150% 50%, -50% 50%)' }}
+            >
+              <img
+                src="/images/mascot/nexi_mcp_avatar.png"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover object-top scale-125 -translate-y-1 drop-shadow-sm select-none pointer-events-none transition-transform duration-200 group-hover:scale-130 group-hover:-translate-y-1.5"
+              />
+            </div>
           </div>
           <div className="leading-tight">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight flex items-center gap-1.5">
