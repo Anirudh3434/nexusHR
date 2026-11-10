@@ -255,10 +255,19 @@ export default function CompanyLoginPage() {
         >
           {!mounted ? (
             <span className="block h-4 w-4" aria-hidden />
-          ) : theme === "light" ? (
-            <Moon className="h-4 w-4" />
           ) : (
-            <Sun className="h-4 w-4" />
+            <span className="relative w-4 h-4 flex items-center justify-center">
+              <Sun
+                className={`w-4 h-4 transition-all duration-300 absolute ${
+                  theme === "dark" ? "rotate-0 scale-100 opacity-100 text-amber-400" : "-rotate-90 scale-0 opacity-0"
+                }`}
+              />
+              <Moon
+                className={`w-4 h-4 transition-all duration-300 absolute ${
+                  theme === "light" ? "rotate-0 scale-100 opacity-100 text-slate-600 dark:text-slate-300" : "rotate-90 scale-0 opacity-0"
+                }`}
+              />
+            </span>
           )}
         </button>
       </div>
