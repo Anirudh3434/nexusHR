@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -25,6 +26,8 @@ import {
   RefreshCw,
   Copy,
   Check,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { GeoFencePicker } from "@/components/ui/GeoFencePicker";
 
@@ -64,6 +67,7 @@ const generate6CharID = () => {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { theme, toggleTheme, mounted } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -287,480 +291,553 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 dark:bg-slate-800/50">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#03081c] p-2 shadow-xl shadow-[#03081c]/20 border border-[#03081c] overflow-hidden">
-            <img 
-              src="/logo.png" 
-              alt="NexusHR Logo" 
-              className="h-full w-full object-contain" 
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">Register Your Company</h1>
-          <p className="text-gray-600 dark:text-slate-400">Complete the 4-step process to set up your company</p>
-        </div>
+    <div className="relative min-h-screen bg-gray-50 py-6 sm:py-10 px-4 sm:px-6 lg:px-8 dark:bg-[#070d19] flex items-center justify-center transition-colors duration-300">
+      
+      {/* Theme Toggle Button (Top Right) */}
+      <div className="fixed top-4 right-4 z-50">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-2.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-gray-200/80 dark:border-slate-800 text-gray-700 dark:text-slate-200 shadow-md hover:scale-105 active:scale-95 transition-all backdrop-blur-md"
+          title={!mounted ? "Toggle theme" : theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          aria-label="Toggle theme"
+        >
+          {!mounted ? (
+            <span className="block h-4 w-4" aria-hidden />
+          ) : (
+            <span className="relative w-4 h-4 flex items-center justify-center">
+              <Sun
+                className={`w-4 h-4 transition-all duration-300 absolute ${
+                  theme === "dark" ? "rotate-0 scale-100 opacity-100 text-amber-400" : "-rotate-90 scale-0 opacity-0"
+                }`}
+              />
+              <Moon
+                className={`w-4 h-4 transition-all duration-300 absolute ${
+                  theme === "light" ? "rotate-0 scale-100 opacity-100 text-slate-700" : "rotate-90 scale-0 opacity-0"
+                }`}
+              />
+            </span>
+          )}
+        </button>
+      </div>
 
-        {/* Stepper */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <Stepper steps={steps} currentStep={currentStep} />
-          </CardContent>
-        </Card>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300">
-            {error}
-          </div>
-        )}
-
-        {/* Form Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {currentStep === 0 && <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
-              {currentStep === 1 && <Landmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
-              {currentStep === 2 && <MapPinned className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
-              {currentStep === 3 && <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
-              {steps[currentStep].title}
-            </CardTitle>
-            <CardDescription>
-              {currentStep === 0 && "Enter your company basic information"}
-              {currentStep === 1 && "Provide address and tax details"}
-              {currentStep === 2 && "Set up office location for geo-fenced attendance"}
-              {currentStep === 3 && "Create your admin account"}
-            </CardDescription>
-          </CardHeader>
+      <div className="w-full max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
-          <CardContent>
-            {/* Step 1: Company Info */}
-            {currentStep === 0 && (
-              <div className="space-y-6">
-                {/* Logo Upload */}
-                <div className="flex items-center gap-4">
-                  <div 
-                    className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-gray-50 dark:border-slate-600 dark:bg-slate-800/50"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {data.logo ? (
-                      <img src={data.logo} alt="Logo preview" className="h-full w-full object-contain rounded-lg" />
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 text-gray-400 mb-1" />
-                        <span className="text-xs text-gray-500 dark:text-slate-400">Upload Logo</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Company Logo</p>
-                    <p className="text-xs text-gray-500 mb-2 dark:text-slate-400">Recommended: 200x200px, PNG or JPG, max 2MB</p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                    {data.logo && (
-                      <button
-                        type="button"
-                        onClick={() => setData(prev => ({ ...prev, logo: null }))}
-                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
-                      >
-                        Remove logo
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      Company Name *
-                    </label>
-                    <Input
-                      value={data.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="e.g., Acme Corporation"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
-                        6-Character Company ID *
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange('code', generate6CharID())}
-                        className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold dark:text-indigo-400"
-                        title="Generate a new 6-character ID"
-                      >
-                        <RefreshCw className="h-3 w-3" /> Regenerate
-                      </button>
-                    </div>
-                    <Input
-                      value={data.code}
-                      onChange={(e) => handleInputChange('code', e.target.value.toUpperCase().slice(0, 6))}
-                      placeholder="e.g., NX8K2P"
-                      maxLength={6}
-                      className="uppercase font-mono font-bold tracking-widest"
-                    />
-                    <p className="text-[11px] text-gray-500 mt-1 dark:text-slate-400">Unique 6-character code used by your employees to log in.</p>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      Email Address *
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="email"
-                        value={data.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        placeholder="company@example.com"
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      Phone Number *
-                    </label>
-                    <Input
-                      value={data.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="+91 98765 43210"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Website
-                  </label>
-                  <Input
-                    value={data.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    placeholder="https://www.example.com"
+          {/* Left Column: Brand, Logo, Title, and Vertical Stepper */}
+          <div className="lg:col-span-4 lg:sticky lg:top-8">
+            <Card className="shadow-xl border-gray-200/80 bg-white/95 backdrop-blur dark:bg-[#0c1322] dark:border-slate-800 p-6 sm:p-7 space-y-6">
+              {/* Brand Logo & Name */}
+              <div className="flex items-center gap-3.5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#03081c] p-2 shadow-xl shadow-[#03081c]/30 border border-slate-800 overflow-hidden ring-2 ring-indigo-500/20">
+                  <img 
+                    src="/logo.png" 
+                    alt="NexusHR Logo" 
+                    className="h-full w-full object-contain" 
                   />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xl font-black tracking-tight text-gray-900 dark:text-white">
+                      Nexus<span className="text-blue-600 dark:text-blue-400">HR</span>
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                      SETUP
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Enterprise Workspace Portal</p>
                 </div>
               </div>
-            )}
 
-            {/* Step 2: Address & Tax */}
-            {currentStep === 1 && (
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Street Address *
-                  </label>
-                  <Input
-                    value={data.street}
-                    onChange={(e) => handleInputChange('street', e.target.value)}
-                    placeholder="123, Business Park, Main Road"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      City *
-                    </label>
-                    <Input
-                      value={data.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
-                      placeholder="Mumbai"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      State *
-                    </label>
-                    <Input
-                      value={data.state}
-                      onChange={(e) => handleInputChange('state', e.target.value)}
-                      placeholder="Maharashtra"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      ZIP / PIN Code *
-                    </label>
-                    <Input
-                      value={data.zipCode}
-                      onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                      placeholder="400001"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      GST Number
-                    </label>
-                    <div className="relative">
-                      <Landmark className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        value={data.gstNumber}
-                        onChange={(e) => handleInputChange('gstNumber', e.target.value.toUpperCase())}
-                        placeholder="27AABCU9603R1ZM"
-                        className="pl-10"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">15 character GSTIN format</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      PAN Number
-                    </label>
-                    <Input
-                      value={data.panNumber}
-                      onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
-                      placeholder="AABCU9603R"
-                    />
-                  </div>
-                </div>
+              {/* Title & Description */}
+              <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
+                <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
+                  Register Your Company
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Complete the 4-step setup to launch your organization's workspace and master admin account.
+                </p>
               </div>
-            )}
 
-            {/* Step 3: Office Location */}
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 dark:bg-blue-500/10">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-blue-600 mt-0.5 dark:text-blue-400" />
-                    <div>
-                      <h4 className="font-medium text-blue-900 mb-1">Geo-Fencing Setup</h4>
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
-                        Click on the map or drag the marker to set your office location. 
-                        Employees will only be able to mark attendance when within the specified radius.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              {/* Steps */}
+              <div className="py-1">
+                <Stepper steps={steps} currentStep={currentStep} orientation="vertical" />
+              </div>
 
-                {/* Interactive Geo-Fencing Map */}
-                <GeoFencePicker
-                  latitude={data.officeLatitude}
-                  longitude={data.officeLongitude}
-                  onLocationChange={(lat, lng) => {
-                    setData(prev => ({
-                      ...prev,
-                      officeLatitude: lat,
-                      officeLongitude: lng,
-                    }));
-                  }}
-                  radius={data.geoFenceRadius}
-                  onRadiusChange={(radius) => handleInputChange('geoFenceRadius', radius)}
-                />
+              {/* Login Link */}
+              <div className="pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs text-gray-600 dark:text-slate-400">
+                <span>Already registered?</span>
+                <Link 
+                  href="/login" 
+                  className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline"
+                >
+                  Sign in →
+                </Link>
+              </div>
+            </Card>
+          </div>
 
-                {/* Manual Coordinate Inputs */}
-                <div className="grid md:grid-cols-2 gap-4">
+          {/* Right Column: Active Step Form Card */}
+          <div className="lg:col-span-8">
+            <Card className="shadow-xl border-gray-200/80 bg-white dark:bg-[#0c1322] dark:border-slate-800 overflow-hidden">
+              
+              {/* Form Card Header */}
+              <CardHeader className="border-b border-gray-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      Office Latitude *
-                    </label>
-                    <Input
-                      value={data.officeLatitude}
-                      onChange={(e) => handleInputChange('officeLatitude', e.target.value)}
-                      placeholder="Click on map or search above"
-                    />
+                    <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-slate-100">
+                      {currentStep === 0 && <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                      {currentStep === 1 && <Landmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                      {currentStep === 2 && <MapPinned className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                      {currentStep === 3 && <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                      {steps[currentStep].title}
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm mt-0.5">
+                      {currentStep === 0 && "Enter your company basic information"}
+                      {currentStep === 1 && "Provide address and tax details"}
+                      {currentStep === 2 && "Set up office location for geo-fenced attendance"}
+                      {currentStep === 3 && "Create your master admin credentials"}
+                    </CardDescription>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                      Office Longitude *
-                    </label>
-                    <Input
-                      value={data.officeLongitude}
-                      onChange={(e) => handleInputChange('officeLongitude', e.target.value)}
-                      placeholder="Click on map or search above"
-                    />
-                  </div>
+                  <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/40">
+                    Step {currentStep + 1} of {steps.length}
+                  </span>
                 </div>
+              </CardHeader>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Office Address *
-                  </label>
-                  <textarea
-                    value={data.officeAddress}
-                    onChange={(e) => handleInputChange('officeAddress', e.target.value)}
-                    placeholder="Complete office address for attendance location"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:border-slate-600"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={data.enableGeoFencing}
-                      onChange={(e) => handleInputChange('enableGeoFencing', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:text-blue-400 dark:border-slate-600"
-                    />
-                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Enable Geo-Fencing</span>
-                  </label>
-                </div>
-
-                {data.enableGeoFencing && data.officeLatitude && data.officeLongitude && (
-                  <div className="bg-gray-100 rounded-lg p-4 dark:bg-slate-800">
-                    <p className="text-sm text-gray-600 dark:text-slate-400">
-                      <strong>Preview:</strong> Attendance will be allowed within{" "}
-                      <span className="font-semibold text-blue-600 dark:text-blue-400">{data.geoFenceRadius} meters</span>{" "}
-                      of the marked location on the map.
-                    </p>
+              <CardContent className="pt-6">
+                {/* Error Message */}
+                {error && (
+                  <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300 flex items-center gap-2">
+                    <span className="font-semibold">Error:</span> {error}
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* Step 4: Admin Account */}
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4 dark:bg-yellow-500/10">
-                  <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 text-yellow-600 mt-0.5 dark:text-yellow-400" />
+                {/* Step 1: Company Info */}
+                {currentStep === 0 && (
+                  <div className="space-y-4">
+                    {/* Logo Upload */}
+                    <div className="flex items-center gap-4 p-3 bg-gray-50/60 rounded-xl border border-gray-100 dark:bg-slate-800/40 dark:border-slate-800">
+                      <div 
+                        className="h-20 w-20 shrink-0 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-white dark:border-slate-600 dark:bg-slate-800"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {data.logo ? (
+                          <img src={data.logo} alt="Logo preview" className="h-full w-full object-contain rounded-lg" />
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                            <span className="text-[11px] text-gray-500 dark:text-slate-400">Upload Logo</span>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">Company Logo</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Recommended: 200x200px, PNG or JPG, max 2MB</p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                        />
+                        {data.logo && (
+                          <button
+                            type="button"
+                            onClick={() => setData(prev => ({ ...prev, logo: null }))}
+                            className="text-xs text-red-600 hover:text-red-700 font-medium mt-1 dark:text-red-400"
+                          >
+                            Remove logo
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Company Name *
+                        </label>
+                        <Input
+                          value={data.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          placeholder="e.g., Acme Corporation"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300">
+                            6-Character Company ID *
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('code', generate6CharID())}
+                            className="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold dark:text-indigo-400"
+                            title="Generate a new 6-character ID"
+                          >
+                            <RefreshCw className="h-3 w-3" /> Regenerate
+                          </button>
+                        </div>
+                        <Input
+                          value={data.code}
+                          onChange={(e) => handleInputChange('code', e.target.value.toUpperCase().slice(0, 6))}
+                          placeholder="e.g., NX8K2P"
+                          maxLength={6}
+                          className="uppercase font-mono font-bold tracking-widest"
+                        />
+                        <p className="text-[11px] text-gray-500 mt-1 dark:text-slate-400">Unique 6-character code used by your employees to log in.</p>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Email Address *
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            type="email"
+                            value={data.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            placeholder="company@example.com"
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Phone Number *
+                        </label>
+                        <Input
+                          value={data.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          placeholder="+91 98765 43210"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <h4 className="font-medium text-yellow-900 mb-1">Create Admin Account</h4>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                        This will be the primary administrator account for your company with full access to all features.
-                      </p>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                        Website
+                      </label>
+                      <Input
+                        value={data.website}
+                        onChange={(e) => handleInputChange('website', e.target.value)}
+                        placeholder="https://www.example.com"
+                      />
                     </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Full Name *
-                  </label>
-                  <Input
-                    value={data.adminName}
-                    onChange={(e) => handleInputChange('adminName', e.target.value)}
-                    placeholder="John Doe"
-                  />
-                </div>
+                {/* Step 2: Address & Tax */}
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                        Street Address *
+                      </label>
+                      <Input
+                        value={data.street}
+                        onChange={(e) => handleInputChange('street', e.target.value)}
+                        placeholder="123, Business Park, Main Road"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Admin Email Address *
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      type="email"
-                      value={data.adminEmail}
-                      onChange={(e) => handleInputChange('adminEmail', e.target.value)}
-                      placeholder="admin@yourcompany.com"
-                      className="pl-10"
-                    />
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          City *
+                        </label>
+                        <Input
+                          value={data.city}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          placeholder="Mumbai"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          State *
+                        </label>
+                        <Input
+                          value={data.state}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
+                          placeholder="Maharashtra"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          ZIP / PIN Code *
+                        </label>
+                        <Input
+                          value={data.zipCode}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                          placeholder="400001"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          GST Number
+                        </label>
+                        <div className="relative">
+                          <Landmark className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            value={data.gstNumber}
+                            onChange={(e) => handleInputChange('gstNumber', e.target.value.toUpperCase())}
+                            placeholder="27AABCU9603R1ZM"
+                            className="pl-10"
+                          />
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-1 dark:text-slate-400">15 character GSTIN format</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          PAN Number
+                        </label>
+                        <Input
+                          value={data.panNumber}
+                          onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
+                          placeholder="AABCU9603R"
+                        />
+                        <p className="text-[11px] text-gray-500 mt-1 dark:text-slate-400">10 character permanent account number</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Password *
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={data.adminPassword}
-                      onChange={(e) => handleInputChange('adminPassword', e.target.value)}
-                      placeholder="Minimum 8 characters"
-                      className="pl-10 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
+                {/* Step 3: Office Location */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 dark:bg-blue-500/10 dark:border-blue-500/20">
+                      <div className="flex items-start gap-2.5">
+                        <MapPin className="h-4 w-4 text-blue-600 mt-0.5 shrink-0 dark:text-blue-400" />
+                        <div>
+                          <h4 className="text-xs font-bold text-blue-900 dark:text-blue-200">Geo-Fencing Setup</h4>
+                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                            Click on the map or drag the marker to set your office location. 
+                            Employees will only be able to mark attendance when within the specified radius.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">
-                    Confirm Password *
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={data.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      placeholder="Re-enter your password"
-                      className="pl-10 pr-10"
+                    {/* Interactive Geo-Fencing Map */}
+                    <GeoFencePicker
+                      latitude={data.officeLatitude}
+                      longitude={data.officeLongitude}
+                      onLocationChange={(lat, lng) => {
+                        setData(prev => ({
+                          ...prev,
+                          officeLatitude: lat,
+                          officeLongitude: lng,
+                        }));
+                      }}
+                      radius={data.geoFenceRadius}
+                      onRadiusChange={(radius) => handleInputChange('geoFenceRadius', radius)}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+
+                    {/* Manual Coordinate Inputs */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Office Latitude *
+                        </label>
+                        <Input
+                          value={data.officeLatitude}
+                          onChange={(e) => handleInputChange('officeLatitude', e.target.value)}
+                          placeholder="Click on map or search above"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Office Longitude *
+                        </label>
+                        <Input
+                          value={data.officeLongitude}
+                          onChange={(e) => handleInputChange('officeLongitude', e.target.value)}
+                          placeholder="Click on map or search above"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                        Office Address *
+                      </label>
+                      <textarea
+                        value={data.officeAddress}
+                        onChange={(e) => handleInputChange('officeAddress', e.target.value)}
+                        placeholder="Complete office address for attendance location"
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-800/50">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={data.enableGeoFencing}
+                          onChange={(e) => handleInputChange('enableGeoFencing', e.target.checked)}
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:text-blue-400 dark:border-slate-600"
+                        />
+                        <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">Enable Geo-Fencing Attendance</span>
+                      </label>
+                      {data.enableGeoFencing && data.officeLatitude && data.officeLongitude && (
+                        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                          Radius: <strong>{data.geoFenceRadius}m</strong>
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Step 4: Admin Account */}
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 dark:bg-amber-500/10 dark:border-amber-500/20">
+                      <div className="flex items-start gap-2.5">
+                        <User className="h-4 w-4 text-amber-600 mt-0.5 shrink-0 dark:text-amber-400" />
+                        <div>
+                          <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200">Create Master Admin Account</h4>
+                          <p className="text-xs text-amber-700 dark:text-amber-300">
+                            This master administrator account will hold full company permissions and access to configure settings.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Full Name *
+                        </label>
+                        <Input
+                          value={data.adminName}
+                          onChange={(e) => handleInputChange('adminName', e.target.value)}
+                          placeholder="e.g., Jane Doe"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Admin Email Address *
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            type="email"
+                            value={data.adminEmail}
+                            onChange={(e) => handleInputChange('adminEmail', e.target.value)}
+                            placeholder="admin@yourcompany.com"
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Password *
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            value={data.adminPassword}
+                            onChange={(e) => handleInputChange('adminPassword', e.target.value)}
+                            placeholder="Minimum 8 characters"
+                            className="pl-10 pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 dark:text-slate-300">
+                          Confirm Password *
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={data.confirmPassword}
+                            onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                            placeholder="Re-enter your password"
+                            className="pl-10 pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200"
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+
+              {/* Navigation Footer */}
+              <div className="px-6 py-4 bg-gray-50/70 border-t border-gray-100 flex justify-between items-center dark:bg-slate-800/40 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePrev}
+                  disabled={currentStep === 0}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+                
+                {currentStep < steps.length - 1 ? (
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Registering...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        Complete Registration
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
-          <Button
-            variant="outline"
-            onClick={handlePrev}
-            disabled={currentStep === 0}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          
-          {currentStep < steps.length - 1 ? (
-            <Button
-              onClick={handleNext}
-              className="flex items-center gap-2"
-            >
-              Next
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Registering...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  Complete Registration
-                </>
-              )}
-            </Button>
-          )}
+            </Card>
+          </div>
+
         </div>
-
-        {/* Login Link */}
-        <p className="text-center text-sm text-gray-600 mt-6 dark:text-slate-400">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium dark:text-blue-400">
-            Sign in
-          </Link>
-        </p>
       </div>
     </div>
   );
