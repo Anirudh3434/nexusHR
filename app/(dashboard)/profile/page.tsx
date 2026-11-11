@@ -512,10 +512,16 @@ function ProfilePageContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowMcpModal(true)}
-                className="gap-1.5 font-medium border-primary/30 text-primary hover:bg-primary/10 rounded-full"
+                className="h-8 gap-2 font-medium border-primary/30 text-primary hover:bg-primary/10 rounded-full group relative overflow-visible pl-2 pr-3"
                 title="Connect NexusHR to Cursor, Claude Desktop, Antigravity, or other AI agents (MCP)"
               >
-                <Plug size={14} />
+                <div className="relative shrink-0 w-6 h-6 flex items-center justify-center pointer-events-none">
+                  <img
+                    src="/icons/connect-ai-plug.png"
+                    alt="Connect AI"
+                    className="w-7 h-7 max-w-none object-conmr-4 tain -translatemr-4 -translate-x-0.5 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 drop-shadow-xs select-none pointer-events-none"
+                  />
+                </div>
                 <span>Connect AI</span>
               </Button>
               {!isEditing ? (

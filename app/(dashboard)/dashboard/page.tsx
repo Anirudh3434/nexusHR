@@ -627,22 +627,60 @@ export default function DashboardPage() {
           
           <div className="relative bg-card rounded-[14px] shadow-xl w-full max-w-md overflow-hidden border border-border">
             {/* Header */}
-            <div className={`relative h-24 flex items-center justify-center ${
-              errorModal.type === 'radius' ? 'bg-[#b45309]' : 'bg-destructive'
-            }`}>
-              <div className="relative bg-white/15 rounded-full p-3.5 ring-8 ring-white/10">
-                {errorModal.type === 'location' ? <MapPinOff size={36} className="text-white" /> :
-                 errorModal.type === 'radius' ? <MapPin size={36} className="text-white" /> :
-                 <XCircle size={36} className="text-white" />}
+            {errorModal.type === 'radius' ? (
+              <div className="relative h-48 bg-gradient-to-b from-amber-500/20 via-orange-500/10 to-transparent dark:from-amber-500/25 dark:via-orange-500/10 flex items-end justify-center overflow-hidden border-b border-amber-500/20">
+                {/* Geofence radar rings */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-56 h-56 rounded-full bg-amber-500/15 blur-2xl" />
+                  <div className="absolute w-44 h-44 rounded-full border border-dashed border-amber-500/30 dark:border-amber-400/25 animate-[spin_24s_linear_infinite]" />
+                  <div className="absolute w-32 h-32 rounded-full border border-amber-500/20" />
+                </div>
+
+                {/* Status Pill Badge */}
+                <div className="absolute top-3.5 left-4 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-semibold backdrop-blur-xs shadow-xs">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </span>
+                  <MapPin size={11} className="text-amber-600 dark:text-amber-400" />
+                  <span>Outside Geofence</span>
+                </div>
+
+                {/* Close Button */}
+                <button 
+                  onClick={() => setErrorModal(null)}
+                  aria-label="Dismiss error"
+                  className="absolute top-3.5 right-4 z-20 p-1.5 bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-full text-foreground/70 hover:text-foreground transition-colors"
+                >
+                  <X size={16} />
+                </button>
+
+                {/* 3D Mascot Illustration */}
+                <div className="relative z-10 flex items-end justify-center h-full pt-3">
+                  <img
+                    src="/images/mascot/nexi_outside_office.png"
+                    alt="Outside Office Mascot"
+                    className="h-44 w-auto object-contain drop-shadow-lg select-none pointer-events-none transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
               </div>
-              <button 
-                onClick={() => setErrorModal(null)}
-                aria-label="Dismiss error"
-                className="absolute top-4 right-4 p-2 bg-black/10 hover:bg-black/20 rounded-full text-white transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
+            ) : (
+              <div className={`relative h-24 flex items-center justify-center ${
+                errorModal.type === 'location' ? 'bg-[#b45309]' : 'bg-destructive'
+              }`}>
+                <div className="relative bg-white/15 rounded-full p-3.5 ring-8 ring-white/10">
+                  {errorModal.type === 'location' ? <MapPinOff size={36} className="text-white" /> :
+                   <XCircle size={36} className="text-white" />}
+                </div>
+                <button 
+                  onClick={() => setErrorModal(null)}
+                  aria-label="Dismiss error"
+                  className="absolute top-4 right-4 p-2 bg-black/10 hover:bg-black/20 rounded-full text-white transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
 
             <div className="p-6 sm:p-8">
               <div className="text-center space-y-1.5 mb-6">
