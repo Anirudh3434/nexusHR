@@ -184,10 +184,16 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         <button
           type="button"
           onClick={() => setShowMcpModal(true)}
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/10 text-primary hover:bg-primary/15 transition-all text-xs font-semibold shadow-2xs group"
+          className="hidden md:flex items-center gap-2 pl-2 pr-3 py-1.5 h-8 rounded-full border border-primary/25 bg-primary/10 text-primary hover:bg-primary/15 transition-all text-xs font-semibold shadow-2xs group relative overflow-visible"
           title="Connect NexusHR to Cursor, Claude Desktop, Antigravity, or other AI agents (MCP)"
         >
-          <Plug className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+          <div className="relative shrink-0 w-6 h-6 flex items-center justify-center pointer-events-none">
+            <img
+              src="/icons/connect-ai-plug.png"
+              alt="Connect AI"
+              className="w-7 h-7 max-w-none object-contain -translate-y-1 -translate-x-0.5 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 drop-shadow-xs select-none pointer-events-none"
+            />
+          </div>
           <span>Connect AI</span>
         </button>
         <button

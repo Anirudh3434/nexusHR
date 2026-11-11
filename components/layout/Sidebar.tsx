@@ -441,11 +441,17 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                   setIsOpen(false);
                   setShowMcpModal(true);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-all text-xs font-semibold shadow-2xs group"
+                className="w-full flex items-center justify-between h-9 rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-all text-xs font-semibold shadow-2xs group relative overflow-visible px-3 py-1.5"
                 title="Connect NexusHR to AI Agents (Cursor, Claude, Antigravity)"
               >
                 <div className="flex items-center gap-2">
-                  <Plug className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                  <div className="relative shrink-0 w-6 h-6 flex items-center justify-center pointer-events-none">
+                    <img
+                      src="/icons/connect-ai-plug.png"
+                      alt="Connect AI"
+                      className="w-7 h-7 max-w-none object-contain -translate-y-1 -translate-x-0.5 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 drop-shadow-xs select-none pointer-events-none"
+                    />
+                  </div>
                   <span>Connect AI (MCP)</span>
                 </div>
                 <span className="text-[10px] font-medium bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
