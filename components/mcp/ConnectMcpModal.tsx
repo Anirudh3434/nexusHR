@@ -288,7 +288,7 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
       >
         {/* Main Glassmorphic Card */}
         <div 
-          className="relative w-full max-w-[530px] rounded-[24px] sm:rounded-[32px] border border-white/40 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] overflow-hidden flex flex-col p-4 sm:p-7 max-h-[95vh] sm:max-h-[92vh] overflow-y-auto"
+          className="relative w-full max-w-[530px] rounded-[24px] sm:rounded-[32px] border border-white/40 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] overflow-x-hidden overflow-y-auto scrollbar-hide flex flex-col p-4 sm:p-7 max-h-[95vh] sm:max-h-[92vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Ambient blurred primary reflections */}
@@ -564,8 +564,8 @@ export function ConnectMcpModal({ isOpen, onClose }: ConnectMcpModalProps) {
               </button>
             </div>
 
-            {/* Syntax-highlighted code with scroll support */}
-            <div className="pt-2.5 sm:pt-3 overflow-x-auto text-[10px] sm:text-xs leading-relaxed text-zinc-300 font-mono max-h-[140px] sm:max-h-[170px] scrollbar-thin">
+            {/* Syntax-highlighted code (no inner scrollbar; expands to fit the snippet) */}
+            <div className="pt-2.5 sm:pt-3 overflow-x-auto scrollbar-hide text-[10px] sm:text-xs leading-relaxed text-zinc-300 font-mono">
               <pre className="font-mono text-zinc-200 whitespace-pre selection:bg-primary/30">
                 {getClientRawJson()}
               </pre>

@@ -523,7 +523,7 @@ export function McpSection() {
           </button>
         </div>
 
-        <div className="pt-3 overflow-x-auto text-[11px] sm:text-xs leading-relaxed text-zinc-300 font-mono max-h-[160px] scrollbar-thin">
+        <div className="pt-3 overflow-x-auto scrollbar-hide text-[11px] sm:text-xs leading-relaxed text-zinc-300 font-mono">
           <pre className="font-mono text-zinc-200 whitespace-pre selection:bg-primary/30">
             {getClientRawJson()}
           </pre>
