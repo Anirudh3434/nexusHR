@@ -281,7 +281,12 @@ export default function LandingOverviewPage() {
         <div className="max-w-5xl mx-auto text-center space-y-7">
           
           {/* Nexi Spotlight Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-teal-500/10 via-indigo-500/15 to-purple-500/10 border border-teal-500/30 text-teal-300 text-xs font-semibold backdrop-blur-md shadow-sm">
+          <button 
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-hr-chatbot'))}
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-teal-500/10 via-indigo-500/15 to-purple-500/10 border border-teal-500/30 text-teal-300 text-xs font-semibold backdrop-blur-md shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            title="Click to chat with Nexi HR AI"
+          >
             <span className="relative flex h-5 w-5 rounded-full overflow-hidden border border-teal-400/50 shadow-xs bg-indigo-950/60 shrink-0">
               <img 
                 src="/images/mascot/nexi_welcoming_avatar.png" 
@@ -290,7 +295,7 @@ export default function LandingOverviewPage() {
               />
             </span>
             <span>Meet Nexi &middot; Autonomous HR &amp; Agile Intelligence</span>
-          </div>
+          </button>
 
           {/* Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15] max-w-4xl mx-auto">
@@ -533,8 +538,17 @@ export default function LandingOverviewPage() {
 
                 {/* Live Chat Simulation Bubble */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <MessageSquare className="h-3 w-3 text-teal-400" /> Live Interaction Simulation
+                  <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <MessageSquare className="h-3 w-3 text-teal-400" /> Live Interaction Simulation
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new CustomEvent('open-hr-chatbot'))}
+                      className="text-teal-300 hover:text-teal-200 text-xs font-bold flex items-center gap-1 cursor-pointer bg-teal-500/10 border border-teal-500/30 px-2.5 py-1 rounded-lg hover:bg-teal-500/20 transition-all"
+                    >
+                      Open Live Chatbot <ArrowRight className="h-3 w-3" />
+                    </button>
                   </div>
                   
                   {/* User query */}

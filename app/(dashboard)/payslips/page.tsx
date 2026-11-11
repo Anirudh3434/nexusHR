@@ -45,7 +45,7 @@ export default function PayslipsPage() {
   const fetchMyPayslips = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/payroll?employeeId=${user?.id}`);
+      const res = await fetch(`/api/payroll?employeeId=${user?.id}&status=Paid`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setPayrolls(data);

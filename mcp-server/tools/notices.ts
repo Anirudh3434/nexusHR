@@ -56,8 +56,8 @@ export function registerNoticeTools(server: McpServer) {
       title: z.string().describe('Notice title'),
       content: z.string().describe('Notice body content'),
       priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium').describe('Priority level'),
-      department: z.string().optional().describe('Specific department target or all'),
-      expiryDate: z.string().optional().describe('Expiry date (YYYY-MM-DD)'),
+      department: z.string().nullish().describe('Specific department target or all'),
+      expiryDate: z.string().nullish().describe('Expiry date (YYYY-MM-DD)'),
     },
     async ({ title, content, priority, department, expiryDate }) => {
       try {

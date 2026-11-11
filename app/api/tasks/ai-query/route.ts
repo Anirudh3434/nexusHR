@@ -87,54 +87,139 @@ Output ONLY a JSON object:
 }
 Output raw JSON only.`;
 
-    const apiKey = process.env.NVIDIA_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ message: 'NVIDIA API key not configured' }, { status: 500 });
+    const groqKey = process.env.GROQ_API_KEY?.trim();
+    const nvidiaKey = process.env.NVIDIA_API_KEY?.trim();
+
+    const provider = groqKey
+      ? {
+          name: 'groq',
+          url: 'https://api.groq.com/openai/v1/chat/completions',
+          apiKey: groqKey,
+          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
+        }
+      : nvidiaKey
+      ? {
+          name: 'nvidia',
+          url: 'https://integrate.api.nvidia.com/v1/chat/completions',
+          apiKey: nvidiaKey,
+          model: 'meta/llama-3.1-8b-instruct'
+        }
+      : null;
+
+    let target = 'Task';
+    let query: any = null;
+    let explanation = '';
+
+    // Smart local fallback in case LLM is unavailable or fails
+    const runLocalFallback = () => {
+      const q: any = {
+        projectId: new mongoose.Types.ObjectId(projectId),
+        companyId: new mongoose.Types.ObjectId(auth.companyId)
+      };
+
+      const lower = prompt.toLowerCase().trim();
+
+      // Status filters
+      if (/in[\s_-]?progress/i.test(lower)) {
+        q.status = 'in_progress';
+      } else if (/completed|done|closed/i.test(lower)) {
+        q.status = 'completed';
+      } else if (/to[\s_-]?do|pending|open/i.test(lower)) {
+        q.status = 'to_do';
+      } else if (/backlog/i.test(lower)) {
+        q.status = 'backlog';
+      } else if (/in[\s_-]?review|qa/i.test(lower)) {
+        q.status = 'in_review';
+      }
+
+      // Priority filters
+      if (/critical/i.test(lower)) {
+        q.priority = 'critical';
+      } else if (/high\s+priority|urgent/i.test(lower)) {
+        q.priority = { $in: ['high', 'critical'] };
+      }
+
+      // Type filters
+      if (/\bbug(s)?\b/i.test(lower)) {
+        q.taskType = 'bug';
+      }
+
+      // Assigned to me
+      if (/assigned\s+to\s+me|my\s+task(s)?/i.test(lower) && userId && mongoose.Types.ObjectId.isValid(userId)) {
+        q.assignedTo = new mongoose.Types.ObjectId(userId);
+      }
+
+      // Keyword search: strip common filler words
+      const cleanKeywords = lower
+        .replace(/\b(give|show|list|find|get|tasks?|related\s+to|all|about|with|for|me|in|the|a|an|please)\b/gi, ' ')
+        .replace(/[^a-z0-9_-]/gi, ' ')
+        .trim();
+
+      if (cleanKeywords && cleanKeywords.length > 1) {
+        const words = cleanKeywords.split(/\s+/).filter((w: string) => w.length > 1);
+        if (words.length > 0) {
+          const regexPattern = words.join('|');
+          q.$or = [
+            { title: { $regex: regexPattern, $options: 'i' } },
+            { description: { $regex: regexPattern, $options: 'i' } },
+            { taskNumber: { $regex: regexPattern, $options: 'i' } }
+          ];
+        }
+      }
+
+      return {
+        target: 'Task',
+        query: q,
+        explanation: `Filtered tasks matching "${cleanKeywords || prompt}"`
+      };
+    };
+
+    if (provider) {
+      try {
+        const response = await fetch(provider.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${provider.apiKey}`
+          },
+          body: JSON.stringify({
+            model: provider.model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.1,
+            max_tokens: 1024
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const reply = data.choices[0]?.message?.content?.trim();
+          if (reply) {
+            const match = reply.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+            const jsonText = match ? match[1] : reply;
+            const parsed = JSON.parse(jsonText.trim());
+            if (parsed && parsed.query) {
+              target = parsed.target || 'Task';
+              query = parsed.query;
+              explanation = parsed.explanation || '';
+            }
+          }
+        } else {
+          console.warn(`${provider.name} API returned non-OK status:`, response.status);
+        }
+      } catch (llmErr) {
+        console.warn('LLM query generation failed, using local fallback:', llmErr);
+      }
     }
 
-    // 3. Call NVIDIA API with fast 8B model
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'meta/llama-3.1-8b-instruct',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.1,
-        max_tokens: 1024
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('NVIDIA API error:', errText);
-      return NextResponse.json({ message: 'Failed to call AI model', details: errText }, { status: 502 });
-    }
-
-    const data = await response.json();
-    const reply = data.choices[0]?.message?.content?.trim();
-    if (!reply) {
-      return NextResponse.json({ message: 'AI returned an empty response' }, { status: 502 });
-    }
-
-    let parsed;
-    try {
-      const match = reply.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-      const jsonText = match ? match[1] : reply;
-      parsed = JSON.parse(jsonText.trim());
-    } catch (e) {
-      console.error('Failed to parse AI query response:', reply);
-      return NextResponse.json({ message: 'AI did not return a valid query object', rawResponse: reply }, { status: 502 });
-    }
-
-    const { target, query, explanation } = parsed;
+    // Fallback if no provider or LLM didn't return a valid query
     if (!query) {
-      return NextResponse.json({ message: 'AI failed to construct a query', rawResponse: reply }, { status: 502 });
+      const fallbackResult = runLocalFallback();
+      target = fallbackResult.target;
+      query = fallbackResult.query;
+      explanation = fallbackResult.explanation;
     }
 
     query.projectId = projectId;

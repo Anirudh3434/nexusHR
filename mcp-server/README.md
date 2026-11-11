@@ -102,3 +102,22 @@ Add this to your `claude_desktop_config.json`:
 14. **`get_notices`**: Retrieve active announcements.
 15. **`post_notice`**: Publish an announcement (HR/Admin only).
 
+---
+
+## 🤖 Nexi (in-app HR chatbot) integration
+
+The `/api/ai/hr/chat` route runs this same server **in-process** over an MCP
+`InMemoryTransport` (see `lib/mcp-hrbot.ts`), so Nexi answers with live MongoDB
+data instead of only knowledge-base articles.
+
+- The connection is authenticated with the signed-in employee's own role, so the
+  permission matrix above applies exactly as it does in the web app.
+- **Read-only by default.** Nexi can call `get_current_user_profile`,
+  `check_permission`, `list_tasks`, `get_leaves`, `get_attendance_records`,
+  `search_employees`, `get_departments` and `get_notices`.
+- Write tools (`clock_in`, `clock_out`, `apply_leave`,
+  `approve_or_reject_leave`, `create_task`, `update_task_status`,
+  `post_notice`) are hidden from the model unless `HR_BOT_MCP_ALLOW_WRITE=true`.
+- If the model/provider does not support function calling, Nexi automatically
+  falls back to a plain knowledge-base answer.
+

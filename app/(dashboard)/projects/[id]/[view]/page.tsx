@@ -14,7 +14,7 @@ import { format } from "date-fns";
 import { 
   KanbanSquare, Plus, Settings, GripVertical, User, Clock, 
   ArrowLeft, MoreHorizontal, Filter, Search, CheckCircle, Trash2, Edit,
-  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban, RotateCcw
+  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban, RotateCcw, Brain
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BoardSkeleton, Skeleton } from "@/components/ui/Skeleton";
@@ -744,55 +744,278 @@ export default function ProjectBoardPage() {
     }
   };
 
-  const formatInlineMarkdown = (line: string) => {
-    const parts = line.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, pidx) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={pidx} className="font-bold text-indigo-700 dark:text-indigo-300">{part.slice(2, -2)}</strong>;
+  // ── PMS AI Chat: Inline token parser ─────────────────────────────────────
+  const pmsParseInline = (text: string): React.ReactNode[] => {
+    if (!text) return [];
+    const tokenRegex = /(\*\*[^*]+\*\*|`[^`]+`|\[([^\]]+)\]\(([^)]+)\)|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|https?:\/\/[^\s]+)/g;
+    const nodes: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = tokenRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) nodes.push(text.slice(lastIndex, match.index));
+      const token = match[0];
+      const key = `${match.index}-${token.slice(0, 6)}`;
+      if (token.startsWith('**') && token.endsWith('**')) {
+        nodes.push(<strong key={key} className="font-semibold text-neutral-900 dark:text-neutral-100">{token.slice(2, -2)}</strong>);
+      } else if (token.startsWith('`') && token.endsWith('`')) {
+        nodes.push(<code key={key} className="px-1.5 py-0.5 rounded bg-primary/10 font-mono text-[11px] text-primary">{token.slice(1, -1)}</code>);
+      } else if (token.startsWith('[') && match[2] && match[3]) {
+        nodes.push(<a key={key} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">{match[2]}</a>);
+      } else if (token.includes('@') && !token.startsWith('http')) {
+        nodes.push(<a key={key} href={`mailto:${token}`} className="text-primary font-medium hover:underline">{token}</a>);
+      } else if (token.startsWith('http')) {
+        nodes.push(<a key={key} href={token} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">{token}</a>);
       }
-      const italicParts = part.split(/(\*.*?\*)/g);
-      return italicParts.map((subPart, sidx) => {
-        if (subPart.startsWith('*') && subPart.endsWith('*')) {
-          return <em key={sidx} className="italic text-slate-800 dark:text-slate-200">{subPart.slice(1, -1)}</em>;
-        }
-        const codeParts = subPart.split(/(`.*?`)/g);
-        return codeParts.map((codePart, cidx) => {
-          if (codePart.startsWith('`') && codePart.endsWith('`')) {
-            return <code key={cidx} className="bg-slate-100 text-indigo-600 px-1.5 py-0.5 rounded font-mono text-[10px] dark:bg-slate-800 dark:text-indigo-400">{codePart.slice(1, -1)}</code>;
-          }
-          return codePart;
-        });
-      });
-    });
+      lastIndex = match.index + token.length;
+    }
+    if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+    return nodes.length > 0 ? nodes : [text];
   };
 
-  const renderMarkdown = (text: string) => {
-    return text.split('\n').map((line, idx) => {
-      if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-        return (
-          <li key={idx} className="ml-4 list-disc text-xs text-slate-700 my-0.5 dark:text-slate-300">
-            {formatInlineMarkdown(line.trim().substring(2))}
-          </li>
-        );
+  // ── PMS AI Chat: Table parser ─────────────────────────────────────────────
+  const pmsParseTable = (tableLines: string[], keyPrefix: string): React.ReactNode => {
+    if (tableLines.length < 2) return null;
+    const getCells = (row: string) => {
+      let clean = row.trim();
+      if (clean.startsWith('|')) clean = clean.slice(1);
+      if (clean.endsWith('|')) clean = clean.slice(0, -1);
+      return clean.split('|').map(c => c.trim());
+    };
+    const headerCells = getCells(tableLines[0]);
+    const isSeparator = /^\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?$/.test(tableLines[1].trim());
+    const dataLines = isSeparator ? tableLines.slice(2) : tableLines.slice(1);
+    return (
+      <div key={keyPrefix} className="my-3 overflow-x-auto rounded-xl border border-primary/20 shadow-sm bg-white dark:bg-neutral-900">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr className="bg-primary/10 border-b border-primary/20">
+              {headerCells.map((cell, i) => (
+                <th key={i} className="px-3 py-2 font-bold text-primary text-[11px] uppercase tracking-wider whitespace-nowrap">
+                  {pmsParseInline(cell)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-primary/10">
+            {dataLines.map((rowStr, rIdx) => {
+              const cells = getCells(rowStr);
+              return (
+                <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-white dark:bg-neutral-900 hover:bg-primary/5' : 'bg-primary/5 hover:bg-primary/10'}>
+                  {cells.map((cell, cIdx) => (
+                    <td key={cIdx} className="px-3 py-2 text-neutral-700 dark:text-neutral-200 text-xs">
+                      {pmsParseInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // ── PMS AI Chat: Block-level renderer ─────────────────────────────────────
+  const renderMarkdown = (text: string): React.ReactNode => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    const elements: React.ReactNode[] = [];
+    let i = 0;
+
+    const isTableLine = (str?: string) => {
+      if (!str) return false;
+      const t = str.trim();
+      return (t.startsWith('|') && t.endsWith('|')) || (t.includes('|') && t.split('|').length >= 3);
+    };
+
+    while (i < lines.length) {
+      const line = lines[i].trimEnd();
+
+      // Table
+      if (isTableLine(line) && i + 1 < lines.length && lines[i + 1].includes('-') && lines[i + 1].includes('|')) {
+        const tableLines: string[] = [];
+        while (i < lines.length && isTableLine(lines[i])) { tableLines.push(lines[i]); i++; }
+        const tbl = pmsParseTable(tableLines, `tbl-${elements.length}`);
+        if (tbl) elements.push(tbl);
+        continue;
       }
-      if (line.includes('|')) {
-        const cells = line.split('|').map(c => c.trim()).filter(Boolean);
-        if (line.includes('---')) return null;
-        return (
-          <div key={idx} className="flex gap-2 border-b border-slate-100 py-1 font-mono text-[10px] text-slate-655 dark:border-slate-800">
-            {cells.map((cell, cidx) => (
-              <span key={cidx} className="flex-1 truncate">{cell}</span>
-            ))}
+
+      // Empty line
+      if (!line.trim()) { elements.push(<div key={`sp-${i}`} className="h-1.5" />); i++; continue; }
+
+      // H1 / H2 / H3 headings
+      const h2 = line.match(/^##\s+(.*)/);
+      const h3 = line.match(/^###\s+(.*)/);
+      const h1 = line.match(/^#\s+(.*)/);
+      if (h2) {
+        elements.push(
+          <h2 key={`h2-${i}`} className="text-sm font-bold text-primary mt-3 mb-1 leading-tight">
+            {pmsParseInline(h2[1])}
+          </h2>
+        );
+        i++; continue;
+      }
+      if (h3) {
+        elements.push(
+          <h3 key={`h3-${i}`} className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mt-2 mb-0.5 uppercase tracking-wide">
+            {pmsParseInline(h3[1])}
+          </h3>
+        );
+        i++; continue;
+      }
+      if (h1) {
+        elements.push(
+          <h1 key={`h1-${i}`} className="text-base font-extrabold text-primary mt-3 mb-1 leading-tight">
+            {pmsParseInline(h1[1])}
+          </h1>
+        );
+        i++; continue;
+      }
+
+      // Numbered step
+      const numMatch = line.match(/^(\d+)\.\s+(.*)/);
+      if (numMatch) {
+        elements.push(
+          <div key={`num-${i}`} className="flex items-start gap-2.5 my-1.5">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/30 text-[10px] font-bold mt-0.5">
+              {numMatch[1]}
+            </span>
+            <div className="flex-1 text-xs leading-relaxed text-neutral-800 dark:text-neutral-200">
+              {pmsParseInline(numMatch[2])}
+            </div>
           </div>
         );
+        i++; continue;
       }
-      return (
-        <p key={idx} className="text-xs text-slate-700 leading-relaxed my-1 dark:text-slate-300">
-          {formatInlineMarkdown(line)}
+
+      // Bullet point
+      const bulletMatch = line.match(/^(\s*)(?:[-*•])\s+(.*)/);
+      if (bulletMatch) {
+        const isIndented = bulletMatch[1].length > 0;
+        elements.push(
+          <div key={`bul-${i}`} className={`flex items-start gap-2 my-1 ${isIndented ? 'ml-6 text-neutral-500 dark:text-neutral-400' : 'ml-1 text-neutral-700 dark:text-neutral-200'}`}>
+            <span className={`h-1.5 w-1.5 rounded-full shrink-0 mt-1.5 ${isIndented ? 'bg-primary/50' : 'bg-primary'}`} />
+            <span className="text-xs leading-relaxed flex-1">{pmsParseInline(bulletMatch[2])}</span>
+          </div>
+        );
+        i++; continue;
+      }
+
+      // Callout / blockquote
+      if (line.startsWith('> ') || line.startsWith('**Note:**') || line.startsWith('**Tip:**') || line.startsWith('**Important:**')) {
+        const txt = line.startsWith('> ') ? line.slice(2) : line;
+        elements.push(
+          <div key={`cq-${i}`} className="my-2 p-3 rounded-xl border border-primary/30 bg-primary/10 dark:bg-primary/15 text-xs leading-relaxed text-neutral-800 dark:text-neutral-200">
+            {pmsParseInline(txt)}
+          </div>
+        );
+        i++; continue;
+      }
+
+      // Horizontal rule
+      if (/^---+$/.test(line.trim())) {
+        elements.push(<hr key={`hr-${i}`} className="my-2 border-neutral-200 dark:border-neutral-700" />);
+        i++; continue;
+      }
+
+      // Regular paragraph
+      elements.push(
+        <p key={`p-${i}`} className="text-xs leading-relaxed text-neutral-800 dark:text-neutral-200 my-0.5">
+          {pmsParseInline(line)}
         </p>
       );
-    });
+      i++;
+    }
+
+    return <div className="space-y-0.5">{elements}</div>;
   };
+
+  // Legacy alias kept for any other callers
+  const formatInlineMarkdown = pmsParseInline;
+
+  // ── PMS AI Chat: Dynamic Thinking Phases ──────────────────────────────────
+  const PMS_THINKING_PHASES = [
+    { icon: Search, label: 'Reading project tasks & context' },
+    { icon: Brain, label: 'Analyzing dependencies & assignees' },
+    { icon: Sparkles, label: 'Formulating execution plan' },
+    { icon: Zap, label: 'Orchestrating workspace changes' },
+  ];
+
+  function PMSThinkingIndicator() {
+    const [phaseIdx, setPhaseIdx] = useState(0);
+    const [dots, setDots] = useState(1);
+
+    useEffect(() => {
+      const phaseTimer = setInterval(() => {
+        setPhaseIdx((p) => (p + 1) % PMS_THINKING_PHASES.length);
+      }, 1600);
+      const dotTimer = setInterval(() => {
+        setDots((d) => (d % 3) + 1);
+      }, 400);
+      return () => {
+        clearInterval(phaseTimer);
+        clearInterval(dotTimer);
+      };
+    }, []);
+
+    const { icon: PhaseIcon, label } = PMS_THINKING_PHASES[phaseIdx];
+
+    return (
+      <div className="flex items-start gap-2.5 mr-auto max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300" aria-label="Nexi is thinking">
+        {/* Mascot Avatar with layered glowing aura */}
+        <div className="relative shrink-0 mt-0.5">
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-primary/35 via-indigo-500/30 to-violet-500/35 blur-sm animate-pulse pointer-events-none" />
+          <div className="w-8 h-8 rounded-full border border-primary/40 shadow-sm overflow-hidden relative bg-gradient-to-tr from-primary/20 via-indigo-500/20 to-purple-500/20 ring-2 ring-primary/30 flex items-end justify-center select-none">
+            <img
+              src="/images/mascot/nexi_thinking_avatar.png"
+              alt="Nexi"
+              className="w-full h-full object-cover object-top scale-110 translate-y-0.5 drop-shadow-xs select-none"
+            />
+          </div>
+        </div>
+
+        {/* Thinking Card */}
+        <div className="p-3.5 sm:p-4 bg-white/90 dark:bg-neutral-850/95 text-neutral-800 dark:text-neutral-200 rounded-2xl rounded-tl-none border border-neutral-200/80 dark:border-neutral-700/80 shadow-md backdrop-blur-xl min-w-[240px] max-w-sm space-y-2.5">
+          {/* Phase Header */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-5 h-5 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <PhaseIcon className="w-3.5 h-3.5 animate-pulse" />
+              </div>
+              <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 tracking-tight truncate">
+                {label}
+                <span className="inline-block w-4 text-left font-bold text-primary">{'.'.repeat(dots)}</span>
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-primary font-medium px-1.5 py-0.5 rounded-full bg-primary/10 shrink-0">
+              NexusAI
+            </span>
+          </div>
+
+          {/* Shimmer Progress Bar */}
+          <div className="h-1.5 w-full rounded-full bg-primary/15 dark:bg-neutral-750 overflow-hidden relative">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-primary via-indigo-500 to-violet-500 shadow-sm"
+              style={{
+                width: '45%',
+                animation: 'pmsThinkingBar 1.5s ease-in-out infinite'
+              }}
+            />
+          </div>
+
+          {/* Subtitle with Bouncing Dots */}
+          <div className="flex items-center justify-between text-[10px] text-neutral-500 dark:text-neutral-400 pt-0.5">
+            <span className="italic">Processing workspace query...</span>
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Debounce searchVal when not in AI mode
   useEffect(() => {
@@ -2596,81 +2819,83 @@ export default function ProjectBoardPage() {
         </div>
 
         {/* View Mode Tabs & Create Button matching mockup */}
-        <div className="flex items-center justify-between gap-2 w-full min-w-0">
-          {/* View Mode Selector with responsive scrollable tabs and pinned More dropdown */}
-          <div className="flex items-center bg-gray-100/90 dark:bg-slate-800 rounded-xl p-1 gap-1 min-w-0 flex-1 sm:flex-initial">
-            {/* Scrollable Tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden scrollbar-hide scrollbar-none min-w-0 flex-1">
-              {[
-                { view: 'board',    icon: KanbanSquare, label: 'Board' },
-                { view: 'list',     icon: List,         label: 'List' },
-                { view: 'backlog',  icon: LayoutList,   label: 'Backlog' },
-                { view: 'timeline', icon: CalendarIcon, label: 'Timeline' },
-              ].map(({ view, icon: Icon, label }) => (
+        {viewMode !== 'ai-chat' && (
+          <div className="flex items-center justify-between gap-2 w-full min-w-0">
+            {/* View Mode Selector with responsive scrollable tabs and pinned More dropdown */}
+            <div className="flex items-center bg-gray-100/90 dark:bg-slate-800 rounded-xl p-1 gap-1 min-w-0 flex-1 sm:flex-initial">
+              {/* Scrollable Tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden scrollbar-hide scrollbar-none min-w-0 flex-1">
+                {[
+                  { view: 'board',    icon: KanbanSquare, label: 'Board' },
+                  { view: 'list',     icon: List,         label: 'List' },
+                  { view: 'backlog',  icon: LayoutList,   label: 'Backlog' },
+                  { view: 'timeline', icon: CalendarIcon, label: 'Timeline' },
+                ].map(({ view, icon: Icon, label }) => (
+                  <button
+                    key={view}
+                    onClick={() => router.push(`/projects/${projectId}/${view}`)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
+                      viewMode === view
+                        ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                        : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* More Tabs dropdown (...) placed outside the scrollable tab container so it never triggers scrollbars and its menu is not clipped */}
+              <div className="relative shrink-0">
                 <button
-                  key={view}
-                  onClick={() => router.push(`/projects/${projectId}/${view}`)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
-                    viewMode === view
+                  onClick={() => setShowMoreTabs(!showMoreTabs)}
+                  className={`flex items-center justify-center w-8 h-7 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                    ['docs', 'rules', 'ai-chat'].includes(viewMode)
                       ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
                       : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
                   }`}
+                  title="More views"
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{label}</span>
+                  <MoreHorizontal className="w-4 h-4" />
                 </button>
-              ))}
+                {showMoreTabs && (
+                  <div className="absolute top-full right-0 mt-1.5 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    {[
+                      { view: 'docs',     icon: Vault,    label: 'Vault' },
+                      { view: 'rules',    icon: Settings, label: 'Automation' },
+                      { view: 'ai-chat',  icon: Sparkles, label: 'AI Chat' },
+                    ].map(({ view, icon: Icon, label }) => (
+                      <button
+                        key={view}
+                        onClick={() => {
+                          setShowMoreTabs(false);
+                          router.push(`/projects/${projectId}/${view}`);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
+                          viewMode === view ? 'text-primary font-bold bg-primary/5' : 'text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* More Tabs dropdown (...) placed outside the scrollable tab container so it never triggers scrollbars and its menu is not clipped */}
-            <div className="relative shrink-0">
-              <button
-                onClick={() => setShowMoreTabs(!showMoreTabs)}
-                className={`flex items-center justify-center w-8 h-7 rounded-lg text-xs font-semibold transition-all shrink-0 ${
-                  ['docs', 'rules', 'ai-chat'].includes(viewMode)
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
-                    : 'text-gray-500 hover:text-gray-900 dark:text-slate-400'
-                }`}
-                title="More views"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-              {showMoreTabs && (
-                <div className="absolute top-full right-0 mt-1.5 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  {[
-                    { view: 'docs',     icon: Vault,    label: 'Vault' },
-                    { view: 'rules',    icon: Settings, label: 'Automation' },
-                    { view: 'ai-chat',  icon: Sparkles, label: 'AI Chat' },
-                  ].map(({ view, icon: Icon, label }) => (
-                    <button
-                      key={view}
-                      onClick={() => {
-                        setShowMoreTabs(false);
-                        router.push(`/projects/${projectId}/${view}`);
-                      }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
-                        viewMode === view ? 'text-primary font-bold bg-primary/5' : 'text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Coral Create Button matching user mockup */}
+            <Button
+              size="sm"
+              onClick={() => handleOpenCreateModal(viewMode === 'backlog' ? 'backlog' : 'to_do')}
+              className="bg-[#f87171] hover:bg-[#ef4444] text-white rounded-xl shadow-sm px-3 sm:px-3.5 h-8.5 shrink-0 font-semibold text-xs flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create</span>
+            </Button>
           </div>
-
-          {/* Coral Create Button matching user mockup */}
-          <Button
-            size="sm"
-            onClick={() => handleOpenCreateModal(viewMode === 'backlog' ? 'backlog' : 'to_do')}
-            className="bg-[#f87171] hover:bg-[#ef4444] text-white rounded-xl shadow-sm px-3 sm:px-3.5 h-8.5 shrink-0 font-semibold text-xs flex items-center gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Create</span>
-          </Button>
-        </div>
+        )}
       </div>
 
       {/* Content based on view mode */}
@@ -4064,6 +4289,11 @@ export default function ProjectBoardPage() {
             .font-cursive {
               font-family: 'Caveat', cursive, sans-serif;
             }
+            @keyframes pmsThinkingBar {
+              0% { transform: translateX(-100%); }
+              50% { transform: translateX(50%); }
+              100% { transform: translateX(250%); }
+            }
           `}</style>
 
           {/* Ambient blurred primary reflections matching MCP container */}
@@ -4073,18 +4303,13 @@ export default function ProjectBoardPage() {
 
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-white/40 dark:border-white/10 flex items-center justify-between bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl shrink-0 z-10 relative">
-            <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary border border-primary/25 shadow-xs">
-                <Sparkles className="h-5 w-5 stroke-[2.2] animate-pulse" />
-              </div>
-              <div className="min-w-0 leading-tight">
-                <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
-                  NexusAI <span className="font-cursive text-lg sm:text-xl font-bold text-primary tracking-normal inline-block">Workspace Assistant</span>
-                </h3>
-                <p className="text-[10px] sm:text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 truncate">
-                  Agentic PM Chat interface with <span className="font-cursive text-xs sm:text-sm font-bold text-primary inline-block">full access</span> to project tasks.
-                </p>
-              </div>
+            <div className="min-w-0 leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                NexusAI <span className="font-cursive text-lg sm:text-xl font-bold text-primary tracking-normal inline-block">Workspace Assistant</span>
+              </h3>
+              <p className="text-[10px] sm:text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 truncate">
+                Agentic PM Chat interface with <span className="font-cursive text-xs sm:text-sm font-bold text-primary inline-block">full access</span> to project tasks.
+              </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
@@ -4117,10 +4342,35 @@ export default function ProjectBoardPage() {
             {chatMessages.length <= 1 ? (
               <div className="max-w-2xl mx-auto py-8 sm:py-12 px-2 sm:px-4 text-center space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom duration-300">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="relative group cursor-pointer">
-                    <div className="absolute inset-0 rounded-[28px] bg-primary/30 blur-xl opacity-75 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-[24px] sm:rounded-[28px] bg-gradient-to-tr from-primary via-primary/90 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-primary/30 border border-white/20 transition-transform group-hover:scale-105 duration-300">
-                      <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-pulse" />
+                  <div className="relative group cursor-pointer inline-flex items-center justify-center select-none" aria-hidden>
+                    {/* 3D Volumetric Spherical Glow */}
+                    <div className="absolute w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-primary/35 via-indigo-500/25 to-violet-500/35 blur-xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 pointer-events-none" />
+                    
+                    {/* 3D Sphere Container with Popout Avatar */}
+                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white/60 dark:border-white/20 shadow-[0_14px_32px_-6px_rgba(79,70,229,0.45),inset_0_-10px_20px_rgba(30,27,75,0.35),inset_0_4px_12px_rgba(255,255,255,0.6)] transition-all group-hover:scale-105 duration-300 bg-gradient-to-b from-indigo-300/30 via-primary/20 to-violet-600/35 backdrop-blur-md flex items-end justify-center">
+                      {/* Soft top specular curve highlight */}
+                      <div className="absolute -top-3 inset-x-4 h-10 rounded-full bg-gradient-to-b from-white/45 to-transparent pointer-events-none z-0" />
+                      
+                      {/* Lower body clipped cleanly to sphere boundary */}
+                      <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                        <img 
+                          src="/images/mascot/nexi_welcoming_avatar.png" 
+                          alt="" 
+                          className="w-full h-full object-cover object-top scale-120 -translate-y-2 drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-300 group-hover:scale-125 group-hover:-translate-y-2.5" 
+                        />
+                      </div>
+
+                      {/* Upper body / head & hand overflowing above the sphere */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none z-10"
+                        style={{ clipPath: 'polygon(-50% -100%, 150% -100%, 150% 50%, -50% 50%)' }}
+                      >
+                        <img 
+                          src="/images/mascot/nexi_welcoming_avatar.png" 
+                          alt="Nexi" 
+                          className="w-full h-full object-cover object-top scale-120 -translate-y-2 drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-300 group-hover:scale-125 group-hover:-translate-y-2.5" 
+                        />
+                      </div>
                     </div>
                   </div>
                   <div>
@@ -4185,45 +4435,54 @@ export default function ProjectBoardPage() {
               chatMessages.map((msg, idx) => (
                 <div 
                   key={idx} 
-                  className={`flex flex-col max-w-[85%] ${
-                    msg.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
+                  className={`flex items-start gap-2.5 max-w-[85%] ${
+                    msg.sender === 'user' ? 'ml-auto justify-end' : 'mr-auto justify-start'
                   }`}
                 >
-                  <div className={`p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm relative group leading-relaxed ${
-                    msg.sender === 'user' 
-                      ? 'bg-primary text-white rounded-br-none shadow-md shadow-primary/25 border border-primary/40 font-medium' 
-                      : 'bg-white/80 dark:bg-neutral-850/90 text-neutral-900 dark:text-neutral-100 rounded-bl-none border border-neutral-200/70 dark:border-neutral-700/60 shadow-sm backdrop-blur-md'
-                  }`}>
-                    {msg.sender === 'ai' ? (
-                      <div className="space-y-1.5 pr-6 leading-relaxed">
-                        {renderMarkdown(msg.text)}
-                      </div>
-                    ) : (
-                      <p className="leading-relaxed">{msg.text}</p>
-                    )}
+                  {msg.sender === 'ai' && (
+                    <div 
+                      className="w-8 h-8 rounded-full border border-primary/25 shadow-xs overflow-hidden shrink-0 relative bg-gradient-to-tr from-primary/20 via-indigo-500/20 to-purple-500/20 ring-2 ring-primary/20 flex items-end justify-center select-none mt-0.5" 
+                      aria-hidden
+                    >
+                      <img 
+                        src="/images/mascot/nexi_working_trans.png" 
+                        alt="Nexi" 
+                        className="w-full h-full object-cover object-top scale-110 translate-y-0.5 drop-shadow-xs select-none" 
+                      />
+                    </div>
+                  )}
+                  <div className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} flex-1 min-w-0`}>
+                    <div className={`p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm relative group leading-relaxed ${
+                      msg.sender === 'user' 
+                        ? 'bg-primary text-white rounded-br-none shadow-md shadow-primary/25 border border-primary/40 font-medium' 
+                        : 'bg-white/80 dark:bg-neutral-850/90 text-neutral-900 dark:text-neutral-100 rounded-tl-none border border-neutral-200/70 dark:border-neutral-700/60 shadow-sm backdrop-blur-md'
+                    }`}>
+                      {msg.sender === 'ai' ? (
+                        <div className="space-y-1.5 pr-6 leading-relaxed">
+                          {renderMarkdown(msg.text)}
+                        </div>
+                      ) : (
+                        <p className="leading-relaxed">{msg.text}</p>
+                      )}
 
-                    {msg.sender === 'ai' && (
-                      <button
-                        onClick={() => copyToClipboard(msg.text)}
-                        className="absolute top-2.5 right-2.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-                        title="Copy to clipboard"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                      {msg.sender === 'ai' && (
+                        <button
+                          onClick={() => copyToClipboard(msg.text)}
+                          className="absolute top-2.5 right-2.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                          title="Copy to clipboard"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <span className={`text-[9px] text-neutral-400 dark:text-neutral-500 mt-1 px-1.5 font-medium ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
-                  <span className="text-[9px] text-neutral-400 dark:text-neutral-500 mt-1.5 px-1.5 font-medium">
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
                 </div>
               ))
             )}
-            {chatLoading && (
-              <div className="flex items-center gap-2 mr-auto max-w-[80%] p-3.5 bg-white/80 dark:bg-neutral-850/90 text-neutral-600 dark:text-neutral-300 rounded-2xl rounded-bl-none border border-neutral-200/70 dark:border-neutral-700/60 text-xs shadow-sm backdrop-blur-md">
-                <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                <span className="font-medium">NexusAI is orchestrating changes...</span>
-              </div>
-            )}
+            {chatLoading && <PMSThinkingIndicator />}
           </div>
 
           {/* Input Form */}

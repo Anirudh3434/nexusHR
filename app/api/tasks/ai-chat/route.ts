@@ -216,99 +216,202 @@ Output raw JSON only.`;
       { role: 'user', content: prompt }
     ];
 
-    const apiKey = process.env.NVIDIA_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ message: 'NVIDIA API key not configured' }, { status: 500 });
-    }
+    const groqKey = process.env.GROQ_API_KEY?.trim();
+    const nvidiaKey = process.env.NVIDIA_API_KEY?.trim();
 
-    // 5. Call NVIDIA NIM with fast 8B model (or 70B if pro requested, with automatic fallback)
-    const preferredModel = (modelChoice === 'nexus-pro') ? 'meta/llama-3.1-70b-instruct' : 'meta/llama-3.1-8b-instruct';
-    
-    let reply = '';
-    const callNvidia = async (modelName: string, timeoutMs: number = 8000) => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          signal: controller.signal,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: modelName,
-            messages,
-            temperature: 0.2,
-            max_tokens: 2048
-          })
-        });
-        clearTimeout(timeoutId);
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`NVIDIA HTTP ${res.status}: ${errText}`);
+    const provider = groqKey
+      ? {
+          name: 'groq',
+          url: 'https://api.groq.com/openai/v1/chat/completions',
+          apiKey: groqKey,
+          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
         }
-        const data = await res.json();
-        return data.choices[0]?.message?.content?.trim() || '';
-      } catch (err: any) {
-        clearTimeout(timeoutId);
-        throw err;
-      }
-    };
-
-    try {
-      reply = await callNvidia(preferredModel, 9000);
-    } catch (primaryErr) {
-      console.warn(`Primary model ${preferredModel} failed or timed out, trying meta/llama-3.1-8b-instruct:`, primaryErr);
-      if (preferredModel !== 'meta/llama-3.1-8b-instruct') {
-        try {
-          reply = await callNvidia('meta/llama-3.1-8b-instruct', 9000);
-        } catch (fallbackErr: any) {
-          console.error('Fallback model also failed:', fallbackErr);
-          return NextResponse.json({
-            message: 'AI Service currently experiencing high latency. Please retry in a moment.',
-            error: fallbackErr.message
-          }, { status: 502 });
+      : nvidiaKey
+      ? {
+          name: 'nvidia',
+          url: 'https://integrate.api.nvidia.com/v1/chat/completions',
+          apiKey: nvidiaKey,
+          model: (modelChoice === 'nexus-pro') ? 'meta/llama-3.1-70b-instruct' : 'meta/llama-3.1-8b-instruct'
         }
-      } else {
-        return NextResponse.json({
-          message: 'Failed to contact AI service.',
-          error: (primaryErr as any).message
-        }, { status: 502 });
-      }
-    }
+      : null;
 
-    if (!reply) {
-      return NextResponse.json({ message: 'AI returned an empty response' }, { status: 502 });
-    }
-
-    // 6. Safe JSON parsing with fallback
-    let aiText = reply;
+    let aiText = '';
     let voiceText = '';
     let suggestions: string[] = [];
     let actions: any[] = [];
-    try {
-      let jsonText = reply;
-      const codeBlockMatch = reply.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-      if (codeBlockMatch) {
-        jsonText = codeBlockMatch[1];
+
+    // Local deterministic fallback runner
+    const runLocalFallback = () => {
+      const cleanPrompt = prompt.trim().toLowerCase();
+
+      if (/^(hey|hi|hello|hola|good\s+(morning|afternoon|evening)|sup|yo)\b/i.test(cleanPrompt)) {
+        aiText = `Hi ${userName || 'there'}! 👋 I'm **NexusAI**, your agentic workspace assistant.\n\nI have full access to your project tasks. Here are some things you can ask me:\n- 📋 *"List in-progress tasks"*\n- 🐛 *"Show all bug tasks with high or critical priority"*\n- 🔄 *"Move TSK26070010 to in progress"*\n- 👤 *"Assign TSK26070012 to Tarun"*\n- 💬 *"Comment on TSK26070011 saying: looks good"*\n\nHow can I help you today?`;
+        voiceText = `Hi ${userName || 'there'}! I'm NexusAI. How can I help you with your project tasks today?`;
+        suggestions = ["List In Progress Tasks", "High Priority Bugs", "What tasks are assigned to me?"];
+      } else if (/(?:move|set|change|update)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s+(?:status\s+)?(?:to\s+)?([a-z_\s-]+)/i.test(prompt)) {
+        const match = prompt.match(/(?:move|set|change|update)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s+(?:status\s+)?(?:to\s+)?([a-z_\s-]+)/i);
+        if (match) {
+          const targetTaskId = match[1].trim();
+          const targetStatus = normalizeStatus(match[2].trim());
+          actions.push({ type: 'move_task', taskId: targetTaskId, status: targetStatus });
+          aiText = `✅ Moving task **${targetTaskId}** to **${targetStatus.replace(/_/g, ' ')}**...`;
+          voiceText = `Moving task ${targetTaskId} to ${targetStatus.replace(/_/g, ' ')}.`;
+          suggestions = [`Check status of ${targetTaskId}`, "List in-progress tasks"];
+        }
+      } else if (/(?:assign)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s+(?:to\s+)(.+)/i.test(prompt)) {
+        const match = prompt.match(/(?:assign)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s+(?:to\s+)(.+)/i);
+        if (match) {
+          const targetTaskId = match[1].trim();
+          const targetMember = match[2].trim().replace(/[."']+$/, '');
+          actions.push({ type: 'assign_task', taskId: targetTaskId, assigneeId: targetMember });
+          aiText = `👤 Assigning task **${targetTaskId}** to **${targetMember}**...`;
+          voiceText = `Assigning task ${targetTaskId} to ${targetMember}.`;
+          suggestions = [`View ${targetTaskId}`, `List tasks for ${targetMember}`];
+        }
+      } else if (/(?:comment on|add comment to)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s*(?:saying|with|:)?\s*["']?([^"'\n]+)["']?/i.test(prompt)) {
+        const match = prompt.match(/(?:comment on|add comment to)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s*(?:saying|with|:)?\s*["']?([^"'\n]+)["']?/i);
+        if (match) {
+          const targetTaskId = match[1].trim();
+          const commentText = match[2].trim();
+          actions.push({ type: 'add_comment', taskId: targetTaskId, text: commentText });
+          aiText = `💬 Adding comment to **${targetTaskId}**: *"${commentText}"*`;
+          voiceText = `Added comment to task ${targetTaskId}.`;
+          suggestions = [`View ${targetTaskId}`, "List in-progress tasks"];
+        }
+      } else if (/in[\s_-]?progress/i.test(cleanPrompt)) {
+        const inProgress = tasksContext.filter((t: any) => t.status === 'in_progress');
+        if (inProgress.length === 0) {
+          aiText = `There are currently no tasks in **In Progress** for this project.`;
+          voiceText = `There are currently no tasks in progress for this project.`;
+        } else {
+          aiText = `Here are the **${inProgress.length}** task(s) currently in progress:\n\n` +
+            inProgress.map((t: any) => `- **${t.taskNumber || t.id}**: ${t.title} *(Priority: ${t.priority})*`).join('\n');
+          voiceText = `You have ${inProgress.length} tasks currently in progress.`;
+        }
+        suggestions = ["Show high priority bugs", "What tasks are assigned to me?"];
+      } else if (/bug|critical|high priority/i.test(cleanPrompt)) {
+        const bugs = tasksContext.filter((t: any) => t.priority === 'critical' || t.priority === 'high' || (t.title && t.title.toLowerCase().includes('bug')));
+        if (bugs.length === 0) {
+          aiText = `Great news! There are no high or critical priority bugs recorded in this project right now.`;
+          voiceText = `There are no high or critical priority bugs in this project right now.`;
+        } else {
+          aiText = `Found **${bugs.length}** high/critical priority item(s):\n\n` +
+            bugs.map((t: any) => `- **${t.taskNumber || t.id}**: ${t.title} *[Status: ${t.status.replace(/_/g, ' ')}, Priority: ${t.priority}]*`).join('\n');
+          voiceText = `Found ${bugs.length} high priority items that need attention.`;
+        }
+        suggestions = ["List in-progress tasks", "Show all project tasks"];
+      } else if (/assigned to me|my tasks|my task/i.test(cleanPrompt)) {
+        const myTasks = tasksContext.filter((t: any) => userId && t.assignees.includes(userId));
+        if (myTasks.length === 0) {
+          aiText = `You currently have no tasks assigned directly to you in this project.`;
+          voiceText = `You have no tasks assigned to you in this project right now.`;
+        } else {
+          aiText = `You have **${myTasks.length}** task(s) assigned to you:\n\n` +
+            myTasks.map((t: any) => `- **${t.taskNumber || t.id}**: ${t.title} *(Status: ${t.status.replace(/_/g, ' ')}, Priority: ${t.priority})*`).join('\n');
+          voiceText = `You have ${myTasks.length} tasks assigned to you.`;
+        }
+        suggestions = ["List in-progress tasks", "High Priority Bugs"];
       } else {
-        const firstBrace = reply.indexOf('{');
-        const lastBrace = reply.lastIndexOf('}');
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          jsonText = reply.substring(firstBrace, lastBrace + 1);
+        const total = tasksContext.length;
+        const byStatus = {
+          to_do: tasksContext.filter((t: any) => t.status === 'to_do').length,
+          in_progress: tasksContext.filter((t: any) => t.status === 'in_progress').length,
+          in_review: tasksContext.filter((t: any) => t.status === 'in_review').length,
+          completed: tasksContext.filter((t: any) => t.status === 'completed').length,
+          backlog: tasksContext.filter((t: any) => t.status === 'backlog').length,
+        };
+        aiText = `Here is a summary of **${project?.name || 'this project'}** (${total} total tasks):\n\n` +
+          `- **To Do:** ${byStatus.to_do}\n` +
+          `- **In Progress:** ${byStatus.in_progress}\n` +
+          `- **In Review:** ${byStatus.in_review}\n` +
+          `- **Completed:** ${byStatus.completed}\n` +
+          `- **Backlog:** ${byStatus.backlog}\n\n` +
+          `Try commands like: *"List in-progress tasks"*, *"Move TSK26070010 to in progress"*, or *"Assign TSK26070012 to Tarun"*.`;
+        voiceText = `This project has ${total} tasks: ${byStatus.in_progress} in progress and ${byStatus.completed} completed.`;
+        suggestions = ["List In Progress Tasks", "High Priority Bugs", "What tasks are assigned to me?"];
+      }
+    };
+
+    if (!provider) {
+      // Offline/Local Agent Execution: Runs directly against MongoDB project state
+      runLocalFallback();
+    } else {
+      // 5. Call LLM provider (Groq or NVIDIA NIM)
+      let reply = '';
+      const callProvider = async (modelName: string, timeoutMs: number = 9000) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(provider.url, {
+            method: 'POST',
+            signal: controller.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${provider.apiKey}`
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages,
+              temperature: 0.2,
+              max_tokens: 2048
+            })
+          });
+          clearTimeout(timeoutId);
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`${provider.name} HTTP ${res.status}: ${errText}`);
+          }
+          const data = await res.json();
+          return data.choices[0]?.message?.content?.trim() || '';
+        } catch (err: any) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
+      try {
+        reply = await callProvider(provider.model, 9000);
+      } catch (primaryErr) {
+        console.warn(`Primary model ${provider.model} failed:`, primaryErr);
+        if (provider.name === 'nvidia' && provider.model !== 'meta/llama-3.1-8b-instruct') {
+          try {
+            reply = await callProvider('meta/llama-3.1-8b-instruct', 9000);
+          } catch (fallbackErr) {
+            console.warn('Fallback model also failed, using local agent fallback:', fallbackErr);
+            runLocalFallback();
+          }
+        } else {
+          // If remote LLM fails, cleanly fallback to local deterministic agent
+          runLocalFallback();
         }
       }
-      const parsed = JSON.parse(jsonText.trim());
-      aiText = parsed.response || parsed.message || reply;
-      voiceText = parsed.voiceResponse || '';
-      suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : [];
-      actions = Array.isArray(parsed.actions) ? parsed.actions : [];
-    } catch (e) {
-      aiText = reply.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
-      voiceText = '';
-      actions = [];
-      suggestions = [];
+
+      if (reply) {
+        // Safe JSON parsing with fallback
+        try {
+          let jsonText = reply;
+          const codeBlockMatch = reply.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+          if (codeBlockMatch) {
+            jsonText = codeBlockMatch[1];
+          } else {
+            const firstBrace = reply.indexOf('{');
+            const lastBrace = reply.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+              jsonText = reply.substring(firstBrace, lastBrace + 1);
+            }
+          }
+          const parsed = JSON.parse(jsonText.trim());
+          aiText = parsed.response || parsed.message || reply;
+          voiceText = parsed.voiceResponse || '';
+          suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : [];
+          actions = Array.isArray(parsed.actions) ? parsed.actions : [];
+        } catch (e) {
+          aiText = reply.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+          voiceText = '';
+          actions = [];
+          suggestions = [];
+        }
+      }
     }
 
     // 7. Execute agentic actions in database

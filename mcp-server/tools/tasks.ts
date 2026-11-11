@@ -11,10 +11,10 @@ export function registerTaskTools(server: McpServer) {
     'list_tasks',
     'List project tasks. Employees only see their assigned tasks; Managers/HR/Admins can query across the project or company.',
     {
-      status: z.enum(['backlog', 'to_do', 'in_progress', 'in_review', 'completed', 'cancelled', 'all']).optional().describe('Filter by task status'),
-      priority: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Filter by priority'),
-      projectId: z.string().optional().describe('Filter by Project ObjectId'),
-      limit: z.number().optional().default(20).describe('Maximum tasks to return (default 20)'),
+      status: z.enum(['backlog', 'to_do', 'in_progress', 'in_review', 'completed', 'cancelled', 'all']).nullish().describe('Filter by task status'),
+      priority: z.enum(['low', 'medium', 'high', 'critical']).nullish().describe('Filter by priority'),
+      projectId: z.string().nullish().describe('Filter by Project ObjectId'),
+      limit: z.number().nullish().default(20).describe('Maximum tasks to return (default 20)'),
     },
     async ({ status, priority, projectId, limit }) => {
       try {
@@ -44,7 +44,7 @@ export function registerTaskTools(server: McpServer) {
           .populate('projectId', 'name projectNumber')
           .populate('assignedTo', 'name email')
           .sort({ createdAt: -1 })
-          .limit(limit)
+          .limit(limit ?? 20)
           .lean();
 
         return {
@@ -68,11 +68,11 @@ export function registerTaskTools(server: McpServer) {
     {
       projectId: z.string().describe('The Project ObjectId'),
       title: z.string().describe('Title of the task'),
-      description: z.string().optional().describe('Detailed description'),
+      description: z.string().nullish().describe('Detailed description'),
       priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium').describe('Task priority'),
       status: z.enum(['backlog', 'to_do', 'in_progress']).default('to_do').describe('Initial task status'),
-      assignedTo: z.array(z.string()).optional().describe('Array of User ObjectIds to assign'),
-      dueDate: z.string().optional().describe('Due date (ISO string YYYY-MM-DD)'),
+      assignedTo: z.array(z.string()).nullish().describe('Array of User ObjectIds to assign'),
+      dueDate: z.string().nullish().describe('Due date (ISO string YYYY-MM-DD)'),
     },
     async ({ projectId, title, description, priority, status, assignedTo, dueDate }) => {
       try {
@@ -133,7 +133,7 @@ export function registerTaskTools(server: McpServer) {
     {
       taskId: z.string().describe('The Task ObjectId or Task Number (e.g., TSK26110001)'),
       status: z.enum(['backlog', 'to_do', 'in_progress', 'in_review', 'completed', 'cancelled']).describe('New status'),
-      comment: z.string().optional().describe('Optional comment on the status change'),
+      comment: z.string().nullish().describe('Optional comment on the status change'),
     },
     async ({ taskId, status, comment }) => {
       try {

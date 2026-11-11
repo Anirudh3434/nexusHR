@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../context/ToastContext";
 import { Button } from "../../../components/ui/Button";
@@ -29,7 +30,12 @@ import {
   Award,
   ExternalLink,
   Link as LinkIcon,
-  Plug
+  Plug,
+  CreditCard,
+  Landmark,
+  Lock,
+  AlertCircle,
+  ChevronLeft
 } from "lucide-react";
 import { uploadImage } from "../../../services/uploadService";
 import { cn } from "../../../lib/utils";
@@ -65,19 +71,47 @@ interface ProfileData {
   probationConfirmedAt?: string;
 }
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const { user } = useAuth();
   const { addToast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const targetUserId = searchParams.get('userId') || user?.id;
+  const isViewingOther = Boolean(targetUserId && user?.id && targetUserId !== user.id);
+
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'personal' | 'work' | 'address' | 'social'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'work' | 'banking' | 'address' | 'social'>('personal');
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [formData, setFormData] = useState<Partial<ProfileData>>({});
   const [showMcpModal, setShowMcpModal] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const avatarMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Bank Details State
+  const [bankDetail, setBankDetail] = useState<{
+    bankName: string;
+    accountHolderName: string;
+    accountNumberMasked: string;
+    ifscCode: string;
+    branchName?: string;
+    upiIdMasked?: string;
+    isVerified?: boolean;
+    updatedAt?: string;
+  } | null>(null);
+  const [isEditingBank, setIsEditingBank] = useState(false);
+  const [isSavingBank, setIsSavingBank] = useState(false);
+  const [bankForm, setBankForm] = useState({
+    bankName: '',
+    accountHolderName: '',
+    accountNumber: '',
+    confirmAccountNumber: '',
+    ifscCode: '',
+    branchName: '',
+    upiId: '',
+  });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -94,13 +128,104 @@ export default function ProfilePage() {
   }, [showAvatarMenu]);
 
   useEffect(() => {
-    if (user) fetchProfile();
-  }, [user?.id]);
+    if (targetUserId) {
+      fetchProfile();
+      fetchBankDetail();
+    }
+  }, [targetUserId]);
+
+  const fetchBankDetail = async () => {
+    try {
+      const res = await fetch(`/api/users/bank-details?userId=${targetUserId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.bankDetail) {
+          setBankDetail(data.bankDetail);
+          setBankForm((prev) => ({
+            ...prev,
+            bankName: data.bankDetail.bankName || '',
+            accountHolderName: data.bankDetail.accountHolderName || '',
+            ifscCode: data.bankDetail.ifscCode || '',
+            branchName: data.bankDetail.branchName || '',
+            upiId: data.bankDetail.upiIdMasked || '',
+          }));
+        } else {
+          setBankDetail(null);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch bank details:', e);
+    }
+  };
+
+  const handleSaveBank = async () => {
+    if (!bankForm.accountHolderName.trim()) {
+      addToast({ type: 'error', title: 'Validation Error', description: 'Account Holder Name is required' });
+      return;
+    }
+    if (!bankForm.bankName.trim()) {
+      addToast({ type: 'error', title: 'Validation Error', description: 'Bank Name is required' });
+      return;
+    }
+    if (!bankForm.accountNumber.trim()) {
+      addToast({ type: 'error', title: 'Validation Error', description: 'Account Number is required' });
+      return;
+    }
+    if (bankForm.accountNumber.trim().length < 6) {
+      addToast({ type: 'error', title: 'Validation Error', description: 'Account Number must be at least 6 digits' });
+      return;
+    }
+    if (bankForm.accountNumber !== bankForm.confirmAccountNumber) {
+      addToast({ type: 'error', title: 'Validation Error', description: 'Account Numbers do not match' });
+      return;
+    }
+    if (!bankForm.ifscCode.trim()) {
+      addToast({ type: 'error', title: 'Validation Error', description: 'IFSC Code is required' });
+      return;
+    }
+
+    try {
+      setIsSavingBank(true);
+      const res = await fetch('/api/users/bank-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: targetUserId,
+          bankName: bankForm.bankName,
+          accountHolderName: bankForm.accountHolderName,
+          accountNumber: bankForm.accountNumber,
+          ifscCode: bankForm.ifscCode,
+          branchName: bankForm.branchName,
+          upiId: bankForm.upiId,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to save bank details');
+
+      setBankDetail(data.bankDetail);
+      setIsEditingBank(false);
+      setBankForm((prev) => ({ ...prev, accountNumber: '', confirmAccountNumber: '' }));
+      addToast({
+        type: 'success',
+        title: 'Encrypted & Stored',
+        description: 'Bank details saved securely in AES-256-GCM encrypted vault.',
+      });
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: err.message || 'Failed to save bank details',
+      });
+    } finally {
+      setIsSavingBank(false);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/users/profile?userId=${user?.id}`);
+      const response = await fetch(`/api/users/profile?userId=${targetUserId}`);
       if (!response.ok) throw new Error('Failed to fetch profile');
       const data = await response.json();
       setProfile(data);
@@ -119,7 +244,7 @@ export default function ProfilePage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user?.id,
+          userId: targetUserId,
           ...formData,
         }),
       });
@@ -211,6 +336,32 @@ export default function ProfilePage() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300 pb-16">
       
+      {/* Top Banner when viewing another employee profile */}
+      {isViewingOther && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-xs shadow-xs">
+          <div className="flex items-center gap-2.5 text-foreground font-medium">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+              <User size={16} />
+            </div>
+            <div>
+              <span className="text-muted-foreground">Viewing Employee Profile:</span>{' '}
+              <strong className="text-foreground text-sm ml-1">{displayName}</strong>
+              <span className="capitalize ml-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                {profile?.role || 'Employee'}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/employees')}
+            className="text-xs h-8 gap-1.5 shrink-0 self-end sm:self-auto hover:bg-background"
+          >
+            <ChevronLeft size={14} /> Back to Directory
+          </Button>
+        </div>
+      )}
+
       {/* 1. Profile Hero Card */}
       <div className="rounded-[14px] overflow-hidden border border-border bg-card text-card-foreground shadow-xs">
         
@@ -431,6 +582,7 @@ export default function ProfilePage() {
         {[
           { id: 'personal', label: 'Personal & Contact', icon: User },
           { id: 'work', label: 'Employment Details', icon: Building2 },
+          { id: 'banking', label: 'Bank Details (Encrypted)', icon: CreditCard },
           { id: 'address', label: 'Residential Address', icon: MapPin },
           { id: 'social', label: 'Portfolios & Socials', icon: Globe },
         ].map((tab) => {
@@ -613,6 +765,260 @@ export default function ProfilePage() {
               </div>
 
             </div>
+          </div>
+        )}
+
+        {/* TAB: Bank & Payout Details (Encrypted Vault) */}
+        {activeTab === 'banking' && (
+          <div className="rounded-[14px] border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                  <CreditCard size={15} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
+                    Salary Bank Account & Payout Details
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                      <Lock size={10} /> AES-256 Encrypted
+                    </span>
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Used for direct bank transfers when payroll is generated and disbursed.</p>
+                </div>
+              </div>
+              {bankDetail && !isEditingBank && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditingBank(true);
+                    setBankForm({
+                      bankName: bankDetail.bankName || '',
+                      accountHolderName: bankDetail.accountHolderName || '',
+                      accountNumber: '',
+                      confirmAccountNumber: '',
+                      ifscCode: bankDetail.ifscCode || '',
+                      branchName: bankDetail.branchName || '',
+                      upiId: '',
+                    });
+                  }}
+                  className="gap-1.5 text-xs font-medium self-start sm:self-auto"
+                >
+                  <Edit3 size={13} />
+                  <span>Update Details</span>
+                </Button>
+              )}
+            </div>
+
+            {/* If Bank Details Exist and Not in Edit Mode */}
+            {bankDetail && !isEditingBank ? (
+              <div className="space-y-4">
+                {/* Visual Bank Card Banner */}
+                <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-6 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-primary text-primary-foreground shadow-md">
+                        <Landmark size={22} />
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase font-medium tracking-wider text-muted-foreground">Disbursement Account</p>
+                        <h4 className="text-lg font-bold text-foreground">{bankDetail.bankName}</h4>
+                      </div>
+                    </div>
+                    <span className={cn(
+                      "px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5",
+                      bankDetail.isVerified 
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" 
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                    )}>
+                      {bankDetail.isVerified ? (
+                        <>
+                          <CheckCircle2 size={12} /> Verified
+                        </>
+                      ) : (
+                        <>
+                          <Clock size={12} /> Pending Verification
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-border/60 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account Number</span>
+                      <p className="text-base font-mono font-bold text-foreground tracking-wider mt-0.5">
+                        {bankDetail.accountNumberMasked}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Beneficiary Name</span>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                        {bankDetail.accountHolderName}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">IFSC Code</span>
+                      <p className="text-sm font-mono font-semibold text-primary mt-0.5">
+                        {bankDetail.ifscCode}
+                      </p>
+                    </div>
+                    {bankDetail.branchName && (
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Branch</span>
+                        <p className="text-xs font-medium text-foreground mt-0.5">{bankDetail.branchName}</p>
+                      </div>
+                    )}
+                    {bankDetail.upiIdMasked && (
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">UPI ID</span>
+                        <p className="text-xs font-mono font-medium text-foreground mt-0.5">{bankDetail.upiIdMasked}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-xs text-muted-foreground">
+                  <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>
+                    Your complete bank account credentials are encrypted with AES-256-GCM hardware encryption and stored in an isolated vault. Only authorized payroll payouts can reference these details.
+                  </span>
+                </div>
+              </div>
+            ) : (
+              /* Edit or First-Time Add Mode */
+              <div className="space-y-5">
+                <div className="flex items-start gap-2.5 p-3.5 rounded-xl border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+                  <Lock size={16} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-foreground">Secure Banking Vault:</span> All banking details entered below are encrypted with AES-256-GCM before saving to the database. Plain account numbers are never stored in unencrypted format.
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Account Holder Name <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={bankForm.accountHolderName}
+                      onChange={(e) => setBankForm({ ...bankForm, accountHolderName: e.target.value })}
+                      placeholder="e.g. John Doe (as per bank passbook)"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Bank Name <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={bankForm.bankName}
+                      onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
+                      placeholder="e.g. HDFC Bank / ICICI Bank / State Bank of India"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Account Number <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={bankForm.accountNumber}
+                      onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value })}
+                      placeholder="Enter bank account number"
+                      autoComplete="new-password"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Confirm Account Number <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={bankForm.confirmAccountNumber}
+                      onChange={(e) => setBankForm({ ...bankForm, confirmAccountNumber: e.target.value })}
+                      placeholder="Re-enter bank account number"
+                      autoComplete="off"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      IFSC Code <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={bankForm.ifscCode}
+                      onChange={(e) => setBankForm({ ...bankForm, ifscCode: e.target.value.toUpperCase() })}
+                      placeholder="e.g. HDFC0001234"
+                      maxLength={11}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono uppercase text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Branch Name <span className="text-muted-foreground font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={bankForm.branchName}
+                      onChange={(e) => setBankForm({ ...bankForm, branchName: e.target.value })}
+                      placeholder="e.g. Sector 62 Branch"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      UPI ID / VPA <span className="text-muted-foreground font-normal">(Optional for instant salary transfer)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={bankForm.upiId}
+                      onChange={(e) => setBankForm({ ...bankForm, upiId: e.target.value })}
+                      placeholder="e.g. username@okhdfcbank"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2">
+                  {bankDetail && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingBank(false)}
+                      disabled={isSavingBank}
+                      className="font-medium text-xs"
+                    >
+                      <X size={13} className="mr-1" />
+                      Cancel
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    onClick={handleSaveBank}
+                    disabled={isSavingBank}
+                    className="font-medium text-xs gap-1.5"
+                  >
+                    {isSavingBank ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <ShieldCheck size={13} />
+                    )}
+                    <span>Save to Encrypted Vault</span>
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -822,5 +1228,18 @@ export default function ProfilePage() {
 
       <ConnectMcpModal isOpen={showMcpModal} onClose={() => setShowMcpModal(false)} />
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-xs font-medium text-muted-foreground">Loading profile details...</p>
+      </div>
+    }>
+      <ProfilePageContent />
+    </Suspense>
   );
 }

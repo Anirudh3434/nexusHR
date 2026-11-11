@@ -39,7 +39,6 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
         { name: "Applicants", href: "/applicants", icon: <UserPlus size={20} /> },
         { name: "Recruitment Inbox", href: "/recruitment-inbox", icon: <Mail size={20} /> },
         { name: "Job Positions", href: "/job-positions", icon: <FolderOpen size={20} /> },
-        { name: "Email Settings", href: "/email-settings", icon: <Settings size={20} /> },
       ]
     },
     {
@@ -146,7 +145,6 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
         { name: "Applicants", href: "/applicants", icon: <UserPlus size={20} /> },
         { name: "Recruitment Inbox", href: "/recruitment-inbox", icon: <Mail size={20} /> },
         { name: "Job Positions", href: "/job-positions", icon: <FolderOpen size={20} /> },
-        { name: "Email Settings", href: "/email-settings", icon: <Settings size={20} /> },
       ]
     },
     {
