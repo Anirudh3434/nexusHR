@@ -15,6 +15,7 @@ const READ_ONLY_TOOLS = new Set([
   'list_tasks',
   'get_leaves',
   'get_attendance_records',
+  'get_late_arrivals',
   'search_employees',
   'get_departments',
   'get_notices',

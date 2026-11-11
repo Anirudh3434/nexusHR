@@ -158,6 +158,7 @@ export async function POST(req: NextRequest) {
       response: result.response,
       sources: result.sources,
       category: result.category,
+      mode: result.mode,
       conversationId: conversationLog._id.toString()
     }, { status: 200 });
 

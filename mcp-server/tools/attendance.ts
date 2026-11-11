@@ -155,5 +155,75 @@ export function registerAttendanceTools(server: McpServer) {
       }
     }
   );
+
+  // Tool: get_late_arrivals
+  server.tool(
+    'get_late_arrivals',
+    'Count and list employees who arrived late on a given day (defaults to today). Employees see only their own record; Managers/HR/Admin see the whole company.',
+    {
+      date: z.string().optional().describe('Day to check as YYYY-MM-DD. Defaults to today.'),
+    },
+    async ({ date }) => {
+      try {
+        const user = await resolveUserContext();
+        const check = checkPermission(user, 'attendance', 'view');
+        if (!check.allowed) {
+          return { content: [{ type: 'text', text: check.error || 'Access Denied' }], isError: true };
+        }
+
+        const parsed = date ? new Date(`${date}T00:00:00`) : new Date();
+        if (isNaN(parsed.getTime())) {
+          return { content: [{ type: 'text', text: `Invalid date "${date}". Use YYYY-MM-DD.` }], isError: true };
+        }
+
+        // Some records store UTC midnight, others a full timestamp — a local-day
+        // window covers both (same convention as /api/attendance).
+        const start = new Date(parsed);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(parsed);
+        end.setHours(23, 59, 59, 999);
+
+        const query: any = {
+          date: { $gte: start, $lte: end },
+          $or: [{ isLate: true }, { status: 'Late' }],
+        };
+        if (user.companyId) query.companyId = user.companyId;
+        // Employees may only inspect themselves.
+        if (user.role === 'employee') query.employeeId = user.id;
+
+        const records = await Attendance.find(query)
+          .populate('employeeId', 'name email department designation')
+          .lean();
+
+        const employees = records
+          .map((record: any) => ({
+            employee: record.employeeId?.name || record.employeeName || 'Unknown',
+            department: record.employeeId?.department || record.department || '',
+            designation: record.employeeId?.designation || record.designation || '',
+            checkIn: record.checkIn?.time || null,
+            lateMinutes: record.lateMinutes || 0,
+            status: record.status || 'Late',
+          }))
+          .sort((a: any, b: any) => b.lateMinutes - a.lateMinutes)
+          .slice(0, 100);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                date: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+                scope: user.role === 'employee' ? 'self' : 'company',
+                lateCount: employees.length,
+                employees,
+              }, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return { content: [{ type: 'text', text: `Error fetching late arrivals: ${err.message}` }], isError: true };
+      }
+    }
+  );
 }
 

@@ -135,6 +135,8 @@ export interface HRQueryResult {
     relevance: number;
   }[];
   category: string;
+  /** How the answer was produced — useful for debugging the chat UI/server logs. */
+  mode?: 'llm+tools' | 'llm' | 'mock';
 }
 
 export interface HrBotToolDefinition {
@@ -252,7 +254,10 @@ export const queryHRKnowledge = async (
 ): Promise<HRQueryResult> => {
   const apiKey = getNvidiaApiKey();
   if (!apiKey) {
-    console.warn('NVIDIA_API_KEY is not set. Returning mock response.');
+    console.error(
+      '[Nexi] NVIDIA_API_KEY is missing — falling back to knowledge-base answers only ' +
+        '(no AI reasoning, no live MCP/MongoDB data). Set it in .env.local or the deployment env.'
+    );
     return generateMockHRResponse(input, knowledgeArticles);
   }
 
@@ -310,9 +315,11 @@ ${context || 'No specific knowledge base articles found for this query.'}`;
     ];
 
     let aiResponse: string;
+    let mode: HRQueryResult['mode'] = 'llm';
     if (hasTools) {
       try {
         aiResponse = await runToolLoop(apiKey, messages, input.toolkit!);
+        mode = 'llm+tools';
       } catch (toolError: any) {
         // Model/provider may reject tool calling — degrade to a plain answer.
         console.warn(
@@ -336,7 +343,8 @@ ${context || 'No specific knowledge base articles found for this query.'}`;
     return {
       response: aiResponse,
       sources,
-      category
+      category,
+      mode
     };
   } catch (error: any) {
     console.error('NVIDIA AI HR Query Error:', error.response?.data || error.message);
@@ -465,21 +473,44 @@ const runToolLoop = async (
   return finalResponse.data.choices?.[0]?.message?.content || '';
 };
 
+/**
+ * Questions that can only be answered from live records (MongoDB), not from a
+ * policy article. Used to keep the offline fallback honest.
+ */
+const LIVE_DATA_PATTERNS: RegExp[] = [
+  /\bhow many\b/i,
+  /\bhow much (leave|pto|balance)\b/i,
+  /\bwho('s| is| are)\b/i,
+  /\bmy (leave|leaves|attendance|pto|task|tasks|balance|profile)\b/i,
+  /\bclock(ed)? ?(in|out)\b/i,
+  /\b(check|arrive|arrived|late)\w*\b.*\b(today|yesterday)\b/i,
+  /\b(today|yesterday)\b.*\b(late|absent|attendance)\b/i,
+];
+
+/** Minimum keyword score before a policy article is considered a real match. */
+const MIN_RELIABLE_SCORE = 8;
+
 const generateMockHRResponse = async (input: HRQueryInput, knowledgeArticles: KnowledgeArticle[]): Promise<HRQueryResult> => {
   const category = classifyQuestion(input.question);
   const { articles, scores } = await searchKnowledgeBase(input.question, input.companyId, knowledgeArticles);
-  
-  let response = '';
-  
-  if (articles.length > 0) {
-    const topArticle = articles[0];
+
+  const bestScore = scores[0] || 0;
+  const topArticle = articles[0];
+  const isReliable = Boolean(topArticle) && bestScore >= MIN_RELIABLE_SCORE;
+  const looksLikeLiveData = LIVE_DATA_PATTERNS.some((pattern) => pattern.test(input.question));
+
+  let response: string;
+  if (looksLikeLiveData) {
+    // Never dress up a policy article as an answer to a records question.
+    response = `Hi, I'm Nexi 👋 — my live-data connection is unavailable right now, so I can't look up real records (attendance, late arrivals, leave balances or task status) for "${input.question}".\n\nYou can see the latest numbers under Attendance / Leaves in NexusHR, or ask HR or IT Support (support@company.com).`;
+  } else if (isReliable) {
     response = `Hi, I'm Nexi 👋 — based on our company policies (${topArticle.title}):\n\n${topArticle.content}\n\nFor additional support or specific inquiries, please reach out to HR or IT Support directly.`;
   } else {
     response = `Hi, I'm Nexi 👋 — I couldn't find a specific policy article directly matching your inquiry in the knowledge base. Please reach out to your HR representative or IT Helpdesk (support@company.com) for prompt assistance with "${input.question}".`;
   }
-  
+
   const maxScore = Math.max(...scores, 1);
-  const sources = articles.map((article: KnowledgeArticle, index: number) => ({
+  const sources = (isReliable ? articles : []).map((article: KnowledgeArticle, index: number) => ({
     articleId: article._id,
     title: article.title,
     relevance: scores[index] / maxScore
@@ -488,6 +519,7 @@ const generateMockHRResponse = async (input: HRQueryInput, knowledgeArticles: Kn
   return {
     response,
     sources,
-    category
+    category,
+    mode: 'mock'
   };
 };
