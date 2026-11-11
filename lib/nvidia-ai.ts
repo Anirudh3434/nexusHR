@@ -137,11 +137,34 @@ export interface HRQueryResult {
   category: string;
 }
 
+export interface HrBotToolDefinition {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface HrBotToolResult {
+  text: string;
+  isError?: boolean;
+}
+
+/**
+ * Live-data bridge (MCP tools backed by MongoDB). The HR chat route supplies an
+ * implementation so this module stays free of MCP/DB imports.
+ */
+export interface HrBotToolkit {
+  definitions: HrBotToolDefinition[];
+  call: (name: string, args: Record<string, unknown>) => Promise<HrBotToolResult>;
+  close?: () => Promise<void>;
+}
+
 export interface HRQueryInput {
   question: string;
   companyId: string;
   userId?: string;
+  userName?: string;
   history?: Array<{ role: string; content: string }>;
+  toolkit?: HrBotToolkit;
 }
 
 // Stop words to ignore during search matching
@@ -245,46 +268,62 @@ export const queryHRKnowledge = async (
   ).join('\n');
   
   // Build system prompt
-  const systemPrompt = `You are an expert HR and Workplace Assistant for a company. Your role is to answer employee questions about HR policies, IT asset guidelines, procedures, benefits, and general workplace topics.
+  const hasTools = Boolean(input.toolkit && input.toolkit.definitions.length > 0);
+
+  const toolGuidance = hasTools
+    ? `
+Live Data Tools (MongoDB via NexusHR MCP):
+- You can call NexusHR tools to read the current employee's live data: profile, leave requests, attendance records, tasks, colleague directory, and company notices.
+- ALWAYS call the relevant tool before answering anything about the user's own records ("my leaves", "how many PTO days do I have", "did I clock in", "my tasks", "my attendance"). Never guess or invent these values.
+- Tool results are authoritative. Summarize them in natural language; do not dump raw JSON.
+- If a tool reports a permission error, say plainly that you cannot access that data for their role and point them to HR.
+- Only the tools provided to you exist. Do not claim to have updated, approved, or deleted anything from chat.
+`
+    : '';
+
+  const systemPrompt = `You are Nexi, the AI HR and Workplace Assistant built into NexusHR. You help employees with HR policies, IT asset guidelines, procedures, benefits, and general workplace topics.
+
+Identity:
+- Your name is Nexi. Always introduce yourself as Nexi if asked who you are or if this is the first message.
+- You are a friendly, expert HR companion — not a generic chatbot, and never an AI that pretends to be human. If asked whether you are an AI, say so honestly.
+- The platform you live in is called NexusHR. Do not invent other product names, companies, or brands.
 
 Guidelines:
-- Answer questions clearly, accurately, and empathetically.
+- Answer questions clearly, accurately, and empathetically, using plain language.
 - If relevant knowledge base articles are provided below, synthesize and cite the information by article title.
 - If the knowledge base does not directly answer the question or only partially covers it, provide helpful and standard workplace guidance while advising the employee to report the matter to HR or IT Support (e.g. support@company.com).
 - For accident/damage incidents (e.g., damaged or broken laptop/equipment): reassure the employee, advise them to immediately report to the IT Helpdesk, explain standard protocols (accidental damage vs negligence assessment, temporary loaner device issuance), and provide clear step-by-step guidance.
-- Maintain a friendly, supportive, and professional tone.
+- Never invent policy numbers, deadlines, or entitlements that are not in the context. If unsure, say so and point the employee to the right human contact.
+- Use short paragraphs and bullet points for readability. Keep answers focused and under ~200 words unless the question needs more detail.
+- Maintain a friendly, supportive, and professional tone. Do not use phrases like "As an AI language model".
+${toolGuidance}
+Current User: ${input.userName ? `${input.userName} (address them by their first name when it feels natural)` : 'an employee'}
 
 Context from Knowledge Base:
-${context || 'No specific knowledge base articles found for this query.'}
-
-Current User Question: ${input.question}`;
+${context || 'No specific knowledge base articles found for this query.'}`;
 
   try {
-    const messages = [
+    const messages: Array<Record<string, unknown>> = [
       { role: 'system', content: systemPrompt },
       ...(input.history || []),
       { role: 'user', content: input.question }
     ];
 
-    const response = await axios.post(
-      API_URL,
-      {
-        model: 'meta/llama-3.1-70b-instruct',
-        messages,
-        temperature: 0.3,
-        top_p: 0.7,
-        max_tokens: 1024,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 7000,
+    let aiResponse: string;
+    if (hasTools) {
+      try {
+        aiResponse = await runToolLoop(apiKey, messages, input.toolkit!);
+      } catch (toolError: any) {
+        // Model/provider may reject tool calling — degrade to a plain answer.
+        console.warn(
+          'Nexi tool-calling unavailable, answering without live data:',
+          toolError.response?.data || toolError.message
+        );
+        aiResponse = await completeChat(apiKey, messages);
       }
-    );
-
-    const aiResponse = response.data.choices[0].message.content;
+    } else {
+      aiResponse = await completeChat(apiKey, messages);
+    }
     
     // Calculate relevance scores (normalize to 0-1)
     const maxScore = Math.max(...scores, 1);
@@ -305,6 +344,127 @@ Current User Question: ${input.question}`;
   }
 };
 
+const HR_MODEL = 'meta/llama-3.1-70b-instruct';
+const MAX_TOOL_ROUNDS = 4;
+
+const nvidiaHeaders = (apiKey: string) => ({
+  'Authorization': `Bearer ${apiKey}`,
+  'Content-Type': 'application/json',
+});
+
+/** Single completion without tools (also the fallback path). */
+const completeChat = async (
+  apiKey: string,
+  messages: Array<Record<string, unknown>>
+): Promise<string> => {
+  const response = await axios.post(
+    API_URL,
+    {
+      model: HR_MODEL,
+      messages,
+      temperature: 0.3,
+      top_p: 0.7,
+      max_tokens: 1024,
+    },
+    { headers: nvidiaHeaders(apiKey), timeout: 10000 }
+  );
+
+  return response.data.choices?.[0]?.message?.content || '';
+};
+
+/**
+ * Agentic loop: ask the model, execute any MCP tool calls it requests against
+ * MongoDB, feed the results back, and repeat until it produces a final answer.
+ */
+const runToolLoop = async (
+  apiKey: string,
+  messages: Array<Record<string, unknown>>,
+  toolkit: HrBotToolkit
+): Promise<string> => {
+  const tools = toolkit.definitions.map((tool) => ({
+    type: 'function' as const,
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+    },
+  }));
+
+  const convo: Array<Record<string, unknown>> = [...messages];
+
+  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+    const response = await axios.post(
+      API_URL,
+      {
+        model: HR_MODEL,
+        messages: convo,
+        tools,
+        tool_choice: 'auto',
+        temperature: 0.3,
+        top_p: 0.7,
+        max_tokens: 1024,
+      },
+      { headers: nvidiaHeaders(apiKey), timeout: 20000 }
+    );
+
+    const message = response.data.choices?.[0]?.message;
+    const toolCalls: Array<{
+      id: string;
+      function?: { name?: string; arguments?: string };
+    }> = message?.tool_calls || [];
+
+    if (toolCalls.length === 0) {
+      return message?.content || '';
+    }
+
+    convo.push({
+      role: 'assistant',
+      content: message?.content ?? null,
+      tool_calls: toolCalls,
+    });
+
+    for (const call of toolCalls) {
+      const name = call.function?.name || '';
+      let args: Record<string, unknown> = {};
+      try {
+        args = call.function?.arguments ? JSON.parse(call.function.arguments) : {};
+      } catch {
+        /* Model produced malformed JSON — let the tool report the problem. */
+      }
+
+      const result = await toolkit.call(name, args);
+
+      convo.push({
+        role: 'tool',
+        tool_call_id: call.id,
+        name,
+        content: result.isError ? `Error: ${result.text}` : result.text,
+      });
+    }
+  }
+
+  // Budget exhausted — force a final answer from what we have.
+  const finalResponse = await axios.post(
+    API_URL,
+    {
+      model: HR_MODEL,
+      messages: [
+        ...convo,
+        {
+          role: 'user',
+          content: 'Using the tool results above, give the employee your final answer now.',
+        },
+      ],
+      temperature: 0.3,
+      top_p: 0.7,
+      max_tokens: 1024,
+    },
+    { headers: nvidiaHeaders(apiKey), timeout: 15000 }
+  );
+
+  return finalResponse.data.choices?.[0]?.message?.content || '';
+};
+
 const generateMockHRResponse = async (input: HRQueryInput, knowledgeArticles: KnowledgeArticle[]): Promise<HRQueryResult> => {
   const category = classifyQuestion(input.question);
   const { articles, scores } = await searchKnowledgeBase(input.question, input.companyId, knowledgeArticles);
@@ -313,9 +473,9 @@ const generateMockHRResponse = async (input: HRQueryInput, knowledgeArticles: Kn
   
   if (articles.length > 0) {
     const topArticle = articles[0];
-    response = `Based on our company policies (${topArticle.title}):\n\n${topArticle.content}\n\nFor additional support or specific inquiries, please reach out to HR or IT Support directly.`;
+    response = `Hi, I'm Nexi 👋 — based on our company policies (${topArticle.title}):\n\n${topArticle.content}\n\nFor additional support or specific inquiries, please reach out to HR or IT Support directly.`;
   } else {
-    response = `I couldn't find a specific policy article directly matching your inquiry in the knowledge base. Please reach out to your HR representative or IT Helpdesk (support@company.com) for prompt assistance with "${input.question}".`;
+    response = `Hi, I'm Nexi 👋 — I couldn't find a specific policy article directly matching your inquiry in the knowledge base. Please reach out to your HR representative or IT Helpdesk (support@company.com) for prompt assistance with "${input.question}".`;
   }
   
   const maxScore = Math.max(...scores, 1);
