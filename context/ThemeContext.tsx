@@ -13,13 +13,6 @@ interface ThemeContextProps {
   toggleTheme: (event?: React.MouseEvent | MouseEvent) => void;
 }
 
-interface DocumentWithViewTransition extends Document {
-  startViewTransition?: (updateCallback: () => Promise<void> | void) => {
-    ready: Promise<void>;
-    finished: Promise<void>;
-  };
-}
-
 const STORAGE_KEY = "hrm-theme";
 
 function getInitialTheme(): Theme {
@@ -87,7 +80,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const doc = typeof document !== "undefined" ? (document as DocumentWithViewTransition) : null;
+    const doc = typeof document !== "undefined" ? document : null;
+    // Feature-detect: older browsers lack the View Transition API even though TS declares it.
     if (!doc || typeof doc.startViewTransition !== "function" || isReducedMotion) {
       setThemeState(next);
       applyTheme(next);
