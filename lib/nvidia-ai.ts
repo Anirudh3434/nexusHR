@@ -2,6 +2,42 @@ import axios from 'axios';
 
 const getNvidiaApiKey = () => process.env.NVIDIA_API_KEY;
 const API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+/**
+ * Chat provider for Nexi (both endpoints speak the OpenAI chat-completions
+ * dialect). Groq is preferred when configured, NVIDIA NIM is the fallback.
+ */
+export interface ChatProvider {
+  name: 'groq' | 'nvidia';
+  url: string;
+  apiKey: string;
+  model: string;
+}
+
+export const getHrChatProvider = (): ChatProvider | null => {
+  const groqKey = process.env.GROQ_API_KEY?.trim();
+  if (groqKey) {
+    return {
+      name: 'groq',
+      url: GROQ_API_URL,
+      apiKey: groqKey,
+      model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
+    };
+  }
+
+  const nvidiaKey = process.env.NVIDIA_API_KEY?.trim();
+  if (nvidiaKey) {
+    return {
+      name: 'nvidia',
+      url: API_URL,
+      apiKey: nvidiaKey,
+      model: process.env.NVIDIA_MODEL || 'meta/llama-3.1-70b-instruct',
+    };
+  }
+
+  return null;
+};
 
 export interface PerformanceInput {
   employeeName: string;
@@ -252,11 +288,12 @@ export const queryHRKnowledge = async (
   input: HRQueryInput,
   knowledgeArticles: KnowledgeArticle[]
 ): Promise<HRQueryResult> => {
-  const apiKey = getNvidiaApiKey();
-  if (!apiKey) {
+  const provider = getHrChatProvider();
+  if (!provider) {
     console.error(
-      '[Nexi] NVIDIA_API_KEY is missing — falling back to knowledge-base answers only ' +
-        '(no AI reasoning, no live MCP/MongoDB data). Set it in .env.local or the deployment env.'
+      '[Nexi] No AI key configured (GROQ_API_KEY or NVIDIA_API_KEY) — falling back to ' +
+        'knowledge-base answers only (no AI reasoning, no live MCP/MongoDB data). ' +
+        'Set one in .env.local or the deployment env.'
     );
     return generateMockHRResponse(input, knowledgeArticles);
   }
@@ -318,7 +355,7 @@ ${context || 'No specific knowledge base articles found for this query.'}`;
     let mode: HRQueryResult['mode'] = 'llm';
     if (hasTools) {
       try {
-        aiResponse = await runToolLoop(apiKey, messages, input.toolkit!);
+        aiResponse = await runToolLoop(provider, messages, input.toolkit!);
         mode = 'llm+tools';
       } catch (toolError: any) {
         // Model/provider may reject tool calling — degrade to a plain answer.
@@ -326,10 +363,10 @@ ${context || 'No specific knowledge base articles found for this query.'}`;
           'Nexi tool-calling unavailable, answering without live data:',
           toolError.response?.data || toolError.message
         );
-        aiResponse = await completeChat(apiKey, messages);
+        aiResponse = await completeChat(provider, messages);
       }
     } else {
-      aiResponse = await completeChat(apiKey, messages);
+      aiResponse = await completeChat(provider, messages);
     }
     
     // Calculate relevance scores (normalize to 0-1)
@@ -352,29 +389,28 @@ ${context || 'No specific knowledge base articles found for this query.'}`;
   }
 };
 
-const HR_MODEL = 'meta/llama-3.1-70b-instruct';
 const MAX_TOOL_ROUNDS = 4;
 
-const nvidiaHeaders = (apiKey: string) => ({
+const chatHeaders = (apiKey: string) => ({
   'Authorization': `Bearer ${apiKey}`,
   'Content-Type': 'application/json',
 });
 
 /** Single completion without tools (also the fallback path). */
 const completeChat = async (
-  apiKey: string,
+  provider: ChatProvider,
   messages: Array<Record<string, unknown>>
 ): Promise<string> => {
   const response = await axios.post(
-    API_URL,
+    provider.url,
     {
-      model: HR_MODEL,
+      model: provider.model,
       messages,
       temperature: 0.3,
       top_p: 0.7,
       max_tokens: 1024,
     },
-    { headers: nvidiaHeaders(apiKey), timeout: 10000 }
+    { headers: chatHeaders(provider.apiKey), timeout: 15000 }
   );
 
   return response.data.choices?.[0]?.message?.content || '';
@@ -385,7 +421,7 @@ const completeChat = async (
  * MongoDB, feed the results back, and repeat until it produces a final answer.
  */
 const runToolLoop = async (
-  apiKey: string,
+  provider: ChatProvider,
   messages: Array<Record<string, unknown>>,
   toolkit: HrBotToolkit
 ): Promise<string> => {
@@ -402,9 +438,9 @@ const runToolLoop = async (
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const response = await axios.post(
-      API_URL,
+      provider.url,
       {
-        model: HR_MODEL,
+        model: provider.model,
         messages: convo,
         tools,
         tool_choice: 'auto',
@@ -412,7 +448,7 @@ const runToolLoop = async (
         top_p: 0.7,
         max_tokens: 1024,
       },
-      { headers: nvidiaHeaders(apiKey), timeout: 20000 }
+      { headers: chatHeaders(provider.apiKey), timeout: 25000 }
     );
 
     const message = response.data.choices?.[0]?.message;
@@ -453,9 +489,9 @@ const runToolLoop = async (
 
   // Budget exhausted — force a final answer from what we have.
   const finalResponse = await axios.post(
-    API_URL,
+    provider.url,
     {
-      model: HR_MODEL,
+      model: provider.model,
       messages: [
         ...convo,
         {
@@ -467,7 +503,7 @@ const runToolLoop = async (
       top_p: 0.7,
       max_tokens: 1024,
     },
-    { headers: nvidiaHeaders(apiKey), timeout: 15000 }
+    { headers: chatHeaders(provider.apiKey), timeout: 20000 }
   );
 
   return finalResponse.data.choices?.[0]?.message?.content || '';
