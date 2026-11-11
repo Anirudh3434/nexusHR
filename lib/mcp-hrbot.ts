@@ -14,6 +14,7 @@ const READ_ONLY_TOOLS = new Set([
   'check_permission',
   'list_tasks',
   'get_leaves',
+  'get_leave_balances',
   'get_attendance_records',
   'get_late_arrivals',
   'search_employees',
@@ -83,11 +84,18 @@ export async function createHrBotToolkit(userContext: UserContext): Promise<HrBo
         return { text: `Tool "${name}" is not available to Nexi.`, isError: true };
       }
 
+      // Models routinely emit `null` for optional arguments. Tools treat an
+      // absent argument as "not supplied", so drop nulls instead of forwarding
+      // them (zod defaults and type guards expect a real value or nothing).
+      const cleanArgs = Object.fromEntries(
+        Object.entries(args ?? {}).filter(([, value]) => value !== null && value !== undefined)
+      );
+
       try {
         // Run inside the MCP request context so `resolveUserContext()` inside the
         // tools resolves to the employee who is chatting — no token juggling.
         const result = await mcpContextStorage.run({ userContext }, () =>
-          client.callTool({ name, arguments: args })
+          client.callTool({ name, arguments: cleanArgs })
         );
 
         let text = extractText(result);

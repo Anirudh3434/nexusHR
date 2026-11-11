@@ -9,7 +9,7 @@ export function registerAttendanceTools(server: McpServer) {
     'clock_in',
     'Clock in for today.',
     {
-      notes: z.string().optional().describe('Optional note or work location description'),
+      notes: z.string().nullish().describe('Optional note or work location description'),
     },
     async ({ notes }) => {
       try {
@@ -115,7 +115,7 @@ export function registerAttendanceTools(server: McpServer) {
     'get_attendance_records',
     'Fetch attendance logs. Employees can only see their own attendance; Managers/HR/Admin can query team attendance.',
     {
-      employeeId: z.string().optional().describe('Filter by specific employee (Managers/HR/Admin only)'),
+      employeeId: z.string().nullish().describe('Filter by specific employee (Managers/HR/Admin only)'),
       limit: z.number().default(14).describe('Days to retrieve (default 14)'),
     },
     async ({ employeeId, limit }) => {
@@ -161,7 +161,7 @@ export function registerAttendanceTools(server: McpServer) {
     'get_late_arrivals',
     'Count and list employees who arrived late on a given day (defaults to today). Employees see only their own record; Managers/HR/Admin see the whole company.',
     {
-      date: z.string().optional().describe('Day to check as YYYY-MM-DD. Defaults to today.'),
+      date: z.string().nullish().describe('Day to check as YYYY-MM-DD. Defaults to today.'),
     },
     async ({ date }) => {
       try {

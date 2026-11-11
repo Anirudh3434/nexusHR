@@ -30,6 +30,7 @@ export async function GET(req: Request) {
     const employeeId = searchParams.get('employeeId');
     const payrollId = searchParams.get('id');
     const queryCompanyId = searchParams.get('companyId');
+    const statusParam = searchParams.get('status');
 
     if (queryCompanyId && !isSuperAdmin && queryCompanyId !== auth.companyId) {
       return NextResponse.json({ message: 'Forbidden: company mismatch' }, { status: 403 });
@@ -42,10 +43,12 @@ export async function GET(req: Request) {
     if (payrollId) query._id = payrollId;
     if (month !== -1) query.month = month;
     if (year !== -1) query.year = year;
+    if (statusParam) query.status = statusParam;
 
     if (!isPrivileged) {
-      // Employees and managers can only view their own payroll records
+      // Employees can only view their own payroll records once payment is done (Paid status)
       query.employeeId = auth.userId;
+      query.status = 'Paid';
     } else if (employeeId) {
       query.employeeId = employeeId;
     }
@@ -147,19 +150,6 @@ async function generatePayrollThunk(month: number, year: number, companyId: stri
     };
 
     const record = await Payroll.findOneAndUpdate({ employeeId: user._id, month, year }, payrollData, { upsert: true, new: true });
-
-    // Notify employee that payslip is ready
-    const monthLabel = MONTH_NAMES[month] || `Month ${month + 1}`;
-    await notify({
-      companyId: String(companyId),
-      kind: 'payroll',
-      title: 'Your payslip is ready',
-      message: `${monthLabel} ${year} payslip has been generated · Net Pay ₹${(netSalary || 0).toLocaleString('en-IN')}`,
-      href: '/payslips',
-      meta: 'Payslip Ready',
-      recipientIds: [String(user._id)],
-      dedupeKey: `payroll-slip:${user._id}:${month}:${year}`,
-    });
 
     // Sync OT Status
     await Attendance.updateMany(
@@ -267,19 +257,6 @@ export async function POST(req: Request) {
         payrollData,
         { upsert: true, new: true }
       );
-
-      // Notify employee that payslip is ready
-      const monthLabel = MONTH_NAMES[month] || `Month ${month + 1}`;
-      await notify({
-        companyId: String(companyId),
-        kind: 'payroll',
-        title: 'Your payslip is ready',
-        message: `${monthLabel} ${year} payslip has been generated · Net Pay ₹${(netSalary || 0).toLocaleString('en-IN')}`,
-        href: '/payslips',
-        meta: 'Payslip Ready',
-        recipientIds: [String(user._id)],
-        dedupeKey: `payroll-slip:${user._id}:${month}:${year}`,
-      });
       
       // Sync OT Status (skip rejected)
       await Attendance.updateMany(

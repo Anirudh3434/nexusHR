@@ -334,25 +334,6 @@ export default function RecruitmentInboxPage() {
         }
       />
 
-      {/* Automated Job Requisition Callout */}
-      <div className="flex items-start gap-3.5 rounded-[14px] border border-border bg-card p-4 shadow-xs">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-          <Mail className="h-4 w-4" />
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Automated Requisition Sync
-            </h4>
-            <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              Active
-            </span>
-          </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Incoming applicant emails containing a Job Reference Code (e.g., <code className="rounded bg-muted border border-border px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground">JB0001</code>) in the subject line are automatically indexed and routed to the corresponding open position.
-          </p>
-        </div>
-      </div>
 
       {/* Stats / Interactive Filter Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

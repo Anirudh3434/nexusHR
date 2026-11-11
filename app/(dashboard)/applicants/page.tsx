@@ -505,25 +505,7 @@ export default function ApplicantsPage() {
         }
       />
 
-      {/* Requisition Pipeline Callout */}
-      <div className="flex items-start gap-3.5 rounded-[14px] border border-border bg-card p-4 shadow-xs">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-          <Briefcase className="h-4 w-4" />
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Unified Requisition Pipeline
-            </h4>
-            <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              Omnichannel
-            </span>
-          </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Consolidating all candidate submissions from web applications and inbound email streams indexed by Job Reference. Use the filters below to inspect source channels or individual position stages.
-          </p>
-        </div>
-      </div>
+    
 
       {/* Active Job ID Filter Banner */}
       {filterJobId && (

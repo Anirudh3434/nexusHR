@@ -10,8 +10,8 @@ export function registerEmployeeTools(server: McpServer) {
     'search_employees',
     'Search the company employee directory by name, department, or designation. Sensitive data (salary, password) is automatically masked for non-HR/Admin users.',
     {
-      query: z.string().optional().describe('Search query matching name, department, or designation'),
-      department: z.string().optional().describe('Filter by department name'),
+      query: z.string().nullish().describe('Search query matching name, department, or designation'),
+      department: z.string().nullish().describe('Filter by department name'),
       limit: z.number().default(20).describe('Limit results'),
     },
     async ({ query, department, limit }) => {

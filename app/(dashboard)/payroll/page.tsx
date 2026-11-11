@@ -411,9 +411,11 @@ export default function PayrollPage() {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           payroll.status === 'Paid' 
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            : payroll.status === 'Reviewed'
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}>
-                          {payroll.status}
+                          {payroll.status === 'Reviewed' ? 'Verified' : payroll.status}
                         </span>
                         {payroll.isManualEdit && (
                           <div title="Manually Edited">
@@ -489,6 +491,16 @@ export default function PayrollPage() {
                             >
                               <RefreshCw size={13} />
                             </Button>
+                            {payroll.status === 'Generated' && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => updateStatus(payroll._id, 'Reviewed')} 
+                                className="h-7 px-2 text-[10px] font-semibold text-blue-600 border-blue-200 dark:border-blue-800 dark:text-blue-400"
+                              >
+                                Verify
+                              </Button>
+                            )}
                             <Button 
                               size="sm" 
                               onClick={() => updateStatus(payroll._id, 'Paid')} 
@@ -572,9 +584,11 @@ export default function PayrollPage() {
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               payroll.status === 'Paid' 
                                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                : payroll.status === 'Reviewed'
+                                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                  : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                             }`}>
-                              {payroll.status}
+                              {payroll.status === 'Reviewed' ? 'Verified' : payroll.status}
                             </span>
                             {payroll.isManualEdit && (
                               <div title="Manually Edited">
@@ -612,6 +626,16 @@ export default function PayrollPage() {
                                 title="Refresh Payroll (Recalculate)"
                               >
                                 <RefreshCw size={14} />
+                              </Button>
+                            )}
+                            {payroll.status === 'Generated' && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => updateStatus(payroll._id, 'Reviewed')} 
+                                className="h-8 px-2.5 text-[10px] font-semibold text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400"
+                              >
+                                Verify
                               </Button>
                             )}
                             {payroll.status !== 'Paid' && (

@@ -405,26 +405,7 @@ ${requirements}
         }
       />
 
-      {/* Requisition Publishing Callout */}
-      <div className="flex items-start gap-3.5 rounded-[14px] border border-border bg-card p-4 shadow-xs">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-          <Briefcase className="h-4 w-4" />
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Job Requisition & Publishing
-            </h4>
-            <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              Public Portal
-            </span>
-          </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Create job openings with auto-generated Job Reference IDs (e.g., <code className="rounded bg-muted border border-border px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground">JB0001</code>) to publish to your careers portal and automatically route inbound applicants.
-          </p>
-        </div>
-      </div>
-
+    
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
