@@ -7,14 +7,20 @@ import mongoose from 'mongoose';
 // length checks on filter values (qr/verify, login), per-source filter
 // allowlists (reports), and escaped literals for $regex input.
 
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  (process.env.NODE_ENV === 'production' ? '' : 'mongodb://localhost:27017/hrm');
+// Fail closed: no fallback URI in production. Lazy so a missing URI throws at
+// first use (request time), never during `next build` page-data collection.
+function getMongoUri(): string {
+  const uri =
+    process.env.MONGODB_URI ||
+    (process.env.NODE_ENV === 'production' ? '' : 'mongodb://localhost:27017/hrm');
 
-if (!MONGODB_URI) {
-  throw new Error(
-    'MONGODB_URI is not set. Configure it in your deployment environment (e.g. Vercel Project Settings > Environment Variables) so the app does not fall back to localhost.'
-  );
+  if (!uri) {
+    throw new Error(
+      'MONGODB_URI is not set. Configure it in your deployment environment (e.g. Vercel Project Settings > Environment Variables) so the app does not fall back to localhost.'
+    );
+  }
+
+  return uri;
 }
 
 /**
@@ -32,6 +38,8 @@ async function connectDB() {
   if (cached.conn) {
     return cached.conn;
   }
+
+  const MONGODB_URI = getMongoUri();
 
   if (!cached.promise) {
     const opts = {
