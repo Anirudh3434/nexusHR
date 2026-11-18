@@ -644,11 +644,16 @@ export default function PayrollPage() {
                 icon={<CircleDollarSign className="w-10 h-10 text-muted-foreground" />}
                 title="No Payroll Records"
                 description={`No payroll generated for ${months[selectedMonth]} ${selectedYear}. Click "Generate" to calculate salaries.`}
-                action={{
-                  label: isGenerating ? 'Generating...' : 'Generate Payroll',
-                  onClick: generatePayroll,
-                  disabled: isGenerating,
-                }}
+                action={
+                  <Button
+                    size="sm"
+                    onClick={generatePayroll}
+                    disabled={isGenerating}
+                    className="gap-1.5"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Payroll'}
+                  </Button>
+                }
               />
             </div>
           ) : (

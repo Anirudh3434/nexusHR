@@ -17,6 +17,7 @@ export const ToastContainer = () => {
               "bg-white border-gray-200 text-gray-900 dark:bg-gray-950 dark:border-gray-800 dark:text-gray-50": toast.type === "info",
               "bg-green-50 border-green-200 text-green-900 dark:bg-green-950/30 dark:border-green-900 dark:text-green-300": toast.type === "success",
               "bg-red-50 border-red-200 text-red-900 dark:bg-red-950/30 dark:border-red-900 dark:text-red-300": toast.type === "error",
+              "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-900 dark:text-amber-300": toast.type === "warning",
             }
           )}
         >
