@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+import './_load-env';
 
 async function check() {
   const localURI = 'mongodb://localhost:27017/hrm';
-  const atlasURI = 'mongodb+srv://anirudhbharat415:Ani2002@backend.mhts0iw.mongodb.net/hrm';
+  const atlasURI = process.env.MONGODB_URI;
 
   // 1. Try local
   try {
@@ -18,6 +19,11 @@ async function check() {
   }
 
   // 2. Try Atlas
+  if (!atlasURI) {
+    console.log('MONGODB_URI not set - skipping Atlas check.');
+    process.exit(0);
+  }
+
   try {
     console.log('Connecting to Atlas MongoDB...');
     const conn = await mongoose.createConnection(atlasURI).asPromise();

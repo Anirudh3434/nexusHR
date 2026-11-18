@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
+require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
-const uri = 'mongodb+srv://anirudhbharat415:Ani2002@backend.mhts0iw.mongodb.net/hrm';
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/hrm';
 
 async function setupHierarchy() {
   await mongoose.connect(uri);
