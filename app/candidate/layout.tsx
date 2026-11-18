@@ -21,9 +21,12 @@ export default function CandidatePortalLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
+  // Close sidebar on navigation change
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setIsSidebarOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -109,7 +112,7 @@ export default function CandidatePortalLayout({
 
         <div className="border-t border-indigo-100 p-3">
           <button
-            onClick={logout}
+            onClick={() => logout('/candidate-login')}
             className="flex w-full items-center gap-3 rounded-md p-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400"
           >
             <LogOut size={20} />

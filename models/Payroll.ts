@@ -67,7 +67,7 @@ const PayrollSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['Generated', 'Reviewed', 'Paid'],
+    enum: ['Generated', 'Reviewed', 'Processing', 'Paid', 'Failed'],
     default: 'Generated',
   },
   isManualEdit: {
@@ -79,8 +79,40 @@ const PayrollSchema = new Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['bank_transfer', 'upi', 'cheque', 'cash', 'other'],
+    enum: ['bank_transfer', 'upi', 'cheque', 'cash', 'razorpayx', 'other'],
     default: 'bank_transfer',
+  },
+  // RazorpayX Payout Integration Fields
+  payoutId: {
+    type: String, // e.g. "pout_1234567890"
+    index: true,
+    sparse: true,
+  },
+  payoutStatus: {
+    type: String, // 'queued' | 'pending' | 'processing' | 'processed' | 'reversed' | 'cancelled' | 'rejected'
+  },
+  payoutMode: {
+    type: String, // 'IMPS' | 'NEFT' | 'RTGS' | 'UPI'
+  },
+  utr: {
+    type: String, // Bank Unique Transaction Reference
+  },
+  failureReason: {
+    type: String,
+  },
+  payoutFee: {
+    type: Number,
+    default: 0,
+  },
+  payoutTax: {
+    type: Number,
+    default: 0,
+  },
+  payoutInitiatedAt: {
+    type: Date,
+  },
+  payoutProcessedAt: {
+    type: Date,
   },
   // Crucial Payment Security: AES-256 Encrypted Payload
   encryptedPaymentDetails: {

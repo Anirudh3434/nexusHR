@@ -102,3 +102,52 @@ export const deletePayroll = async (id: string): Promise<{ message: string }> =>
   }
   return response.json();
 };
+
+export interface RazorpayXPayoutInput {
+  payrollIds: string[];
+  mode?: 'IMPS' | 'NEFT' | 'RTGS' | 'UPI';
+  narration?: string;
+}
+
+export interface PayoutResponse {
+  message: string;
+  totalDisbursed: number;
+  successfulCount: number;
+  failedCount: number;
+  results: Array<{
+    payrollId: string;
+    employeeName?: string;
+    status: string;
+    payoutStatus?: string;
+    payoutId?: string;
+    utr?: string;
+    amount?: number;
+    success: boolean;
+    error?: string;
+  }>;
+}
+
+export const disbursePayrollViaRazorpayX = async (data: RazorpayXPayoutInput): Promise<PayoutResponse> => {
+  const response = await fetch('/api/payroll/payout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  const resData = await response.json();
+  if (!response.ok) {
+    throw new Error(resData.message || 'Failed to process payout via RazorpayX');
+  }
+  return resData;
+};
+
+export const checkPayrollPayoutStatus = async (payrollId: string) => {
+  const response = await fetch(`/api/payroll/payout?payrollId=${encodeURIComponent(payrollId)}`);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || data.error || 'Failed to check payout status');
+  }
+  return data;
+};

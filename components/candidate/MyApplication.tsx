@@ -89,7 +89,7 @@ export default function MyApplication() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
         icon={<FileText />}
         title="My Application"

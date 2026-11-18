@@ -10,8 +10,11 @@ import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   FolderKanban, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
-  AlertCircle, TrendingUp, Users, DollarSign, LayoutGrid, List, Loader2
+  AlertCircle, TrendingUp, Users, DollarSign, LayoutGrid, List, Loader2,
+  ExternalLink, Maximize2, Minimize2, KanbanSquare, ArrowRight
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { usePmsFullscreen } from "@/context/PmsFullscreenContext";
 
 interface ProjectMember {
   employeeId: { _id: string; name: string; email: string; department: string };
@@ -105,7 +108,9 @@ const priorityColors: Record<string, string> = {
 
 export default function ProjectsManagementPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const { addToast } = useToast();
+  const { openInNewTab } = usePmsFullscreen();
   
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -277,10 +282,12 @@ export default function ProjectsManagementPage() {
   };
 
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.projectNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    if (!project) return false;
+    const name = project.name || '';
+    const num = project.projectNumber || '';
+    const desc = project.description || '';
+    const q = (searchQuery || '').toLowerCase();
+    return name.toLowerCase().includes(q) || num.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
   });
 
   const renderMemberAvatars = (members: ProjectMember[]) => {
@@ -360,12 +367,23 @@ export default function ProjectsManagementPage() {
         title="Projects"
         description="Manage and track your company projects"
         actions={
-          user?.role !== 'employee' && (
-            <Button onClick={() => window.location.href = '/projects/create'} className="gap-2">
-              <Plus className="w-4 h-4 mr-1" />
-              Create Project
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => openInNewTab("/projects")}
+              className="gap-1.5 text-xs h-9"
+              title="Open PMS in a separate tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Open in New Tab</span>
             </Button>
-          )
+            {user?.role !== 'employee' && (
+              <Button onClick={() => window.location.href = '/projects/create'} className="gap-2 h-9 text-xs">
+                <Plus className="w-4 h-4 mr-1" />
+                Create Project
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -513,65 +531,73 @@ export default function ProjectsManagementPage() {
                     <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 dark:bg-slate-800/50 dark:border-slate-800">
                       {project.projectNumber}
                     </span>
-                    {user?.role !== 'employee' && (
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.location.href = `/projects/create?id=${project._id}`}
-                          className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 dark:hover:bg-slate-700"
-                          title="Edit Project"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </Button>
-                        {project.status === 'active' ? (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/projects/${project._id}/board`);
+                        }}
+                        className="w-7 h-7 p-0 rounded-lg hover:bg-teal-50 text-teal-500 hover:text-teal-600 dark:hover:bg-teal-950/40"
+                        title="Open Board"
+                      >
+                        <KanbanSquare className="w-3.5 h-3.5" />
+                      </Button>
+                      {user?.role !== 'employee' && (
+                        <>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleStatusUpdate(project._id, 'completed')}
-                            className="w-7 h-7 p-0 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-700"
-                            title="Mark Completed"
+                            onClick={() => window.location.href = `/projects/create?id=${project._id}`}
+                            className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 dark:hover:bg-slate-700"
+                            title="Edit Project"
                           >
-                            <CheckCircle className="w-3.5 h-3.5" />
+                            <Edit className="w-3.5 h-3.5" />
                           </Button>
-                        ) : ['planning', 'on_hold', 'cancelled'].includes(project.status) ? (
+                          {project.status === 'active' ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusUpdate(project._id, 'completed')}
+                              className="w-7 h-7 p-0 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-700"
+                              title="Mark Completed"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                            </Button>
+                          ) : ['planning', 'on_hold', 'cancelled'].includes(project.status) ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusUpdate(project._id, 'active')}
+                              className="w-7 h-7 p-0 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-700"
+                              title="Activate Project"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                            </Button>
+                          ) : null}
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleStatusUpdate(project._id, 'active')}
-                            className="w-7 h-7 p-0 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-700"
-                            title="Activate Project"
+                            onClick={() => handleDelete(project._id)}
+                            className="w-7 h-7 p-0 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600"
+                            title="Delete Project"
                           >
-                            <CheckCircle className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
-                        ) : null}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(project._id)}
-                          className="w-7 h-7 p-0 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600"
-                          title="Delete Project"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Title and Badges */}
                   <div>
                     <h3 
-                      className="font-bold text-slate-800 text-base mb-2 hover:text-primary transition-colors cursor-pointer dark:text-slate-200" 
-                      onClick={() => { 
-                        if (user?.role === 'employee') {
-                          window.location.href = `/projects/${project._id}/board`;
-                        } else {
-                          setSelectedProject(project); 
-                          setShowViewModal(true); 
-                        }
-                      }}
+                      className="font-bold text-slate-800 text-base mb-2 hover:text-teal-600 dark:hover:text-teal-400 transition-colors cursor-pointer dark:text-slate-200" 
+                      onClick={() => router.push(`/projects/${project._id}/board`)}
+                      title="Open Project Board"
                     >
-                      {project.name}
+                      {project?.name || 'Untitled Project'}
                     </h3>
                     <div className="flex flex-wrap gap-1.5">
                       <Badge className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}`}>
@@ -658,23 +684,34 @@ export default function ProjectsManagementPage() {
                     </div>
                   </div>
 
-                  {/* Footer / Expand Button */}
-                  <button
-                    onClick={() => setExpandedId(isExpanded ? null : project._id)}
-                    className="w-full py-1.5 text-[11px] font-bold text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 rounded-xl transition-all flex items-center justify-center gap-1 border border-primary/20"
-                  >
-                    {isExpanded ? (
-                      <>
-                        Hide Details
-                        <ChevronUp className="w-3.5 h-3.5" />
-                      </>
-                    ) : (
-                      <>
-                        View Assignments & Milestones
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </button>
+                  {/* Action Buttons: Open Board & View Details */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      onClick={() => router.push(`/projects/${project._id}/board`)}
+                      className="flex-1 h-8.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-semibold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <KanbanSquare className="w-3.5 h-3.5" />
+                      <span>Open Board</span>
+                    </Button>
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : project._id)}
+                      className="px-3 h-8.5 text-[11px] font-semibold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-all flex items-center justify-center gap-1 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200 border border-slate-200/60 dark:border-slate-700"
+                      title={isExpanded ? "Hide Details" : "View Assignments & Milestones"}
+                    >
+                      {isExpanded ? (
+                        <>
+                          <span className="hidden sm:inline">Hide</span>
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          <span className="hidden sm:inline">Details</span>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
 
                   {/* Expanded Content */}
                   {isExpanded && (
@@ -753,10 +790,10 @@ export default function ProjectsManagementPage() {
                       <td className="p-4">
                         <div className="flex flex-col">
                           <span className="font-bold text-slate-800 hover:text-primary cursor-pointer transition-colors dark:text-slate-200" onClick={() => { setSelectedProject(project); setShowViewModal(true); }}>
-                            {project.name}
+                            {project?.name || 'Untitled Project'}
                           </span>
                           <span className="text-[10px] text-slate-400 tracking-wider uppercase mt-0.5">
-                            {project.projectNumber}
+                            {project?.projectNumber || ''}
                           </span>
                         </div>
                       </td>
@@ -794,8 +831,18 @@ export default function ProjectsManagementPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => router.push(`/projects/${project._id}/board`)}
+                            className="w-7 h-7 p-0 rounded-lg hover:bg-teal-50 text-teal-500 hover:text-teal-600 dark:hover:bg-teal-950/40"
+                            title="Open Board"
+                          >
+                            <KanbanSquare className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => window.location.href = `/projects/create?id=${project._id}`}
                             className="w-7 h-7 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 dark:hover:bg-slate-700"
+                            title="Edit Project"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </Button>
@@ -1111,20 +1158,20 @@ export default function ProjectsManagementPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Project Manager</label>
-                <p className="text-gray-700 dark:text-slate-300">{selectedProject.managerId.name}</p>
+                <p className="text-gray-700 dark:text-slate-300">{selectedProject.managerId?.name || 'Unassigned'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Team Members ({selectedProject.members.length})</label>
+                <label className="block text-sm font-medium mb-1">Team Members ({selectedProject.members?.length || 0})</label>
                 <div className="space-y-2 mt-2">
-                  {selectedProject.members.map((member, idx) => (
+                  {selectedProject.members?.map((member, idx) => (
                     <div key={idx} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded dark:bg-slate-800/50">
-                      <span>{member.employeeId.name}</span>
+                      <span>{member.employeeId?.name || 'Unknown Member'}</span>
                       <Badge variant="outline">{member.role}</Badge>
                     </div>
                   ))}
                 </div>
               </div>
-              {selectedProject.milestones.length > 0 && (
+              {selectedProject.milestones && selectedProject.milestones.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium mb-1">Milestones ({selectedProject.milestones.length})</label>
                   <div className="space-y-2 mt-2">
@@ -1138,8 +1185,18 @@ export default function ProjectsManagementPage() {
                 </div>
               )}
             </div>
-            <div className="p-6 border-t flex justify-end">
-              <Button onClick={() => setShowViewModal(false)}>Close</Button>
+            <div className="p-6 border-t flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowViewModal(false)}>Close</Button>
+              <Button
+                onClick={() => {
+                  setShowViewModal(false);
+                  router.push(`/projects/${selectedProject._id}/board`);
+                }}
+                className="gap-1.5 bg-teal-500 hover:bg-teal-600 text-white"
+              >
+                <KanbanSquare className="w-4 h-4" />
+                Open Board
+              </Button>
             </div>
           </div>
         </div>

@@ -111,6 +111,37 @@ const CompanySchema = new Schema({
     min: 1,
     max: 5,
   },
+  // RazorpayX Business Banking & Payroll Payouts Configuration
+  razorpayxConfig: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    keyId: {
+      type: String,
+      trim: true,
+    },
+    keySecretEncrypted: {
+      type: String, // AES-256-GCM encrypted
+    },
+    accountNumber: {
+      type: String, // Source RazorpayX business banking account number (e.g. 7878780080316316)
+      trim: true,
+    },
+    webhookSecret: {
+      type: String,
+      trim: true,
+    },
+    defaultMode: {
+      type: String,
+      enum: ['IMPS', 'NEFT', 'RTGS', 'UPI'],
+      default: 'IMPS',
+    },
+    autoPayoutOnApproval: {
+      type: Boolean,
+      default: false,
+    },
+  },
 }, {
   timestamps: true,
 });

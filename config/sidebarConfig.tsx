@@ -214,7 +214,6 @@ export const sidebarConfig: Record<Role, (SidebarRoute | SidebarGroup)[]> = {
     { name: "My Onboarding", href: "/my-onboarding", icon: <UserPlus2 size={20} /> },
     { name: "My Application", href: "/my-application", icon: <FileText size={20} /> },
     { name: "My Attendance", href: "/my-attendance", icon: <CalendarClock size={20} /> },
-    { name: "Field Duty Tracker", href: "/field-tracking", icon: <MapPin size={20} /> },
     { name: "Today Task & EOD", href: "/today-tasks", icon: <CheckSquare size={20} /> },
     { name: "My Leaves", href: "/my-leaves", icon: <FileClock size={20} /> },
     { name: "My Tickets", href: "/my-tickets", icon: <Ticket size={20} /> },

@@ -213,7 +213,7 @@ export default function MyResignationPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
         icon={<LogOut />}

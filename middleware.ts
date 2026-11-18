@@ -41,7 +41,16 @@ function sanitizePermsClaim(value: unknown): Record<string, string[]> | undefine
 // Edge-safe (jose) session verification. Needs the same JWT_SECRET the
 // API routes sign with. No secret or no cookie => no session, never an error.
 async function getVerifiedSession(request: NextRequest): Promise<VerifiedSession | null> {
-  const token = request.cookies.get(SESSION_COOKIE)?.value
+  let token = request.cookies.get(SESSION_COOKIE)?.value
+  if (!token) {
+    token = request.nextUrl.searchParams.get('token') || undefined
+  }
+  if (!token) {
+    const authHeader = request.headers.get('authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7).trim()
+    }
+  }
   const secret = process.env.JWT_SECRET
   if (!token || !secret) return null
   try {
@@ -64,8 +73,12 @@ async function getVerifiedSession(request: NextRequest): Promise<VerifiedSession
   }
 }
 
-// Helper to extract company subdomain (disabled in favor of path routing e.g. /abaca)
+// Helper to extract subdomain (e.g. pms.localhost:3000 -> "pms")
 function getSubdomain(host: string): string | null {
+  const hostname = host.split(':')[0].toLowerCase()
+  if (hostname.startsWith('pms.') || hostname === 'pms') {
+    return 'pms'
+  }
   return null;
 }
 
@@ -76,23 +89,23 @@ export async function middleware(request: NextRequest) {
 
   const companyCodeCookie = request.cookies.get('nexushr_company_code')?.value
 
-  // 1. Subdomain Multi-Tenant Routing (e.g. webatlas.localhost:3000 or webatlas.nexus.com)
-  if (subdomain && !pathname.startsWith('/api') && !pathname.startsWith('/_next') && !pathname.startsWith('/candidate')) {
-    const isSwitching = request.nextUrl.searchParams.get('switch') === 'true'
+  const isPms = subdomain === 'pms'
+  const queryToken = request.nextUrl.searchParams.get('token')
 
-    // If user clicked Switch Organization, redirect to root login
-    if (isSwitching) {
-      const port = host.includes(':') ? `:${host.split(':')[1]}` : ''
-      const isLocal = host.includes('localhost') || host.includes('127.0.0.1')
-      const rootUrl = isLocal ? `http://localhost${port}/login?switch=true` : `${request.nextUrl.protocol}//${host.split('.').slice(-2).join('.')}${port}/login?switch=true`
-      const res = NextResponse.redirect(new URL(rootUrl))
-      res.cookies.delete('nexushr_company_code')
-      return res
-    }
+  // Auto-clean deprecated ?fullscreen= query param if present
+  if (request.nextUrl.searchParams.has('fullscreen')) {
+    const cleanUrl = new URL(request.url)
+    cleanUrl.searchParams.delete('fullscreen')
+    return NextResponse.redirect(cleanUrl)
+  }
 
-    // If accessing root "/" or "/login" on a company subdomain, rewrite internally to "/[companySlug]"
-    if (pathname === '/' || pathname === '/login') {
-      return NextResponse.rewrite(new URL(`/${subdomain}`, request.url))
+  // 1. PMS Subdomain Routing (e.g. pms.localhost:3000 or pms.nexushr.com)
+  if (isPms && !pathname.startsWith('/api') && !pathname.startsWith('/_next')) {
+    // Default route for PMS subdomain root -> /projects
+    if (pathname === '/' || pathname === '/pms') {
+      const targetUrl = new URL('/projects', request.url)
+      if (queryToken) targetUrl.searchParams.set('token', queryToken)
+      return NextResponse.redirect(targetUrl)
     }
   }
 
@@ -238,7 +251,25 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  if (queryToken && session && !isApi) {
+    const cleanUrl = new URL(request.url)
+    cleanUrl.searchParams.delete('token')
+    const res = NextResponse.redirect(cleanUrl)
+    res.cookies.set(SESSION_COOKIE, queryToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    })
+    return res
+  }
+
+  const response = NextResponse.next()
+  if (isPms) {
+    response.headers.set('x-pms-subdomain', 'true')
+  }
+  return response
 }
 
 export const config = {

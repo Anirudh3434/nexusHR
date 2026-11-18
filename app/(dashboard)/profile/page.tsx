@@ -334,7 +334,7 @@ function ProfilePageContent() {
   });
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300 pb-16">
+    <div className="w-full space-y-6 animate-in fade-in duration-300 pb-16">
       
       {/* Top Banner when viewing another employee profile */}
       {isViewingOther && (

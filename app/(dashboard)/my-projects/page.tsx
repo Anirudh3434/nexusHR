@@ -10,8 +10,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { 
   FolderKanban, Search, Calendar, User, Users, DollarSign, 
-  TrendingUp, Clock, CheckCircle, Loader2
+  TrendingUp, Clock, CheckCircle, Loader2,
+  ExternalLink, Maximize2, Minimize2
 } from "lucide-react";
+import { usePmsFullscreen } from "@/context/PmsFullscreenContext";
 
 interface ProjectMember {
   employeeId: { _id: string; name: string; email: string; department: string };
@@ -87,6 +89,7 @@ const priorityColors: Record<string, string> = {
 export default function MyProjectsPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { openInNewTab } = usePmsFullscreen();
   
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,6 +141,20 @@ export default function MyProjectsPage() {
         icon={<FolderKanban />}
         title="My Projects"
         description="View your assigned projects"
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openInNewTab("/my-projects")}
+              className="gap-1.5 text-xs h-9"
+              title="Open in a separate tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Open in New Tab</span>
+            </Button>
+          </div>
+        }
       />
 
       {/* Filters */}

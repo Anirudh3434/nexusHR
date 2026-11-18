@@ -8,10 +8,11 @@ import { useEntitlements } from "../../context/EntitlementsContext";
 import { sidebarConfig, SidebarGroup, SidebarRoute, Role } from "../../config/sidebarConfig";
 import { cn } from "../../lib/utils";
 import { featureForPath, type Feature } from "../../lib/entitlements";
-import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock, LogOut, Sun, Moon, Plug } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, X, KanbanSquare, Lock, LogOut, Sun, Moon, Plug, ExternalLink } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { SmartLogoBadge } from "../ui/SmartLogoBadge";
 import { ConnectMcpModal } from "../mcp/ConnectMcpModal";
+import { usePmsFullscreen } from "../../context/PmsFullscreenContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
   const router = useRouter();
   const { user, logout, updateUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { openInNewTab } = usePmsFullscreen();
   const { has } = useEntitlements();
   const pmsEnabled = has("pms");
 
@@ -227,49 +229,67 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
             return (
               <div key={item.name} className="space-y-1">
                 {/* Group Header */}
-                <button
-                  onClick={() => !collapsed && toggleGroup(item.name)}
-                  disabled={collapsed}
-                  aria-expanded={!collapsed && isExpanded}
-                  className={cn(
-                    "w-full group relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
-                    hasActiveChild || (isProjectManagement && pathname.startsWith("/projects") && !pathname.includes("/create"))
-                      ? "bg-white/8 text-white"
-                      : "text-slate-400 hover:bg-white/5 hover:text-slate-100",
-                    collapsed && "cursor-default justify-center px-0"
-                  )}
-                >
-                  <span
-                    aria-hidden
+                <div className="relative group/header flex items-center">
+                  <button
+                    onClick={() => !collapsed && toggleGroup(item.name)}
+                    disabled={collapsed}
+                    aria-expanded={!collapsed && isExpanded}
                     className={cn(
-                      "absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-teal-300 transition-opacity",
-                      hasActiveChild ? "opacity-100" : "opacity-0"
+                      "w-full group relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
+                      hasActiveChild || (isProjectManagement && pathname.startsWith("/projects") && !pathname.includes("/create"))
+                        ? "bg-white/8 text-white"
+                        : "text-slate-400 hover:bg-white/5 hover:text-slate-100",
+                      collapsed && "cursor-default justify-center px-0"
                     )}
-                  />
-                  <div className="flex-shrink-0">
-                    {item.icon}
-                  </div>
-                  
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 truncate text-left">{item.name}</span>
-                      <ChevronDown 
-                        size={16} 
-                        className={cn(
-                          "transition-transform duration-200",
-                          isExpanded && "rotate-180"
-                        )} 
-                      />
-                    </>
-                  )}
-                  
-                  {/* Tooltip for collapsed state */}
-                  {collapsed && (
-                    <div className="absolute left-full ml-4 hidden rounded-lg bg-white px-2 py-1 text-xs font-medium text-slate-900 shadow-lg transition-opacity group-hover:block dark:bg-gray-800 dark:text-white z-50 whitespace-nowrap">
-                      {item.name}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-teal-300 transition-opacity",
+                        hasActiveChild ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <div className="flex-shrink-0">
+                      {item.icon}
                     </div>
+                    
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 truncate text-left">{item.name}</span>
+                        <ChevronDown 
+                          size={16} 
+                          className={cn(
+                            "transition-transform duration-200",
+                            isExpanded && "rotate-180"
+                          )} 
+                        />
+                      </>
+                    )}
+                    
+                    {/* Tooltip for collapsed state */}
+                    {collapsed && (
+                      <div className="absolute left-full ml-4 hidden rounded-lg bg-white px-2 py-1 text-xs font-medium text-slate-900 shadow-lg transition-opacity group-hover:block dark:bg-gray-800 dark:text-white z-50 whitespace-nowrap">
+                        {item.name}
+                      </div>
+                    )}
+                  </button>
+
+                  {!collapsed && isProjectManagement && (
+                    <button
+                      type="button"
+                      title="Open Fullscreen PMS on subdomain in separate tab"
+                      aria-label="Open Fullscreen PMS on subdomain in separate tab"
+                      className="absolute right-7 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-teal-300 hover:bg-white/10 rounded-md transition-colors opacity-0 group-hover/header:opacity-100 focus:opacity-100 z-10"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openInNewTab("/projects");
+                      }}
+                    >
+                      <ExternalLink size={13} />
+                    </button>
                   )}
-                </button>
+                </div>
                 
                 {/* Group Items - Accordion Content */}
                 {!collapsed && isExpanded && (
@@ -298,22 +318,41 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                       }
 
                       return (
-                        <Link
+                        <div
                           key={child.href}
-                          href={child.href}
-                          aria-current={isChildActive ? "page" : undefined}
                           className={cn(
-                            "group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
+                            "group/child relative flex items-center justify-between rounded-md transition-colors",
                             isChildActive
                               ? "bg-white/10 text-white font-semibold"
                               : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
                           )}
                         >
-                          <div className="flex-shrink-0 scale-90">
-                            {child.icon}
-                          </div>
-                          <span className="truncate">{child.name}</span>
-                        </Link>
+                          <Link
+                            href={child.href}
+                            aria-current={isChildActive ? "page" : undefined}
+                            className="flex flex-1 items-center gap-2 px-2.5 py-1.5 text-[13px] min-w-0"
+                          >
+                            <div className="flex-shrink-0 scale-90">
+                              {child.icon}
+                            </div>
+                            <span className="truncate">{child.name}</span>
+                          </Link>
+                          {isProjectManagement && (
+                            <button
+                              type="button"
+                              title={`Open ${child.name} on PMS subdomain in separate tab`}
+                              aria-label={`Open ${child.name} on PMS subdomain in separate tab`}
+                              className="mr-1.5 p-1 text-slate-400 hover:text-teal-300 hover:bg-white/10 rounded transition-colors opacity-0 group-hover/child:opacity-100 focus:opacity-100"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openInNewTab(child.href);
+                              }}
+                            >
+                              <ExternalLink size={12} />
+                            </button>
+                          )}
+                        </div>
                       );
                     })}
                     
@@ -326,19 +365,36 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                           <div className="px-3 py-2 text-sm text-gray-500 dark:text-slate-400">No projects</div>
                         ) : (
                           projects.map((project) => (
-                            <Link
+                            <div
                               key={project._id}
-                              href={`/projects/${project._id}/board`}
                               className={cn(
-                                "group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
+                                "group/proj relative flex items-center justify-between rounded-md transition-colors",
                                 pathname.startsWith(`/projects/${project._id}`)
                                   ? "bg-white/10 text-white font-semibold"
                                   : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
                               )}
                             >
-                              <KanbanSquare className="w-4 h-4 flex-shrink-0" />
-                              <span className="truncate">{project.name}</span>
-                            </Link>
+                              <Link
+                                href={`/projects/${project._id}/board`}
+                                className="flex flex-1 items-center gap-2 px-2.5 py-1.5 text-[13px] min-w-0"
+                              >
+                                <KanbanSquare className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">{project.name}</span>
+                              </Link>
+                              <button
+                                type="button"
+                                title={`Open ${project.name} on PMS subdomain in separate tab`}
+                                aria-label={`Open ${project.name} on PMS subdomain in separate tab`}
+                                className="mr-1.5 p-1 text-slate-400 hover:text-teal-300 hover:bg-white/10 rounded transition-colors opacity-0 group-hover/proj:opacity-100 focus:opacity-100"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  openInNewTab(`/projects/${project._id}/board`);
+                                }}
+                              >
+                                <ExternalLink size={12} />
+                              </button>
+                            </div>
                           ))
                         )}
                       </>
@@ -411,6 +467,23 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
               {!collapsed && (
                 <span className="flex-1 truncate">{item.name}</span>
               )}
+
+              {!collapsed && (item.href === "/my-projects" || item.href === "/projects") && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  title={`Open ${item.name} on PMS subdomain in separate tab`}
+                  aria-label={`Open ${item.name} on PMS subdomain in separate tab`}
+                  className="p-1 text-slate-400 hover:text-teal-300 hover:bg-white/10 rounded transition-colors opacity-0 group-hover:opacity-100 z-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openInNewTab(item.href);
+                  }}
+                >
+                  <ExternalLink size={13} />
+                </span>
+              )}
               
               {!collapsed && pendingCount > 0 && (
                 <span className="flex items-center justify-center rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-amber-200">
@@ -460,8 +533,8 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
               </button>
             </div>
 
-            {/* Quick Actions: Theme & Logout */}
-            <div className="flex items-center gap-2 pt-1 border-t border-white/5 md:border-t-0">
+            {/* Mobile-only Quick Actions: Theme & Logout */}
+            <div className="md:hidden flex items-center gap-2 pt-1 border-t border-white/5">
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -497,42 +570,14 @@ export const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
 
             <div className="flex items-center justify-between px-2 pt-1 text-[10px] text-slate-500 dark:text-slate-400">
               <span className="font-medium">NexusHR Workspace</span>
-              <span className="tabular">v6.0.13</span>
+              <span className="tabular">v2.0.13</span>
             </div>
           </>
         )}
 
         {collapsed && (
-          <div className="flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-              title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-            >
-              <span className="relative w-4 h-4 flex items-center justify-center">
-                <Sun
-                  size={16}
-                  className={`transition-all duration-300 absolute ${
-                    theme === "dark" ? "rotate-0 scale-100 opacity-100 text-amber-400" : "-rotate-90 scale-0 opacity-0"
-                  }`}
-                />
-                <Moon
-                  size={16}
-                  className={`transition-all duration-300 absolute ${
-                    theme === "light" ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"
-                  }`}
-                />
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={logout}
-              className="p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
-              title="Log out"
-            >
-              <LogOut size={16} />
-            </button>
+          <div className="hidden md:flex flex-col items-center py-1">
+            <span className="text-[10px] text-slate-500 font-mono">v2.0</span>
           </div>
         )}
       </div>

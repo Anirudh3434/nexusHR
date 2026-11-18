@@ -14,8 +14,9 @@ import { format } from "date-fns";
 import { 
   KanbanSquare, Plus, Settings, GripVertical, User, Clock, 
   ArrowLeft, MoreHorizontal, Filter, Search, CheckCircle, Trash2, Edit,
-  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban, RotateCcw, Brain
+  List, LayoutList, FileText, Calendar as CalendarIcon, X, Link2, CornerDownRight, MessageSquare, AlertTriangle, CheckSquare, BookOpen, Bug, Zap, Layers, TrendingUp, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronUp, ChevronDown, ExternalLink, Check, Save, ArrowRight, Paperclip, Loader2, Vault, Sparkles, Send, Copy, FolderKanban, RotateCcw, Brain, Maximize2, Minimize2
 } from "lucide-react";
+import { usePmsFullscreen } from "@/context/PmsFullscreenContext";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BoardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { useParams, useRouter } from "next/navigation";
@@ -112,6 +113,7 @@ const getAvatarColor = (index: number) => {
 export default function ProjectBoardPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { openInNewTab } = usePmsFullscreen();
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
@@ -2799,23 +2801,36 @@ export default function ProjectBoardPage() {
       {/* Header */}
       <div className="flex flex-col gap-3">
         {/* Top Back and Project Title row */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <button
-            onClick={() => router.push('/projects')}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-slate-100 transition-colors dark:text-slate-400 dark:hover:bg-slate-800 shrink-0"
-            title="Back to Projects"
-            aria-label="Back to Projects"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-          <div className="h-4 sm:h-5 w-px bg-gray-300 dark:bg-slate-700"></div>
-          <PageHeader
-            size="sm"
-            icon={<FolderKanban />}
-            title={project?.name || ""}
-            titleClassName="max-w-[260px] sm:max-w-[420px] md:max-w-none truncate"
-            description={project?.projectNumber}
-          />
+        <div className="flex items-center justify-between gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => router.push('/projects')}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-slate-100 transition-colors dark:text-slate-400 dark:hover:bg-slate-800 shrink-0"
+              title="Back to Projects"
+              aria-label="Back to Projects"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+            <div className="h-4 sm:h-5 w-px bg-gray-300 dark:bg-slate-700"></div>
+            <PageHeader
+              size="sm"
+              icon={<FolderKanban />}
+              title={project?.name || ""}
+              titleClassName="max-w-[240px] sm:max-w-[420px] md:max-w-none truncate"
+              description={project?.projectNumber}
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => openInNewTab(`/projects/${projectId}/${viewMode || 'board'}`)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-primary/40 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              title="Open this board in a separate tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Open in New Tab</span>
+            </button>
+          </div>
         </div>
 
         {/* View Mode Tabs & Create Button matching mockup */}

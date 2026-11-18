@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/hooks/useSocket";
 import { getLiveFieldAttendance } from "@/services/attendanceService";
@@ -24,7 +25,6 @@ import {
   Loader2,
   Smartphone
 } from "lucide-react";
-import { FieldShiftTracker } from "@/components/attendance/FieldShiftTracker";
 
 // Dynamically import Leaflet Map to ensure no SSR errors
 const LiveFieldTrackingMap = dynamic(
@@ -65,6 +65,7 @@ interface WorkerItem {
 }
 
 export default function FieldTrackingPage() {
+  const router = useRouter();
   const { user, hasRole, loading: authLoading } = useAuth();
   const { socket, isConnected } = useSocket(user?.id);
 
@@ -197,24 +198,17 @@ export default function FieldTrackingPage() {
       }));
   }, [workers]);
 
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading && !isAuthorized) {
+      router.replace("/dashboard");
+    }
+  }, [authLoading, isAuthorized, router]);
+
+  if (authLoading || !isAuthorized) {
     return (
       <div className="p-12 flex flex-col items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
         <span className="text-sm text-slate-500 font-medium">Loading session...</span>
-      </div>
-    );
-  }
-
-  // If regular employee visits /field-tracking on their phone:
-  if (!isAuthorized) {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto py-2">
-        <PageHeader
-          title="Field Duty & Shift Tracker"
-          description="Start your field shift, take breaks with guaranteed privacy, and transmit live GPS coordinates to management."
-        />
-        <FieldShiftTracker />
       </div>
     );
   }

@@ -12,8 +12,10 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import { 
   KanbanSquare, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
-  AlertCircle, Play, Pause, Square, GripVertical, X, CornerDownRight, Link2, Loader2, CheckSquare
+  AlertCircle, Play, Pause, Square, GripVertical, X, CornerDownRight, Link2, Loader2, CheckSquare,
+  ExternalLink, Maximize2, Minimize2
 } from "lucide-react";
+import { usePmsFullscreen } from "@/context/PmsFullscreenContext";
 
 interface TaskItem {
   _id: string;
@@ -112,6 +114,7 @@ const statusThemes: Record<string, { dot: string; headerText: string; lightBg: s
 export default function TasksManagementPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { openInNewTab } = usePmsFullscreen();
   
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -676,7 +679,17 @@ export default function TasksManagementPage() {
         title="Tasks"
         description="Manage project tasks"
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openInNewTab("/tasks")}
+              className="gap-1.5 text-xs h-9"
+              title="Open Tasks in a separate tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Open in New Tab</span>
+            </Button>
             <div className="flex items-center border rounded-lg">
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -707,7 +720,7 @@ export default function TasksManagementPage() {
               <Plus className="w-4 h-4 mr-2" />
               Create Task
             </Button>
-          </>
+          </div>
         }
       />
 

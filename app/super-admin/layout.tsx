@@ -43,8 +43,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }
 
   const handleLogout = () => {
-    logout();
-    router.push("/super-admin/login");
+    logout("/super-admin/login");
   };
 
   return (

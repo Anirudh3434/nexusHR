@@ -302,7 +302,7 @@ export default function MyExpensesPage() {
   }
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <PageHeader
         icon={<Receipt />}

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
-import { FileText, BookOpen, Key, Link, Plus, ChevronDown } from "lucide-react";
+import { FileText, BookOpen, Key, Link as LinkIcon, Plus, ChevronDown } from "lucide-react";
 
 interface QuickAddDropdownProps {
   onAddDocument: () => void;
@@ -11,7 +11,12 @@ interface QuickAddDropdownProps {
   onAddResource: () => void;
 }
 
-export default function QuickAddDropdown({ onAddDocument, onAddNote, onAddCredential, onAddResource }: QuickAddDropdownProps) {
+export default function QuickAddDropdown({
+  onAddDocument,
+  onAddNote,
+  onAddCredential,
+  onAddResource,
+}: QuickAddDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -22,31 +27,73 @@ export default function QuickAddDropdown({ onAddDocument, onAddNote, onAddCreden
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const options = [
-    { icon: FileText, label: 'Document', onClick: onAddDocument },
-    { icon: BookOpen, label: 'Note', onClick: onAddNote },
-    { icon: Key, label: 'Credential', onClick: onAddCredential },
-    { icon: Link, label: 'Resource', onClick: onAddResource },
+    {
+      icon: FileText,
+      label: "Upload Document",
+      desc: "Upload PDF, specs, or assets",
+      iconColor: "text-blue-500",
+      bgColor: "bg-blue-50 dark:bg-blue-950/50",
+      borderColor: "border-blue-200/60 dark:border-blue-900/50",
+      onClick: onAddDocument,
+    },
+    {
+      icon: BookOpen,
+      label: "Create Note",
+      desc: "Meeting logs, decisions & RFCs",
+      iconColor: "text-emerald-500",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/50",
+      borderColor: "border-emerald-200/60 dark:border-emerald-900/50",
+      onClick: onAddNote,
+    },
+    {
+      icon: Key,
+      label: "Add Credential",
+      desc: "API keys, secrets & logins",
+      iconColor: "text-amber-500",
+      bgColor: "bg-amber-50 dark:bg-amber-950/50",
+      borderColor: "border-amber-200/60 dark:border-amber-900/50",
+      onClick: onAddCredential,
+    },
+    {
+      icon: LinkIcon,
+      label: "Add Resource",
+      desc: "GitHub, Figma, or web links",
+      iconColor: "text-purple-500",
+      bgColor: "bg-purple-50 dark:bg-purple-950/50",
+      borderColor: "border-purple-200/60 dark:border-purple-900/50",
+      onClick: onAddResource,
+    },
   ];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-md shadow-indigo-500/20 font-medium text-xs sm:text-sm h-9 px-3.5 rounded-xl border border-indigo-400/30 transition-all duration-200 active:scale-95"
       >
-        <Plus className="w-4 h-4" />
-        Quick Add
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <Plus className="w-4 h-4 stroke-[2.5]" />
+        <span>Quick Add</span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 opacity-80 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200 dark:bg-slate-900 dark:border-slate-700">
-          <div className="py-1">
+        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/80 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Create in Vault
+            </span>
+          </div>
+
+          <div className="space-y-1">
             {options.map((option, index) => {
               const Icon = option.icon;
               return (
@@ -56,10 +103,19 @@ export default function QuickAddDropdown({ onAddDocument, onAddNote, onAddCreden
                     option.onClick();
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-800"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-all group"
                 >
-                  <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  {option.label}
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${option.bgColor} ${option.borderColor} transition-transform group-hover:scale-105`}
+                  >
+                    <Icon className={`w-4 h-4 ${option.iconColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {option.label}
+                    </p>
+                    <p className="text-[11px] text-slate-400 truncate">{option.desc}</p>
+                  </div>
                 </button>
               );
             })}

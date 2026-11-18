@@ -37,7 +37,7 @@ interface AuthContextProps {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string, options?: LoginOptions) => Promise<{ success: boolean; error?: string; user?: User }>;
-  logout: () => void;
+  logout: (redirectUrl?: string | unknown) => Promise<void> | void;
   hasRole: (roles: Role[]) => boolean;
   updateUser: (user: User) => void;
 }
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch (e) {
+      } catch {
         localStorage.removeItem("user");
       }
     }
@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       return { success: true, user: data.user };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Network error. Please try again.' };
     } finally {
       setLoading(false);
@@ -136,16 +136,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async (redirectUrl?: string | unknown) => {
+    // 1. Invalidate server-side session cookie first and wait for response
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error("Logout request failed:", e);
+    }
+
+    // 2. Clear local storage
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
 
-    // Ask the server to clear the HttpOnly session cookie (fire-and-forget).
-    // Also drop any legacy readable cookies from before this fix.
-    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    // 3. Drop all client-accessible cookies
     document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "nexushr_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+    // 4. Force full window navigation to login (with switch=true to bypass middleware bounce-back)
+    const target = (typeof redirectUrl === 'string' && redirectUrl) ? redirectUrl : '/login?switch=true';
+    if (typeof window !== "undefined") {
+      const current = window.location.pathname + window.location.search;
+      if (current !== target && window.location.href !== target) {
+        window.location.href = target;
+      }
+    }
   }, []);
 
   const hasRole = useCallback((allowedRoles: Role[]) => {

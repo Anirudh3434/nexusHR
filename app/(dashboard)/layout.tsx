@@ -7,12 +7,14 @@ import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/layout/Sidebar";
 import { Topbar } from "../../components/layout/Topbar";
 import { EntitlementsProvider } from "../../context/EntitlementsContext";
+import { PmsFullscreenProvider, usePmsFullscreen } from "../../context/PmsFullscreenContext";
+import { PmsFullscreenHeader } from "../../components/pms/PmsFullscreenHeader";
 import { DashboardShellSkeleton } from "../../components/ui/Skeleton";
 import type { SubscriptionState } from "../../lib/subscription";
 
 const BILLING_EXEMPT = ["/billing", "/change-password"];
 
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode;
@@ -20,18 +22,21 @@ export default function DashboardLayout({
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { isFullscreen } = usePmsFullscreen();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
   const lastSubscriptionFetchRef = useRef<number>(0);
 
   // Close sidebar on navigation change (for mobile)
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setIsSidebarOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      router.push("/login?switch=true");
     } else if (!loading && user && (user.role as string) === "super_admin") {
       router.push("/super-admin");
     }
@@ -80,6 +85,26 @@ export default function DashboardLayout({
     subscription.daysLeft !== null &&
     subscription.daysLeft <= 7;
 
+  // Fullscreen PMS Mode (separate tab or fullscreen toggle)
+  if (isFullscreen) {
+    return (
+      <EntitlementsProvider
+        plan={subscription?.plan ?? null}
+        features={subscription?.features}
+        known={!!subscription}
+      >
+        <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
+          <PmsFullscreenHeader />
+          <main className="flex-1 overflow-y-auto bg-background w-full">
+            <div className="w-full h-full px-3 py-3 sm:px-6 sm:py-5">
+              {children}
+            </div>
+          </main>
+        </div>
+      </EntitlementsProvider>
+    );
+  }
+
   return (
     <EntitlementsProvider
       plan={subscription?.plan ?? null}
@@ -110,5 +135,17 @@ export default function DashboardLayout({
         </div>
       </div>
     </EntitlementsProvider>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <PmsFullscreenProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </PmsFullscreenProvider>
   );
 }

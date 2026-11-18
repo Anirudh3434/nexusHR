@@ -5,11 +5,10 @@ import { useAuth } from "../../../context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
-import { History, Calendar, FileDown, Loader2, CalendarClock, CalendarDays, List, Edit } from "lucide-react";
+import { History, Calendar, FileDown, Loader2, CalendarClock, List, Edit } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
-import { WeekWiseAttendanceTable } from "../../../components/attendance/WeekWiseAttendanceTable";
-import { FieldShiftTracker } from "../../../components/attendance/FieldShiftTracker";
+import { EmployeeAttendanceCalendar } from "../../../components/attendance/EmployeeAttendanceCalendar";
 
 interface AttendanceLog {
   id: string;
@@ -45,7 +44,7 @@ export default function MyAttendancePage() {
   const { user, loading } = useAuth();
   const [logs, setLogs] = useState<AttendanceLog[]>([]);
   const [rawRecords, setRawRecords] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<'weekly' | 'daily'>('weekly');
+  const [viewMode, setViewMode] = useState<'calendar' | 'daily'>('calendar');
   const [dataLoading, setDataLoading] = useState(true);
   const [stats, setStats] = useState({ totalDays: 0, lateArrivals: 0, avgHours: 0 });
 
@@ -109,49 +108,33 @@ export default function MyAttendancePage() {
         actions={
           <div className="flex items-center gap-2">
             <Button 
-              variant={viewMode === 'weekly' ? 'default' : 'outline'} 
+              variant="outline" 
               size="sm" 
-              onClick={() => setViewMode(viewMode === 'weekly' ? 'daily' : 'weekly')}
+              onClick={fetchMyAttendance}
+              disabled={dataLoading}
               className="text-xs font-semibold gap-1.5"
             >
-              {viewMode === 'weekly' ? (
-                <>
-                  <List className="h-3.5 w-3.5" />
-                  Monthly History Log
-                </>
-              ) : (
-                <>
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  Week-Wise Tabular View
-                </>
-              )}
+              {dataLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <History className="h-3.5 w-3.5" />}
+              Refresh
             </Button>
           </div>
         }
       />
-
-      {/* Live Mobile Field Shift & Break Tracker */}
-      <FieldShiftTracker />
 
       {/* View Switcher Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border w-full sm:w-auto">
           <button
             type="button"
-            onClick={() => setViewMode('weekly')}
+            onClick={() => setViewMode('calendar')}
             className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              viewMode === 'weekly'
+              viewMode === 'calendar'
                 ? 'bg-background text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span className="truncate">Week Matrix</span>
-            <span className={`hidden sm:inline-block text-[10px] px-1.5 py-0.2 rounded-full ${
-              viewMode === 'weekly' ? 'bg-primary/10 text-primary font-bold' : 'bg-muted text-muted-foreground'
-            }`}>
-              Matrix
-            </span>
+            <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="truncate">Calendar View</span>
           </button>
 
           <button
@@ -174,16 +157,15 @@ export default function MyAttendancePage() {
         </div>
 
         <span className="text-xs text-muted-foreground hidden sm:block">
-          {viewMode === 'weekly' 
-            ? 'Timesheet matrix: Monday to Sunday breakdown' 
+          {viewMode === 'calendar'
+            ? 'Monthly calendar grid with shift details and presence history'
             : 'Chronological history of work sessions'}
         </span>
       </div>
 
-      {viewMode === 'weekly' ? (
-        <WeekWiseAttendanceTable
+      {viewMode === 'calendar' ? (
+        <EmployeeAttendanceCalendar
           attendance={rawRecords}
-          isAdminOrHr={false}
           currentUser={user}
         />
       ) : (
