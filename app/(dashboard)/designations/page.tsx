@@ -9,11 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
-import { Briefcase, Plus, Pencil, Trash2, Loader2, X, Upload, Building2 } from "lucide-react";
+import { Briefcase, Plus, Pencil, Trash2, Loader2, X, Upload, Building2, Search } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { ModalPortal } from "../../../components/ui/ModalPortal";
 import { CsvImportModal } from "../../../components/ui/CsvImportModal";
+import { Pagination } from "../../../components/ui/Pagination";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { DESIGNATION_CSV_TEMPLATE, parseDesignationCSV, ParsedDesignationRow } from "../../../lib/csvUtils";
 
 export default function DesignationsPage() {
@@ -28,6 +30,35 @@ export default function DesignationsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDesig, setEditingDesig] = useState<Designation | null>(null);
   const [formData, setFormData] = useState({ name: '', department: '', description: '' });
+
+  // Search, Filter & Pagination State
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, selectedDepartment]);
+
+  const filteredDesignations = designations.filter((desig) => {
+    if (selectedDepartment !== "all" && desig.department !== selectedDepartment) {
+      return false;
+    }
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase().trim();
+      return desig.name.toLowerCase().includes(q) || 
+             (desig.department && desig.department.toLowerCase().includes(q)) ||
+             (desig.description && desig.description.toLowerCase().includes(q));
+    }
+    return true;
+  });
+
+  const paginatedDesignations = filteredDesignations.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const canManage = hasRole(["admin", "hr"]);
 
@@ -128,26 +159,72 @@ export default function DesignationsPage() {
       />
 
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle>All Designations</CardTitle>
-          <CardDescription>These designations will appear in employee onboarding dropdown.</CardDescription>
+        <CardHeader className="p-4 sm:p-6 border-b border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle>All Designations</CardTitle>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {searchQuery || selectedDepartment !== "all" 
+                    ? `${filteredDesignations.length} of ${designations.length}` 
+                    : `${designations.length}`}
+                </span>
+              </div>
+              <CardDescription className="mt-0.5">These designations will appear in employee onboarding dropdown.</CardDescription>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+              <div className="w-full sm:w-56 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search designations..."
+                  className="w-full h-8 pl-8 pr-7 text-xs rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <select
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="w-full sm:w-44 h-8 px-2 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+              >
+                <option value="all">All Departments</option>
+                {departments.map((d) => (
+                  <option key={d._id} value={d.name}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+        <CardContent className="p-4 pt-4 sm:p-6 sm:pt-4">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : designations.length === 0 ? (
+          ) : filteredDesignations.length === 0 ? (
             <EmptyState
               icon={<Briefcase size={18} />}
-              title="No designations found."
-              description="Create one to use in employee onboarding."
+              title={searchQuery || selectedDepartment !== "all" ? "No matching designations" : "No designations found."}
+              description={searchQuery || selectedDepartment !== "all" ? "Try adjusting your search query or department filter." : "Create one to use in employee onboarding."}
             />
           ) : (
             <>
               {/* Mobile Card View (< md) */}
               <div className="space-y-3 md:hidden">
-                {designations.map((desig) => (
+                {paginatedDesignations.map((desig) => (
                   <div
                     key={desig._id}
                     className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-xs transition-colors hover:border-border/80"
@@ -226,7 +303,7 @@ export default function DesignationsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {designations.map((desig) => (
+                    {paginatedDesignations.map((desig) => (
                       <TableRow key={desig._id}>
                         <TableCell className="font-medium whitespace-nowrap">
                           <div className="flex items-center gap-2">
@@ -263,6 +340,16 @@ export default function DesignationsPage() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Pagination Controls */}
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredDesignations.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="designations"
+              />
             </>
           )}
         </CardContent>

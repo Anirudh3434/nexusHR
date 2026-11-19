@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { getLeaves, createLeave, LeaveRequest } from "../../../services/leaveService";
-import { Loader2, Plus, X, Calendar, FileClock } from "lucide-react";
+import { getLeaves, createLeave, updateLeaveStatus, LeaveRequest } from "../../../services/leaveService";
+import { Loader2, Plus, X, Calendar, FileClock, Eye, Ban, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { LeaveDetailsModal } from "../../../components/leave/LeaveDetailsModal";
 
 // Helper to format date
 const formatDate = (dateStr: string): string => {
@@ -32,6 +33,8 @@ export default function MyLeavesPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null);
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     type: 'Annual',
     startDate: '',
@@ -57,7 +60,7 @@ export default function MyLeavesPage() {
       setLeaves(data);
       
       // Calculate used leaves by type from approved leaves
-      const usedByType = data.reduce((acc: any, leave: LeaveRequest) => {
+      const usedByType = data.reduce<Record<string, number>>((acc, leave) => {
         if (leave.status === 'Approved') {
           const days = leave.totalDays || calculateDays(leave.startDate, leave.endDate);
           acc[leave.type.toLowerCase()] = (acc[leave.type.toLowerCase()] || 0) + days;
@@ -101,7 +104,7 @@ export default function MyLeavesPage() {
       setShowModal(false);
       setFormData({ type: 'Annual', startDate: '', endDate: '', reason: '' });
       fetchLeaves();
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', title: 'Error', description: 'Failed to submit leave request' });
     } finally {
       setIsSubmitting(false);
@@ -109,6 +112,57 @@ export default function MyLeavesPage() {
   };
 
   const pendingCount = leaves.filter(l => l.status === 'Pending').length;
+
+  // Withdraw a pending request. Approved/rejected leaves can no longer be withdrawn.
+  const handleWithdraw = async (leave: LeaveRequest) => {
+    if (leave.status !== 'Pending') return;
+    if (!window.confirm(`Withdraw your ${leave.type} leave request (${formatDate(leave.startDate)} → ${formatDate(leave.endDate)})?`)) {
+      return;
+    }
+
+    setWithdrawingId(leave.id);
+    try {
+      await updateLeaveStatus({ id: leave.id, status: 'Cancelled' });
+      addToast({
+        type: 'success',
+        title: 'Leave withdrawn',
+        description: 'Your request has been withdrawn and sent back to your manager.',
+      });
+      setSelectedLeave(null);
+      fetchLeaves();
+    } catch (error) {
+      console.error('Failed to withdraw leave:', error);
+      addToast({ type: 'error', title: 'Error', description: 'Failed to withdraw leave request' });
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
+
+  const statusBadgeClass = (status: LeaveRequest['status']) => {
+    switch (status) {
+      case 'Approved':
+        return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+      case 'Pending':
+        return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+      case 'Cancelled':
+        return 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border border-slate-500/20';
+      default:
+        return 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20';
+    }
+  };
+
+  const statusIcon = (status: LeaveRequest['status']) => {
+    switch (status) {
+      case 'Approved':
+        return <CheckCircle2 className="h-3 w-3" />;
+      case 'Pending':
+        return <Clock className="h-3 w-3" />;
+      case 'Cancelled':
+        return <Ban className="h-3 w-3" />;
+      default:
+        return <XCircle className="h-3 w-3" />;
+    }
+  };
 
   if (loading || !user) return null;
 
@@ -189,24 +243,40 @@ export default function MyLeavesPage() {
                           <span>{formatDate(leave.startDate)} → {formatDate(leave.endDate)}</span>
                         </div>
                       </div>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        leave.status === 'Approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
-                        : leave.status === 'Pending' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
-                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                      }`}>
-                        {leave.status}
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusBadgeClass(leave.status)}`}>
+                        {statusIcon(leave.status)}
+                        {leave.status === 'Cancelled' ? 'Withdrawn' : leave.status}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-1 border-t border-border/40">
                       <span>Duration: <strong className="text-foreground">{leave.totalDays || calculateDays(leave.startDate, leave.endDate)} day(s)</strong></span>
-                      {leave.status === "Pending" ? (
-                        <Button variant="outline" size="sm" className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30">
-                          Cancel
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => setSelectedLeave(leave)}
+                        >
+                          <Eye className="h-3.5 w-3.5" /> View
                         </Button>
-                      ) : (
-                        <span className="text-[11px]">Processed</span>
-                      )}
+                        {leave.status === "Pending" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30 gap-1"
+                            onClick={() => handleWithdraw(leave)}
+                            disabled={withdrawingId === leave.id}
+                          >
+                            {withdrawingId === leave.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Ban className="h-3.5 w-3.5" />
+                            )}
+                            Withdraw
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -233,21 +303,38 @@ export default function MyLeavesPage() {
                         <TableCell className="text-muted-foreground whitespace-nowrap">{formatDate(leave.endDate)}</TableCell>
                         <TableCell className="font-medium">{leave.totalDays || calculateDays(leave.startDate, leave.endDate)}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            leave.status === 'Approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
-                            : leave.status === 'Pending' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
-                            : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'}`}>
-                            {leave.status}
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusBadgeClass(leave.status)}`}>
+                            {statusIcon(leave.status)}
+                            {leave.status === 'Cancelled' ? 'Withdrawn' : leave.status}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
-                          {leave.status === "Pending" ? (
-                            <Button variant="outline" size="sm" className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30 font-semibold">
-                              Cancel
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 gap-1"
+                              onClick={() => setSelectedLeave(leave)}
+                            >
+                              <Eye className="h-3.5 w-3.5" /> View
                             </Button>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">--</span>
-                          )}
+                            {leave.status === "Pending" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30 font-semibold gap-1"
+                                onClick={() => handleWithdraw(leave)}
+                                disabled={withdrawingId === leave.id}
+                              >
+                                {withdrawingId === leave.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Ban className="h-3.5 w-3.5" />
+                                )}
+                                Withdraw
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -340,6 +427,30 @@ export default function MyLeavesPage() {
           </div>
         </div>
       )}
+
+      {/* Full leave details */}
+      <LeaveDetailsModal
+        leave={selectedLeave}
+        onClose={() => setSelectedLeave(null)}
+        actions={
+          selectedLeave?.status === "Pending" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30"
+              onClick={() => handleWithdraw(selectedLeave)}
+              disabled={withdrawingId === selectedLeave.id}
+            >
+              {withdrawingId === selectedLeave.id ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Ban className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Withdraw request
+            </Button>
+          ) : null
+        }
+      />
     </div>
   );
 }

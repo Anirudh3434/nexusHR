@@ -89,7 +89,7 @@ const priorityColors: Record<string, string> = {
 export default function MyProjectsPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const { openInNewTab } = usePmsFullscreen();
+  const { openInNewTab, isPmsSubdomain } = usePmsFullscreen();
   
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,16 +143,18 @@ export default function MyProjectsPage() {
         description="View your assigned projects"
         actions={
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openInNewTab("/my-projects")}
-              className="gap-1.5 text-xs h-9"
-              title="Open in a separate tab"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Open in New Tab</span>
-            </Button>
+            {!isPmsSubdomain && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openInNewTab("/my-projects")}
+                className="gap-1.5 text-xs h-9"
+                title="Open in a separate tab"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Open in New Tab</span>
+              </Button>
+            )}
           </div>
         }
       />

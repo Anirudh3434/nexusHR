@@ -41,6 +41,9 @@ export async function GET(req: Request) {
       ...notice,
       id: notice._id.toString(),
       _id: undefined,
+      isRead: auth?.userId && Array.isArray(notice.readBy)
+        ? notice.readBy.some((id: any) => id?.toString() === auth.userId)
+        : false,
       postedBy: notice.postedBy ? {
         id: notice.postedBy._id.toString(),
         name: notice.postedBy.name,
@@ -142,5 +145,41 @@ export async function DELETE(req: Request) {
   } catch (error: any) {
     console.error('Notice delete error:', error);
     return NextResponse.json({ message: 'Error deleting notice', error: error.message }, { status: 500 });
+  }
+}
+
+// PATCH mark notice(s) as read by the current user
+export async function PATCH(req: Request) {
+  try {
+    await connectDB();
+    const auth = await getAuthInfo();
+    if (!auth?.userId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { noticeId, noticeIds, action } = body;
+
+    if (action === 'mark_read') {
+      const idsToMark = noticeIds || (noticeId ? [noticeId] : []);
+      if (idsToMark.length === 0) {
+        // Mark all active notices for user's company as read
+        await Notice.updateMany(
+          { companyId: auth.companyId, isActive: true },
+          { $addToSet: { readBy: auth.userId } }
+        );
+      } else {
+        await Notice.updateMany(
+          { _id: { $in: idsToMark } },
+          { $addToSet: { readBy: auth.userId } }
+        );
+      }
+      return NextResponse.json({ message: 'Marked as read successfully' });
+    }
+
+    return NextResponse.json({ message: 'Invalid action' }, { status: 400 });
+  } catch (error: any) {
+    console.error('Notice mark read error:', error);
+    return NextResponse.json({ message: 'Error updating notice', error: error.message }, { status: 500 });
   }
 }

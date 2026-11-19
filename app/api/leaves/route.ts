@@ -4,6 +4,7 @@ import Leave from '@/models/Leave';
 import { getAuthInfo } from '@/lib/auth-util';
 import { hasRole } from '@/lib/auth';
 import { notify } from '@/lib/notify';
+import { getManagerChainIds, getSubordinateIds, isInReportingChain } from '@/lib/hierarchy-query';
 
 const shortDate = (value: Date | string) =>
   new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
@@ -38,6 +39,17 @@ export async function GET(req: Request) {
     if (isEmployee) {
       // Employees see only their own leaves; ignore employeeId param
       query.employeeId = auth.userId;
+    } else if (auth.role === 'manager' && !isSuperAdmin) {
+      // Managers see only their own reporting hierarchy (plus their own records).
+      const teamIds = await getSubordinateIds(auth.userId, auth.companyId);
+      const visibleIds = [...teamIds, auth.userId];
+      if (employeeId && !visibleIds.includes(employeeId)) {
+        return NextResponse.json(
+          { message: 'Forbidden: employee is outside your reporting hierarchy' },
+          { status: 403 }
+        );
+      }
+      query.employeeId = employeeId ? employeeId : { $in: visibleIds };
     } else if (employeeId) {
       query.employeeId = employeeId;
     }
@@ -91,7 +103,9 @@ export async function POST(req: Request) {
       status: 'Pending',
     });
 
-    // Approvers see the request in their login digest.
+    // Notify only the requester's management chain (plus HR/admin), never
+    // unrelated managers in the company.
+    const managerIds = await getManagerChainIds(employeeId);
     await notify({
       companyId,
       kind: 'leave',
@@ -103,7 +117,8 @@ export async function POST(req: Request) {
       meta: 'Awaiting approval',
       actorId: employeeId,
       dedupeKey: `leave:${newLeave._id}`,
-      roles: ['admin', 'hr', 'manager'],
+      recipientIds: managerIds,
+      roles: ['admin', 'hr'],
     });
 
     return NextResponse.json({
@@ -121,9 +136,6 @@ export async function PATCH(req: Request) {
     await connectDB();
     const auth = await getAuthInfo();
     if (!auth) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    if (!hasRole(auth.role, ['super_admin', 'admin', 'hr', 'manager'])) {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-    }
     const data = await req.json();
 
     // approvedBy always from session; ignore body value
@@ -149,30 +161,83 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: 'Invalid status transition' }, { status: 400 });
     }
 
-    const leave = await Leave.findByIdAndUpdate(
-      id,
-      { status, approvedBy: auth.userId, comment },
-      { new: true }
-    );
+    // --- Authorization -----------------------------------------------------
+    // Withdrawal (Cancelled): only the requester may withdraw their own
+    // leave, and only while it is still Pending. Privileged roles may cancel.
+    // Approval/Rejection: only the requester's reporting chain (or admin/HR).
+    const isOwner = String(existing.employeeId) === auth.userId;
+    const isPrivileged = hasRole(auth.role, ['super_admin', 'admin', 'hr']);
+
+    if (status === 'Cancelled') {
+      if (!isOwner && !isPrivileged) {
+        return NextResponse.json(
+          { message: 'Only the requester can withdraw this leave request' },
+          { status: 403 }
+        );
+      }
+    } else {
+      if (isOwner) {
+        return NextResponse.json(
+          { message: 'You cannot approve or reject your own leave request' },
+          { status: 403 }
+        );
+      }
+      if (!isPrivileged) {
+        if (auth.role !== 'manager') {
+          return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+        }
+        const canApprove = await isInReportingChain(auth.userId, String(existing.employeeId));
+        if (!canApprove) {
+          return NextResponse.json(
+            { message: 'Only the reporting manager of this employee can act on the request' },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    // Attribute the decision to the approver; an owner withdrawal is not an approval.
+    const update: Record<string, unknown> = { status };
+    if (!(status === 'Cancelled' && isOwner)) update.approvedBy = auth.userId;
+    if (comment !== undefined) update.comment = comment;
+
+    const leave = await Leave.findByIdAndUpdate(id, update, { new: true });
 
     if (!leave) {
       return NextResponse.json({ message: 'Leave request not found' }, { status: 404 });
     }
 
-    // Tell the requester the decision.
-    await notify({
-      companyId: existing.companyId.toString(),
-      kind: 'leave',
-      title: `Leave ${status.toLowerCase()}`,
-      message: `${existing.type} · ${shortDate(existing.startDate)} → ${shortDate(existing.endDate)}${
-        comment ? ` · ${comment}` : ''
-      }`,
-      href: '/my-leaves',
-      meta: status,
-      recipientIds: [String(existing.employeeId)],
-      actorId: auth.userId,
-      dedupeKey: `leave-status:${leave._id}:${status}`,
-    });
+    if (status === 'Cancelled' && isOwner) {
+      // Let the approvers know the request no longer needs action.
+      const managerIds = await getManagerChainIds(String(existing.employeeId));
+      await notify({
+        companyId: existing.companyId.toString(),
+        kind: 'leave',
+        title: '{actor} withdrew a leave request',
+        message: `${existing.type} · ${shortDate(existing.startDate)} → ${shortDate(existing.endDate)}.`,
+        href: '/leave-approvals',
+        meta: 'Withdrawn',
+        actorId: auth.userId,
+        recipientIds: managerIds,
+        roles: ['admin', 'hr'],
+        dedupeKey: `leave-withdraw:${leave._id}`,
+      });
+    } else {
+      // Tell the requester the decision.
+      await notify({
+        companyId: existing.companyId.toString(),
+        kind: 'leave',
+        title: `Leave ${status.toLowerCase()}`,
+        message: `${existing.type} · ${shortDate(existing.startDate)} → ${shortDate(existing.endDate)}${
+          comment ? ` · ${comment}` : ''
+        }`,
+        href: '/my-leaves',
+        meta: status,
+        recipientIds: [String(existing.employeeId)],
+        actorId: auth.userId,
+        dedupeKey: `leave-status:${leave._id}:${status}`,
+      });
+    }
 
     return NextResponse.json({
       message: 'Leave request updated successfully',

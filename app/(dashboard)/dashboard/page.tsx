@@ -48,6 +48,7 @@ import {
 } from "../../../components/dashboard/WorksuiteDashboardWidgets";
 import { CareerLifecycleWidget } from "../../../components/dashboard/CareerLifecycleWidget";
 import { LoginCelebration } from "../../../components/dashboard/LoginCelebration";
+import { NoticePopupOverlay } from "../../../components/dashboard/NoticePopupOverlay";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -479,6 +480,7 @@ export default function DashboardPage() {
   if (!user) return null;
 
   const handleCheckIn = async () => {
+    setIsProcessing(true);
     try {
       const response = await logAttendance({
         employeeId: user.id || '',
@@ -525,14 +527,15 @@ export default function DashboardPage() {
 
   const handleCheckOut = async () => {
     if (!activeShift) return;
+    setIsProcessing(true);
     const now = new Date();
     const diff = now.getTime() - activeShift.start.getTime();
     const hours = Math.floor(diff / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
 
-    // Update attendance in API
-    if (user) {
-      try {
+    try {
+      // Update attendance in API
+      if (user) {
         const today = now.toISOString().split('T')[0];
         const checkOutTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         await logAttendance({
@@ -541,14 +544,17 @@ export default function DashboardPage() {
           checkOut: checkOutTime,
           companyId: user.companyId,
         });
-      } catch (error) {
-        console.error("Failed to log check-out:", error);
       }
+      
+      setActiveShift(null);
+      localStorage.removeItem("active-shift");
+      addToast({ type: "info", title: "Shift Ended", description: `Total time worked: ${hours}h ${minutes}m. Log saved to Attendance.` });
+    } catch (error) {
+      console.error("Failed to log check-out:", error);
+      addToast({ type: "error", title: "Check-out Failed", description: "Failed to save shift end. Please try again." });
+    } finally {
+      setIsProcessing(false);
     }
-    
-    setActiveShift(null);
-    localStorage.removeItem("active-shift");
-    addToast({ type: "info", title: "Shift Ended", description: `Total time worked: ${hours}h ${minutes}m. Log saved to Attendance.` });
   };
 
   return (
@@ -556,6 +562,13 @@ export default function DashboardPage() {
       {/* Milestone cards for the signed-in user (birthday, anniversary,
           probation, notice) — animate in once per session. */}
       <LoginCelebration />
+
+      {/* Automatic Notice Popup Overlay for unread notices with 2-minute timer */}
+      <NoticePopupOverlay
+        notices={notices}
+        userId={user?.id}
+        onAllMarkedRead={fetchNotices}
+      />
 
       {/* Top Worksuite Header Bar & Action Controls */}
       <WorksuiteHeader

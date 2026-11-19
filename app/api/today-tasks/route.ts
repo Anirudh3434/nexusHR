@@ -134,9 +134,27 @@ export async function POST(req: NextRequest) {
 
     const status = action === 'submit' ? 'submitted' : 'draft';
     const submittedAt = action === 'submit' ? new Date() : undefined;
+    const planSubmittedAt = action === 'submit' ? new Date() : undefined;
 
     // Set edit window to 1 hour after submission
     const editWindowExpiresAt = action === 'submit' ? new Date(Date.now() + 60 * 60 * 1000) : undefined;
+
+    const sanitizedItems = items.map((item: any) => ({
+      ...item,
+      taskId: item.taskId && mongoose.Types.ObjectId.isValid(item.taskId)
+        ? new mongoose.Types.ObjectId(item.taskId)
+        : new mongoose.Types.ObjectId(),
+      taskNumber: item.taskNumber || (item.isCustom ? 'NON-PMS' : 'TASK'),
+      title: item.title,
+      description: item.description || '',
+      isCustom: Boolean(item.isCustom),
+      category: item.category || 'General',
+      addedAt: item.addedAt ? new Date(item.addedAt) : new Date(),
+      currentStatus: item.currentStatus || 'In Progress',
+      estimateTime: item.estimateTime || '1 hr',
+      eodStatus: item.eodStatus || 'in_progress',
+      eodRemarks: item.eodRemarks || ''
+    }));
 
     const updatedReport = await TodayTaskReport.findOneAndUpdate(
       { userId: new mongoose.Types.ObjectId(userId), date: reportDate },
@@ -147,9 +165,9 @@ export async function POST(req: NextRequest) {
           userEmail: user.email,
           companyId: user.companyId,
           date: reportDate,
-          items,
+          items: sanitizedItems,
           status,
-          ...(submittedAt ? { submittedAt } : {}),
+          ...(submittedAt ? { submittedAt, planSubmittedAt } : {}),
           ...(employeeComment ? { employeeComment } : {}),
           ...(editWindowExpiresAt ? { editWindowExpiresAt } : {})
         }
@@ -158,7 +176,7 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json({
-      message: action === 'submit' ? "Today's Task & EOD Report submitted to manager successfully!" : "Draft saved successfully",
+      message: action === 'submit' ? "Work plan submitted to manager successfully! EOD status can be added at shift end." : "Draft saved successfully",
       report: updatedReport
     }, { status: 200 });
 
@@ -188,6 +206,81 @@ export async function PATCH(req: NextRequest) {
 
     const body = await req.json();
     const { reportId, taskId, action } = body;
+
+    // Submit full EOD Report at shift end
+    if (action === 'submit_eod' && reportId) {
+      const report = await TodayTaskReport.findOne({
+        _id: new mongoose.Types.ObjectId(reportId),
+        companyId: user.companyId
+      });
+
+      if (!report) {
+        return NextResponse.json({ message: 'Report not found' }, { status: 404 });
+      }
+
+      const isOwner = report.userId.toString() === userId;
+      if (!isOwner && userRole !== 'admin' && userRole !== 'hr' && userRole !== 'manager') {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+      }
+
+      const { items } = body;
+      if (items && Array.isArray(items)) {
+        report.items = report.items.map((existingItem: any) => {
+          const match = items.find((i: any) => 
+            (i.taskId && i.taskId.toString() === existingItem.taskId?.toString()) || 
+            (i._id && i._id.toString() === existingItem._id?.toString())
+          );
+          if (match) {
+            existingItem.eodStatus = match.eodStatus || existingItem.eodStatus;
+            if (match.eodRemarks !== undefined) {
+              existingItem.eodRemarks = match.eodRemarks;
+            }
+          }
+          return existingItem;
+        });
+      }
+
+      report.eodStatusSubmitted = true;
+      report.eodSubmittedAt = new Date();
+      await report.save();
+
+      return NextResponse.json({
+        message: 'EOD status report submitted successfully!',
+        report
+      }, { status: 200 });
+    }
+
+    // Update single item EOD status
+    if (action === 'update_eod_status' && reportId) {
+      const { taskId, eodStatus, eodRemarks } = body;
+      const report = await TodayTaskReport.findOne({
+        _id: new mongoose.Types.ObjectId(reportId),
+        companyId: user.companyId
+      });
+
+      if (!report) {
+        return NextResponse.json({ message: 'Report not found' }, { status: 404 });
+      }
+
+      const itemIndex = report.items.findIndex((item: any) => 
+        (item.taskId && item.taskId.toString() === taskId) || 
+        (item._id && item._id.toString() === taskId)
+      );
+
+      if (itemIndex === -1) {
+        return NextResponse.json({ message: 'Task not found in report' }, { status: 404 });
+      }
+
+      if (eodStatus) report.items[itemIndex].eodStatus = eodStatus;
+      if (eodRemarks !== undefined) report.items[itemIndex].eodRemarks = eodRemarks;
+
+      await report.save();
+
+      return NextResponse.json({
+        message: 'EOD status updated successfully',
+        report
+      }, { status: 200 });
+    }
 
     // Add comment (both employee and manager)
     if (action === 'add_comment' && reportId) {
@@ -250,11 +343,17 @@ export async function PATCH(req: NextRequest) {
 
       // Add the new task
       const newTaskItem = {
-        taskId: new mongoose.Types.ObjectId(task.taskId),
-        taskNumber: task.taskNumber,
+        taskId: task.taskId && mongoose.Types.ObjectId.isValid(task.taskId)
+          ? new mongoose.Types.ObjectId(task.taskId)
+          : new mongoose.Types.ObjectId(),
+        taskNumber: task.taskNumber || (task.isCustom ? 'NON-PMS' : 'TASK'),
         title: task.title,
-        currentStatus: task.currentStatus,
+        description: task.description || '',
+        currentStatus: task.currentStatus || 'In Progress',
         estimateTime: task.estimateTime || '1 hr',
+        isCustom: Boolean(task.isCustom),
+        category: task.category || 'General',
+        addedAt: new Date(),
         eodStatus: 'in_progress' as const,
         eodRemarks: '',
         eodStatusHistory: []
@@ -299,7 +398,7 @@ export async function PATCH(req: NextRequest) {
       }
 
       const before = report.items.length;
-      report.items = report.items.filter((item: any) => item.taskId.toString() !== taskId);
+      report.items = report.items.filter((item: any) => item.taskId?.toString() !== taskId && item._id?.toString() !== taskId);
       if (report.items.length === before) {
         return NextResponse.json({ message: 'Task not found in report' }, { status: 404 });
       }

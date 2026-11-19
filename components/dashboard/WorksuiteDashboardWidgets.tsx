@@ -122,10 +122,10 @@ export const WorksuiteHeader = ({
             <button
               onClick={onCheckOut}
               disabled={isProcessing}
-              className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+              className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 cursor-pointer disabled:cursor-wait"
             >
               {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Clock size={14} />}
-              Clock out
+              <span>{isProcessing ? "Clocking out..." : "Clock out"}</span>
             </button>
           ) : (
             <div className="relative">
@@ -133,16 +133,17 @@ export const WorksuiteHeader = ({
                 <button
                   onClick={onCheckIn}
                   disabled={isProcessing}
-                  className="flex items-center gap-1.5 bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+                  className="flex items-center gap-1.5 bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 cursor-pointer disabled:cursor-wait"
                 >
                   {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Clock size={14} />}
-                  Clock in
+                  <span>{isProcessing ? "Clocking in..." : "Clock in"}</span>
                 </button>
                 <button
                   onClick={() => setShowModeDropdown(!showModeDropdown)}
+                  disabled={isProcessing}
                   aria-expanded={showModeDropdown}
                   aria-label={`Work location: ${workMode === 'office' ? 'office' : 'remote'}. Change location.`}
-                  className="flex items-center gap-1 border-l border-primary-foreground/25 bg-primary px-2.5 py-2 text-primary-foreground transition-opacity hover:opacity-90"
+                  className="flex items-center gap-1 border-l border-primary-foreground/25 bg-primary px-2.5 py-2 text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 cursor-pointer"
                 >
                   {workMode === 'office' ? <Briefcase size={13} /> : <Home size={13} />}
                   <ChevronDown size={12} className={cn("transition-transform", showModeDropdown && "rotate-180")} />

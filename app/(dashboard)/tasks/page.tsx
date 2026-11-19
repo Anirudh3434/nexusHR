@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { Pagination } from "@/components/ui/Pagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import { 
   KanbanSquare, Search, Filter, Clock, CheckCircle, XCircle, 
   Calendar, User, Plus, Edit, Trash2, MoreHorizontal, ChevronDown, ChevronUp,
@@ -114,13 +116,20 @@ const statusThemes: Record<string, { dot: string; headerText: string; lightBg: s
 export default function TasksManagementPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const { openInNewTab } = usePmsFullscreen();
+  const { openInNewTab, isPmsSubdomain } = usePmsFullscreen();
   
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterPriority, setFilterPriority] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, filterStatus, filterPriority]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -662,11 +671,18 @@ export default function TasksManagementPage() {
   };
 
   const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         task.taskNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         task.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!debouncedSearchQuery.trim()) return true;
+    const q = debouncedSearchQuery.toLowerCase().trim();
+    const matchesSearch = task.title.toLowerCase().includes(q) ||
+                         task.taskNumber.toLowerCase().includes(q) ||
+                         task.description?.toLowerCase().includes(q);
     return matchesSearch;
   });
+
+  const paginatedTasks = filteredTasks.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   if (loading) {
     return <TableSkeleton rows={7} cols={6} />;
@@ -680,16 +696,18 @@ export default function TasksManagementPage() {
         description="Manage project tasks"
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openInNewTab("/tasks")}
-              className="gap-1.5 text-xs h-9"
-              title="Open Tasks in a separate tab"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Open in New Tab</span>
-            </Button>
+            {!isPmsSubdomain && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openInNewTab("/tasks")}
+                className="gap-1.5 text-xs h-9"
+                title="Open Tasks in a separate tab"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Open in New Tab</span>
+              </Button>
+            )}
             <div className="flex items-center border rounded-lg">
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -774,7 +792,7 @@ export default function TasksManagementPage() {
               />
             </Card>
           ) : (
-            filteredTasks.map((task) => (
+            paginatedTasks.map((task) => (
             <Card key={task._id}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -866,9 +884,23 @@ export default function TasksManagementPage() {
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+            ))
+          )}
+
+          {/* List Pagination Bar */}
+          {filteredTasks.length > 0 && (
+            <Card className="overflow-hidden border border-border shadow-xs">
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredTasks.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="tasks"
+              />
+            </Card>
+          )}
+        </div>
       ) : (
         /* Board View */
         <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-6 scrollbar-thin scroll-smooth -mx-3.5 px-3.5 sm:mx-0 sm:px-0">

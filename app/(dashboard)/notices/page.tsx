@@ -31,14 +31,10 @@ export default function NoticesPage() {
     expiryDate: '',
   });
 
-  useEffect(() => {
-    if (!loading && user && !hasRole(["admin", "hr"])) {
-      router.push("/unauthorized");
-    }
-  }, [user, loading, hasRole, router]);
+  const canManage = hasRole(["admin", "hr", "super_admin"]);
 
   useEffect(() => {
-    if (user && hasRole(["admin", "hr"])) {
+    if (user) {
       fetchNotices();
     }
   }, [user?.companyId, user?.role]);
@@ -128,13 +124,15 @@ export default function NoticesPage() {
       {/* Header */}
       <PageHeader
         icon={<Megaphone />}
-        title="Notice Management"
-        description="Create and manage company announcements."
+        title={canManage ? "Notice Management" : "Company Notices"}
+        description={canManage ? "Create and manage company announcements." : "Official company announcements and updates."}
         actions={
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Post Notice
-          </Button>
+          canManage ? (
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Post Notice
+            </Button>
+          ) : undefined
         }
       />
 
@@ -179,19 +177,21 @@ export default function NoticesPage() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
-                      onClick={() => handleDelete(notice.id)}
-                      disabled={isDeleting === notice.id}
-                    >
-                      {isDeleting === notice.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
+                      {canManage && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400"
+                          onClick={() => handleDelete(notice.id)}
+                          disabled={isDeleting === notice.id}
+                        >
+                          {isDeleting === notice.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
                       )}
-                    </Button>
                   </div>
                 </div>
               ))}

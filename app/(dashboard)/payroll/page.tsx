@@ -23,7 +23,9 @@ import {
   Building2,
   Check,
   Copy,
-  Zap
+  Zap,
+  ShieldCheck,
+  Lock
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -1048,220 +1050,376 @@ export default function PayrollPage() {
         </div>
       )}
 
-      {/* Settings Modal (Tabs for Schedule & RazorpayX) */}
+      {/* Settings Modal (Landscape Split Layout with RazorpayX & Nexi on Left) */}
       {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-          <Card className="w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between border-b pb-3">
-              <div className="flex items-center gap-2">
-                <SettingsIcon size={18} className="text-primary" />
-                <CardTitle className="text-lg">Payroll Configuration</CardTitle>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => setShowSettings(false)}>
-                <X size={18} />
-              </Button>
-            </CardHeader>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setShowSettings(false)}
+        >
+          <div 
+            className="relative w-full max-w-4xl lg:max-w-5xl rounded-2xl sm:rounded-3xl border border-border/80 bg-card shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Left Fintech Showcase Panel */}
+            <div className="w-full md:w-[360px] lg:w-[410px] shrink-0 bg-gradient-to-br from-[#06101e] via-[#091b34] to-[#040a16] text-white p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden border-b md:border-b-0 md:border-r border-slate-800">
+              {/* Background ambient lighting */}
+              <div className="absolute -top-20 -left-20 w-52 h-52 bg-sky-500/15 rounded-full blur-[70px] pointer-events-none" />
+              <div className="absolute top-1/2 -right-16 w-48 h-48 bg-emerald-500/15 rounded-full blur-[60px] pointer-events-none" />
+              <div className="absolute -bottom-16 left-1/3 w-52 h-52 bg-primary/20 rounded-full blur-[70px] pointer-events-none" />
 
-            {/* Modal Tabs */}
-            <div className="flex border-b text-xs font-semibold px-4">
-              <button
-                type="button"
-                onClick={() => setSettingsTab('schedule')}
-                className={`py-3 px-3 border-b-2 transition-colors ${
-                  settingsTab === 'schedule'
-                    ? 'border-primary text-primary font-bold'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Schedule & OT
-              </button>
-              <button
-                type="button"
-                onClick={() => setSettingsTab('razorpayx')}
-                className={`py-3 px-3 border-b-2 flex items-center gap-1.5 transition-colors ${
-                  settingsTab === 'razorpayx'
-                    ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 font-bold'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Building2 size={13} />
-                <span>RazorpayX Banking</span>
-                {razorpayxConfig.enabled && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" />
-                )}
-              </button>
-            </div>
-
-            <CardContent className="pt-5 space-y-5">
-              {settingsTab === 'schedule' ? (
-                <>
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Monthly Generation Date
-                    </label>
-                    <select 
-                      value={payrollCycleDate}
-                      onChange={(e) => setPayrollCycleDate(Number(e.target.value))}
-                      className="w-full p-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none text-sm"
-                    >
-                      {[...Array(31)].map((_, i) => (
-                        <option key={i+1} value={i+1}>{i+1}{i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} of the month</option>
-                      ))}
-                    </select>
-                    <p className="text-xs text-muted-foreground leading-relaxed italic">
-                      Payroll will be automatically generated for all employees on this date every month.
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Overtime Multiplier (x)
-                    </label>
-                    <input 
-                      type="number" 
-                      step="0.1" 
-                      min="1" 
-                      max="5"
-                      value={overtimeRate}
-                      onChange={(e) => setOvertimeRate(Number(e.target.value))}
-                      className="w-full p-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground leading-relaxed italic">
-                      The hourly rate will be multiplied by this value for overtime calculations (e.g. 1.5).
-                    </p>
-                  </div>
-                </>
-              ) : (
-                /* RazorpayX Banking Tab */
-                <div className="space-y-4">
-                  {/* Enable Switch */}
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border">
+              {/* Brand Bar */}
+              <div className="relative z-10">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    {/* Razorpay Bolt Badge */}
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0284c7] via-[#0284c7] to-[#38bdf8] flex items-center justify-center shadow-lg shadow-sky-500/20 border border-sky-400/30 shrink-0">
+                      <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white" stroke="none" />
+                      </svg>
+                    </div>
                     <div>
-                      <p className="text-sm font-bold text-foreground">Enable RazorpayX Payouts</p>
-                      <p className="text-[11px] text-muted-foreground">Automate direct bank transfers for salary payouts.</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={razorpayxConfig.enabled} 
-                        onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, enabled: e.target.checked })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">
-                      RazorpayX Key ID
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="rzp_live_... or rzp_test_..."
-                      value={razorpayxConfig.keyId}
-                      onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, keyId: e.target.value })}
-                      className="w-full p-2 text-sm border rounded-lg bg-background font-mono focus:ring-2 focus:ring-emerald-500/30 outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">
-                      RazorpayX Key Secret {razorpayxConfig.hasKeySecret && <span className="text-green-600 lowercase font-normal">(saved securely)</span>}
-                    </label>
-                    <input
-                      type="password"
-                      placeholder={razorpayxConfig.hasKeySecret ? '•••••••••••••••• (leave blank to keep unchanged)' : 'Enter your Key Secret'}
-                      value={razorpayxConfig.keySecret}
-                      onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, keySecret: e.target.value })}
-                      className="w-full p-2 text-sm border rounded-lg bg-background font-mono focus:ring-2 focus:ring-emerald-500/30 outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">
-                      Source Account Number (Debit Account)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 7878780080316316"
-                      value={razorpayxConfig.accountNumber}
-                      onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, accountNumber: e.target.value })}
-                      className="w-full p-2 text-sm border rounded-lg bg-background font-mono focus:ring-2 focus:ring-emerald-500/30 outline-none"
-                    />
-                    <p className="text-[10px] text-muted-foreground">Your RazorpayX Business Current Account or Virtual Account.</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Default Mode</label>
-                      <select
-                        value={razorpayxConfig.defaultMode}
-                        onChange={(e) => {
-                          const val = e.target.value as 'IMPS' | 'NEFT' | 'RTGS' | 'UPI';
-                          setRazorpayxConfig({ ...razorpayxConfig, defaultMode: val });
-                        }}
-                        className="w-full p-2 text-sm border rounded-lg bg-background font-medium focus:ring-2 focus:ring-emerald-500/30 outline-none"
-                      >
-                        <option value="IMPS">IMPS (Instant)</option>
-                        <option value="NEFT">NEFT (Standard)</option>
-                        <option value="RTGS">RTGS (&gt; ₹2 Lakhs)</option>
-                        <option value="UPI">UPI (VPA)</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Webhook Secret</label>
-                      <input
-                        type="text"
-                        placeholder="Optional webhook secret"
-                        value={razorpayxConfig.webhookSecret}
-                        onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, webhookSecret: e.target.value })}
-                        className="w-full p-2 text-sm border rounded-lg bg-background font-mono focus:ring-2 focus:ring-emerald-500/30 outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Test Connection Button */}
-                  <div className="pt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTestRazorpayX}
-                      disabled={isTestingRzp}
-                      className="w-full gap-2 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs"
-                    >
-                      {isTestingRzp ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Zap size={14} />}
-                      Test RazorpayX Connection
-                    </Button>
-
-                    {testResult && (
-                      <div className={`mt-2 p-2.5 rounded-lg text-xs flex items-center gap-2 ${
-                        testResult.success 
-                          ? 'bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20' 
-                          : 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20'
-                      }`}>
-                        {testResult.success ? <CheckCircle2 size={14} className="shrink-0" /> : <AlertCircle size={14} className="shrink-0" />}
-                        <span>{testResult.message}</span>
+                      <div className="flex items-center gap-1 leading-none">
+                        <span className="text-lg font-black tracking-tight text-white font-sans">Razorpay</span>
+                        <span className="text-xl font-black text-sky-400 -ml-0.5">X</span>
                       </div>
-                    )}
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-0.5">Direct Bank Rails</p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                    razorpayxConfig.enabled
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${razorpayxConfig.enabled ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                    {razorpayxConfig.enabled ? 'Connected' : 'Setup Mode'}
+                  </span>
+                </div>
+
+                {/* Fintech & Nexi Graphic Banner */}
+                <div className="mt-4 relative rounded-xl overflow-hidden border border-white/10 shadow-xl group bg-slate-950/70">
+                  <img 
+                    src="/images/razorpayx_nexi_payroll.jpg" 
+                    alt="RazorpayX and Nexi Mascot" 
+                    className="w-full h-36 sm:h-44 object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px] font-medium">
+                    <span className="flex items-center gap-1.5 text-white/95">
+                      <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
+                      <span className="font-semibold">Direct Disbursals</span>
+                    </span>
+                    <span className="font-mono text-[10px] text-sky-300 bg-sky-950/80 border border-sky-500/30 px-2 py-0.5 rounded-full">
+                      IMPS • NEFT • UPI
+                    </span>
                   </div>
                 </div>
-              )}
 
-              <div className="flex gap-3 pt-3 border-t">
-                <Button variant="outline" className="flex-1" onClick={() => setShowSettings(false)}>Cancel</Button>
+                {/* Nexi Avatar Feature Card */}
+                <div className="mt-3 p-3 rounded-xl bg-white/[0.05] border border-white/10 backdrop-blur-sm flex items-center gap-3">
+                  <div className="relative shrink-0 w-11 h-11 rounded-full bg-gradient-to-tr from-primary/30 to-sky-500/30 border border-primary/40 flex items-center justify-center overflow-hidden shadow-inner">
+                    <img 
+                      src="/images/mascot/nexi_security_avatar.png" 
+                      alt="Nexi Security Avatar" 
+                      className="w-full h-full object-cover object-top scale-110"
+                    />
+                  </div>
+                  <div className="text-xs leading-snug">
+                    <p className="font-bold text-white/95 flex items-center gap-1.5">
+                      <span>Nexi Payroll Engine</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/20 text-primary-foreground/90 border border-primary/30">AI Verified</span>
+                    </p>
+                    <p className="text-[11px] text-slate-300 mt-0.5">
+                      Auto-computes overtime, applies deductions, and triggers batch bank transfers with live UTR verification.
+                    </p>
+                  </div>
+                </div>
+            {/* Left Fintech Showcase Panel (Portrait Graphic with Exact RazorpayX Logo & Nexi) */}
+            <div className="w-full md:w-[320px] lg:w-[350px] shrink-0 bg-black flex flex-col items-center justify-center relative overflow-hidden border-b md:border-b-0 md:border-r border-border/80">
+            {/* Left Fintech Showcase Panel: Full Generated Photo Only */}
+            <div className="w-full md:w-[320px] lg:w-[360px] shrink-0 bg-black overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-border/80">
+              <img 
+                src="/images/razorpayx_nexi_payroll.jpg" 
+                alt="RazorpayX Payroll with Nexi" 
+                className="w-full h-full object-cover object-center max-h-[280px] md:max-h-none select-none pointer-events-none"
+                className="w-full h-full object-cover object-top select-none pointer-events-none"
+              />
+              {/* Status Pill Badge */}
+              <div className="absolute top-4 right-4 z-10">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border backdrop-blur-md ${
+                  razorpayxConfig.enabled
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${razorpayxConfig.enabled ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                  {razorpayxConfig.enabled ? 'Connected' : 'Setup Required'}
+                </span>
+              </div>
+
+              {/* Guarantees / Security Badges on Bottom */}
+              <div className="relative z-10 space-y-2 pt-4 mt-3 border-t border-white/10 text-xs">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <Zap size={13} className="text-sky-400 shrink-0" />
+                  <span>Sub-second salary disbursals 24/7 across India</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-300">
+                  <Lock size={13} className="text-emerald-400 shrink-0" />
+                  <span>256-bit bank-grade encryption with RBI compliance</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-300">
+                  <CheckCircle2 size={13} className="text-primary shrink-0" />
+                  <span>One-click bulk payout for all verified staff</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Configuration Form Panel */}
+            <div className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <SettingsIcon size={17} />
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-bold text-foreground">Payroll Configuration</h2>
+                    <p className="text-xs text-muted-foreground">Manage salary cycles, overtime rules, and RazorpayX banking credentials.</p>
+                  </div>
+                </div>
                 <Button 
-                  className="flex-1 gap-2" 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setShowSettings(false)}
+                  className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                  <X size={18} />
+                </Button>
+              </div>
+
+              {/* Modal Tabs */}
+              <div className="flex border-b text-xs font-semibold px-4 sm:px-6 shrink-0 bg-muted/20">
+                <button
+                  type="button"
+                  onClick={() => setSettingsTab('razorpayx')}
+                  className={`py-3 px-3 sm:px-4 border-b-2 flex items-center gap-1.5 sm:gap-2 transition-all ${
+                    settingsTab === 'razorpayx'
+                      ? 'border-sky-600 text-sky-600 dark:text-sky-400 font-bold bg-sky-500/5'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Building2 size={14} />
+                  <span>RazorpayX Banking</span>
+                  {razorpayxConfig.enabled && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettingsTab('schedule')}
+                  className={`py-3 px-3 sm:px-4 border-b-2 flex items-center gap-1.5 sm:gap-2 transition-all ${
+                    settingsTab === 'schedule'
+                      ? 'border-primary text-primary font-bold bg-primary/5'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Calendar size={14} />
+                  <span>Schedule & OT</span>
+                </button>
+              </div>
+
+              {/* Scrollable Form Content */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                {settingsTab === 'schedule' ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Monthly Generation Date
+                      </label>
+                      <select 
+                        value={payrollCycleDate}
+                        onChange={(e) => setPayrollCycleDate(Number(e.target.value))}
+                        className="w-full p-2.5 border rounded-xl bg-background focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none text-sm font-medium"
+                      >
+                        {[...Array(31)].map((_, i) => (
+                          <option key={i+1} value={i+1}>
+                            {i+1}{i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} of every month
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Payroll drafts will be automatically generated for all active employees on this date each month.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Overtime Multiplier (x)
+                      </label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        min="1" 
+                        max="5"
+                        value={overtimeRate}
+                        onChange={(e) => setOvertimeRate(Number(e.target.value))}
+                        className="w-full p-2.5 border rounded-xl bg-background focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none text-sm font-medium"
+                      />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Base hourly rate is multiplied by this factor when calculating overtime pay (standard: 1.5x).
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs space-y-1 text-muted-foreground">
+                      <p className="font-semibold text-foreground flex items-center gap-1.5">
+                        <CheckCircle2 size={14} className="text-primary" />
+                        <span>Automated Payroll Processing Rules</span>
+                      </p>
+                      <p>
+                        Late arrivals, approved leaves, and overtime hours from the Attendance ledger are factored in automatically during draft creation.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* RazorpayX Banking Tab */
+                  <div className="space-y-4">
+                    {/* Enable Switch */}
+                    <div className="flex items-center justify-between p-3.5 bg-muted/40 rounded-xl border border-border">
+                      <div>
+                        <p className="text-sm font-bold text-foreground">Enable RazorpayX Payouts</p>
+                        <p className="text-xs text-muted-foreground">Automate direct bank account transfers for staff salary disbursals.</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={razorpayxConfig.enabled} 
+                          onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, enabled: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </label>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        RazorpayX Key ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="rzp_live_... or rzp_test_..."
+                        value={razorpayxConfig.keyId}
+                        onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, keyId: e.target.value })}
+                        className="w-full p-2.5 text-sm border rounded-xl bg-background font-mono focus:ring-2 focus:ring-sky-500/30 outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                        <span>RazorpayX Key Secret</span>
+                        {razorpayxConfig.hasKeySecret && (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[11px] normal-case">
+                            ✓ Saved securely in encrypted vault
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        type="password"
+                        placeholder={razorpayxConfig.hasKeySecret ? '•••••••••••••••• (leave blank to keep unchanged)' : 'Enter your RazorpayX Key Secret'}
+                        value={razorpayxConfig.keySecret}
+                        onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, keySecret: e.target.value })}
+                        className="w-full p-2.5 text-sm border rounded-xl bg-background font-mono focus:ring-2 focus:ring-sky-500/30 outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Source Account Number (Debit Account)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 7878780080316316"
+                        value={razorpayxConfig.accountNumber}
+                        onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, accountNumber: e.target.value })}
+                        className="w-full p-2.5 text-sm border rounded-xl bg-background font-mono focus:ring-2 focus:ring-sky-500/30 outline-none"
+                      />
+                      <p className="text-[11px] text-muted-foreground">Your RazorpayX Business Current Account or Connected Bank Account.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Default Transfer Mode</label>
+                        <select
+                          value={razorpayxConfig.defaultMode}
+                          onChange={(e) => {
+                            const val = e.target.value as 'IMPS' | 'NEFT' | 'RTGS' | 'UPI';
+                            setRazorpayxConfig({ ...razorpayxConfig, defaultMode: val });
+                          }}
+                          className="w-full p-2.5 text-sm border rounded-xl bg-background font-medium focus:ring-2 focus:ring-sky-500/30 outline-none"
+                        >
+                          <option value="IMPS">IMPS (Instant - 24/7)</option>
+                          <option value="NEFT">NEFT (Standard Batch)</option>
+                          <option value="RTGS">RTGS (&gt; ₹2 Lakhs)</option>
+                          <option value="UPI">UPI (Virtual Address)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Webhook Secret</label>
+                        <input
+                          type="text"
+                          placeholder="Optional webhook secret"
+                          value={razorpayxConfig.webhookSecret}
+                          onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, webhookSecret: e.target.value })}
+                          className="w-full p-2.5 text-sm border rounded-xl bg-background font-mono focus:ring-2 focus:ring-sky-500/30 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Test Connection Button */}
+                    <div className="pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleTestRazorpayX}
+                        disabled={isTestingRzp}
+                        className="w-full gap-2 border-sky-500/30 text-sky-700 dark:text-sky-300 hover:bg-sky-500/10 text-xs py-2"
+                      >
+                        {isTestingRzp ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Zap size={14} className="text-sky-500" />}
+                        <span>Test RazorpayX Connection</span>
+                      </Button>
+
+                      {testResult && (
+                        <div className={`mt-2 p-2.5 rounded-xl text-xs flex items-center gap-2 ${
+                          testResult.success 
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20' 
+                            : 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20'
+                        }`}>
+                          {testResult.success ? <CheckCircle2 size={14} className="shrink-0" /> : <AlertCircle size={14} className="shrink-0" />}
+                          <span>{testResult.message}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t bg-muted/20 shrink-0">
+                <Button variant="outline" onClick={() => setShowSettings(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  className="gap-2" 
                   onClick={handleSettingsSave}
                   disabled={isUpdatingSettings}
                 >
                   {isUpdatingSettings ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={16} />}
-                  Save Settings
+                  <span>Save Settings</span>
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 

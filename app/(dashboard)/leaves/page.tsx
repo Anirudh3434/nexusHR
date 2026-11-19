@@ -17,10 +17,12 @@ import {
   CheckCircle2, 
   Clock, 
   User as UserIcon,
-  Filter
+  Filter,
+  Eye
 } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
+import { LeaveDetailsModal } from "../../../components/leave/LeaveDetailsModal";
 
 export default function LeaveManagementPage() {
   const { user, loading, hasRole } = useAuth();
@@ -29,6 +31,7 @@ export default function LeaveManagementPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null);
 
   useEffect(() => {
     if (!loading && user && !hasRole(["admin", "hr"])) {
@@ -110,6 +113,12 @@ export default function LeaveManagementPage() {
         return (
           <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/20">
             <X className="h-3 w-3" /> Rejected
+          </span>
+        );
+      case "Cancelled":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-500/15 text-slate-700 dark:text-slate-300 border border-slate-500/20">
+            <X className="h-3 w-3" /> Withdrawn
           </span>
         );
       default:
@@ -284,32 +293,41 @@ export default function LeaveManagementPage() {
                       </div>
                     </div>
 
-                    {/* Mobile Action Buttons */}
-                    {request.status === "Pending" ? (
-                      <div className="flex items-center gap-2 pt-1">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="flex-1 h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1.5 shadow-xs"
-                          onClick={() => handleApprove(request.id)}
-                        >
-                          <Check className="h-4 w-4" /> Approve
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-9 border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 font-semibold gap-1.5"
-                          onClick={() => handleReject(request.id)}
-                        >
-                          <X className="h-4 w-4" /> Reject
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-0.5">
-                        <span>Application processed</span>
-                        <span className="font-mono text-[10px]">ID: {request.id.slice(-6)}</span>
-                      </div>
-                    )}
+                    {/* Actions: view full details + approve/reject */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 gap-1.5 shrink-0"
+                        onClick={() => setSelectedLeave(request)}
+                      >
+                        <Eye className="h-4 w-4" /> View
+                      </Button>
+                      {request.status === "Pending" ? (
+                        <>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="flex-1 h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold gap-1.5 shadow-xs"
+                            onClick={() => handleApprove(request.id)}
+                          >
+                            <Check className="h-4 w-4" /> Approve
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-9 border-rose-300 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 font-semibold gap-1.5"
+                            onClick={() => handleReject(request.id)}
+                          >
+                            <X className="h-4 w-4" /> Reject
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="ml-auto text-[11px] text-muted-foreground">
+                          <span className="font-mono text-[10px]">ID: {request.id.slice(-6)}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -351,28 +369,38 @@ export default function LeaveManagementPage() {
                           {getStatusBadge(request.status)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {request.status === "Pending" ? (
-                            <div className="flex justify-end gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:border-emerald-500/30 font-semibold gap-1" 
-                                onClick={() => handleApprove(request.id)}
-                              >
-                                <Check size={13} /> Approve
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30 font-semibold gap-1" 
-                                onClick={() => handleReject(request.id)}
-                              >
-                                <X size={13} /> Reject
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">Processed</span>
-                          )}
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 gap-1"
+                              onClick={() => setSelectedLeave(request)}
+                            >
+                              <Eye size={13} /> View
+                            </Button>
+                            {request.status === "Pending" ? (
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:border-emerald-500/30 font-semibold gap-1" 
+                                  onClick={() => handleApprove(request.id)}
+                                >
+                                  <Check size={13} /> Approve
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:text-rose-400 dark:border-rose-500/30 font-semibold gap-1" 
+                                  onClick={() => handleReject(request.id)}
+                                >
+                                  <X size={13} /> Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">Processed</span>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -383,6 +411,38 @@ export default function LeaveManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      <LeaveDetailsModal
+        leave={selectedLeave}
+        onClose={() => setSelectedLeave(null)}
+        actions={
+          selectedLeave?.status === "Pending" ? (
+            <>
+              <Button
+                size="sm"
+                className="bg-emerald-600 text-white hover:bg-emerald-700"
+                onClick={() => {
+                  handleApprove(selectedLeave.id);
+                  setSelectedLeave(null);
+                }}
+              >
+                <Check className="mr-1.5 h-3.5 w-3.5" /> Approve
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-rose-600 border-rose-200 hover:bg-rose-50 dark:text-rose-400 dark:border-rose-500/30"
+                onClick={() => {
+                  handleReject(selectedLeave.id);
+                  setSelectedLeave(null);
+                }}
+              >
+                <X className="mr-1.5 h-3.5 w-3.5" /> Reject
+              </Button>
+            </>
+          ) : null
+        }
+      />
     </div>
   );
 }

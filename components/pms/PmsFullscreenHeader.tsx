@@ -5,11 +5,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { usePmsFullscreen } from "@/context/PmsFullscreenContext";
 import { SmartLogoBadge } from "@/components/ui/SmartLogoBadge";
 import { 
   FolderKanban, KanbanSquare, Sun, Moon, ChevronDown, Check,
-  CheckSquare, ExternalLink
+  CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +22,6 @@ interface ProjectSummary {
 export function PmsFullscreenHeader() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { openInNewTab } = usePmsFullscreen();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -235,17 +233,6 @@ export function PmsFullscreenHeader() {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Open in New Tab Button */}
-        <button
-          onClick={() => openInNewTab(pathname)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-medium text-slate-200 hover:text-white transition-colors"
-          title="Open in a separate tab"
-          aria-label="Open in a separate tab"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Open in New Tab</span>
-        </button>
-
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}

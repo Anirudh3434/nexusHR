@@ -14,6 +14,7 @@ export interface Notice {
   };
   expiryDate?: string;
   isActive: boolean;
+  isRead?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,4 +67,17 @@ export const deleteNotice = async (id: string): Promise<{ message: string }> => 
     throw new Error('Failed to delete notice');
   }
   return response.json();
+};
+
+export const markNoticesAsRead = async (noticeIds?: string[]): Promise<void> => {
+  const response = await fetch(API_URL, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ action: 'mark_read', noticeIds }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to mark notices as read');
+  }
 };

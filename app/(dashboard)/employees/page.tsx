@@ -17,6 +17,8 @@ import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { Input } from "../../../components/ui/Input";
 import { Avatar } from "../../../components/ui/Avatar";
+import { Pagination } from "../../../components/ui/Pagination";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { getProbationInfo, probationLabel, probationPhaseClasses } from "../../../lib/probation";
 import { 
   X, 
@@ -42,7 +44,10 @@ import {
   ShieldCheck,
   CheckCircle2,
   Lock,
-  ExternalLink
+  ExternalLink,
+  Search,
+  Filter,
+  RotateCcw
 } from "lucide-react";
 import { CsvImportModal } from "../../../components/ui/CsvImportModal";
 import { EMPLOYEE_CSV_TEMPLATE, parseEmployeeCSV, ParsedEmployeeRow } from "../../../lib/csvUtils";
@@ -288,6 +293,86 @@ export default function EmployeesPage() {
     return shift?.name || '-';
   };
 
+  // Search, Filter & Pagination State
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [selectedDesignation, setSelectedDesignation] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedShift, setSelectedShift] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Reset pagination to page 1 whenever search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, selectedDepartment, selectedDesignation, selectedStatus, selectedShift]);
+
+  const filteredEmployees = employees.filter((emp) => {
+    // 1. Text Search: matches name, email, phone, designation, department, employeeId with debounced query
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase().trim();
+      const nameMatch = emp.name?.toLowerCase().includes(q);
+      const emailMatch = emp.email?.toLowerCase().includes(q);
+      const phoneMatch = emp.phone?.toLowerCase().includes(q);
+      const deptMatch = emp.department?.toLowerCase().includes(q);
+      const desigMatch = emp.designation?.toLowerCase().includes(q);
+      const roleMatch = emp.role?.toLowerCase().includes(q);
+      const empIdMatch = (emp as any).employeeId?.toLowerCase()?.includes(q);
+      
+      if (!nameMatch && !emailMatch && !phoneMatch && !deptMatch && !desigMatch && !roleMatch && !empIdMatch) {
+        return false;
+      }
+    }
+
+    // 2. Department filter
+    if (selectedDepartment !== "all" && emp.department !== selectedDepartment) {
+      return false;
+    }
+
+    // 3. Designation filter
+    if (selectedDesignation !== "all" && emp.designation !== selectedDesignation) {
+      return false;
+    }
+
+    // 4. Status filter
+    if (selectedStatus !== "all") {
+      const isActive = emp.status === "Active" || (emp.status === undefined && emp.isActive);
+      if (selectedStatus === "active" && !isActive) return false;
+      if (selectedStatus === "inactive" && isActive) return false;
+    }
+
+    // 5. Shift filter
+    if (selectedShift !== "all" && emp.workShiftId !== selectedShift) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const hasActiveFilters = Boolean(
+    searchQuery.trim() !== "" || 
+    selectedDepartment !== "all" || 
+    selectedDesignation !== "all" || 
+    selectedStatus !== "all" || 
+    selectedShift !== "all"
+  );
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedDepartment("all");
+    setSelectedDesignation("all");
+    setSelectedStatus("all");
+    setSelectedShift("all");
+    setCurrentPage(1);
+  };
+
+  // Paginate filtered employees
+  const paginatedEmployees = filteredEmployees.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   if (loading || !user || !hasRole(["admin", "hr"])) return null;
 
   return (
@@ -313,9 +398,120 @@ export default function EmployeesPage() {
       />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Directory</CardTitle>
-          <CardDescription>A list of all users in your organization with shift and salary info.</CardDescription>
+        <CardHeader className="pb-4 border-b border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle>Directory</CardTitle>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {hasActiveFilters 
+                    ? `${filteredEmployees.length} of ${employees.length}` 
+                    : `${employees.length}`} {employees.length === 1 ? 'Employee' : 'Employees'}
+                </span>
+              </div>
+              <CardDescription className="mt-0.5">
+                A list of all users in your organization with shift and salary info.
+              </CardDescription>
+            </div>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-xs text-muted-foreground hover:text-foreground h-8 px-2.5 self-start sm:self-auto flex items-center gap-1.5"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset filters
+              </Button>
+            )}
+          </div>
+
+          {/* Search & Filter Controls */}
+          <div className="pt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
+            {/* Search Input (4 cols) */}
+            <div className="sm:col-span-2 lg:col-span-4 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, email, phone, role..."
+                className="w-full h-9 pl-9 pr-8 text-xs rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground placeholder:text-muted-foreground"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Department Filter (2 cols) */}
+            <div className="lg:col-span-2">
+              <select
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="w-full h-9 px-2.5 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+              >
+                <option value="all">All Departments</option>
+                {departments.map((dept) => (
+                  <option key={dept._id || dept.name} value={dept.name}>
+                    {dept.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Designation Filter (2 cols) */}
+            <div className="lg:col-span-2">
+              <select
+                value={selectedDesignation}
+                onChange={(e) => setSelectedDesignation(e.target.value)}
+                className="w-full h-9 px-2.5 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+              >
+                <option value="all">All Designations</option>
+                {designations.map((desig) => (
+                  <option key={desig._id || desig.name} value={desig.name}>
+                    {desig.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Shift Filter (2 cols) */}
+            <div className="lg:col-span-2">
+              <select
+                value={selectedShift}
+                onChange={(e) => setSelectedShift(e.target.value)}
+                className="w-full h-9 px-2.5 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+              >
+                <option value="all">All Shifts</option>
+                {shifts.map((shift) => (
+                  <option key={shift._id} value={shift._id}>
+                    {shift.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Status Filter (2 cols) */}
+            <div className="lg:col-span-2">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="w-full h-9 px-2.5 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+              >
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -337,17 +533,23 @@ export default function EmployeesPage() {
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
-              ) : employees.length === 0 ? (
+              ) : filteredEmployees.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="p-0">
                     <EmptyState
-                      title="No employees found"
-                      description="Add your first employee, or adjust your search."
+                      title={hasActiveFilters ? "No matching employees" : "No employees found"}
+                      description={hasActiveFilters ? "Try adjusting your search query or reset the filters." : "Add your first employee to get started."}
+                      action={hasActiveFilters ? (
+                        <Button variant="outline" size="sm" onClick={clearFilters} className="mt-3 text-xs">
+                          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                          Reset filters
+                        </Button>
+                      ) : undefined}
                     />
                   </TableCell>
                 </TableRow>
               ) : (
-                employees.map((employee: Employee) => (
+                paginatedEmployees.map((employee: Employee) => (
                   <TableRow key={employee.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/40 transition-colors">
                     <TableCell>
                       <div 
@@ -410,6 +612,16 @@ export default function EmployeesPage() {
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredEmployees.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="employees"
+          />
         </CardContent>
       </Card>
 

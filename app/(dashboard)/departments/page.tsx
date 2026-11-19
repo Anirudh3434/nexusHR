@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/Table";
-import { Building2, Plus, Pencil, Trash2, Loader2, X, Upload, Calendar } from "lucide-react";
+import { Building2, Plus, Pencil, Trash2, Loader2, X, Upload, Calendar, Search } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { ModalPortal } from "../../../components/ui/ModalPortal";
 import { CsvImportModal } from "../../../components/ui/CsvImportModal";
+import { Pagination } from "../../../components/ui/Pagination";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { DEPARTMENT_CSV_TEMPLATE, parseDepartmentCSV, ParsedDepartmentRow } from "../../../lib/csvUtils";
 
 export default function DepartmentsPage() {
@@ -26,6 +28,27 @@ export default function DepartmentsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
+
+  // Search & Pagination State
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery]);
+
+  const filteredDepartments = departments.filter((dept) => {
+    if (!debouncedSearchQuery.trim()) return true;
+    const q = debouncedSearchQuery.toLowerCase().trim();
+    return dept.name.toLowerCase().includes(q) || (dept.description && dept.description.toLowerCase().includes(q));
+  });
+
+  const paginatedDepartments = filteredDepartments.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const canManage = hasRole(["admin", "hr"]);
 
@@ -128,26 +151,55 @@ export default function DepartmentsPage() {
       />
 
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle>All Departments</CardTitle>
-          <CardDescription>These departments will appear in employee onboarding dropdown.</CardDescription>
+        <CardHeader className="p-4 sm:p-6 border-b border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle>All Departments</CardTitle>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {searchQuery ? `${filteredDepartments.length} of ${departments.length}` : `${departments.length}`}
+                </span>
+              </div>
+              <CardDescription className="mt-0.5">These departments will appear in employee onboarding dropdown.</CardDescription>
+            </div>
+
+            <div className="w-full sm:w-64 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search departments..."
+                className="w-full h-8 pl-8 pr-7 text-xs rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+        <CardContent className="p-4 pt-4 sm:p-6 sm:pt-4">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : departments.length === 0 ? (
+          ) : filteredDepartments.length === 0 ? (
             <EmptyState
               icon={<Building2 size={18} />}
-              title="No departments found."
-              description="Create one to use in employee onboarding."
+              title={searchQuery ? "No matching departments" : "No departments found."}
+              description={searchQuery ? "Try adjusting your search query." : "Create one to use in employee onboarding."}
             />
           ) : (
             <>
               {/* Mobile Card View (< md) */}
               <div className="space-y-3 md:hidden">
-                {departments.map((dept) => (
+                {paginatedDepartments.map((dept) => (
                   <div
                     key={dept._id}
                     className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-xs transition-colors hover:border-border/80"
@@ -222,7 +274,7 @@ export default function DepartmentsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {departments.map((dept) => (
+                    {paginatedDepartments.map((dept) => (
                       <TableRow key={dept._id}>
                         <TableCell className="font-medium whitespace-nowrap">
                           <div className="flex items-center gap-2">
@@ -253,6 +305,16 @@ export default function DepartmentsPage() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Pagination Controls */}
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredDepartments.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="departments"
+              />
             </>
           )}
         </CardContent>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Task, { TaskStatus } from '@/models/Task';
 import Project from '@/models/Project';
+import Sprint from '@/models/Sprint';
 import ActivityLog from '@/models/ActivityLog';
 import User from '@/models/User';
 import mongoose from 'mongoose';
@@ -150,6 +151,22 @@ export async function POST(req: NextRequest) {
       email: u.email
     }));
 
+    // Existing sprints for this project (used to avoid date/name collisions)
+    let projectSprints: any[] = [];
+    if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
+      projectSprints = await Sprint.find({ projectId, companyId: effectiveCompanyId })
+        .sort({ startDate: 1 })
+        .select('sprintNumber name status startDate endDate')
+        .lean();
+    }
+    const sprintsContext = projectSprints.map((s: any) => ({
+      sprintNumber: s.sprintNumber,
+      name: s.name,
+      status: s.status,
+      startDate: s.startDate,
+      endDate: s.endDate
+    }));
+
     const tasksContext = projectTasks.map((t: any) => ({
       id: t._id.toString(),
       taskNumber: t.taskNumber,
@@ -181,6 +198,10 @@ Available Agent Operations:
    Format: { "type": "set_priority", "taskId": "TSK... or ObjectId", "priority": "low" | "medium" | "high" | "critical" }
 5. "create_task": Create a new task.
    Format: { "type": "create_task", "title": "Task title", "priority": "medium", "taskType": "task" | "bug" | "story" }
+6. "create_sprint": Create a project sprint (you CAN do this — never say sprint creation is unsupported).
+   Format: { "type": "create_sprint", "name": "Sprint 1", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "description": "optional", "goals": ["optional goal"] }
+   - To create several consecutive sprints (e.g. four weekly sprints), return ONE create_sprint action per sprint, with contiguous dates.
+   - startDate/endDate must be valid ISO dates and endDate must be after startDate.
 
 Workspace Context:
 - Project ID: "${projectId || 'Workspace'}"
@@ -190,10 +211,13 @@ Workspace Context:
 - Current Date/Time: "${currentDate}"
 - Workspace Members: ${JSON.stringify(membersContext)}
 - Project Tasks: ${JSON.stringify(tasksContext)}
+- Project Sprints: ${JSON.stringify(sprintsContext)}
 
 Instructions:
 - If the user request is ambiguous, ask a clarifying question in both text and voice, and provide quick options in the "suggestions" array.
 - When an operation is executed, confirm the action cleanly in both "response" and "voiceResponse".
+- For sprint planning requests, use the existing sprint list to avoid overlapping dates, and create real sprints with create_sprint actions.
+- You are allowed to create sprints, create tasks, assign tasks, comment on tasks, change status and change priority.
 
 You MUST respond strictly with a valid JSON object matching this structure:
 {
@@ -245,9 +269,9 @@ Output raw JSON only.`;
       const cleanPrompt = prompt.trim().toLowerCase();
 
       if (/^(hey|hi|hello|hola|good\s+(morning|afternoon|evening)|sup|yo)\b/i.test(cleanPrompt)) {
-        aiText = `Hi ${userName || 'there'}! 👋 I'm **NexusAI**, your agentic workspace assistant.\n\nI have full access to your project tasks. Here are some things you can ask me:\n- 📋 *"List in-progress tasks"*\n- 🐛 *"Show all bug tasks with high or critical priority"*\n- 🔄 *"Move TSK26070010 to in progress"*\n- 👤 *"Assign TSK26070012 to Tarun"*\n- 💬 *"Comment on TSK26070011 saying: looks good"*\n\nHow can I help you today?`;
-        voiceText = `Hi ${userName || 'there'}! I'm NexusAI. How can I help you with your project tasks today?`;
-        suggestions = ["List In Progress Tasks", "High Priority Bugs", "What tasks are assigned to me?"];
+        aiText = `Hi ${userName || 'there'}! 👋 I'm **NexusAI**, your agentic workspace assistant.\n\nI have full access to your project tasks and sprints. Here are some things you can ask me:\n- 📋 *"List in-progress tasks"*\n- 🐛 *"Show all bug tasks with high or critical priority"*\n- 🔄 *"Move TSK26070010 to in progress"*\n- 👤 *"Assign TSK26070012 to Tarun"*\n- 💬 *"Comment on TSK26070011 saying: looks good"*\n- 🗓️ *"Create 4 weekly sprints starting today"*\n\nHow can I help you today?`;
+        voiceText = `Hi ${userName || 'there'}! I'm NexusAI. How can I help you with your project tasks and sprints today?`;
+        suggestions = ["List In Progress Tasks", "Create 4 weekly sprints", "What tasks are assigned to me?"];
       } else if (/(?:move|set|change|update)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s+(?:status\s+)?(?:to\s+)?([a-z_\s-]+)/i.test(prompt)) {
         const match = prompt.match(/(?:move|set|change|update)\s+(?:task\s+)?(TSK[A-Za-z0-9_-]+|[a-f0-9]{24})\s+(?:status\s+)?(?:to\s+)?([a-z_\s-]+)/i);
         if (match) {
@@ -277,6 +301,58 @@ Output raw JSON only.`;
           aiText = `💬 Adding comment to **${targetTaskId}**: *"${commentText}"*`;
           voiceText = `Added comment to task ${targetTaskId}.`;
           suggestions = [`View ${targetTaskId}`, "List in-progress tasks"];
+        }
+      } else if (/(?:create|add|plan|set\s*up|start)\s+(?:a\s+|the\s+|new\s+)?(?:\d+\s+|one\s+|two\s+|three\s+|four\s+|five\s+|six\s+)?sprints?/i.test(prompt) || /sprint\s+(?:planning|creation)/i.test(cleanPrompt)) {
+        const numberWords: Record<string, number> = {
+          one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8,
+        };
+        const toNumber = (value?: string) => {
+          if (!value) return NaN;
+          const parsed = numberWords[value.toLowerCase()] ?? parseInt(value, 10);
+          return Number.isFinite(parsed) ? parsed : NaN;
+        };
+
+        const countMatch = cleanPrompt.match(/(\d+|one|two|three|four|five|six|seven|eight)\s*(?:consecutive\s+)?(?:weekly\s+)?sprints?/i);
+        let sprintCount = countMatch ? toNumber(countMatch[1]) : 1;
+        if (!Number.isFinite(sprintCount) || sprintCount < 1) sprintCount = 1;
+        sprintCount = Math.min(sprintCount, 12);
+
+        const weekMatch = cleanPrompt.match(/(\d+|one|two|three|four|five|six|seven|eight)\s*[- ]?weeks?/i);
+        let weeksPerSprint = weekMatch ? toNumber(weekMatch[1]) : NaN;
+        if (!Number.isFinite(weeksPerSprint) || weeksPerSprint < 1) weeksPerSprint = 2;
+        if (/(weekly|one[\s-]week)/i.test(cleanPrompt)) weeksPerSprint = 1;
+        // "4 sprints over 4 weeks" means one week each, not 16 weeks total.
+        if (sprintCount > 1 && weeksPerSprint >= sprintCount) weeksPerSprint = 1;
+
+        if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
+          aiText = `I can create sprints, but I need an active project first. Open a project board and try again.`;
+          voiceText = `I can create sprints, but I need an active project first.`;
+          suggestions = ["List in-progress tasks", "Show all project tasks"];
+        } else {
+          const today = new Date();
+          let cursor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const firstNameIndex = sprintsContext.length + 1;
+          const plan = Array.from({ length: sprintCount }, (_, index) => {
+            const start = new Date(cursor);
+            const end = new Date(start);
+            end.setDate(end.getDate() + weeksPerSprint * 7);
+            cursor = new Date(end);
+            return {
+              type: 'create_sprint',
+              name: `Sprint ${firstNameIndex + index}`,
+              startDate: start.toISOString(),
+              endDate: end.toISOString(),
+              goals: [] as string[],
+            };
+          });
+
+          actions.push(...plan);
+          const formatDay = (value: string) =>
+            new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          aiText = `🗓️ Creating **${sprintCount}** sprint(s):\n\n` +
+            plan.map((sprint) => `- **${sprint.name}**: ${formatDay(sprint.startDate)} → ${formatDay(sprint.endDate)}`).join('\n');
+          voiceText = `Creating ${sprintCount} sprint${sprintCount > 1 ? 's' : ''} for ${project?.name || 'this project'}.`;
+          suggestions = ["Create tasks for the first sprint", "List in-progress tasks", "Show all project tasks"];
         }
       } else if (/in[\s_-]?progress/i.test(cleanPrompt)) {
         const inProgress = tasksContext.filter((t: any) => t.status === 'in_progress');
@@ -414,8 +490,20 @@ Output raw JSON only.`;
       }
     }
 
+    // Safety net: if the user asked to create sprints but the model refused or omitted
+    // the action, run the deterministic sprint planner so the request still succeeds.
+    if (
+      /(?:create|add|plan|set\s*up|start)\s+(?:a\s+|the\s+|new\s+)?(?:\d+\s+|one\s+|two\s+|three\s+|four\s+|five\s+|six\s+)?sprints?/i.test(prompt) ||
+      /sprint\s+(?:planning|creation)/i.test(prompt)
+    ) {
+      if (!actions.some((action: { type?: string }) => action?.type === 'create_sprint')) {
+        runLocalFallback();
+      }
+    }
+
     // 7. Execute agentic actions in database
     let actionsExecutedCount = 0;
+    let sprintsCreatedCount = 0;
     const executedActionTypes: string[] = [];
 
     if (actions && Array.isArray(actions)) {
@@ -516,6 +604,48 @@ Output raw JSON only.`;
               actionsExecutedCount++;
               executedActionTypes.push('Priority Changed');
             }
+          } else if (action.type === 'create_sprint' && (projectId || project?._id)) {
+            const sprintProjectId = projectId || project?._id;
+            const startDate = new Date(action.startDate);
+            const endDate = new Date(action.endDate);
+            const validDates = !Number.isNaN(startDate.getTime()) &&
+              !Number.isNaN(endDate.getTime()) &&
+              endDate.getTime() > startDate.getTime();
+
+            if (sprintProjectId && mongoose.Types.ObjectId.isValid(sprintProjectId) && validDates) {
+              let sprintCount = await Sprint.countDocuments({ companyId: effectiveCompanyId });
+              let sprintNumber = `SPR-${String(sprintCount + 1).padStart(4, '0')}`;
+              while (await Sprint.exists({ companyId: effectiveCompanyId, sprintNumber })) {
+                sprintCount++;
+                sprintNumber = `SPR-${String(sprintCount + 1).padStart(4, '0')}`;
+              }
+
+              const creatorId = (userId && mongoose.Types.ObjectId.isValid(userId))
+                ? new mongoose.Types.ObjectId(userId)
+                : (companyMembers.length > 0 ? companyMembers[0]._id : new mongoose.Types.ObjectId());
+
+              await Sprint.create({
+                sprintNumber,
+                name: action.name || `Sprint ${sprintCount + 1}`,
+                description: action.description || '',
+                projectId: new mongoose.Types.ObjectId(sprintProjectId),
+                companyId: new mongoose.Types.ObjectId(effectiveCompanyId),
+                startDate,
+                endDate,
+                status: action.status === 'active' ? 'active' : 'planning',
+                goals: Array.isArray(action.goals) ? action.goals.filter((goal: unknown) => typeof goal === 'string').slice(0, 20) : [],
+                taskIds: [],
+                totalTasks: 0,
+                completedTasks: 0,
+                storyPoints: 0,
+                completedStoryPoints: 0,
+                createdBy: creatorId,
+              });
+
+              actionsExecutedCount++;
+              sprintsCreatedCount++;
+              executedActionTypes.push(`Sprint Created (${sprintNumber})`);
+            }
           } else if (action.type === 'create_task' && action.title && (projectId || project?._id)) {
             const assignedProjId = projectId || project?._id;
             if (assignedProjId && mongoose.Types.ObjectId.isValid(assignedProjId)) {
@@ -591,7 +721,8 @@ Output raw JSON only.`;
       tasks: updatedTasks,
       actionsExecuted: actionsExecutedCount,
       actionExecuted: actionsExecutedCount > 0,
-      actionType: executedActionTypes.join(', ') || undefined
+      actionType: executedActionTypes.join(', ') || undefined,
+      sprintsCreated: sprintsCreatedCount
     }, { status: 200 });
 
   } catch (error: any) {

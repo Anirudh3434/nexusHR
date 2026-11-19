@@ -1,13 +1,17 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ITodayTaskItem {
-  taskId: mongoose.Types.ObjectId;
+  taskId?: mongoose.Types.ObjectId | string;
   taskNumber: string;
   title: string;
+  description?: string;
   currentStatus: string;
   estimateTime: string;
   eodStatus: 'completed' | 'in_progress' | 'blocked' | 'pending';
   eodRemarks?: string;
+  isCustom?: boolean;
+  category?: string;
+  addedAt?: Date;
   eodStatusHistory?: Array<{
     status: string;
     remarks?: string;
@@ -34,6 +38,9 @@ export interface ITodayTaskReport extends Document {
   items: ITodayTaskItem[];
   status: 'draft' | 'submitted';
   submittedAt?: Date;
+  planSubmittedAt?: Date;
+  eodSubmittedAt?: Date;
+  eodStatusSubmitted?: boolean;
   employeeComment?: string;
   comments: IComment[];
   managerApproval?: 'pending' | 'approved' | 'rejected' | 'changes_requested';
@@ -48,11 +55,15 @@ export interface ITodayTaskReport extends Document {
 }
 
 const TodayTaskItemSchema = new Schema({
-  taskId: { type: Schema.Types.ObjectId, ref: 'Task', required: true },
+  taskId: { type: Schema.Types.ObjectId, ref: 'Task', required: false },
   taskNumber: { type: String, required: true },
   title: { type: String, required: true },
+  description: { type: String, default: '' },
   currentStatus: { type: String, required: true },
   estimateTime: { type: String, required: true },
+  isCustom: { type: Boolean, default: false },
+  category: { type: String, default: 'General' },
+  addedAt: { type: Date, default: Date.now },
   eodStatus: { type: String, enum: ['completed', 'in_progress', 'blocked', 'pending'], default: 'in_progress' },
   eodRemarks: { type: String, default: '' },
   eodStatusHistory: [{
@@ -72,6 +83,9 @@ const TodayTaskReportSchema = new Schema<ITodayTaskReport>({
   items: [TodayTaskItemSchema],
   status: { type: String, enum: ['draft', 'submitted'], default: 'draft' },
   submittedAt: { type: Date },
+  planSubmittedAt: { type: Date },
+  eodSubmittedAt: { type: Date },
+  eodStatusSubmitted: { type: Boolean, default: false },
   employeeComment: { type: String },
   comments: [{
     id: { type: String, required: true },

@@ -113,7 +113,7 @@ const getAvatarColor = (index: number) => {
 export default function ProjectBoardPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const { openInNewTab } = usePmsFullscreen();
+  const { openInNewTab, isPmsSubdomain } = usePmsFullscreen();
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
@@ -126,7 +126,7 @@ export default function ProjectBoardPage() {
   const [initialLoaded, setInitialLoaded] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai', text: string, timestamp: Date }>>([
-    { sender: 'ai', text: 'Hi! I am **NexusAI**, your agentic assistant. I can answer questions about your tasks or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*', timestamp: new Date() }
+    { sender: 'ai', text: 'Hi! I am **NexusAI**, your agentic assistant. I can answer questions about your tasks and sprints, or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*\n- *\"Create 4 weekly sprints\"*', timestamp: new Date() }
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -158,6 +158,13 @@ export default function ProjectBoardPage() {
   const [showMoreTabs, setShowMoreTabs] = useState(false);
   const [activeFilterDropdown, setActiveFilterDropdown] = useState<string | null>(null);
   const [filterSearchQuery, setFilterSearchQuery] = useState('');
+  // Assignee stack popover: view all members and add new assignees
+  const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [companyUsers, setCompanyUsers] = useState<Array<{ _id: string; name: string; email?: string; role?: string }>>([]);
+  const [loadingCompanyUsers, setLoadingCompanyUsers] = useState(false);
+  const [savingMember, setSavingMember] = useState(false);
+  const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState({
     taskType: [] as string[],
     status: [] as string[],
@@ -184,6 +191,22 @@ export default function ProjectBoardPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [activeFilterDropdown]);
+
+  // Close the assignee popover when clicking outside it
+  useEffect(() => {
+    if (!showAssigneeMenu) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        assigneeMenuRef.current &&
+        event.target instanceof Node &&
+        !assigneeMenuRef.current.contains(event.target)
+      ) {
+        setShowAssigneeMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAssigneeMenu]);
 
   // Close AI Chat and return to board on Escape
   useEffect(() => {
@@ -524,6 +547,64 @@ export default function ProjectBoardPage() {
     }
   }, [projectId]);
 
+  const loadCompanyUsers = useCallback(async () => {
+    if (!user?.companyId || loadingCompanyUsers || companyUsers.length > 0) return;
+    setLoadingCompanyUsers(true);
+    try {
+      const response = await fetch(`/api/users?companyId=${user.companyId}`);
+      const data = await response.json();
+      setCompanyUsers(data.users || []);
+    } catch (error) {
+      console.error('Error fetching company users:', error);
+    } finally {
+      setLoadingCompanyUsers(false);
+    }
+  }, [user?.companyId, loadingCompanyUsers, companyUsers.length]);
+
+  const addProjectMember = useCallback(async (employeeId: string) => {
+    if (!project || savingMember) return;
+    const existingMembers = (project.members || []).map((member) => ({
+      employeeId: typeof member.employeeId === 'string' ? member.employeeId : member.employeeId._id,
+      role: member.role || 'developer',
+    }));
+    if (existingMembers.some((member) => member.employeeId === employeeId)) return;
+
+    setSavingMember(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          members: [
+            ...existingMembers,
+            {
+              employeeId,
+              role: 'developer',
+              joinedAt: new Date().toISOString(),
+              allocationPercentage: 100,
+            },
+          ],
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to add assignee');
+      await fetchProject();
+      addToast({
+        type: 'success',
+        title: 'Assignee added',
+        description: 'The member was added to this project.',
+      });
+    } catch (error) {
+      console.error('Error adding project member:', error);
+      addToast({
+        type: 'error',
+        title: 'Could not add assignee',
+        description: 'Something went wrong. Please try again.',
+      });
+    } finally {
+      setSavingMember(false);
+    }
+  }, [project, projectId, savingMember, fetchProject, addToast]);
+
   const buildFilterQuery = useCallback(() => {
     const params = new URLSearchParams();
     if (searchQuery) params.append('searchQuery', searchQuery);
@@ -731,6 +812,9 @@ export default function ProjectBoardPage() {
       const data = await res.json();
       if (res.ok) {
         setChatMessages(prev => [...prev, { sender: 'ai', text: data.response, timestamp: new Date() }]);
+        if (data.sprintsCreated > 0) {
+          void fetchSprints();
+        }
         if (data.tasks) {
           setTasks(data.tasks);
           addToast({ type: 'success', title: 'Agent Executed', description: `Successfully ran ${data.actionsExecuted || 0} operations!` });
@@ -2423,9 +2507,23 @@ export default function ProjectBoardPage() {
     const members = project?.members || [];
     const visibleMembers = members.slice(0, maxAvatars);
     const remainingCount = members.length - maxAvatars;
+    const memberIds = members
+      .map((member) => (member.employeeId ? member.employeeId._id : null))
+      .filter((id): id is string => Boolean(id));
+    const searchLower = memberSearchQuery.trim().toLowerCase();
+    const matchesSearch = (name?: string, email?: string) =>
+      !searchLower ||
+      (name || '').toLowerCase().includes(searchLower) ||
+      (email || '').toLowerCase().includes(searchLower);
+    const availableUsers = companyUsers.filter(
+      (companyUser) => !memberIds.includes(companyUser._id) && matchesSearch(companyUser.name, companyUser.email)
+    );
+    const listedMembers = members.filter((member) =>
+      matchesSearch(member.employeeId?.name, member.employeeId?.email)
+    );
 
     return (
-      <div className="flex flex-col gap-2.5 w-full">
+      <div className="relative flex flex-col gap-2.5 w-full">
         {/* Search Input Box matching user mockup */}
         <form onSubmit={handleSearchSubmit} className="w-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 sm:p-2 shadow-sm flex items-center gap-2">
           <div className="relative flex-1 flex items-center pl-2">
@@ -2477,53 +2575,202 @@ export default function ProjectBoardPage() {
         </form>
 
         {/* Quick Filter Row matching user mockup: Teal Avatars + Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden scrollbar-hide scrollbar-none py-0.5 w-full">
+        <div className="flex items-center gap-2 py-0.5 w-full min-w-0">
           {/* Member Avatars */}
-          {visibleMembers.length > 0 && (
-            <div className="flex items-center gap-1.5 shrink-0">
-              {visibleMembers.map((member) => {
-                const user = member.employeeId;
-                if (!user) return null;
-                const isSelected = filters.assignee.includes(user._id);
-                const name = user.name || 'User';
-                const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+          <div className="relative shrink-0" ref={assigneeMenuRef}>
+            <div className="flex items-center">
+              {members.length > 0 && (
+                <div className="flex items-center -space-x-2 pr-0.5">
+                  {visibleMembers.map((member) => {
+                    const memberUser = member.employeeId;
+                    if (!memberUser) return null;
+                    const isSelected = filters.assignee.includes(memberUser._id);
+                    const name = memberUser.name || 'User';
+                    const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
 
-                return (
-                  <button
-                    key={user._id}
-                    onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        assignee: prev.assignee.includes(user._id)
-                          ? prev.assignee.filter(a => a !== user._id)
-                          : [...prev.assignee, user._id]
-                      }));
-                    }}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm transition-transform shrink-0 ${
-                      isSelected
-                        ? 'ring-2 ring-teal-500 ring-offset-2 scale-105 bg-teal-700 text-white'
-                        : 'bg-[#14b8a6] hover:bg-[#0d9488] text-white hover:scale-105'
-                    }`}
-                    title={name}
-                  >
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={name} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      <span>{initials}</span>
-                    )}
-                  </button>
-                );
-              })}
-              {remainingCount > 0 && (
-                <div className="w-7 h-7 rounded-full bg-[#0d9488] text-white flex items-center justify-center text-[10px] font-bold shadow-sm shrink-0">
-                  +{remainingCount}
+                    return (
+                      <button
+                        key={memberUser._id}
+                        onClick={() => {
+                          setFilters(prev => ({
+                            ...prev,
+                            assignee: prev.assignee.includes(memberUser._id)
+                              ? prev.assignee.filter(a => a !== memberUser._id)
+                              : [...prev.assignee, memberUser._id]
+                          }));
+                        }}
+                        className={`relative w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shrink-0 ring-2 ${
+                          isSelected
+                            ? 'ring-teal-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 scale-105 z-10 bg-teal-700 text-white'
+                            : 'ring-white dark:ring-slate-900 bg-[#14b8a6] hover:bg-[#0d9488] text-white hover:z-10 hover:-translate-y-0.5'
+                        }`}
+                        title={`${name}${isSelected ? ' (filtering)' : ''}`}
+                      >
+                        {memberUser.avatar ? (
+                          <img src={memberUser.avatar} alt={name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          <span>{initials}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                  {remainingCount > 0 && (
+                    <button
+                      onClick={() => {
+                        setShowAssigneeMenu((prev) => !prev);
+                        if (user?.role !== 'employee') void loadCompanyUsers();
+                      }}
+                      className="relative w-7 h-7 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 flex items-center justify-center text-[10px] font-bold shrink-0 ring-2 ring-white dark:ring-slate-900 hover:z-10 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                      title={`Show all ${members.length} assignees`}
+                    >
+                      +{remainingCount}
+                    </button>
+                  )}
                 </div>
               )}
+
+              {user?.role !== 'employee' && (
+                <button
+                  onClick={() => {
+                    setShowAssigneeMenu((prev) => !prev);
+                    void loadCompanyUsers();
+                  }}
+                  className="w-7 h-7 rounded-full border-2 border-dashed border-slate-300 text-slate-400 hover:text-teal-600 hover:border-teal-500 hover:bg-teal-50 dark:border-slate-600 dark:hover:text-teal-400 dark:hover:bg-teal-500/10 flex items-center justify-center shrink-0 ml-1.5 transition-colors"
+                  title="Add assignees to this project"
+                  aria-label="Add assignees to this project"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-          )}
+
+            {/* Assignee popover: see everyone, filter, and add new assignees */}
+            {showAssigneeMenu && (
+              <div className="absolute left-0 top-full mt-2 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    Assignees <span className="text-slate-400 font-medium">({members.length})</span>
+                  </span>
+                  <button
+                    onClick={() => setShowAssigneeMenu(false)}
+                    className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                    title="Close"
+                    aria-label="Close assignees"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                  <input
+                    type="text"
+                    value={memberSearchQuery}
+                    onChange={(e) => setMemberSearchQuery(e.target.value)}
+                    placeholder="Search people..."
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+                  />
+                </div>
+
+                <div className="max-h-56 overflow-y-auto p-1.5">
+                  {listedMembers.length === 0 ? (
+                    <p className="px-2 py-3 text-[11px] text-slate-400 text-center">
+                      {members.length === 0 ? 'No assignees yet.' : 'No matching assignees.'}
+                    </p>
+                  ) : (
+                    listedMembers.map((member) => {
+                      const memberUser = member.employeeId;
+                      if (!memberUser) return null;
+                      const isSelected = filters.assignee.includes(memberUser._id);
+                      const name = memberUser.name || 'User';
+                      const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+                      return (
+                        <button
+                          key={memberUser._id}
+                          onClick={() =>
+                            setFilters(prev => ({
+                              ...prev,
+                              assignee: prev.assignee.includes(memberUser._id)
+                                ? prev.assignee.filter(a => a !== memberUser._id)
+                                : [...prev.assignee, memberUser._id],
+                            }))
+                          }
+                          className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors ${
+                            isSelected
+                              ? 'bg-teal-50 dark:bg-teal-500/10'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
+                          title={isSelected ? 'Remove assignee filter' : 'Filter tasks by this assignee'}
+                        >
+                          <span className="w-6 h-6 rounded-full bg-[#14b8a6] text-white flex items-center justify-center text-[9px] font-bold shrink-0 overflow-hidden">
+                            {memberUser.avatar ? (
+                              <img src={memberUser.avatar} alt={name} className="w-full h-full object-cover" />
+                            ) : (
+                              initials
+                            )}
+                          </span>
+                          <span className="flex-1 min-w-0">
+                            <span className="block text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{name}</span>
+                            <span className="block text-[10px] text-slate-400 truncate">{member.role || 'member'}</span>
+                          </span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                {user?.role !== 'employee' && (
+                  <div className="border-t border-slate-100 dark:border-slate-800">
+                    <div className="px-3 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Add assignee
+                    </div>
+                    <div className="max-h-44 overflow-y-auto p-1.5">
+                      {loadingCompanyUsers ? (
+                        <div className="px-2 py-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Loading people...
+                        </div>
+                      ) : availableUsers.length === 0 ? (
+                        <p className="px-2 py-3 text-[11px] text-slate-400 text-center">
+                          {companyUsers.length === 0 ? 'Could not load people.' : 'Everyone is already assigned.'}
+                        </p>
+                      ) : (
+                        availableUsers.map((companyUser) => {
+                          const name = companyUser.name || 'User';
+                          const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+                          return (
+                            <div
+                              key={companyUser._id}
+                              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                            >
+                              <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300 flex items-center justify-center text-[9px] font-bold shrink-0">
+                                {initials}
+                              </span>
+                              <span className="flex-1 min-w-0">
+                                <span className="block text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{name}</span>
+                                <span className="block text-[10px] text-slate-400 truncate">{companyUser.email || companyUser.role || ''}</span>
+                              </span>
+                              <button
+                                onClick={() => void addProjectMember(companyUser._id)}
+                                disabled={savingMember}
+                                className="w-6 h-6 rounded-md flex items-center justify-center text-teal-600 hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-500/10 disabled:opacity-40 shrink-0 transition-colors"
+                                title={`Add ${name}`}
+                                aria-label={`Add ${name} as assignee`}
+                              >
+                                {savingMember ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Filter Dropdown Pills */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto overflow-y-hidden scrollbar-hide scrollbar-none">
             {/* Epic Filter */}
             <div className="relative shrink-0" data-filter-dropdown="epic">
               <button
@@ -2797,8 +3044,9 @@ export default function ProjectBoardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className={viewMode === 'ai-chat' ? 'h-[calc(100dvh-5.5rem)] sm:h-[calc(100dvh-6.5rem)] flex flex-col' : 'space-y-6'}>
+      {/* Header (in AI chat the project identity lives inside the assistant panel) */}
+      {viewMode !== 'ai-chat' && (
       <div className="flex flex-col gap-3">
         {/* Top Back and Project Title row */}
         <div className="flex items-center justify-between gap-2 sm:gap-3 min-w-0">
@@ -2822,14 +3070,17 @@ export default function ProjectBoardPage() {
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => openInNewTab(`/projects/${projectId}/${viewMode || 'board'}`)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-primary/40 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-              title="Open this board in a separate tab"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Open in New Tab</span>
-            </button>
+            {/* Already inside the dedicated PMS tab/subdomain — no need to open another. */}
+            {!isPmsSubdomain && (
+              <button
+                onClick={() => openInNewTab(`/projects/${projectId}/${viewMode || 'board'}`)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-primary/40 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                title="Open this board in a separate tab"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Open in New Tab</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -2912,6 +3163,7 @@ export default function ProjectBoardPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Content based on view mode */}
       {viewMode === 'board' && (
@@ -4298,7 +4550,7 @@ export default function ProjectBoardPage() {
       )}
       
       {viewMode === 'ai-chat' && (
-        <div className="relative w-full rounded-[24px] sm:rounded-[32px] border border-white/50 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[calc(100vh-180px)]">
+        <div className="relative w-full flex-1 rounded-[24px] sm:rounded-[32px] border border-white/50 dark:border-white/10 bg-gradient-to-b from-white/95 via-white/90 to-white/80 dark:from-neutral-900/95 dark:via-neutral-900/90 dark:to-neutral-950/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-full min-h-0">
           <style jsx global>{`
             @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
             .font-cursive {
@@ -4317,20 +4569,34 @@ export default function ProjectBoardPage() {
           <div className="absolute -bottom-16 -right-16 w-56 h-56 bg-primary/15 rounded-full blur-[70px] pointer-events-none" />
 
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-white/40 dark:border-white/10 flex items-center justify-between bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl shrink-0 z-10 relative">
-            <div className="min-w-0 leading-tight">
-              <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
-                NexusAI <span className="font-cursive text-lg sm:text-xl font-bold text-primary tracking-normal inline-block">Workspace Assistant</span>
-              </h3>
-              <p className="text-[10px] sm:text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 truncate">
-                Agentic PM Chat interface with <span className="font-cursive text-xs sm:text-sm font-bold text-primary inline-block">full access</span> to project tasks.
+          <div className="p-3.5 sm:p-5 border-b border-white/40 dark:border-white/10 flex items-center justify-between gap-3 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl shrink-0 z-10 relative">
+            <div className="min-w-0 leading-tight flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-tight flex items-center gap-1.5">
+                  NexusAI <span className="font-cursive text-lg sm:text-xl font-bold text-primary tracking-normal inline-block">Workspace Assistant</span>
+                </h3>
+
+                {/* Project Identifier Badge */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary shadow-2xs">
+                  <FolderKanban className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="font-bold text-neutral-900 dark:text-neutral-100 max-w-[150px] sm:max-w-[240px] truncate">
+                    {project?.name || "Project"}
+                  </span>
+                  <span className="text-neutral-400 dark:text-neutral-500">•</span>
+                  <span className="font-mono text-[11px] text-primary font-bold">
+                    {project?.projectNumber || projectId}
+                  </span>
+                </div>
+              </div>
+              <p className="text-[10px] sm:text-xs text-neutral-600 dark:text-neutral-400 mt-1 truncate">
+                Agentic PM Chat interface with <span className="font-cursive text-xs sm:text-sm font-bold text-primary inline-block">full access</span> to <span className="font-semibold text-neutral-800 dark:text-neutral-200">{project?.name || 'Project'}</span> ({project?.projectNumber || projectId}) tasks and sprints.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setChatMessages([
-                  { sender: 'ai', text: 'Hi! I am **NexusAI**, your agentic assistant. I can answer questions about your tasks or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*', timestamp: new Date() }
+                  { sender: 'ai', text: `Hi! I am **NexusAI**, your agentic assistant for **${project?.name || 'this project'}** (${project?.projectNumber || projectId}). I can answer questions about your tasks and sprints, or execute operations directly! Try commands like:\n- *\"Move TSK26070010 to in progress\"*\n- *\"Assign TSK26070012 to Tarun\"*\n- *\"Comment on TSK26070011 saying: looks good\"*\n- *\"Create 4 weekly sprints\"*`, timestamp: new Date() }
                 ])}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-neutral-800/70 hover:bg-white dark:hover:bg-neutral-800 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 text-xs font-semibold border border-neutral-200/70 dark:border-neutral-700/60 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0"
                 title="Clear conversation history"
@@ -4353,16 +4619,16 @@ export default function ProjectBoardPage() {
           </div>
 
           {/* Chat Messages / Welcome Dashboard */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 scrollbar-thin bg-transparent font-sans z-10 relative">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-5 space-y-4 scrollbar-thin bg-transparent font-sans z-10 relative">
             {chatMessages.length <= 1 ? (
-              <div className="max-w-2xl mx-auto py-8 sm:py-12 px-2 sm:px-4 text-center space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom duration-300">
-                <div className="flex flex-col items-center space-y-3">
+              <div className="max-w-3xl mx-auto min-h-full py-3 sm:py-5 px-1 sm:px-2 text-center flex flex-col items-center justify-center gap-4 sm:gap-5 animate-in fade-in slide-in-from-bottom duration-300">
+                <div className="flex flex-col items-center gap-2">
                   <div className="relative group cursor-pointer inline-flex items-center justify-center select-none" aria-hidden>
                     {/* 3D Volumetric Spherical Glow */}
-                    <div className="absolute w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-primary/35 via-indigo-500/25 to-violet-500/35 blur-xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 pointer-events-none" />
+                    <div className="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-primary/35 via-indigo-500/25 to-violet-500/35 blur-xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 pointer-events-none" />
                     
                     {/* 3D Sphere Container with Popout Avatar */}
-                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white/60 dark:border-white/20 shadow-[0_14px_32px_-6px_rgba(79,70,229,0.45),inset_0_-10px_20px_rgba(30,27,75,0.35),inset_0_4px_12px_rgba(255,255,255,0.6)] transition-all group-hover:scale-105 duration-300 bg-gradient-to-b from-indigo-300/30 via-primary/20 to-violet-600/35 backdrop-blur-md flex items-end justify-center">
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-white/60 dark:border-white/20 shadow-[0_14px_32px_-6px_rgba(79,70,229,0.45),inset_0_-10px_20px_rgba(30,27,75,0.35),inset_0_4px_12px_rgba(255,255,255,0.6)] transition-all group-hover:scale-105 duration-300 bg-gradient-to-b from-indigo-300/30 via-primary/20 to-violet-600/35 backdrop-blur-md flex items-end justify-center">
                       {/* Soft top specular curve highlight */}
                       <div className="absolute -top-3 inset-x-4 h-10 rounded-full bg-gradient-to-b from-white/45 to-transparent pointer-events-none z-0" />
                       
@@ -4389,17 +4655,28 @@ export default function ProjectBoardPage() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight">
-                      NexusAI <span className="font-cursive text-2xl sm:text-3xl font-bold text-primary tracking-normal">Orchestration Center</span>
+                    <h2 className="text-lg sm:text-2xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                      NexusAI <span className="font-cursive text-xl sm:text-3xl font-bold text-primary tracking-normal">Orchestration Center</span>
                     </h2>
-                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-medium max-w-md mx-auto leading-relaxed mt-1.5">
-                      Your intelligent agentic assistant. Instantly query databases, update status tags, assign owners, and command workflows.
+
+                    {/* Project Identifier Tag */}
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/70 shadow-2xs text-xs font-semibold">
+                        <FolderKanban className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-neutral-900 dark:text-neutral-100 font-bold">{project?.name || "Project"}</span>
+                        <span className="text-neutral-400">•</span>
+                        <span className="font-mono text-primary font-bold">{project?.projectNumber || projectId}</span>
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] sm:text-xs text-neutral-600 dark:text-neutral-400 font-medium max-w-md mx-auto leading-relaxed mt-1.5">
+                      Your intelligent agentic assistant for <strong className="font-semibold text-neutral-900 dark:text-neutral-100">{project?.name || 'this project'}</strong>. Create sprints, manage tasks, update statuses, assign owners, and command workflows.
                     </p>
                   </div>
                 </div>
 
                 {/* Quick Start Suggestions Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-w-2xl mx-auto w-full">
                   {[
                     {
                       title: "List In Progress Tasks",
@@ -4412,6 +4689,12 @@ export default function ProjectBoardPage() {
                       desc: "Quick summary of critical issues",
                       query: "Show all bug tasks with high or critical priority",
                       icon: <Bug className="w-4 h-4 text-rose-500" />
+                    },
+                    {
+                      title: "Create Weekly Sprints",
+                      desc: "Plan consecutive sprints with real dates",
+                      query: "Create 4 weekly sprints starting today",
+                      icon: <CalendarIcon className="w-4 h-4 text-indigo-500" />
                     },
                     {
                       title: "Update Task Status",
@@ -4429,13 +4712,13 @@ export default function ProjectBoardPage() {
                     <button
                       key={idx}
                       onClick={() => setChatInput(item.query)}
-                      className="p-3.5 sm:p-4 bg-white/70 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/60 rounded-2xl text-left hover:border-primary/50 dark:hover:border-primary/50 hover:bg-white dark:hover:bg-neutral-800 shadow-2xs hover:shadow-md transition-all duration-200 group flex items-start gap-3 cursor-pointer"
+                      className="p-2.5 sm:p-3 bg-white/70 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/60 rounded-xl text-left hover:border-primary/50 dark:hover:border-primary/50 hover:bg-white dark:hover:bg-neutral-800 shadow-2xs hover:shadow-md transition-all duration-200 group flex items-center gap-2.5 cursor-pointer"
                     >
-                      <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
                         {item.icon}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 tracking-tight group-hover:text-primary dark:group-hover:text-primary transition-colors">
+                        <h4 className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 tracking-tight group-hover:text-primary dark:group-hover:text-primary transition-colors truncate">
                           {item.title}
                         </h4>
                         <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
@@ -4506,7 +4789,7 @@ export default function ProjectBoardPage() {
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Ask a question or type a command (e.g., 'Move TSK26070010 to in progress and assign to Tarun')..."
+              placeholder={`Ask a question or type a command for ${project?.name || 'project'} (e.g., 'Move TSK26070010 to in progress and assign to Tarun')...`}
               disabled={chatLoading}
               className="flex-1 px-4 py-2.5 sm:py-3 text-xs sm:text-sm border border-neutral-200/80 dark:border-neutral-700/80 focus:border-primary focus:ring-2 focus:ring-primary/15 rounded-2xl focus:outline-none text-neutral-800 dark:text-neutral-100 bg-white/90 dark:bg-neutral-800/90 placeholder-neutral-400 font-medium h-11 sm:h-12 shadow-inner transition-all"
             />

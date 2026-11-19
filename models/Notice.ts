@@ -36,6 +36,10 @@ const NoticeSchema = new Schema({
     type: Boolean,
     default: true,
   },
+  readBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  }],
 }, {
   timestamps: true,
 });

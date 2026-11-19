@@ -1,5 +1,11 @@
 const API_URL = '/api/leaves';
 
+export interface LeaveApproverInfo {
+  _id?: string;
+  id?: string;
+  name?: string;
+}
+
 export interface LeaveRequest {
   id: string;
   employeeId: string;
@@ -12,7 +18,7 @@ export interface LeaveRequest {
   totalDays?: number;
   reason?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
-  approvedBy?: string;
+  approvedBy?: string | LeaveApproverInfo | null;
   comment?: string;
   createdAt?: string;
   updatedAt?: string;

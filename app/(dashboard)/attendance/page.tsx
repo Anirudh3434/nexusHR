@@ -439,10 +439,10 @@ export default function AttendancePage() {
                 <Button 
                   onClick={handleCheckIn} 
                   disabled={isCheckingIn}
-                  className="gap-2 font-medium w-full sm:w-auto"
+                  className="gap-2 font-medium w-full sm:w-auto cursor-pointer disabled:cursor-wait"
                 >
                   {isCheckingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-                  Check In
+                  <span>{isCheckingIn ? "Checking In..." : "Check In"}</span>
                 </Button>
               ) : (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
@@ -465,10 +465,10 @@ export default function AttendancePage() {
                       onClick={handleCheckOut} 
                       disabled={isCheckingOut}
                       variant="outline"
-                      className="border-destructive/30 text-destructive hover:bg-destructive/10 dark:border-destructive/30 gap-1.5 w-full sm:w-auto"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/10 dark:border-destructive/30 gap-1.5 w-full sm:w-auto cursor-pointer disabled:cursor-wait"
                     >
                       {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-                      Check Out
+                      <span>{isCheckingOut ? "Checking Out..." : "Check Out"}</span>
                     </Button>
                   ) : (
                     <span className="text-sm">
