@@ -2,20 +2,83 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Payroll from '@/models/Payroll';
 import { notify } from '@/lib/notify';
-import { verifyRazorpayXWebhookSignature, getRazorpayXConfig } from '@/lib/razorpayx';
+import { verifyRazorpayXWebhookSignature, getRazorpayXWebhookSecret } from '@/lib/razorpayx';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i;
+
+interface RazorpayXPayoutEntity {
+  id: string;
+  status?: string;
+  utr?: string;
+  fees?: number;
+  tax?: number;
+  notes?: {
+    payrollId?: string;
+    employeeId?: string;
+  };
+  status_details?: {
+    description?: string;
+    reason?: string;
+    source?: string;
+  };
+  failure_reason?: string;
+  /** @deprecated Razorpay has deprecated the error object; kept as a fallback. */
+  error?: {
+    description?: string;
+    reason?: string;
+    source?: string;
+  };
+}
+
+interface RazorpayXWebhookPayload {
+  event?: string;
+  payload?: {
+    payout?: {
+      entity?: RazorpayXPayoutEntity;
+    };
+  };
+}
+
+function getFailureDescription(entity: RazorpayXPayoutEntity): string {
+  return (
+    entity.status_details?.description ||
+    entity.status_details?.reason ||
+    entity.failure_reason ||
+    entity.error?.description ||
+    `Payout ${entity.status || 'failed'}`
+  );
+}
+
+function mapPayoutStatus(status?: string): 'Paid' | 'Processing' | 'Failed' {
+  if (status === 'processed') return 'Paid';
+  if (['failed', 'reversed', 'rejected', 'cancelled'].includes(status || '')) return 'Failed';
+  return 'Processing';
+}
+
+const TERMINAL_PAYOUT_STATUSES = [
+  'processed',
+  'failed',
+  'reversed',
+  'rejected',
+  'cancelled',
+];
+
+function isTerminalPayoutStatus(status?: string | null): boolean {
+  return Boolean(status && TERMINAL_PAYOUT_STATUSES.includes(status));
+}
+
 /**
  * POST /api/webhooks/razorpayx
  * Handles asynchronous RazorpayX payout lifecycle events:
+ * - payout.pending / queued / initiated: in-flight states
  * - payout.processed: Salary successfully deposited into bank account
- * - payout.reversed: Bank reversal, marks payroll as Failed and alerts
- * - payout.failed / payout.rejected: Payout failed
- * - payout.updated: Status update
+ * - payout.reversed / failed / rejected / cancelled: terminal failures
+ * - payout.updated: generic entity change (can carry a terminal status)
  */
 export async function POST(req: Request) {
   try {
@@ -24,28 +87,6 @@ export async function POST(req: Request) {
 
     if (!rawBody) {
       return NextResponse.json({ message: 'Empty body' }, { status: 400 });
-    }
-
-    interface RazorpayXWebhookPayload {
-      event?: string;
-      payload?: {
-        payout?: {
-          entity?: {
-            id: string;
-            status?: string;
-            utr?: string;
-            fee?: number;
-            tax?: number;
-            notes?: {
-              payrollId?: string;
-              employeeId?: string;
-            };
-            error?: {
-              description?: string;
-            };
-          };
-        };
-      };
     }
 
     let eventData: RazorpayXWebhookPayload | null = null;
@@ -64,115 +105,153 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // Find the associated Payroll record
     const payoutId = payoutEntity.id;
     const payrollId = payoutEntity.notes?.payrollId;
 
-    let payroll = null;
-    if (payrollId) {
-      payroll = await Payroll.findById(payrollId).populate('employeeId', 'name email');
+    // Minimal lookup needed only to resolve the company's webhook secret.
+    // No state is mutated until the signature has been verified.
+    let minimalPayroll = null;
+    if (payrollId && OBJECT_ID_PATTERN.test(payrollId)) {
+      minimalPayroll = await Payroll.findById(payrollId).select('companyId').lean();
     }
-    if (!payroll) {
-      payroll = await Payroll.findOne({ payoutId }).populate('employeeId', 'name email');
+    if (!minimalPayroll) {
+      minimalPayroll = await Payroll.findOne({ payoutId }).select('companyId').lean();
     }
 
-    if (!payroll) {
+    if (!minimalPayroll) {
       console.warn(`[RazorpayX Webhook] No matching payroll record for payout ${payoutId}`);
       return NextResponse.json({ message: 'Payroll record not found for payout' }, { status: 200 });
     }
 
-    // Verify webhook signature if a webhook secret is configured
-    const config = await getRazorpayXConfig(String(payroll.companyId));
-    if (config?.webhookSecret) {
-      const isValid = verifyRazorpayXWebhookSignature(rawBody, signature, config.webhookSecret);
-      if (!isValid) {
-        console.error('[RazorpayX Webhook] Invalid signature for payout:', payoutId);
-        return NextResponse.json({ message: 'Invalid webhook signature' }, { status: 401 });
-      }
+    const webhookSecret = await getRazorpayXWebhookSecret(String(minimalPayroll.companyId));
+    if (!webhookSecret) {
+      console.error(
+        '[RazorpayX Webhook] Rejecting event because no webhook secret is configured for company:',
+        String(minimalPayroll.companyId)
+      );
+      return NextResponse.json({ message: 'Webhook secret is not configured' }, { status: 401 });
+    }
+
+    const isValid = verifyRazorpayXWebhookSignature(rawBody, signature, webhookSecret);
+    if (!isValid) {
+      console.error('[RazorpayX Webhook] Invalid signature for payout:', payoutId);
+      return NextResponse.json({ message: 'Invalid webhook signature' }, { status: 401 });
+    }
+
+    // Signature is valid: safe to load and mutate the payroll record.
+    const payroll = await Payroll.findById(minimalPayroll._id).populate('employeeId', 'name email');
+    if (!payroll) {
+      // It could have been deleted between the minimal lookup and now.
+      return NextResponse.json({ message: 'Payroll record not found for payout' }, { status: 200 });
     }
 
     const monthLabel = MONTH_NAMES[payroll.month] || `Month ${payroll.month + 1}`;
     const amountStr = `₹${(payroll.netSalary || 0).toLocaleString('en-IN')}`;
+    const companyId = String(payroll.companyId);
+
+    const markProcessed = async () => {
+      // Out-of-order events must not overwrite a later reversal.
+      if (payroll.payoutStatus === 'reversed') {
+        console.warn('[RazorpayX Webhook] Ignoring processed event for reversed payout:', payoutId);
+        return;
+      }
+
+      const utr = payoutEntity.utr || payroll.utr;
+      await Payroll.findByIdAndUpdate(payroll._id, {
+        status: 'Paid',
+        payoutStatus: 'processed',
+        utr,
+        paymentDate: new Date(),
+        payoutProcessedAt: new Date(),
+        payoutFee: payoutEntity.fees ? payoutEntity.fees / 100 : payroll.payoutFee,
+        payoutTax: payoutEntity.tax ? payoutEntity.tax / 100 : payroll.payoutTax,
+        failureReason: null,
+      });
+
+      if (payroll.employeeId?._id) {
+        await notify({
+          companyId,
+          kind: 'payroll',
+          title: 'Salary credited to your account',
+          message: `Your salary for ${monthLabel} ${payroll.year} of ${amountStr} has been credited (UTR: ${utr || 'N/A'}).`,
+          href: '/payslips',
+          meta: 'Paid',
+          recipientIds: [String(payroll.employeeId._id)],
+          dedupeKey: `payroll-paid:${payroll._id}:${payoutId}`,
+        });
+      }
+    };
+
+    const markFailed = async (payoutStatus: string | undefined, failureReason: string) => {
+      await Payroll.findByIdAndUpdate(payroll._id, {
+        status: 'Failed',
+        payoutStatus: payoutStatus || 'failed',
+        failureReason,
+      });
+
+      await notify({
+        companyId,
+        kind: 'payroll',
+        title: 'Salary payout failed',
+        message: `The salary transfer for ${payroll.employeeId?.name || 'an employee'} (${monthLabel} ${payroll.year}) failed: ${failureReason}.`,
+        href: '/payroll',
+        roles: ['super_admin', 'admin', 'hr'],
+        dedupeKey: `payroll-failed:${payroll._id}:${payoutId}`,
+      });
+    };
+
+    const markInFlight = async (status?: string) => {
+      // Never regress an already-final payout state with a late queued/pending event.
+      if (isTerminalPayoutStatus(payroll.payoutStatus)) {
+        return;
+      }
+
+      const updates: Record<string, unknown> = {
+        payoutStatus: status,
+      };
+      if (payoutEntity.utr) updates.utr = payoutEntity.utr;
+      if (payroll.status !== 'Paid') {
+        updates.status = 'Processing';
+      }
+      await Payroll.findByIdAndUpdate(payroll._id, updates);
+    };
 
     switch (eventName) {
       case 'payout.processed': {
-        const utr = payoutEntity.utr || payroll.utr;
-        await Payroll.findByIdAndUpdate(payroll._id, {
-          status: 'Paid',
-          payoutStatus: 'processed',
-          utr,
-          paymentDate: new Date(),
-          payoutProcessedAt: new Date(),
-          payoutFee: payoutEntity.fee ? payoutEntity.fee / 100 : payroll.payoutFee,
-          payoutTax: payoutEntity.tax ? payoutEntity.tax / 100 : payroll.payoutTax,
-          failureReason: null,
-        });
-
-        // Notify employee of verified bank deposit
-        if (payroll.employeeId?._id) {
-          await notify({
-            companyId: String(payroll.companyId),
-            kind: 'payroll',
-            title: 'Salary credited to your account',
-            message: `Your salary for ${monthLabel} ${payroll.year} of ${amountStr} has been credited (UTR: ${utr || 'N/A'}).`,
-            href: '/payslips',
-            meta: 'Paid',
-            recipientIds: [String(payroll.employeeId._id)],
-            dedupeKey: `webhook-paid:${payroll._id}:${payoutId}`,
-          });
-        }
+        await markProcessed();
         break;
       }
 
       case 'payout.reversed': {
-        const errorDesc = payoutEntity.error?.description || 'Payout reversed by receiving bank';
-        await Payroll.findByIdAndUpdate(payroll._id, {
-          status: 'Failed',
-          payoutStatus: 'reversed',
-          failureReason: `Reversed: ${errorDesc}`,
-        });
-
-        // Notify HR and employee
-        await notify({
-          companyId: String(payroll.companyId),
-          kind: 'payroll',
-          title: 'Salary payout reversed',
-          message: `The salary transfer for ${payroll.employeeId?.name || 'an employee'} (${monthLabel} ${payroll.year}) was reversed: ${errorDesc}.`,
-          href: '/payroll',
-          roles: ['super_admin', 'admin', 'hr'],
-          dedupeKey: `webhook-reversed:${payroll._id}:${payoutId}`,
-        });
+        await markFailed('reversed', `Reversed: ${getFailureDescription(payoutEntity)}`);
         break;
       }
 
       case 'payout.failed':
-      case 'payout.rejected': {
-        const errorDesc = payoutEntity.error?.description || `Payout ${payoutEntity.status || 'failed'}`;
-        await Payroll.findByIdAndUpdate(payroll._id, {
-          status: 'Failed',
-          payoutStatus: payoutEntity.status || 'failed',
-          failureReason: errorDesc,
-        });
-
-        await notify({
-          companyId: String(payroll.companyId),
-          kind: 'payroll',
-          title: 'Salary payout failed',
-          message: `The salary transfer for ${payroll.employeeId?.name || 'an employee'} (${monthLabel} ${payroll.year}) failed: ${errorDesc}.`,
-          href: '/payroll',
-          roles: ['super_admin', 'admin', 'hr'],
-          dedupeKey: `webhook-failed:${payroll._id}:${payoutId}`,
-        });
+      case 'payout.rejected':
+      case 'payout.cancelled': {
+        await markFailed(payoutEntity.status || eventName.replace('payout.', ''), getFailureDescription(payoutEntity));
         break;
       }
 
-      case 'payout.updated':
+      case 'payout.updated': {
+        // `payout.updated` can carry a terminal status. Use it so a missed
+        // payout.processed event does not leave the payroll stuck in Processing.
+        const mapped = mapPayoutStatus(payoutEntity.status);
+        if (mapped === 'Paid') {
+          await markProcessed();
+        } else if (mapped === 'Failed') {
+          await markFailed(payoutEntity.status, getFailureDescription(payoutEntity));
+        } else {
+          await markInFlight(payoutEntity.status);
+        }
+        break;
+      }
+
+      case 'payout.pending':
       case 'payout.queued':
       case 'payout.initiated': {
-        await Payroll.findByIdAndUpdate(payroll._id, {
-          payoutStatus: payoutEntity.status,
-          utr: payoutEntity.utr || payroll.utr,
-        });
+        await markInFlight(payoutEntity.status || eventName.replace('payout.', ''));
         break;
       }
 

@@ -814,10 +814,18 @@ export default function ProjectBoardPage() {
         setChatMessages(prev => [...prev, { sender: 'ai', text: data.response, timestamp: new Date() }]);
         if (data.sprintsCreated > 0) {
           void fetchSprints();
+          void fetchProject();
+          addToast({
+            type: 'success',
+            title: 'Sprints Created',
+            description: `Successfully created ${data.sprintsCreated} sprint(s) for this project!`
+          });
         }
         if (data.tasks) {
           setTasks(data.tasks);
-          addToast({ type: 'success', title: 'Agent Executed', description: `Successfully ran ${data.actionsExecuted || 0} operations!` });
+          if (!data.sprintsCreated) {
+            addToast({ type: 'success', title: 'Agent Executed', description: `Successfully ran ${data.actionsExecuted || 0} operations!` });
+          }
         }
       } else {
         setChatMessages(prev => [...prev, { sender: 'ai', text: `⚠️ **Error:** ${data.message || 'Failed to get response'}`, timestamp: new Date() }]);
@@ -3085,8 +3093,7 @@ export default function ProjectBoardPage() {
         </div>
 
         {/* View Mode Tabs & Create Button matching mockup */}
-        {viewMode !== 'ai-chat' && (
-          <div className="flex items-center justify-between gap-2 w-full min-w-0">
+        <div className="flex items-center justify-between gap-2 w-full min-w-0">
             {/* View Mode Selector with responsive scrollable tabs and pinned More dropdown */}
             <div className="flex items-center bg-gray-100/90 dark:bg-slate-800 rounded-xl p-1 gap-1 min-w-0 flex-1 sm:flex-initial">
               {/* Scrollable Tabs */}
@@ -3161,8 +3168,7 @@ export default function ProjectBoardPage() {
               <span className="hidden sm:inline">Create</span>
             </Button>
           </div>
-        )}
-      </div>
+        </div>
       )}
 
       {/* Content based on view mode */}

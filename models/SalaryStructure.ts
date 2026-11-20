@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, models } from 'mongoose';
+import { calculatePfForDate } from '@/lib/statutory/pfRules';
 
 const SalaryComponentSchema = new Schema({
   name: { type: String, required: true },
@@ -90,8 +91,10 @@ SalaryStructureSchema.methods.calculateTotals = function() {
         .reduce((sum: number, c: any) => sum + (c.value || 0), 0)
     : 0;
   
-  // Standard deductions
-  doc.pf = Math.min(Math.round(doc.basicSalary * 0.12), 1800); // 12% of basic, capped at 1800
+  // Standard deductions: PF is date-effective per Notification S.O. 5109(E) (ceiling Rs 25,000 from 17 Sep 2026; Rs 15,000 before)
+  const effective = doc.effectiveDate ? new Date(doc.effectiveDate) : new Date();
+  const pfResult = calculatePfForDate(doc.basicSalary, effective);
+  doc.pf = pfResult.employeePf;
   doc.esi = doc.grossSalary <= 21000 ? Math.round(doc.grossSalary * 0.0075) : 0; // 0.75% if gross <= 21000
   
   // Calculate totals

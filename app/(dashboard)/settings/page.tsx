@@ -25,8 +25,10 @@ import { EmailSection } from "../../../components/settings/EmailSection";
 import { EmailTemplatesSection } from "../../../components/settings/EmailTemplatesSection";
 import { CareersSection } from "../../../components/settings/CareersSection";
 import { McpSection } from "../../../components/settings/McpSection";
+import { StatutorySettingsSection } from "../../../components/settings/StatutorySettingsSection";
+import { Scale } from "lucide-react";
 
-type TabType = 'branding' | 'attendance' | 'email' | 'email-templates' | 'careers' | 'mcp';
+type TabType = 'branding' | 'attendance' | 'email' | 'email-templates' | 'careers' | 'mcp' | 'statutory';
 
 function SettingsContent() {
   const { user, hasRole, updateUser } = useAuth();
@@ -185,6 +187,7 @@ function SettingsContent() {
     { id: 'email-templates', label: 'Email Templates', icon: FileText },
     { id: 'careers', label: 'Careers Page', icon: Globe },
     { id: 'mcp', label: 'MCP & AI Agent', icon: Plug },
+    { id: 'statutory', label: 'Statutory & Compliance', icon: Scale },
   ];
 
   return (
@@ -276,6 +279,10 @@ function SettingsContent() {
 
           {tab === 'mcp' && (
             <McpSection />
+          )}
+
+          {tab === 'statutory' && (
+            <StatutorySettingsSection companyId={user.companyId || ''} />
           )}
 
           {tab === 'careers' && (

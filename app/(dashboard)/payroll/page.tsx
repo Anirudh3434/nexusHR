@@ -110,8 +110,9 @@ export default function PayrollPage() {
     hasKeySecret: false,
     accountNumber: '',
     webhookSecret: '',
+    hasWebhookSecret: false,
+    clearWebhookSecret: false,
     defaultMode: 'IMPS' as 'IMPS' | 'NEFT' | 'RTGS' | 'UPI',
-    autoPayoutOnApproval: false,
   });
   const [razorpayxStatus, setRazorpayxStatus] = useState<RazorpayXStatus | null>(null);
   const [isTestingRzp, setIsTestingRzp] = useState(false);
@@ -150,9 +151,10 @@ export default function PayrollPage() {
             keySecret: '',
             hasKeySecret: Boolean(data.razorpayxConfig.hasKeySecret),
             accountNumber: data.razorpayxConfig.accountNumber || '',
-            webhookSecret: data.razorpayxConfig.webhookSecret || '',
+            webhookSecret: '',
+            hasWebhookSecret: Boolean(data.razorpayxConfig.hasWebhookSecret),
+            clearWebhookSecret: false,
             defaultMode: data.razorpayxConfig.defaultMode || 'IMPS',
-            autoPayoutOnApproval: Boolean(data.razorpayxConfig.autoPayoutOnApproval),
           });
         }
         if (data.razorpayxStatus) {
@@ -311,9 +313,9 @@ export default function PayrollPage() {
             keyId: razorpayxConfig.keyId,
             keySecret: razorpayxConfig.keySecret || undefined,
             accountNumber: razorpayxConfig.accountNumber,
-            webhookSecret: razorpayxConfig.webhookSecret,
+            webhookSecret: razorpayxConfig.webhookSecret || undefined,
+            clearWebhookSecret: razorpayxConfig.clearWebhookSecret,
             defaultMode: razorpayxConfig.defaultMode,
-            autoPayoutOnApproval: razorpayxConfig.autoPayoutOnApproval,
           }
         })
       });
@@ -322,6 +324,8 @@ export default function PayrollPage() {
       if (res.ok) {
         addToast({ type: 'success', title: 'Updated', description: 'Payroll settings and RazorpayX config saved.' });
         if (data.razorpayxStatus) setRazorpayxStatus(data.razorpayxStatus);
+        await fetchSettings();
+        setTestResult(null);
         setShowSettings(false);
       } else {
         throw new Error(data.message || 'Failed to update settings');
@@ -1135,42 +1139,6 @@ export default function PayrollPage() {
                     </p>
                   </div>
                 </div>
-            {/* Left Fintech Showcase Panel (Portrait Graphic with Exact RazorpayX Logo & Nexi) */}
-            <div className="w-full md:w-[320px] lg:w-[350px] shrink-0 bg-black flex flex-col items-center justify-center relative overflow-hidden border-b md:border-b-0 md:border-r border-border/80">
-            {/* Left Fintech Showcase Panel: Full Generated Photo Only */}
-            <div className="w-full md:w-[320px] lg:w-[360px] shrink-0 bg-black overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-border/80">
-              <img 
-                src="/images/razorpayx_nexi_payroll.jpg" 
-                alt="RazorpayX Payroll with Nexi" 
-                className="w-full h-full object-cover object-center max-h-[280px] md:max-h-none select-none pointer-events-none"
-                className="w-full h-full object-cover object-top select-none pointer-events-none"
-              />
-              {/* Status Pill Badge */}
-              <div className="absolute top-4 right-4 z-10">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border backdrop-blur-md ${
-                  razorpayxConfig.enabled
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${razorpayxConfig.enabled ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                  {razorpayxConfig.enabled ? 'Connected' : 'Setup Required'}
-                </span>
-              </div>
-
-              {/* Guarantees / Security Badges on Bottom */}
-              <div className="relative z-10 space-y-2 pt-4 mt-3 border-t border-white/10 text-xs">
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Zap size={13} className="text-sky-400 shrink-0" />
-                  <span>Sub-second salary disbursals 24/7 across India</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Lock size={13} className="text-emerald-400 shrink-0" />
-                  <span>256-bit bank-grade encryption with RBI compliance</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <CheckCircle2 size={13} className="text-primary shrink-0" />
-                  <span>One-click bulk payout for all verified staff</span>
-                </div>
               </div>
             </div>
 
@@ -1342,7 +1310,9 @@ export default function PayrollPage() {
                         onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, accountNumber: e.target.value })}
                         className="w-full p-2.5 text-sm border rounded-xl bg-background font-mono focus:ring-2 focus:ring-sky-500/30 outline-none"
                       />
-                      <p className="text-[11px] text-muted-foreground">Your RazorpayX Business Current Account or Connected Bank Account.</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Current Account number, or the Customer Identifier for RazorpayX Lite. This is the account funds are debited from.
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1364,14 +1334,51 @@ export default function PayrollPage() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Webhook Secret</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                          <span>Webhook Secret</span>
+                          {razorpayxConfig.hasWebhookSecret && !razorpayxConfig.clearWebhookSecret && (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[11px] normal-case">
+                              ✓ Saved securely
+                            </span>
+                          )}
+                        </label>
                         <input
-                          type="text"
-                          placeholder="Optional webhook secret"
+                          type="password"
+                          placeholder={
+                            razorpayxConfig.hasWebhookSecret && !razorpayxConfig.clearWebhookSecret
+                              ? '•••••••••••••••• (leave blank to keep unchanged)'
+                              : 'Enter the RazorpayX webhook secret'
+                          }
                           value={razorpayxConfig.webhookSecret}
-                          onChange={(e) => setRazorpayxConfig({ ...razorpayxConfig, webhookSecret: e.target.value })}
+                          onChange={(e) =>
+                            setRazorpayxConfig({
+                              ...razorpayxConfig,
+                              webhookSecret: e.target.value,
+                              clearWebhookSecret: false,
+                            })
+                          }
                           className="w-full p-2.5 text-sm border rounded-xl bg-background font-mono focus:ring-2 focus:ring-sky-500/30 outline-none"
                         />
+                        <p className="text-[11px] text-muted-foreground">
+                          Must match the secret configured on the RazorpayX webhook. Required to accept payout events.
+                        </p>
+                        {razorpayxConfig.hasWebhookSecret && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setRazorpayxConfig({
+                                ...razorpayxConfig,
+                                webhookSecret: '',
+                                clearWebhookSecret: !razorpayxConfig.clearWebhookSecret,
+                              })
+                            }
+                            className="text-[11px] font-semibold text-sky-700 dark:text-sky-300 hover:underline"
+                          >
+                            {razorpayxConfig.clearWebhookSecret
+                              ? 'Keep the saved webhook secret'
+                              : 'Remove the saved webhook secret'}
+                          </button>
+                        )}
                       </div>
                     </div>
 

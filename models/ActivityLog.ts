@@ -15,12 +15,15 @@ export type ActionType =
   | 'label_added' 
   | 'label_removed' 
   | 'sprint_changed' 
-  | 'custom_status_changed';
+  | 'custom_status_changed'
+  | 'statutory_config_updated'
+  | 'employee_override_updated';
 
 export interface IActivityLog extends Document {
   taskId?: mongoose.Types.ObjectId;
-  projectId: mongoose.Types.ObjectId;
+  projectId?: mongoose.Types.ObjectId;
   companyId?: mongoose.Types.ObjectId;
+  module?: string;
   
   // User who performed the action
   userId: mongoose.Types.ObjectId;
@@ -63,7 +66,12 @@ const ActivityLogSchema = new Schema<IActivityLog>({
   projectId: {
     type: Schema.Types.ObjectId,
     ref: 'Project',
-    required: true,
+    required: false,
+    index: true,
+  },
+  module: {
+    type: String,
+    default: 'projects',
     index: true,
   },
   companyId: {

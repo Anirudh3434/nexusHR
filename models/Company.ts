@@ -128,18 +128,72 @@ const CompanySchema = new Schema({
       type: String, // Source RazorpayX business banking account number (e.g. 7878780080316316)
       trim: true,
     },
+    // Legacy plaintext field. New values are written to webhookSecretEncrypted.
     webhookSecret: {
       type: String,
       trim: true,
+    },
+    webhookSecretEncrypted: {
+      type: String, // AES-256-GCM encrypted
     },
     defaultMode: {
       type: String,
       enum: ['IMPS', 'NEFT', 'RTGS', 'UPI'],
       default: 'IMPS',
     },
-    autoPayoutOnApproval: {
-      type: Boolean,
-      default: false,
+  },
+  // Layer 2: Company Statutory Settings & Registration Numbers
+  statutoryConfig: {
+    pf: {
+      enabled: { type: Boolean, default: true },
+      establishmentCode: { type: String, trim: true, default: '' },
+      wageCeilingMode: { 
+        type: String, 
+        enum: ['statutory_ceiling', 'actual_wages'], 
+        default: 'statutory_ceiling' 
+      },
+      componentsIncluded: { 
+        type: [String], 
+        default: ['basic', 'da'] 
+      },
+      employerShareInCtc: { type: Boolean, default: true },
+      epsEdliBasis: { 
+        type: String, 
+        enum: ['statutory_ceiling', 'actual_wages'], 
+        default: 'statutory_ceiling' 
+      },
+      newJoinerAboveCeiling: { 
+        type: String, 
+        enum: ['mandatory_opt_in', 'allow_opt_out'], 
+        default: 'allow_opt_out' 
+      },
+    },
+    esi: {
+      enabled: { type: Boolean, default: true },
+      establishmentCode: { type: String, trim: true, default: '' },
+      threshold: { type: Number, default: 21000 },
+      componentsIncluded: { 
+        type: [String], 
+        default: ['basic', 'hra', 'da', 'specialAllowance', 'conveyance', 'medical'] 
+      },
+      enforceContributionPeriod: { type: Boolean, default: true },
+    },
+    pt: {
+      enabled: { type: Boolean, default: true },
+      stateRegistrations: [{
+        state: { type: String, required: true },
+        registrationNumber: { type: String, required: true },
+        ptoCircle: { type: String, default: '' },
+      }],
+    },
+    tax: {
+      tanNumber: { type: String, trim: true, default: '' },
+      defaultRegime: { type: String, enum: ['new', 'old'], default: 'new' },
+    },
+    general: {
+      roundingMode: { type: String, enum: ['round', 'floor'], default: 'round' },
+      effectiveDate: { type: Date, default: Date.now },
+      lastUpdatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     },
   },
 }, {

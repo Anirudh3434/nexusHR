@@ -44,9 +44,11 @@ export async function GET(req: Request) {
         hasKeySecret: Boolean(companyRzp.keySecretEncrypted),
         keySecretMasked: companyRzp.keySecretEncrypted ? '••••••••••••••••' : '',
         accountNumber: companyRzp.accountNumber || '',
-        webhookSecret: companyRzp.webhookSecret || '',
+        // Never return the webhook secret to the client.
+        hasWebhookSecret: Boolean(companyRzp.webhookSecretEncrypted || companyRzp.webhookSecret),
+        webhookSecretMasked:
+          companyRzp.webhookSecretEncrypted || companyRzp.webhookSecret ? '••••••••••••••••' : '',
         defaultMode: companyRzp.defaultMode || 'IMPS',
-        autoPayoutOnApproval: Boolean(companyRzp.autoPayoutOnApproval),
       },
       razorpayxStatus: {
         isConfigured: Boolean(resolved),
@@ -125,14 +127,20 @@ export async function PATCH(req: Request) {
       if (razorpayxConfig.accountNumber !== undefined) {
         company.razorpayxConfig.accountNumber = razorpayxConfig.accountNumber.trim();
       }
-      if (razorpayxConfig.webhookSecret !== undefined) {
-        company.razorpayxConfig.webhookSecret = razorpayxConfig.webhookSecret.trim();
+      if (razorpayxConfig.clearWebhookSecret) {
+        company.razorpayxConfig.webhookSecretEncrypted = undefined;
+        company.razorpayxConfig.webhookSecret = undefined;
+      } else if (
+        razorpayxConfig.webhookSecret &&
+        razorpayxConfig.webhookSecret.trim() &&
+        !razorpayxConfig.webhookSecret.startsWith('••')
+      ) {
+        company.razorpayxConfig.webhookSecretEncrypted = encrypt(razorpayxConfig.webhookSecret.trim());
+        // Clear the legacy plaintext value after migrating it to encrypted storage.
+        company.razorpayxConfig.webhookSecret = undefined;
       }
       if (razorpayxConfig.defaultMode !== undefined) {
         company.razorpayxConfig.defaultMode = razorpayxConfig.defaultMode;
-      }
-      if (razorpayxConfig.autoPayoutOnApproval !== undefined) {
-        company.razorpayxConfig.autoPayoutOnApproval = Boolean(razorpayxConfig.autoPayoutOnApproval);
       }
     }
 
@@ -149,9 +157,14 @@ export async function PATCH(req: Request) {
         keyId: company.razorpayxConfig?.keyId || '',
         hasKeySecret: Boolean(company.razorpayxConfig?.keySecretEncrypted),
         accountNumber: company.razorpayxConfig?.accountNumber || '',
-        webhookSecret: company.razorpayxConfig?.webhookSecret || '',
+        hasWebhookSecret: Boolean(
+          company.razorpayxConfig?.webhookSecretEncrypted || company.razorpayxConfig?.webhookSecret
+        ),
+        webhookSecretMasked:
+          company.razorpayxConfig?.webhookSecretEncrypted || company.razorpayxConfig?.webhookSecret
+            ? '••••••••••••••••'
+            : '',
         defaultMode: company.razorpayxConfig?.defaultMode || 'IMPS',
-        autoPayoutOnApproval: Boolean(company.razorpayxConfig?.autoPayoutOnApproval),
       },
       razorpayxStatus: {
         isConfigured: Boolean(resolved),
