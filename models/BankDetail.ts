@@ -11,6 +11,9 @@ export interface IBankDetail extends Document {
   branchName?: string;
   upiIdMasked?: string;
   blindIndexBank?: string;
+  // Cached RazorpayX fund account, reused for future payouts when bank details are unchanged.
+  razorpayFundAccountId?: string;
+  razorpayFundAccountFingerprint?: string;
   isVerified: boolean;
   verifiedBy?: mongoose.Types.ObjectId;
   verifiedAt?: Date;
@@ -70,6 +73,14 @@ const BankDetailSchema = new Schema<IBankDetail>(
     blindIndexBank: {
       type: String,
       index: true,
+    },
+    razorpayFundAccountId: {
+      type: String,
+      trim: true,
+    },
+    razorpayFundAccountFingerprint: {
+      type: String,
+      trim: true,
     },
     isVerified: {
       type: Boolean,

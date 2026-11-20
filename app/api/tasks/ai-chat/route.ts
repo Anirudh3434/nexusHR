@@ -606,18 +606,34 @@ Output raw JSON only.`;
             }
           } else if (action.type === 'create_sprint' && (projectId || project?._id)) {
             const sprintProjectId = projectId || project?._id;
-            const startDate = new Date(action.startDate);
-            const endDate = new Date(action.endDate);
-            const validDates = !Number.isNaN(startDate.getTime()) &&
-              !Number.isNaN(endDate.getTime()) &&
-              endDate.getTime() > startDate.getTime();
+            
+            // Robust date parsing with safe fallbacks
+            let startDate = action.startDate ? new Date(action.startDate) : new Date();
+            if (Number.isNaN(startDate.getTime())) startDate = new Date();
+            
+            let endDate = action.endDate ? new Date(action.endDate) : new Date(startDate.getTime() + 14 * 86400000);
+            if (Number.isNaN(endDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+              endDate = new Date(startDate.getTime() + 14 * 86400000);
+            }
 
-            if (sprintProjectId && mongoose.Types.ObjectId.isValid(sprintProjectId) && validDates) {
-              let sprintCount = await Sprint.countDocuments({ companyId: effectiveCompanyId });
-              let sprintNumber = `SPR-${String(sprintCount + 1).padStart(4, '0')}`;
-              while (await Sprint.exists({ companyId: effectiveCompanyId, sprintNumber })) {
-                sprintCount++;
-                sprintNumber = `SPR-${String(sprintCount + 1).padStart(4, '0')}`;
+            if (sprintProjectId && mongoose.Types.ObjectId.isValid(sprintProjectId)) {
+              // Globally unique sprint number calculation (Sprint has global unique index on sprintNumber)
+              const lastSprint = await Sprint.findOne({
+                sprintNumber: { $regex: /^SPR-\d+$/ }
+              }).sort({ sprintNumber: -1 }).select('sprintNumber').lean();
+
+              let nextNum = 1;
+              if (lastSprint?.sprintNumber) {
+                const match = lastSprint.sprintNumber.match(/SPR-(\d+)/);
+                if (match) {
+                  nextNum = parseInt(match[1], 10) + 1;
+                }
+              }
+
+              let sprintNumber = `SPR-${String(nextNum).padStart(4, '0')}`;
+              while (await Sprint.exists({ sprintNumber })) {
+                nextNum++;
+                sprintNumber = `SPR-${String(nextNum).padStart(4, '0')}`;
               }
 
               const creatorId = (userId && mongoose.Types.ObjectId.isValid(userId))
@@ -626,7 +642,7 @@ Output raw JSON only.`;
 
               await Sprint.create({
                 sprintNumber,
-                name: action.name || `Sprint ${sprintCount + 1}`,
+                name: action.name || `Sprint ${nextNum}`,
                 description: action.description || '',
                 projectId: new mongoose.Types.ObjectId(sprintProjectId),
                 companyId: new mongoose.Types.ObjectId(effectiveCompanyId),
@@ -641,6 +657,12 @@ Output raw JSON only.`;
                 completedStoryPoints: 0,
                 createdBy: creatorId,
               });
+
+              // Ensure project has useSprints enabled so sprints show on board
+              await Project.updateOne(
+                { _id: new mongoose.Types.ObjectId(sprintProjectId) },
+                { $set: { useSprints: true } }
+              ).catch(() => {});
 
               actionsExecutedCount++;
               sprintsCreatedCount++;
@@ -711,6 +733,21 @@ Output raw JSON only.`;
         .populate('assignedTo', 'name email department')
         .populate('assignedBy', 'name email')
         .lean();
+    }
+
+    // Accurate sprint confirmation
+    const sprintRequested = /(?:create|add|plan|set\s*up|start)\s+(?:a\s+|the\s+|new\s+)?(?:\d+\s+|one\s+|two\s+|three\s+|four\s+|five\s+|six\s+)?sprints?/i.test(prompt) ||
+      /sprint\s+(?:planning|creation)/i.test(prompt);
+
+    if (sprintRequested) {
+      if (sprintsCreatedCount === 0) {
+        aiText = `⚠️ Could not create the sprint(s). Please verify the active project exists and try again.`;
+      } else {
+        const createdNames = executedActionTypes.filter(t => t.startsWith('Sprint Created')).join(', ');
+        if (!aiText.includes('successfully created') && !aiText.includes('Sprint Created')) {
+          aiText += `\n\n✅ **${sprintsCreatedCount} sprint(s) successfully created** (${createdNames}).`;
+        }
+      }
     }
 
     return NextResponse.json({

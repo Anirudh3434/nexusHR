@@ -12,7 +12,7 @@ export interface Payroll {
   netSalary: number;
   status: 'Unpaid' | 'Processing' | 'Paid';
   paymentDate?: string;
-  paymentMethod: 'Bank Transfer' | 'Cash' | 'Cheque';
+  paymentMethod?: string;
   employee?: {
     id: string;
     name: string;
@@ -112,7 +112,10 @@ export interface RazorpayXPayoutInput {
 export interface PayoutResponse {
   message: string;
   totalDisbursed: number;
+  totalInitiated?: number;
   successfulCount: number;
+  paidCount?: number;
+  processingCount?: number;
   failedCount: number;
   results: Array<{
     payrollId: string;

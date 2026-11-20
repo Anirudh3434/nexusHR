@@ -89,7 +89,7 @@ const PayrollSchema = new Schema({
     sparse: true,
   },
   payoutStatus: {
-    type: String, // 'queued' | 'pending' | 'processing' | 'processed' | 'reversed' | 'cancelled' | 'rejected'
+    type: String, // 'pending' | 'queued' | 'scheduled' | 'processing' | 'processed' | 'reversed' | 'cancelled' | 'rejected' | 'failed'
   },
   payoutMode: {
     type: String, // 'IMPS' | 'NEFT' | 'RTGS' | 'UPI'
@@ -113,6 +113,18 @@ const PayrollSchema = new Schema({
   },
   payoutProcessedAt: {
     type: Date,
+  },
+  // Idempotency key for the current/most recent payout attempt.
+  // Reused only when the previous attempt ended with an unknown outcome.
+  payoutIdempotencyKey: {
+    type: String,
+  },
+  payoutIdempotencyReusable: {
+    type: Boolean,
+    default: false,
+  },
+  payoutIdempotencyFingerprint: {
+    type: String,
   },
   // Crucial Payment Security: AES-256 Encrypted Payload
   encryptedPaymentDetails: {

@@ -86,9 +86,52 @@ const EmployeeSchema = new Schema({
     type: String,
     index: true,
   },
+  // Cached RazorpayX fund account, reused for future payouts when bank details are unchanged.
+  razorpayFundAccountId: {
+    type: String,
+    trim: true,
+  },
+  razorpayFundAccountFingerprint: {
+    type: String,
+    trim: true,
+  },
   blindIndexPan: {
     type: String,
     index: true,
+  },
+  // Layer 3: Employee Statutory Identifiers & Overrides
+  uan: {
+    type: String,
+    trim: true,
+    sparse: true,
+    index: true, // 12-digit EPFO UAN
+  },
+  esicIpNumber: {
+    type: String,
+    trim: true,
+    sparse: true,
+    index: true, // 10-digit ESIC IP Number
+  },
+  workState: {
+    type: String,
+    trim: true,
+    default: 'Maharashtra', // Determines State PT slab
+  },
+  taxRegime: {
+    type: String,
+    enum: ['new', 'old'],
+    default: 'new',
+  },
+  pfOverride: {
+    optOut: { type: Boolean, default: false },
+    optOutReason: { type: String, default: '' },
+    optOutDate: { type: Date },
+    vpfAmount: { type: Number, default: 0, min: 0 },
+    vpfPercentage: { type: Number, default: 0, min: 0, max: 100 },
+  },
+  esiOverride: {
+    optOut: { type: Boolean, default: false },
+    optOutReason: { type: String, default: '' },
   },
   status: {
     type: String,

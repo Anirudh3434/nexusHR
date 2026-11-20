@@ -7,31 +7,31 @@ import { logAttendance } from "../../../services/attendanceService";
 import { getNotices, Notice } from "../../../services/noticeService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
-import { 
-  Clock, Play, Square, Users, Calendar, TrendingUp, 
-  CheckCircle, AlertCircle, Briefcase, UserCheck, 
-  ArrowRight, Loader2, MapPin, Cake, Home, Gift, 
+import {
+  Clock, Play, Square, Users, Calendar, TrendingUp,
+  CheckCircle, AlertCircle, Briefcase, UserCheck,
+  ArrowRight, Loader2, MapPin, Cake, Home, Gift,
   UserPlus, ClockAlert, Palmtree, PartyPopper,
-  MapPinOff, XCircle, X, Info, Smartphone, QrCode, ShieldCheck,
+  MapPinOff, XCircle, X, Info, Smartphone, ShieldCheck,
   Battery, BatteryCharging, Wifi, Signal, WifiOff, Link2Off
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSocket } from "../../../hooks/useSocket";
 
-const LiveLocationMap = dynamic(() => import("../../../components/dashboard/LiveLocationMap"), { 
+const LiveLocationMap = dynamic(() => import("../../../components/dashboard/LiveLocationMap"), {
   ssr: false,
   loading: () => <div className="h-48 w-full bg-gray-100 animate-pulse rounded-xl dark:bg-slate-800" />
 });
- 
- // Helper to format 24h time to 12h time
- const formatShiftTime = (time?: string) => {
-   if (!time) return '';
-   const [hours, minutes] = time.split(':').map(Number);
-   const ampm = hours >= 12 ? 'PM' : 'AM';
-   const h = hours % 12 || 12;
-   return `${h}:${String(minutes).padStart(2, '0')} ${ampm}`;
- };
+
+// Helper to format 24h time to 12h time
+const formatShiftTime = (time?: string) => {
+  if (!time) return '';
+  const [hours, minutes] = time.split(':').map(Number);
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const h = hours % 12 || 12;
+  return `${h}:${String(minutes).padStart(2, '0')} ${ampm}`;
+};
 
 const WelcomeBriefingModal = dynamic(() => import("../../../components/WelcomeBriefingModal"), { ssr: false });
 const HRChatbot = dynamic(() => import("../../../components/ai/HRChatbot"), { ssr: false });
@@ -104,22 +104,19 @@ export default function DashboardPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
-  const [qrToken, setQrToken] = useState<string | null>(null);
   const [unlinking, setUnlinking] = useState(false);
   const [liveLocation, setLiveLocation] = useState<any>(null);
-  const [isProcessingScan, setIsProcessingScan] = useState(false);
   const { socket, isConnected, isReconnecting, emitEvent, onEvent, onReconnect } = useSocket(user?.id);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const qrTimerRef = useRef<NodeJS.Timeout | null>(null);
   const statsIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Track data source to prevent API from overwriting socket state
   const dataSourceRef = useRef<'socket' | 'api'>('api');
-  
+
   // Separate state for socket-driven data (not overwritten by API)
   const [socketDeviceStats, setSocketDeviceStats] = useState<any>(null);
   const [socketAttendance, setSocketAttendance] = useState<any>(null);
-  
+
   // Track if shift was recently cleared via socket to prevent API from recreating it
   const shiftClearedViaSocket = useRef(false);
 
@@ -128,26 +125,20 @@ export default function DashboardPage() {
     const savedShift = localStorage.getItem("active-shift");
     if (savedShift) {
       const shiftData = JSON.parse(savedShift);
-      setActiveShift({ 
-        start: new Date(shiftData.start), 
-        mode: shiftData.mode || 'office' 
+      setActiveShift({
+        start: new Date(shiftData.start),
+        mode: shiftData.mode || 'office'
       });
       setWorkMode(shiftData.mode || 'office');
     }
-    
+
     // Initial data fetch (always run on mount)
     fetchDashboardData();
     fetchNotices();
 
-    // Initial QR Token fetch
-    if (user) {
-      fetchQrToken();
-    }
-    
     return () => {
       // Cleanup intervals
       if (timerRef.current) clearInterval(timerRef.current);
-      if (qrTimerRef.current) clearInterval(qrTimerRef.current);
       if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
     };
   }, [user?.id, user?.companyId]);
@@ -159,7 +150,7 @@ export default function DashboardPage() {
       console.log('[Dashboard] Socket disconnected, starting API polling');
       fetchDashboardData();
       statsIntervalRef.current = setInterval(fetchDashboardData, 10000);
-      
+
       return () => {
         if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
       };
@@ -171,29 +162,6 @@ export default function DashboardPage() {
     }
   }, [isConnected, user?.id]);
 
-  // QR token refresh interval (always runs, independent of socket)
-  useEffect(() => {
-    if (!user) return;
-    
-    qrTimerRef.current = setInterval(fetchQrToken, 60000); // Refresh every 60s
-    
-    return () => {
-      if (qrTimerRef.current) clearInterval(qrTimerRef.current);
-    };
-  }, [user?.id, user?.companyId]);
-
-  // Rejoin QR room on socket reconnect
-  useEffect(() => {
-    if (!socket || !qrToken) return;
-
-    const cleanup = onReconnect(() => {
-      console.log('[Socket] Reconnected, rejoining QR room');
-      socket.emit("join-qr-room", qrToken);
-    });
-
-    return cleanup;
-  }, [socket, qrToken, onReconnect]);
-
   // Real-time Socket Event Listeners
   useEffect(() => {
     if (!socket) return;
@@ -204,14 +172,7 @@ export default function DashboardPage() {
     onEvent("device-linked-success", (deviceInfo) => {
       console.log("Device linked in real-time:", deviceInfo);
       addToast({ type: 'success', title: 'Smartphone linked successfully!', description: '' });
-      setIsProcessingScan(false);
       fetchDashboardData(); // Only fetch this once for initial data
-    });
-
-    // QR scan detected
-    onEvent("qr-processing", () => {
-      console.log("QR Scan detected, processing...");
-      setIsProcessingScan(true);
     });
 
     // Location synced - update directly, don't fetch from API
@@ -226,7 +187,7 @@ export default function DashboardPage() {
       console.log("[Socket] Real-time device sync received:", stats);
       dataSourceRef.current = 'socket';
       setSocketDeviceStats(stats);
-      
+
       // Merge socket stats into dashboard data
       setDashboardData((prev: any) => {
         if (!prev || !prev.employee || !prev.employee.linkedDevice) return prev;
@@ -248,7 +209,7 @@ export default function DashboardPage() {
       console.log("[Socket] Real-time attendance update received:", data);
       dataSourceRef.current = 'socket';
       setSocketAttendance(data);
-      
+
       // Handle check-in: if socket data has checkIn and no checkOut, start the shift
       if (data.checkIn && !data.checkOut) {
         console.log('[Socket] User checked in via socket, starting shift and timer');
@@ -258,13 +219,13 @@ export default function DashboardPage() {
           const today = new Date();
           const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0, 0);
           const mode = data.workMode || data.checkIn.workMode || 'office';
-          
+
           setActiveShift({ start, mode });
           localStorage.setItem("active-shift", JSON.stringify({ start: start.toISOString(), mode }));
           console.log('[Socket] Shift started from socket:', start.toLocaleTimeString(), 'mode:', mode);
         }
       }
-      
+
       // Immediately handle check-out: if socket data has checkOut, clear the shift
       if (data.checkOut) {
         console.log('[Socket] User checked out via socket, clearing shift and resetting timer');
@@ -277,42 +238,17 @@ export default function DashboardPage() {
         setActiveShift(null);
         setElapsedTime("00:00:00");
         localStorage.removeItem("active-shift");
-        
+
         // Reset the flag after a short delay to allow reconciliation to work normally again
         setTimeout(() => {
           shiftClearedViaSocket.current = false;
         }, 2000);
       }
-      
+
       // Do NOT call fetchDashboardData() here - trust socket data
       // Only fetch if we need additional data not in the socket event
     });
   }, [socket]);
-
-  const fetchQrToken = async () => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      const userData = storedUser ? JSON.parse(storedUser) : null;
-      const headers: Record<string, string> = userData ? {
-        'x-user-id': userData.id || '',
-        'x-company-id': userData.companyId || ''
-      } : {};
-
-      const res = await fetch('/api/qr/generate', { method: 'POST', headers });
-      if (res.ok) {
-        const data = await res.json();
-        setQrToken(data.token);
-        setIsProcessingScan(false); // Reset on new token
-        
-        // Join the unique room for this QR token
-        if (socket) {
-          socket.emit("join-qr-room", data.token);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch QR token:", err);
-    }
-  };
 
   const fetchNotices = async () => {
     try {
@@ -337,11 +273,11 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bodyUserId: user.id })
       });
-      
+
       const data = await response.json();
       if (response.ok) {
         addToast({ type: 'success', title: 'Device disconnected successfully', description: '' });
-        fetchDashboardData(); // Refresh to show QR
+        fetchDashboardData();
       } else {
         addToast({ type: 'error', title: data.message || 'Failed to unlink device', description: '' });
       }
@@ -351,15 +287,15 @@ export default function DashboardPage() {
       setUnlinking(false);
     }
   };
-  
+
   const fetchDashboardData = async () => {
     try {
       setDataLoading(true);
-      
+
       // Get user from localStorage for API headers
       const storedUser = localStorage.getItem("user");
       const userData = storedUser ? JSON.parse(storedUser) : null;
-      
+
       const headers: Record<string, string> = {};
       if (userData) {
         headers['x-user-id'] = userData.id || '';
@@ -367,11 +303,11 @@ export default function DashboardPage() {
         headers['x-user-name'] = userData.name || '';
         headers['x-company-id'] = userData.companyId || '';
       }
-      
+
       const response = await fetch('/api/dashboard/stats', { headers });
       if (response.ok) {
         const data = await response.json();
-        
+
         // Only update dashboard data if we're not in socket mode (socket is primary source of truth)
         // If data source is socket, only update non-real-time fields (not device stats, location, attendance)
         if (dataSourceRef.current === 'socket') {
@@ -393,12 +329,12 @@ export default function DashboardPage() {
         } else {
           // API is primary source, update all data
           setDashboardData(data);
-          
+
           // Reconcile Shift State: If server says user is present but web doesn't have an active shift
           const hasCheckedOut = !!data.overview?.checkOutTime;
           const hasCheckIn = !!data.overview?.checkInTime;
           const isPresentStatus = hasCheckIn && !hasCheckedOut;
-          
+
           console.log('[Dashboard] API Reconciliation check:', {
             todayStatus: data.overview?.todayStatus,
             checkInTime: data.overview?.checkInTime,
@@ -408,7 +344,7 @@ export default function DashboardPage() {
             currentActiveShift: !!activeShift,
             dataSource: dataSourceRef.current
           });
-          
+
           // Only reconcile if socket didn't recently clear the shift
           if (isPresentStatus && !activeShift && !shiftClearedViaSocket.current) {
             const checkInTime = data.overview.checkInTime;
@@ -416,7 +352,7 @@ export default function DashboardPage() {
               const [hours, minutes] = (typeof checkInTime === 'string' ? checkInTime : checkInTime.time).split(':').map(Number);
               const today = new Date();
               const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0, 0);
-              
+
               setActiveShift({ start, mode: 'office' });
               localStorage.setItem("active-shift", JSON.stringify({ start: start.toISOString(), mode: 'office' }));
               console.log('[Dashboard] Shift reconciled from API:', start.toLocaleTimeString());
@@ -446,7 +382,7 @@ export default function DashboardPage() {
   // Update timer every second if shift is active
   useEffect(() => {
     console.log('[Timer] useEffect triggered, activeShift:', !!activeShift);
-    
+
     if (activeShift) {
       console.log('[Timer] Starting timer interval');
       timerRef.current = setInterval(() => {
@@ -467,7 +403,7 @@ export default function DashboardPage() {
       }
       setElapsedTime("00:00:00");
     }
-    
+
     return () => {
       console.log('[Timer] Cleanup function called');
       if (timerRef.current) {
@@ -493,11 +429,11 @@ export default function DashboardPage() {
       addToast({
         type: response.isLate ? 'info' : 'success',
         title: response.isLate ? 'Checked In (Late)' : 'Checked In Successfully',
-        description: response.isLate 
-          ? `You're ${response.lateMinutes} mins late. Effort starts now!` 
+        description: response.isLate
+          ? `You're ${response.lateMinutes} mins late. Effort starts now!`
           : 'Great job starting your shift on time!',
       });
-      
+
       const newShift = {
         start: new Date(),
         mode: workMode
@@ -507,16 +443,16 @@ export default function DashboardPage() {
       fetchDashboardData();
     } catch (error: any) {
       console.error("Check-in error:", error);
-      
+
       let errorType: 'location' | 'radius' | 'config' | 'general' = 'general';
       if (error.message?.includes('location') || error.message?.includes('permis')) errorType = 'location';
       else if (error.message?.includes('radius') || error.message?.includes('away')) errorType = 'radius';
       else if (error.message?.includes('config')) errorType = 'config';
 
       setErrorModal({
-        title: errorType === 'location' ? 'Location Access Required' : 
-               errorType === 'radius' ? 'Outside Office Range' : 
-               errorType === 'config' ? 'Configuration Missing' : 'Check-in Failed',
+        title: errorType === 'location' ? 'Location Access Required' :
+          errorType === 'radius' ? 'Outside Office Range' :
+            errorType === 'config' ? 'Configuration Missing' : 'Check-in Failed',
         message: error.message || 'We could not log your attendance at this time.',
         type: errorType
       });
@@ -545,7 +481,7 @@ export default function DashboardPage() {
           companyId: user.companyId,
         });
       }
-      
+
       setActiveShift(null);
       localStorage.removeItem("active-shift");
       addToast({ type: "info", title: "Shift Ended", description: `Total time worked: ${hours}h ${minutes}m. Log saved to Attendance.` });
@@ -594,7 +530,7 @@ export default function DashboardPage() {
 
       {/* 3. Main Dashboard Bento Architecture (4 cols left / 8 cols right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
+
         {/* Left Column (Command & Pulse - 4 cols) */}
         <div className="lg:col-span-4 space-y-6">
           <ExecutiveProfileCard
@@ -637,7 +573,7 @@ export default function DashboardPage() {
       {errorModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setErrorModal(null)} />
-          
+
           <div className="relative bg-card rounded-[14px] shadow-xl w-full max-w-md overflow-hidden border border-border">
             {/* Header */}
             {errorModal.type === 'radius' ? (
@@ -660,7 +596,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Close Button */}
-                <button 
+                <button
                   onClick={() => setErrorModal(null)}
                   aria-label="Dismiss error"
                   className="absolute top-3.5 right-4 z-20 p-1.5 bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-full text-foreground/70 hover:text-foreground transition-colors"
@@ -678,14 +614,13 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <div className={`relative h-24 flex items-center justify-center ${
-                errorModal.type === 'location' ? 'bg-[#b45309]' : 'bg-destructive'
-              }`}>
+              <div className={`relative h-24 flex items-center justify-center ${errorModal.type === 'location' ? 'bg-[#b45309]' : 'bg-destructive'
+                }`}>
                 <div className="relative bg-white/15 rounded-full p-3.5 ring-8 ring-white/10">
                   {errorModal.type === 'location' ? <MapPinOff size={36} className="text-white" /> :
-                   <XCircle size={36} className="text-white" />}
+                    <XCircle size={36} className="text-white" />}
                 </div>
-                <button 
+                <button
                   onClick={() => setErrorModal(null)}
                   aria-label="Dismiss error"
                   className="absolute top-4 right-4 p-2 bg-black/10 hover:bg-black/20 rounded-full text-white transition-colors"
@@ -736,8 +671,8 @@ export default function DashboardPage() {
                     </>
                   ) : (
                     <li className="flex gap-3 text-sm text-muted-foreground">
-                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">!</span>
-                       <span>Check your connection and try again.</span>
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-foreground">!</span>
+                      <span>Check your connection and try again.</span>
                     </li>
                   )}
                 </ul>
@@ -745,8 +680,8 @@ export default function DashboardPage() {
 
               <div className="flex flex-col gap-2.5">
                 {workMode === 'office' && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full h-11 rounded-lg font-semibold"
                     onClick={() => {
                       setWorkMode('wfh');
@@ -756,7 +691,7 @@ export default function DashboardPage() {
                     Switch to remote mode
                   </Button>
                 )}
-                <Button 
+                <Button
                   className="w-full h-11 rounded-lg font-semibold"
                   onClick={() => setErrorModal(null)}
                 >
